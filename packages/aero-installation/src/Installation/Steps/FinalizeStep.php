@@ -28,7 +28,7 @@ class FinalizeStep extends BaseInstallationStep
 
     public function order(): int
     {
-        return 10;
+        return 12;
     }
 
     public function dependencies(): array
@@ -39,6 +39,19 @@ class FinalizeStep extends BaseInstallationStep
     public function execute(): array
     {
         $results = [];
+
+        // Verify HRMAC structure is complete
+        $this->log('Verifying HRMAC structure');
+        try {
+            $hrmacStatus = $this->verifyHrmacStructure();
+            $results['hrmac_verified'] = $hrmacStatus['valid'];
+            if (!$hrmacStatus['valid']) {
+                $this->warn('HRMAC verification found issues: '.implode(', ', $hrmacStatus['issues']));
+            }
+        } catch (\Exception $e) {
+            $this->warn('HRMAC verification failed: '.$e->getMessage());
+            $results['hrmac_verified'] = false;
+        }
 
         // Clear all caches
         $this->log('Clearing application caches');
@@ -119,6 +132,79 @@ class FinalizeStep extends BaseInstallationStep
         } catch (\Exception) {
             // Table might not exist yet
         }
+    }
+
+    /**
+     * Verify HRMAC structure is complete
+     */
+    protected function verifyHrmacStructure(): array
+    {
+        $issues = [];
+
+        // Check roles exist
+        try {
+            $roleCount = DB::table('roles')->count();
+            if ($roleCount === 0) {
+                $issues[] = 'No roles created';
+            }
+        } catch (\Exception) {
+            $issues[] = 'Cannot verify roles table';
+        }
+
+        // Check role_module_access records exist
+        try {
+            $accessCount = DB::table('role_module_access')->count();
+            if ($accessCount === 0) {
+                $issues[] = 'No role-module access mappings created';
+            }
+        } catch (\Exception) {
+            // Table may not exist in non-HRMAC setup
+        }
+
+        // Check modules are registered
+        try {
+            $moduleCount = DB::table('modules')->where('is_active', true)->count();
+            if ($moduleCount === 0) {
+                $issues[] = 'No modules registered';
+            }
+
+            // Verify Super Administrator has access to at least one module
+            $superAdminRole = DB::table('roles')
+                ->where('name', 'Super Administrator')
+                ->first();
+
+            if ($superAdminRole) {
+                $superAdminAccess = DB::table('role_module_access')
+                    ->where('role_id', $superAdminRole->id)
+                    ->count();
+
+                if ($superAdminAccess === 0) {
+                    $issues[] = 'Super Administrator has no module access';
+                }
+            }
+        } catch (\Exception) {
+            // Table may not exist
+        }
+
+        // Check admin user exists
+        try {
+            $adminCount = DB::table('users')
+                ->orWhere(function ($q) {
+                    $q->from('landlord_users');
+                })
+                ->count();
+
+            if ($adminCount === 0) {
+                $issues[] = 'No admin user created';
+            }
+        } catch (\Exception) {
+            // Table may not exist
+        }
+
+        return [
+            'valid' => empty($issues),
+            'issues' => $issues,
+        ];
     }
 
     /**

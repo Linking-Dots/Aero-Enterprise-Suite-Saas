@@ -24,12 +24,12 @@ class LicenseStep extends BaseInstallationStep
 
     public function order(): int
     {
-        return 9;
+        return 3;
     }
 
     public function dependencies(): array
     {
-        return ['config', 'database', 'admin'];
+        return ['config', 'database'];
     }
 
     public function execute(): array

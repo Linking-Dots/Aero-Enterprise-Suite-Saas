@@ -4,6 +4,7 @@ namespace Aero\Installation\Installation\Steps;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Migration Step
@@ -19,6 +20,13 @@ use Illuminate\Support\Facades\DB;
  */
 class MigrationStep extends BaseInstallationStep
 {
+    protected string $mode;
+
+    public function __construct(string $mode = 'standalone')
+    {
+        $this->mode = $mode;
+    }
+
     public function name(): string
     {
         return 'migration';
@@ -31,7 +39,7 @@ class MigrationStep extends BaseInstallationStep
 
     public function order(): int
     {
-        return 3;
+        return 4;
     }
 
     public function dependencies(): array
@@ -41,85 +49,142 @@ class MigrationStep extends BaseInstallationStep
 
     public function execute(): array
     {
-        $config = config('installation-migration-order');
-        $mode = env('INSTALLATION_MODE', 'standalone');
-        $steps = $config['steps'][$mode] ?? [];
-
         $migrated = [];
-        $migrationsByTag = [];
-
-        // Get all pending migrations grouped by tag
-        foreach ($steps as $stepData) {
-            $tags = $stepData['tags'] ?? [];
-            foreach ($tags as $tag) {
-                $tagMigrations = $this->getMigrationsByTag($tag);
-                $migrationsByTag[$tag] = $tagMigrations;
-            }
-        }
-
         $output = [];
 
-        // Run migrations in order
-        foreach ($steps as $stepName => $stepData) {
-            $tags = $stepData['tags'] ?? [];
-            $isCritical = $stepData['is_critical'] ?? false;
+        if ($this->mode === 'saas') {
+            // SaaS Mode: Run only platform package migrations
+            $this->log('Running platform package migrations (SaaS mode)');
+            try {
+                // Use migrate:fresh for fresh installation to ensure clean state
+                // This drops all tables and re-runs migrations
+                $exitCode = Artisan::call('migrate:fresh', [
+                    '--path' => 'vendor/aero/platform/database/migrations',
+                    '--force' => true,
+                ]);
 
-            foreach ($tags as $tag) {
-                if (! isset($migrationsByTag[$tag])) {
-                    continue;
+                if ($exitCode === 0) {
+                    $migrated['platform'] = 'success';
+                    $output['platform'] = 'success';
+                    $this->log('Platform package migrations completed successfully');
+                } else {
+                    throw new \Exception("Platform package migrations failed with exit code: {$exitCode}");
                 }
-
-                $tagMigrations = $migrationsByTag[$tag];
-
-                if (empty($tagMigrations)) {
-                    $this->log("No pending migrations for tag: {$tag}");
-
-                    continue;
-                }
-
-                try {
-                    $this->log("Running migrations for tag: {$tag} (".count($tagMigrations).' files)');
-
-                    // Run migrations
-                    $exitCode = Artisan::call('migrate', [
-                        '--step' => true,
-                        '--force' => true,
-                    ]);
-
-                    if ($exitCode === 0) {
-                        $migrated[$tag] = count($tagMigrations);
-                        $output[$tag] = 'success';
-                    } else {
-                        throw new \Exception("Migration failed with exit code: {$exitCode}");
-                    }
-
-                } catch (\Exception $e) {
-                    $output[$tag] = 'failed';
-
-                    if ($isCritical) {
-                        throw new \Exception("Critical migration tag '{$tag}' failed: ".$e->getMessage());
-                    } else {
-                        $this->warn("Non-critical migration tag '{$tag}' failed: ".$e->getMessage());
-                    }
-                }
+            } catch (\Exception $e) {
+                $output['platform'] = 'failed';
+                throw new \Exception("Critical platform migrations failed: ".$e->getMessage());
             }
+
+            // Verify migrations ran successfully
+            $this->verifyMigrationsRan('vendor/aero/platform/database/migrations');
+        } else {
+            // Standalone Mode: Run core + other packages migrations (excluding platform)
+            $this->log('Running core package migrations (Standalone mode)');
+            try {
+                // Use migrate:fresh for fresh installation to ensure clean state
+                $exitCode = Artisan::call('migrate:fresh', [
+                    '--path' => 'vendor/aero/core/database/migrations',
+                    '--force' => true,
+                ]);
+
+                if ($exitCode === 0) {
+                    $migrated['core'] = 'success';
+                    $output['core'] = 'success';
+                    $this->log('Core package migrations completed successfully');
+                } else {
+                    throw new \Exception("Core package migrations failed with exit code: {$exitCode}");
+                }
+            } catch (\Exception $e) {
+                $output['core'] = 'failed';
+                throw new \Exception("Critical core migrations failed: ".$e->getMessage());
+            }
+
+            // Run other package migrations (excluding platform)
+            $this->log('Running other package migrations (Standalone mode)');
+            try {
+                $exitCode = Artisan::call('migrate', [
+                    '--force' => true,
+                ]);
+
+                if ($exitCode === 0) {
+                    $migrated['other_packages'] = 'success';
+                    $output['other_packages'] = 'success';
+                    $this->log('Other package migrations completed successfully');
+                } else {
+                    throw new \Exception("Other package migrations failed with exit code: {$exitCode}");
+                }
+            } catch (\Exception $e) {
+                $output['other_packages'] = 'failed';
+                throw new \Exception("Other package migrations failed: ".$e->getMessage());
+            }
+
+            // Verify migrations ran successfully
+            $this->verifyMigrationsRan('vendor/aero/core/database/migrations');
         }
 
         return [
-            'migrations_run' => array_sum($migrated),
+            'migrations_run' => count($migrated),
             'tags_processed' => count($output),
             'by_tag' => $output,
             'total_migrated' => $migrated,
         ];
     }
 
+    /**
+     * Verify migrations ran successfully by checking migration files vs executed migrations
+     */
+    protected function verifyMigrationsRan(string $path): void
+    {
+        $this->log('Verifying migrations ran successfully for path: '.$path);
+        
+        // Get all migration files in the specified path
+        $migrationPath = base_path($path);
+        if (! is_dir($migrationPath)) {
+            throw new \Exception("Migration path not found: {$migrationPath}");
+        }
+
+        $migrationFiles = glob($migrationPath.'/*.php');
+        $totalMigrations = count($migrationFiles);
+        
+        $this->log("Found {$totalMigrations} migration files in {$path}");
+
+        // Extract migration names from files
+        $migrationNames = [];
+        foreach ($migrationFiles as $file) {
+            $migrationNames[] = basename($file, '.php');
+        }
+
+        // Get executed migration names from database
+        $executedMigrations = DB::table('migrations')->pluck('migration')->toArray();
+        $executedCount = count($executedMigrations);
+        
+        $this->log("Total executed migrations in database: {$executedCount}");
+
+        // Check which migrations from this path were executed
+        $executedFromPath = array_intersect($migrationNames, $executedMigrations);
+        $executedFromPathCount = count($executedFromPath);
+        
+        $this->log("Migrations from {$path} that were executed: {$executedFromPathCount}/{$totalMigrations}");
+
+        // Verify all migrations in the path were executed
+        if ($executedFromPathCount < $totalMigrations) {
+            $missingMigrations = array_diff($migrationNames, $executedMigrations);
+            $this->error('Not all migrations were executed. Missing: '.implode(', ', $missingMigrations));
+            throw new \Exception('Migration verification failed: '.($totalMigrations - $executedFromPathCount).' migrations were not executed');
+        }
+
+        $this->log("Migration verification passed: all {$totalMigrations} migrations executed");
+    }
+
     public function validate(): bool
     {
-        // Check that all pending migrations have been executed
+        // For fresh installation, always allow migrations to run
+        // The validate() method is called before execute() to check preconditions
+        // Since we're setting up a fresh database, we don't need to check if migrations already exist
         try {
-            $pending = DB::table('migrations')->count();
-
-            return $pending > 0; // At least some migrations should exist
+            // Just check if database connection is working
+            DB::connection()->getPdo();
+            return true;
         } catch (\Exception) {
             return false;
         }

@@ -23,7 +23,7 @@ class SettingsStep extends BaseInstallationStep
 
     public function order(): int
     {
-        return 7;
+        return 10;
     }
 
     public function dependencies(): array

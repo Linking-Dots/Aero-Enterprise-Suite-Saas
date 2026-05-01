@@ -23,7 +23,7 @@ class CacheStep extends BaseInstallationStep
 
     public function order(): int
     {
-        return 8;
+        return 11;
     }
 
     public function dependencies(): array

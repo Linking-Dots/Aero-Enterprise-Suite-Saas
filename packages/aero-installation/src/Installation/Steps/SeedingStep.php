@@ -8,9 +8,18 @@ use Illuminate\Support\Facades\Artisan;
  * Seeding Step
  *
  * Runs database seeders in dependency order
+ * In SaaS mode: only seeds platform modules data
+ * In standalone mode: seeds core + other packages data
  */
 class SeedingStep extends BaseInstallationStep
 {
+    protected string $mode = 'standalone';
+
+    public function __construct(string $mode = 'standalone')
+    {
+        $this->mode = $mode;
+    }
+
     public function name(): string
     {
         return 'seeding';
@@ -23,7 +32,7 @@ class SeedingStep extends BaseInstallationStep
 
     public function order(): int
     {
-        return 6;
+        return 9;
     }
 
     public function dependencies(): array
@@ -33,42 +42,80 @@ class SeedingStep extends BaseInstallationStep
 
     public function execute(): array
     {
-        $this->log('Starting database seeding');
+        $this->log('Starting database seeding in '.$this->mode.' mode');
 
         try {
-            Artisan::call('db:seed', [
-                '--force' => true,
-            ]);
+            // Wrap seeding in transaction to ensure consistency
+            return \DB::transaction(function () {
+                if ($this->mode === 'saas') {
+                    // In SaaS mode, only seed platform data (roles and role module access)
+                    $this->seedPlatformData();
+                } else {
+                    // In standalone mode, seed core + other packages data
+                    // This includes RoleSeeder and RoleModuleAccessSeeder from core
+                    Artisan::call('db:seed', [
+                        '--force' => true,
+                    ]);
+                }
 
-            return [
-                'seeding_status' => 'success',
-                'seeded_tables' => [
-                    'roles',
-                    'permissions',
-                    'settings',
-                    'modules',
-                ],
-            ];
+                return [
+                    'seeding_status' => 'success',
+                    'mode' => $this->mode,
+                    'seeded_tables' => $this->mode === 'saas'
+                        ? ['roles', 'role_module_access', 'platform_modules']
+                        : ['roles', 'role_module_access', 'modules', 'core_packages'],
+                ];
+            });
 
         } catch (\Exception $e) {
-            $this->warn('Seeding partially completed: '.$e->getMessage());
+            $this->error('Seeding failed: '.$e->getMessage());
+            throw $e;
+        }
+    }
 
-            return [
-                'seeding_status' => 'completed_with_warnings',
-                'warning' => $e->getMessage(),
-            ];
+    /**
+     * Seed platform-specific data for SaaS mode
+     * Seeds roles and role module access (HRMAC system)
+     */
+    protected function seedPlatformData(): void
+    {
+        $this->log('Seeding platform data for SaaS mode');
+        
+        // Run core package seeders for roles and role module access with mode parameter
+        // HRMAC handles permissions via role module access, no PermissionSeeder needed
+        // Settings are collected from UI, no SettingsSeeder needed
+        $platformSeeders = [
+            'Aero\\Core\\Database\\Seeders\\RoleSeeder',
+            'Aero\\Core\\Database\\Seeders\\RoleModuleAccessSeeder',
+        ];
+
+        foreach ($platformSeeders as $seeder) {
+            try {
+                // Pass mode parameter to seeders that support it
+                if ($seeder === 'Aero\\Core\\Database\\Seeders\\RoleModuleAccessSeeder') {
+                    // Instantiate with mode parameter
+                    $seederInstance = new $seeder($this->mode);
+                    $seederInstance->run();
+                } else {
+                    // Regular seeder call
+                    Artisan::call('db:seed', [
+                        '--class' => $seeder,
+                        '--force' => true,
+                    ]);
+                }
+                $this->log('Seeded: '.$seeder);
+            } catch (\Exception $e) {
+                $this->warn('Failed to seed '.$seeder.': '.$e->getMessage());
+            }
         }
     }
 
     public function validate(): bool
     {
-        // Check that some seed data exists
+        // Check that roles exist (permissions are handled by HRMAC via role module access)
         try {
             $hasRoles = \DB::table('roles')->exists();
-            $hasPermissions = \DB::table('permissions')->exists();
-
-            return $hasRoles && $hasPermissions;
-
+            return $hasRoles;
         } catch (\Exception) {
             return false;
         }
