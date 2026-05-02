@@ -23,6 +23,7 @@
         "php": "^8.2",
         "aero/auth": "*",
         "aero/core": "*",
+        "aero/notifications": "@dev",
         "laravel/framework": "^11.0|^12.0",
         "stancl/tenancy": "^3.9",
         "spatie/laravel-permission": "^6.20",

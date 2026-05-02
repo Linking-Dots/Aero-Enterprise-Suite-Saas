@@ -25,6 +25,7 @@ class PlatformDatabaseSeeder extends Seeder
 
         $this->call([
             PlanSeeder::class,
+            ModulePricingSeeder::class,
         ]);
 
         $this->command->info('✅ Platform seeding complete!');

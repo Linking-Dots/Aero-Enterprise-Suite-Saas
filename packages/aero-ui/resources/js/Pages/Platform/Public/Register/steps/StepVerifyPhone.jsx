@@ -1,42 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
-import { VStack, HStack, Field, Input, Button, Alert, Text } from '@aero/ui';
+import { VStack, HStack, Field, OtpInput, Button, Alert, Text } from '@aero/ui';
 import { SR } from '../signupRoutes.js';
 
-/**
- * StepVerifyPhone — 6-digit OTP verification for phone number.
- *
- * Same pattern as StepVerifyEmail. Auto-sends code on mount.
- * On success navigates to plan step via router.get().
- */
+const RESEND_DELAY = 60;
+
 export default function StepVerifyPhone({ phone = '', companyName = '' }) {
   const [code,         setCode]         = useState('');
   const [loading,      setLoading]      = useState(false);
   const [resending,    setResending]    = useState(false);
   const [verified,     setVerified]     = useState(false);
   const [error,        setError]        = useState(null);
-  const [resendStatus, setResendStatus] = useState(null); // 'sent' | 'error'
+  const [resendStatus, setResendStatus] = useState(null);
+  const [countdown,    setCountdown]    = useState(0);
 
-  // Auto-send code when component mounts
   useEffect(() => {
     axios.post(SR.sendPhoneCode).catch(() => {
-      setError('Failed to send SMS code. Please click Resend.');
+      setError('Failed to send verification code. Please click Resend.');
     });
   }, []);
 
-  function handleCodeChange(e) {
-    const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
-    setCode(digits);
-    setError(null);
-  }
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => setCountdown(c => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const startCountdown = useCallback(() => setCountdown(RESEND_DELAY), []);
 
   async function verify(e) {
     e.preventDefault();
-    if (code.length < 6) {
-      setError('Please enter the full 6-digit code.');
-      return;
-    }
+    if (code.length < 6) { setError('Please enter the full 6-digit code.'); return; }
     setLoading(true);
     setError(null);
     try {
@@ -44,14 +39,12 @@ export default function StepVerifyPhone({ phone = '', companyName = '' }) {
       setVerified(true);
       router.get(SR.plan);
     } catch (err) {
-      const msg = err?.response?.data?.message ?? 'Invalid or expired code. Please try again.';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+      setError(err?.response?.data?.message ?? 'Invalid or expired code. Please try again.');
+    } finally { setLoading(false); }
   }
 
   async function resend() {
+    if (countdown > 0) return;
     setResending(true);
     setResendStatus(null);
     setError(null);
@@ -59,90 +52,57 @@ export default function StepVerifyPhone({ phone = '', companyName = '' }) {
       await axios.post(SR.sendPhoneCode);
       setResendStatus('sent');
       setCode('');
-    } catch {
-      setResendStatus('error');
-    } finally {
-      setResending(false);
-    }
+      startCountdown();
+    } catch { setResendStatus('error'); }
+    finally { setResending(false); }
   }
 
   return (
     <form onSubmit={verify} noValidate>
       <VStack gap={4}>
         <Text tone="secondary">
-          We sent a 6-digit code via SMS to <strong>{phone}</strong>. Enter it below to verify your phone number.
+          We sent a 6-digit code to <strong>{phone}</strong>. Enter it below to verify your phone number.
         </Text>
 
-        {error && (
-          <Alert intent="danger">{error}</Alert>
-        )}
-
-        {resendStatus === 'sent' && (
-          <Alert intent="success">A new SMS code has been sent to {phone}.</Alert>
-        )}
-        {resendStatus === 'error' && (
-          <Alert intent="danger">Failed to resend code. Please try again.</Alert>
-        )}
+        {error && <Alert intent="danger">{error}</Alert>}
+        {resendStatus === 'sent'  && <Alert intent="success">A new code has been sent to {phone}.</Alert>}
+        {resendStatus === 'error' && <Alert intent="danger">Failed to resend code. Please try again.</Alert>}
 
         <Field label="Verification Code" htmlFor="otp-phone">
-          <Input
+          <OtpInput
             id="otp-phone"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            placeholder="000000"
             value={code}
-            onChange={handleCodeChange}
-            className="rl-otp-input"
+            onChange={setCode}
             error={!!error}
+            disabled={verified}
+            autoFocus
           />
         </Field>
 
-        <Button
-          type="submit"
-          intent="primary"
-          fullWidth
-          size="lg"
-          loading={loading || verified}
-          disabled={code.length < 6}
-        >
+        <Button type="submit" intent="primary" fullWidth size="lg" loading={loading || verified} disabled={code.length < 6}>
           {verified ? 'Verified!' : 'Verify Phone'}
         </Button>
 
         <HStack gap={2} align="center">
-          <Text tone="secondary">Didn&apos;t receive it?</Text>
+          <Text tone="secondary" as="span">Didn&apos;t receive it?</Text>
           <Button
             type="button"
             intent="ghost"
             size="sm"
             loading={resending}
+            disabled={countdown > 0}
             onClick={resend}
           >
-            Resend SMS
+            {countdown > 0 ? `Resend in ${countdown}s` : 'Resend code'}
           </Button>
         </HStack>
 
         <div className="rl-nav">
-          <Button
-            type="button"
-            intent="ghost"
-            leftIcon="arrowLeft"
-            onClick={() => router.get(SR.verifyEmail)}
-          >
+          <Button type="button" intent="ghost" leftIcon="arrowLeft" onClick={() => router.get(SR.verifyEmail)}>
             Back
           </Button>
         </div>
       </VStack>
-
-      <style>{`
-        .rl-otp-input {
-          letter-spacing: 0.3em;
-          font-family: var(--aeos-font-mono);
-          font-size: 1.2rem;
-          text-align: center;
-        }
-      `}</style>
     </form>
   );
 }

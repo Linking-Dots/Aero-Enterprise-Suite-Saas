@@ -1,53 +1,14 @@
-import { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { Steps, ThemeToggle, Text } from '@aero/ui';
 
-const STEP_LABELS = {
-  account:       'Account',
-  details:       'Details',
-  'verify-email': 'Verify Email',
-  'verify-phone': 'Verify Phone',
-  plan:          'Plan',
-  payment:       'Payment',
-  provisioning:  'Setting Up',
-  success:       'Complete',
-};
-
-/**
- * RegistrationLayout — wizard shell for the tenant signup flow.
- *
- * Forces light theme on body, hides ThemeDrawer. Renders a brand bar,
- * horizontal step progress indicator, a centred card, and a footer.
- *
- * @param {object}          props
- * @param {string}          props.title       - Heading inside the card
- * @param {string}          props.currentStep - Active step key
- * @param {string[]}        props.steps       - Ordered array of step keys
- * @param {boolean}         [props.wide]      - 900px card for plan/payment
- * @param {React.ReactNode} props.children
- */
 export default function RegistrationLayout({ title, currentStep, steps = [], wide = false, children }) {
-  useEffect(() => {
-    const prev = document.body.className;
-    document.body.dataset.noTheme = '1';
-    document.body.className = 'aeos aeos--light';
-    document.body.removeAttribute('data-aeos-shell');
-    return () => {
-      delete document.body.dataset.noTheme;
-      document.body.className = prev;
-    };
-  }, []);
-
-  const currentIndex = steps.indexOf(currentStep);
-
   return (
     <>
       <Head title={`${title} · AEOS365`} />
 
       <div className="rl-root">
-        {/* Ambient gradient mesh */}
         <div className="rl-mesh" aria-hidden="true" />
 
-        {/* Brand bar */}
         <header className="rl-brand">
           <Link href="/" className="rl-brand-link" aria-label="AEOS365 home">
             <span className="rl-logo-mark">
@@ -64,41 +25,15 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
             </span>
             <span className="aeos-logo-text">aeos365</span>
           </Link>
+          <div className="rl-brand-actions">
+            <ThemeToggle />
+          </div>
         </header>
 
-        {/* Step progress indicator */}
         {steps.length > 0 && (
-          <nav className="rl-steps" aria-label="Signup progress">
-            {steps.map((stepKey, i) => {
-              const isDone    = i < currentIndex;
-              const isCurrent = i === currentIndex;
-              const stateClass = isDone ? 'rl-step-done' : isCurrent ? 'rl-step-current' : 'rl-step-pending';
-
-              return (
-                <div key={stepKey} className={`rl-step ${stateClass}`}>
-                  {/* Connector line before (not on first) */}
-                  {i > 0 && <div className="rl-step-line" aria-hidden="true" />}
-
-                  <div className="rl-step-dot" aria-current={isCurrent ? 'step' : undefined}>
-                    {isDone ? (
-                      <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-                        <path d="M2 5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                      </svg>
-                    ) : (
-                      <span>{i + 1}</span>
-                    )}
-                  </div>
-
-                  <span className="rl-step-label">
-                    {STEP_LABELS[stepKey] ?? stepKey}
-                  </span>
-                </div>
-              );
-            })}
-          </nav>
+          <Steps steps={steps} currentStep={currentStep} className="rl-steps-override" />
         )}
 
-        {/* Main content card */}
         <main className="rl-main">
           <div className={`rl-card${wide ? ' rl-card-wide' : ''}`}>
             {title && <h1 className="rl-title">{title}</h1>}
@@ -106,205 +41,105 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
           </div>
         </main>
 
-        {/* Footer */}
         <footer className="rl-footer">
-          <span className="aeos-text-xs aeos-text-tertiary">
+          <Text tone="tertiary" size="xs">
             &copy; {new Date().getFullYear()} AEOS365 &middot; Enterprise Edition
-          </span>
+          </Text>
         </footer>
       </div>
 
       <style>{`
-        /* ── RegistrationLayout scoped styles ───────────────────── */
-
-        /* Kill shell grid; hide customizer toggle */
+        /* ── Shell ─────────────────────────────────────────────────── */
         body[data-aeos-shell] { display: block !important; }
         .aeos-theme-drawer-trigger { display: none !important; }
 
         .rl-root {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          background: var(--aeos-bg-page);
-          position: relative;
-          overflow-x: hidden;
+          min-height: 100vh; display: flex; flex-direction: column;
+          align-items: center; background: var(--aeos-bg-page);
+          position: relative; overflow-x: hidden;
         }
-
-        /* Ambient gradient mesh background */
         .rl-mesh {
           position: fixed; inset: 0; pointer-events: none; z-index: 0;
           background:
             radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,229,255,.10), transparent 65%),
             radial-gradient(ellipse 55% 50% at 90% 60%, rgba(99,102,241,.07), transparent 55%),
-            radial-gradient(ellipse 40% 50% at 5%  75%, rgba(255,179,71,.04), transparent 55%);
+            radial-gradient(ellipse 40% 50% at 5% 75%, rgba(255,179,71,.04), transparent 55%);
         }
 
-        /* Brand bar */
-        .rl-brand {
-          width: 100%; max-width: 900px;
-          padding: 2rem 1.5rem 0;
-          position: relative; z-index: 1;
-        }
-        .rl-brand-link {
-          display: inline-flex; align-items: center; gap: 10px;
-          text-decoration: none;
-        }
-        .rl-logo-mark {
-          display: flex; align-items: center;
-          filter: drop-shadow(0 0 14px rgba(0,229,255,.35));
-        }
+        /* ── Brand ─────────────────────────────────────────────────── */
+        .rl-brand { width: 100%; max-width: 900px; padding: 2rem 1.5rem 0; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
+        .rl-brand-link { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+        .rl-logo-mark { display: flex; align-items: center; filter: drop-shadow(0 0 14px rgba(0,229,255,.35)); }
+        .rl-brand-actions { display: flex; align-items: center; gap: 12px; }
 
-        /* Step progress strip */
-        .rl-steps {
-          display: flex;
-          align-items: center;
-          width: 100%; max-width: 900px;
-          padding: 1.5rem 1.5rem 0;
-          position: relative; z-index: 1;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
-        }
-        .rl-steps::-webkit-scrollbar { display: none; }
+        /* ── Steps override (positioning only, styling from engine) ──── */
+        .rl-steps-override { width: 100%; max-width: 900px; padding: 1.5rem 1.5rem 0; position: relative; z-index: 1; }
 
-        .rl-step {
-          display: flex;
-          align-items: center;
-          flex-shrink: 0;
-          gap: 6px;
-        }
-
-        /* Connector line between steps */
-        .rl-step-line {
-          flex: 1;
-          height: 1px;
-          min-width: 16px;
-          max-width: 48px;
-          background: var(--aeos-divider);
-          margin-right: 6px;
-          transition: background .2s;
-        }
-        .rl-step-done .rl-step-line { background: rgba(0,229,255,.3); }
-
-        /* Step dot */
-        .rl-step-dot {
-          width: 24px; height: 24px;
-          border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: .65rem;
-          font-family: var(--aeos-font-mono);
-          flex-shrink: 0;
-          transition: all .2s;
-        }
-
-        /* Step label */
-        .rl-step-label {
-          font-size: .7rem;
-          letter-spacing: .05em;
-          text-transform: uppercase;
-          white-space: nowrap;
-          transition: color .2s;
-          display: none;
-        }
-        @media (min-width: 600px) {
-          .rl-step-label { display: inline; }
-        }
-
-        /* Done state */
-        .rl-step-done .rl-step-dot {
-          background: rgba(0,229,255,.12);
-          border: 1px solid rgba(0,229,255,.35);
-          color: var(--aeos-primary);
-        }
-        .rl-step-done .rl-step-label { color: var(--aeos-text-secondary); }
-
-        /* Current state */
-        .rl-step-current .rl-step-dot {
-          background: var(--aeos-primary);
-          border: 1px solid var(--aeos-primary);
-          color: #0a0a0a;
-          box-shadow: 0 0 12px rgba(0,229,255,.45);
-        }
-        .rl-step-current .rl-step-label { color: var(--aeos-primary); font-weight: 600; }
-
-        /* Pending state */
-        .rl-step-pending .rl-step-dot {
-          background: var(--aeos-bg-surface);
-          border: 1px solid var(--aeos-divider);
-          color: var(--aeos-text-tertiary);
-        }
-        .rl-step-pending .rl-step-label { color: var(--aeos-text-tertiary); }
-
-        /* Main card area */
-        .rl-main {
-          flex: 1;
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          padding: 1.5rem 1rem 3rem;
-          width: 100%;
-          position: relative; z-index: 1;
-        }
-
-        .rl-card {
-          width: 100%; max-width: 640px;
-          background: var(--aeos-bg-surface);
-          border-radius: var(--aeos-r-2xl);
-          padding: 2.5rem;
-          box-shadow:
-            0 0 0 1px rgba(0,229,255,.08),
-            0 24px 64px rgba(0,0,0,.10),
-            0 0 60px rgba(0,229,255,.03);
-        }
+        /* ── Card shell ─────────────────────────────────────────────── */
+        .rl-main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem 3rem; width: 100%; position: relative; z-index: 1; }
+        .rl-card { width: 100%; max-width: 640px; background: var(--aeos-bg-surface); border-radius: var(--aeos-r-2xl); padding: 2.5rem; box-shadow: 0 0 0 1px rgba(0,229,255,.08), 0 24px 64px rgba(0,0,0,.10), 0 0 60px rgba(0,229,255,.03); }
         .rl-card-wide { max-width: 900px; }
+        .rl-title { font-family: var(--aeos-font-display); font-size: 1.55rem; font-weight: 700; letter-spacing: -.02em; color: var(--aeos-text-primary); margin: 0 0 1.75rem; line-height: 1.15; }
+        .rl-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--aeos-divider); }
+        .rl-footer { padding: 1.5rem 0 2rem; position: relative; z-index: 1; }
 
-        /* Card title */
-        .rl-title {
-          font-family: var(--aeos-font-display);
-          font-size: 1.55rem; font-weight: 700;
-          letter-spacing: -.02em;
-          color: var(--aeos-text-primary);
-          margin: 0 0 1.75rem;
-          line-height: 1.15;
-        }
+        /* ── Shared step utilities ──────────────────────────────────── */
+        /* Selected card state — used by StepAccount and StepPlan */
+        .rl-card-selected { border-color: var(--aeos-primary) !important; background: rgba(0,229,255,.04) !important; box-shadow: 0 0 0 3px rgba(0,229,255,.12) !important; }
+        /* Icon container for type cards */
+        .rl-type-icon { color: var(--aeos-primary); display: flex; }
+        /* OTP / mono code input — used by StepVerifyEmail + StepVerifyPhone */
+        .rl-otp-input { letter-spacing: 0.3em; font-family: var(--aeos-font-mono) !important; font-size: 1.2rem; text-align: center; }
+        /* Subdomain live preview — used by StepDetails */
+        .rl-subdomain-preview { margin-top: 6px; font-family: var(--aeos-font-mono); font-size: .82rem; color: var(--aeos-primary); letter-spacing: .01em; padding: 0 2px; }
 
-        /* Eyebrow / overline */
-        .rl-eyebrow {
-          font-size: .68rem;
-          letter-spacing: .1em;
-          text-transform: uppercase;
-          color: var(--aeos-primary);
-          font-family: var(--aeos-font-mono);
-          margin-bottom: .4rem;
-        }
+        /* ── Plan step ──────────────────────────────────────────────── */
+        .rl-plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .rl-plan-grid > button { position: relative; text-align: left; }
+        .rl-plan-badge { position: absolute; top: 10px; right: 10px; }
+        .rl-plan-price-amount { font-family: var(--aeos-font-display); font-size: 1.75rem; font-weight: 700; color: var(--aeos-text-primary); letter-spacing: -.02em; }
+        .rl-plan-price-per { font-size: .85rem; color: var(--aeos-text-tertiary); align-self: flex-end; padding-bottom: .2rem; }
 
-        /* Description text under title */
-        .rl-desc {
-          font-size: .9rem;
-          color: var(--aeos-text-secondary);
-          margin: -.75rem 0 1.5rem;
-          line-height: 1.6;
-        }
+        /* Module selection cards */
+        .rl-module-grid { display: flex; flex-direction: column; gap: .75rem; }
+        .rl-module-grid > button { text-align: left; }
+        .rl-module-grid .rl-card-selected .rl-module-check { color: var(--aeos-primary); }
 
-        /* Bottom nav row (back / continue) */
-        .rl-nav {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          margin-top: 2rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid var(--aeos-divider);
-        }
+        /* Enhanced selected state for all interactive cards */
+        .rl-card-selected { border-color: var(--aeos-primary) !important; background: rgba(0,229,255,.04) !important; box-shadow: 0 0 0 3px rgba(0,229,255,.12), 0 4px 12px rgba(0,229,255,.06) !important; }
+        .rl-card-selected:hover { background: rgba(0,229,255,.06) !important; box-shadow: 0 0 0 3px rgba(0,229,255,.15), 0 6px 16px rgba(0,229,255,.08) !important; }
 
-        /* Footer */
-        .rl-footer {
-          padding: 1.5rem 0 2rem;
-          position: relative; z-index: 1;
-        }
+        /* ── Provisioning step ──────────────────────────────────────── */
+        @keyframes rl-spin      { to { transform: rotate(360deg); } }
+        @keyframes rl-step-spin { to { transform: rotate(360deg); } }
+        .rl-prov-icon-wrap { position: relative; width: 80px; height: 80px; }
+        .rl-prov-icon-bg { position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .rl-prov-icon-bg--running   { background: rgba(0,229,255,.08);    border: 2px solid rgba(0,229,255,.15); }
+        .rl-prov-icon-bg--completed { background: rgba(34,197,94,.10);   border: 2px solid rgba(34,197,94,.25); }
+        .rl-prov-icon-bg--failed    { background: rgba(255,107,107,.10); border: 2px solid rgba(255,107,107,.25); }
+        .rl-prov-spinner { position: absolute; inset: -2px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--aeos-primary); animation: rl-spin .8s linear infinite; }
+        .rl-prov-bar-track { width: 100%; height: 6px; background: var(--aeos-divider); border-radius: 4px; overflow: hidden; }
+        .rl-prov-bar-fill { height: 100%; border-radius: 4px; background: var(--aeos-grad-cyan); transition: width .5s ease; }
+        .rl-prov-bar-fill--failed { background: rgba(255,107,107,.6); }
+        .rl-prov-step { padding: .6rem 1rem; border-bottom: 1px solid var(--aeos-divider); }
+        .rl-prov-step:last-child { border-bottom: none; }
+        .rl-prov-step-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .rl-prov-step--done    .rl-prov-step-icon { color: var(--aeos-success); }
+        .rl-prov-step--running .rl-prov-step-icon { color: var(--aeos-primary); }
+        .rl-prov-step--failed  .rl-prov-step-icon { color: var(--aeos-destructive); }
+        .rl-prov-step--pending .rl-prov-step-icon { color: var(--aeos-text-tertiary); }
+        .rl-prov-step--done    { opacity: .85; }
+        .rl-prov-step--pending { opacity: .5; }
+        .rl-prov-step-spinner { width: 10px; height: 10px; border: 1.5px solid transparent; border-top-color: var(--aeos-primary); border-radius: 50%; animation: rl-step-spin .6s linear infinite; }
+        .rl-prov-step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--aeos-text-tertiary); }
 
-        /* Mobile adjustments */
+        /* ── Success step ───────────────────────────────────────────── */
+        .rl-success-icon { filter: drop-shadow(0 0 20px rgba(34,197,94,.25)); }
+        .rl-success-url { display: inline-flex; align-items: center; gap: 8px; padding: .5rem 1.25rem; background: rgba(0,229,255,.06); border: 1px solid rgba(0,229,255,.25); border-radius: var(--aeos-r-xl); color: var(--aeos-primary); text-decoration: none; transition: background .15s, box-shadow .15s; }
+        .rl-success-url:hover { background: rgba(0,229,255,.1); box-shadow: 0 0 0 3px rgba(0,229,255,.12); }
+        .rl-success-trial strong { color: var(--aeos-text-primary); }
+
+        /* ── Mobile ─────────────────────────────────────────────────── */
         @media (max-width: 640px) {
           .rl-card { padding: 2rem 1.25rem; border-radius: var(--aeos-r-xl); }
           .rl-brand { padding: 1.5rem 1rem 0; }

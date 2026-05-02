@@ -71,3 +71,87 @@
 .aeos-link-underline-hover:hover  { text-decoration:underline; text-underline-offset:3px; }
 .aeos-link-underline-always       { text-decoration:underline; text-underline-offset:3px; }
 .aeos-link-underline-none         { text-decoration:none; }
+
+/* ── Display Headings (design system scale) ─────────────────────── */
+.aeos-display-hero {
+  font-family: var(--aeos-font-display);
+  font-size: var(--aeos-fs-display-hero);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--aeos-text-primary);
+}
+
+.aeos-display-section {
+  font-family: var(--aeos-font-display);
+  font-size: var(--aeos-fs-display-sec);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  color: var(--aeos-text-primary);
+}
+
+.aeos-display-sm {
+  font-family: var(--aeos-font-display);
+  font-size: var(--aeos-fs-display-sm);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--aeos-text-primary);
+}
+
+/* ── Body Text ──────────────────────────────────────────────────── */
+.aeos-body {
+  font-family: var(--aeos-font-body);
+  font-size: var(--aeos-fs-body);
+  line-height: 1.6;
+  color: var(--aeos-text-primary);
+}
+
+.aeos-body-lg {
+  font-family: var(--aeos-font-body);
+  font-size: var(--aeos-fs-body-lg);
+  line-height: 1.6;
+  color: var(--aeos-ink-muted);
+}
+
+/* ── Label / Mono Helpers ────────────────────────────────────────── */
+.aeos-label-mono {
+  font-family: var(--aeos-font-mono);
+  font-size: var(--aeos-fs-label);
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--aeos-ink-muted);
+}
+
+.aeos-mono-num {
+  font-family: var(--aeos-font-mono);
+  font-feature-settings: "tnum";
+  letter-spacing: -0.01em;
+}
+
+/* ── Gradient Text (design system variants) ──────────────────────── */
+.aeos-text-gradient-cyan {
+  background: var(--aeos-grad-cyan);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.aeos-text-gradient-amber {
+  background: var(--aeos-grad-amber);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.aeos-text-gradient-full {
+  background: var(--aeos-grad-full);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+

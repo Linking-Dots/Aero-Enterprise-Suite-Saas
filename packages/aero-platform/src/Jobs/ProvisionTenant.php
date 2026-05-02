@@ -179,7 +179,7 @@ class ProvisionTenant implements ShouldQueue
             $this->logAuditEvent('tenant.provisioning.completed', array_merge($context, [
                 'plan_id' => $this->tenant->plan_id,
                 'plan_name' => $this->tenant->plan?->name,
-                'modules' => $this->tenant->plan?->module_codes ?? [],
+                'modules' => $this->tenant->getActiveModules()->all() ?? [],
                 'database' => $this->tenant->database()?->getName(),
             ]));
         } catch (Throwable $e) {
@@ -635,25 +635,19 @@ class ProvisionTenant implements ShouldQueue
             }
         }
 
-        // Get modules from tenant's plan using module_codes attribute (discovered from packages)
-        if ($this->tenant->plan) {
-            // Use module_codes attribute which contains the list of module codes for this plan
-            // This is set in PlanSeeder and doesn't require modules to be registered in central DB
-            $planModules = $this->tenant->plan->module_codes ?? [];
+        // Get modules from tenant's subscriptions using tenant_module pivot table
+        $tenantModules = $this->tenant->getActiveModules()->all();
 
-            // Ensure it's an array (it's cast as array in Plan model)
-            if (is_string($planModules)) {
-                $planModules = json_decode($planModules, true) ?? [];
-            }
-
+        if (! empty($tenantModules)) {
             // Resolve dependencies to auto-include required modules
-            $planModules = $this->resolveModuleDependencies($planModules);
+            $tenantModules = $this->resolveModuleDependencies($tenantModules);
 
-            $this->logStep('   → Plan modules (with dependencies): '.implode(', ', $planModules), [
-                'modules' => $planModules,
+            $this->logStep('   → Tenant modules (with dependencies): '.implode(', ', $tenantModules), [
+                'tenant_id' => $this->tenant->id,
+                'modules' => $tenantModules,
             ]);
 
-            foreach ($planModules as $moduleCode) {
+            foreach ($tenantModules as $moduleCode) {
                 // Skip excluded modules
                 if (in_array($moduleCode, self::EXCLUDED_MODULES, true)) {
                     continue;
@@ -762,18 +756,15 @@ class ProvisionTenant implements ShouldQueue
     {
         $modules = $this->discoverModuleConfigs();
 
-        // Filter module configs by tenant plan modules (if defined)
-        $planModuleCodes = $this->tenant->plan?->module_codes ?? [];
-        if (is_string($planModuleCodes)) {
-            $planModuleCodes = json_decode($planModuleCodes, true) ?? [];
-        }
-        $planModuleCodes = array_values(array_filter($planModuleCodes));
+        // Filter module configs by tenant modules (from tenant_module pivot table)
+        $tenantModuleCodes = $this->tenant->getActiveModules()->all();
+        $tenantModuleCodes = array_values(array_filter($tenantModuleCodes));
 
         // Resolve dependencies to ensure required modules are included
-        if (! empty($planModuleCodes)) {
-            $planModuleCodes = $this->resolveModuleDependencies($planModuleCodes);
-            $modules = array_values(array_filter($modules, function ($moduleConfig) use ($planModuleCodes) {
-                return in_array($moduleConfig['code'] ?? null, $planModuleCodes, true);
+        if (! empty($tenantModuleCodes)) {
+            $tenantModuleCodes = $this->resolveModuleDependencies($tenantModuleCodes);
+            $modules = array_values(array_filter($modules, function ($moduleConfig) use ($tenantModuleCodes) {
+                return in_array($moduleConfig['code'] ?? null, $tenantModuleCodes, true);
             }));
         }
 
@@ -807,53 +798,88 @@ class ProvisionTenant implements ShouldQueue
 
     /**
      * Discover module configs from installed packages.
+     *
+     * Uses composer.json-based discovery (same algorithm as the installation
+     * package) and only includes core + the tenant's selected modules.
      */
     protected function discoverModuleConfigs(): array
     {
         $modules = [];
 
-        // Look for module configs in vendor/aero/* packages
-        $vendorPath = base_path('vendor/aero');
-        if (File::exists($vendorPath)) {
-            foreach (File::directories($vendorPath) as $packagePath) {
-                $configPath = $packagePath.'/config/module.php';
-                if (File::exists($configPath)) {
-                    try {
-                        $moduleConfig = require $configPath;
-                        if (is_array($moduleConfig) && isset($moduleConfig['code'], $moduleConfig['name'])) {
-                            $modules[] = $moduleConfig;
-                        }
-                    } catch (Throwable $e) {
-                        Log::warning("Failed to load module config from {$packagePath}: ".$e->getMessage());
-                    }
-                }
+        // Get tenant-selected module codes (core is always included)
+        $tenantModuleCodes = $this->tenant->getActiveModules()->all();
+        $tenantModuleCodes = array_values(array_filter($tenantModuleCodes));
+        $allowedCodes = array_merge(['core'], $tenantModuleCodes);
+        $allowedCodes = array_values(array_unique($allowedCodes));
+
+        // Read composer.json to discover installed aero packages
+        $composerPath = base_path('composer.json');
+        $composerData = [];
+        if (File::exists($composerPath)) {
+            try {
+                $content = File::get($composerPath);
+                $composerData = json_decode($content, true) ?? [];
+            } catch (Throwable $e) {
+                Log::warning("Failed to read composer.json: ".$e->getMessage());
             }
         }
 
-        // Fallback: Also check packages/aero-* directory (development / non-composer installs)
-        if (empty($modules)) {
-            $packagesPath = base_path('packages');
-            if (File::exists($packagesPath)) {
-                foreach (File::directories($packagesPath) as $packagePath) {
-                    if (! str_starts_with(basename($packagePath), 'aero-')) {
-                        continue;
-                    }
-                    $configPath = $packagePath.'/config/module.php';
-                    if (File::exists($configPath)) {
-                        try {
-                            $moduleConfig = require $configPath;
-                            if (is_array($moduleConfig) && isset($moduleConfig['code'], $moduleConfig['name'])) {
-                                $modules[] = $moduleConfig;
-                            }
-                        } catch (Throwable $e) {
-                            Log::warning("Failed to load module config from {$packagePath}: ".$e->getMessage());
-                        }
-                    }
-                }
+        $aeroPackages = array_filter(
+            array_keys($composerData['require'] ?? []),
+            fn (string $package) => str_starts_with($package, 'aero/')
+        );
+
+        // Map packages to module codes and load configs for allowed ones
+        foreach ($aeroPackages as $package) {
+            $code = str_replace('aero/', '', $package);
+
+            if (! in_array($code, $allowedCodes, true)) {
+                continue;
+            }
+
+            $config = $this->loadModuleConfig($code);
+            if ($config !== null) {
+                $modules[] = $config;
+            }
+        }
+
+        // Always ensure core is present even if not in composer.json
+        if (! in_array('core', array_column($modules, 'code'), true)) {
+            $coreConfig = $this->loadModuleConfig('core');
+            if ($coreConfig !== null) {
+                $modules[] = $coreConfig;
             }
         }
 
         return $modules;
+    }
+
+    /**
+     * Load module config from a package path.
+     */
+    protected function loadModuleConfig(string $code): ?array
+    {
+        $paths = [
+            base_path("vendor/aero/{$code}/config/module.php"),
+            base_path("packages/aero-{$code}/config/module.php"),
+        ];
+
+        foreach ($paths as $path) {
+            if (! File::exists($path)) {
+                continue;
+            }
+
+            try {
+                $config = require $path;
+                if (is_array($config) && isset($config['code'], $config['name'])) {
+                    return $config;
+                }
+            } catch (Throwable $e) {
+                Log::warning("Failed to load module config for {$code} at {$path}: ".$e->getMessage());
+            }
+        }
+
+        return null;
     }
 
     /**

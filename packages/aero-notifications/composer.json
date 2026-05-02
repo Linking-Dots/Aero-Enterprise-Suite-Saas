@@ -1,0 +1,57 @@
+{
+    "name": "aero/notifications",
+    "description": "Aero Notifications Engine - Unified mail, SMS, push, web/broadcast, and database notification pipeline",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["aero", "notifications", "mail", "sms", "push", "broadcast", "laravel"],
+    "authors": [{"name": "Aero Team", "email": "support@aerosuite.com"}],
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0",
+        "illuminate/notifications": "^11.0|^12.0",
+        "illuminate/mail": "^11.0|^12.0",
+        "symfony/mailer": "^7.0",
+        "symfony/mime": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "orchestra/testbench": "^9.0|^10.0"
+    },
+    "suggest": {
+        "kreait/firebase-php": "Required for FCM push notifications (^7.0)",
+        "twilio/sdk": "Required for Twilio SMS support (^8.0)",
+        "aws/aws-sdk-php": "Required for AWS SNS SMS support (^3.0)",
+        "pusher/pusher-php-server": "Required for Pusher broadcast support (^7.0)",
+        "laravel/reverb": "Required for Reverb websocket broadcast support (^1.0)"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aero\\Notifications\\": "src/",
+            "Aero\\Notifications\\Database\\Factories\\": "database/factories/",
+            "Aero\\Notifications\\Database\\Seeders\\": "database/seeders/"
+        },
+        "files": ["src/helpers.php"]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aero\\Notifications\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Aero\\Notifications\\AeroNotificationsServiceProvider"]
+        },
+        "aero": {
+            "package": "notifications",
+            "version": "1.0.0",
+            "category": "foundation",
+            "description": "Unified notification engine supporting mail, SMS, push, broadcast, and database channels"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}

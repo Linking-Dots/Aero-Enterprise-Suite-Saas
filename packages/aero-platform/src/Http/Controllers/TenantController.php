@@ -234,34 +234,13 @@ class TenantController extends Controller
             $oldPlan = $tenant->plan;
 
             if ($newPlan && $oldPlan) {
-                $oldModules = $oldPlan->module_codes ?? [];
-                $newModules = $newPlan->module_codes ?? [];
-
-                // Check for modules being removed (potential data loss)
-                $removedModules = array_diff($oldModules, $newModules);
-
-                if (! empty($removedModules)) {
-                    // Log the plan change with removed modules for audit
-                    Log::warning('Tenant plan downgrade detected', [
-                        'tenant_id' => $tenant->id,
-                        'tenant_name' => $tenant->name,
-                        'old_plan' => $oldPlan->name,
-                        'new_plan' => $newPlan->name,
-                        'removed_modules' => $removedModules,
-                        'changed_by' => auth('landlord')->id(),
-                    ]);
-
-                    // Store downgrade info in tenant data for transparency
-                    $tenant->data = array_merge($tenant->data?->getArrayCopy() ?? [], [
-                        'last_plan_change' => [
-                            'from' => $oldPlan->id,
-                            'to' => $newPlan->id,
-                            'removed_modules' => array_values($removedModules),
-                            'changed_at' => now()->toIso8601String(),
-                            'changed_by' => auth('landlord')->id(),
-                        ],
-                    ]);
-                }
+                // Plans no longer include modules - module changes handled separately via tenant_module
+                Log::info('Tenant plan change detected', [
+                    'tenant_id' => $tenant->id,
+                    'tenant_name' => $tenant->name,
+                    'old_plan' => $oldPlan->name,
+                    'new_plan' => $newPlan->name,
+                ]);
             }
         }
 

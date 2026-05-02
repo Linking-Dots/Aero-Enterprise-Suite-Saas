@@ -1,0 +1,158 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - generic [ref=e10]: Internal Server Error
+    - button "Copy as Markdown" [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: Copy as Markdown
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - heading "Illuminate\\Database\\QueryException" [level=1] [ref=e20]
+      - generic [ref=e22]: vendor\laravel\framework\src\Illuminate\Database\Connection.php:838
+      - paragraph [ref=e23]: "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'seo_settings' in 'field list' (Connection: central, Host: 127.0.0.1, Port: 3306, Database: eos365, SQL: insert into `platform_settings` (`branding`, `metadata`, `email_settings`, `sms_settings`, `legal`, `integrations`, `admin_preferences`, `maintenance_mode`, `maintenance_bypass_ips`, `maintenance_allowed_paths`, `maintenance_skip_verification`, `seo_settings`, `analytics_integrations`, `social_auth_settings`, `affiliate_settings`, `newsletter_settings`, `hosting_settings`, `slug`, `site_name`, `updated_at`, `created_at`) values ([], [], [], [], [], [], [], 0, [], [], 0, [], [], [], [], [], {\"mode\":\"dedicated\",\"cpanel_host\":null,\"cpanel_port\":2083,\"cpanel_username\":null,\"cpanel_api_token\":null,\"cpanel_db_user\":null}, platform, aeos365, 2026-04-30 19:30:21, 2026-04-30 19:30:21))"
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: LARAVEL
+          - generic [ref=e28]: 12.58.0
+        - generic [ref=e29]:
+          - generic [ref=e30]: PHP
+          - generic [ref=e31]: 8.3.30
+      - generic [ref=e32]:
+        - img [ref=e33]
+        - text: UNHANDLED
+      - generic [ref=e36]: CODE 42S22
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - img [ref=e40]
+        - text: "500"
+      - generic [ref=e43]:
+        - img [ref=e44]
+        - text: GET
+      - generic [ref=e47]: http://aeos365.test
+      - button [ref=e48] [cursor=pointer]:
+        - img [ref=e49]
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]:
+        - img [ref=e57]
+        - heading "Exception trace" [level=3] [ref=e60]
+      - generic [ref=e61]:
+        - generic [ref=e63] [cursor=pointer]:
+          - img [ref=e64]
+          - generic [ref=e68]: 86 vendor frames
+          - button [ref=e69]:
+            - img [ref=e70]
+        - generic [ref=e74]:
+          - generic [ref=e75] [cursor=pointer]:
+            - generic [ref=e78]:
+              - code [ref=e82]:
+                - generic [ref=e83]: Illuminate\Foundation\Application->handleRequest(object(Illuminate\Http\Request))
+              - generic [ref=e85]: public\index.php:20
+            - button [ref=e87]:
+              - img [ref=e88]
+          - code [ref=e96]:
+            - generic [ref=e97]: "15"
+            - generic [ref=e98]: 16// Bootstrap Laravel and handle the request...
+            - generic [ref=e99]: 17/** @var Application $app */
+            - generic [ref=e100]: 18$app = require_once __DIR__.'/../bootstrap/app.php';
+            - generic [ref=e101]: "19"
+            - generic [ref=e102]: 20$app->handleRequest(Request::capture());
+            - generic [ref=e103]: "21"
+    - generic [ref=e104]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - img [ref=e108]
+          - heading "Queries" [level=3] [ref=e110]
+        - generic [ref=e112]: 1-5 of 5
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - img [ref=e117]
+              - generic [ref=e119]: mysql
+            - code [ref=e123]:
+              - generic [ref=e124]: "select exists (select 1 from information_schema.tables where table_schema = schema() and table_name = 'tenants' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED')) as `exists`"
+          - generic [ref=e125]: 2.89ms
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - img [ref=e129]
+              - generic [ref=e131]: mysql
+            - code [ref=e135]:
+              - generic [ref=e136]: "select exists (select 1 from information_schema.tables where table_schema = schema() and table_name = 'sessions' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED')) as `exists`"
+          - generic [ref=e137]: 2.5ms
+        - generic [ref=e138]:
+          - generic [ref=e139]:
+            - generic [ref=e140]:
+              - img [ref=e141]
+              - generic [ref=e143]: mysql
+            - code [ref=e147]:
+              - generic [ref=e148]: "select exists (select 1 from information_schema.tables where table_schema = schema() and table_name = 'cache' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED')) as `exists`"
+          - generic [ref=e149]: 1.79ms
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e155]: central
+            - code [ref=e159]:
+              - generic [ref=e160]: "select * from `platform_settings` where (`slug` = 'platform') limit 1"
+          - generic [ref=e161]: 4.37ms
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - img [ref=e165]
+              - generic [ref=e167]: central
+            - code [ref=e171]:
+              - generic [ref=e172]: "select * from `platform_settings` where (`slug` = 'platform') limit 1"
+          - generic [ref=e173]: 0.91ms
+  - generic [ref=e175]:
+    - generic [ref=e176]:
+      - heading "Headers" [level=2] [ref=e177]
+      - generic [ref=e178]:
+        - generic [ref=e179]:
+          - generic [ref=e180]: host
+          - generic [ref=e182]: aeos365.test
+        - generic [ref=e183]:
+          - generic [ref=e184]: connection
+          - generic [ref=e186]: keep-alive
+        - generic [ref=e187]:
+          - generic [ref=e188]: upgrade-insecure-requests
+          - generic [ref=e190]: "1"
+        - generic [ref=e191]:
+          - generic [ref=e192]: user-agent
+          - generic [ref=e194]: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+        - generic [ref=e195]:
+          - generic [ref=e196]: accept
+          - generic [ref=e198]: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+        - generic [ref=e199]:
+          - generic [ref=e200]: accept-encoding
+          - generic [ref=e202]: gzip, deflate
+        - generic [ref=e203]:
+          - generic [ref=e204]: accept-language
+          - generic [ref=e206]: en-US,en;q=0.9
+        - generic [ref=e207]:
+          - generic [ref=e208]: cookie
+          - generic [ref=e210]: aeos365_session=eyJpdiI6InJ2YWFrT3hDVXJoY0t0RksvWm5WV0E9PSIsInZhbHVlIjoiZXA4L2JLTHNtb1lIZjFCSnBEVmxnelJpMzV4S1YyKzd1UkxZRE1PZmJML3g1cjVrcitFeHZUQjE5NHdWay9vSlZ0ckNpdHJxcEp1NklWR1Fsc1RGVCttdHl2MmJhQ2s2TC9ZamlTUFkvSGhjaHJGSXA1enJucENmeGRkQVBpQUQiLCJtYWMiOiJmMGZlMDk2YzdiZDNiMzg4NWZmMTcwNTQ3YTQxZTEyYjFhMWVkMmIyZDRlZGE0N2U0YTFlY2E1MzY0YjgzMmRhIiwidGFnIjoiIn0%3D
+    - generic [ref=e211]:
+      - heading "Body" [level=2] [ref=e212]
+      - generic [ref=e213]: // No request body
+    - generic [ref=e214]:
+      - heading "Routing" [level=2] [ref=e215]
+      - generic [ref=e216]:
+        - generic [ref=e217]:
+          - generic [ref=e218]: controller
+          - generic [ref=e220]: Aero\Platform\Http\Controllers\PublicPageController@home
+        - generic [ref=e221]:
+          - generic [ref=e222]: route name
+          - generic [ref=e224]: platform.home
+        - generic [ref=e225]:
+          - generic [ref=e226]: middleware
+          - generic [ref=e228]: web, platform.domain
+    - generic [ref=e229]:
+      - heading "Routing parameters" [level=2] [ref=e230]
+      - generic [ref=e231]: // No routing parameters
+  - generic [ref=e234]:
+    - img [ref=e236]
+    - img [ref=e3274]

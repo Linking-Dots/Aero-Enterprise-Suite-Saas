@@ -1,0 +1,70 @@
+/* ══════════════════════════════════════════════════════════════
+   AEOS UI — App Chrome
+   Shared styles for the authenticated app shell chrome:
+   brand mark, topbar title, and user identity menu.
+   Applied across all shell variants (sidebar/topnav/floating/command).
+   All values use --aeos-* tokens.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Logo SVG ────────────────────────────────────────────────── */
+.aeos-logo-svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ── App Brand (sidebar rail brand area) ─────────────────────── */
+.aeos-app-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: .4rem 0;
+  text-decoration: none;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, .3));
+  transition: filter var(--aeos-dur-base) var(--aeos-ease-out);
+}
+.aeos-app-brand:hover {
+  filter: drop-shadow(0 0 16px rgba(0, 229, 255, .55));
+}
+
+/* ── Topbar page title ───────────────────────────────────────── */
+.aeos-app-topbar-title {
+  font-family: var(--aeos-font-display);
+  font-size: .975rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--aeos-text-primary);
+  white-space: nowrap;
+}
+
+/* ── User menu container ─────────────────────────────────────── */
+.aeos-app-user-menu {
+  flex-shrink: 0;
+}
+
+/* ── User pill (avatar + name + logout) ──────────────────────── */
+.aeos-app-user-pill {
+  border-radius: var(--aeos-r-lg);
+  padding: .2rem .5rem;
+  transition: background var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-app-user-pill:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+/* ── User text (name + role) ─────────────────────────────────── */
+.aeos-app-user-info {
+  max-width: 130px;
+}
+.aeos-app-user-info span {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Ensure ThemeDrawer trigger visible in authenticated app ──── */
+/* Auth/install pages hide it; the app must show it explicitly.   */
+.aeos-app-chrome-active .aeos-theme-drawer-trigger {
+  display: flex !important;
+}

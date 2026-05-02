@@ -373,10 +373,10 @@ class InstallCommand extends Command
             if (class_exists(SyncModuleHierarchy::class)) {
                 // Determine scope based on mode
                 // In standalone mode (no Platform package), sync ALL modules
-                // In SaaS mode with Platform, only sync tenant-scoped modules
+                // In SaaS mode with Platform, sync platform-scoped modules for central database
                 $scope = class_exists(AeroPlatformServiceProvider::class)
-                    ? 'tenant'  // SaaS mode - only tenant modules
-                    : 'all';    // Standalone mode - all modules
+                    ? 'platform'  // SaaS mode - platform modules for central database
+                    : 'all';      // Standalone mode - all modules
 
                 $this->line("   Using HRMAC sync (scope: {$scope})...");
 

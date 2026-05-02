@@ -7,9 +7,12 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Laravel\Cashier\Billable;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
@@ -207,22 +210,14 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
-     * Get all subscriptions for this tenant.
-     */
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(Subscription::class);
-    }
-
-    /**
      * Get the current (most recent active) subscription.
      *
-     * Uses latestOfMany() to efficiently fetch only one record
-     * that matches the active status criteria.
+     * Uses the polymorphic billable relation so Cashier and lifecycle
+     * services both query the same unified subscription model.
      */
-    public function currentSubscription(): HasOne
+    public function currentSubscription(): MorphOne
     {
-        return $this->hasOne(Subscription::class)
+        return $this->morphOne(Subscription::class, 'billable')
             ->ofMany(
                 ['created_at' => 'max'],
                 fn ($query) => $query->where('status', 'active')
@@ -230,9 +225,30 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Get all modules subscribed by this tenant.
+     */
+    public function modules(): BelongsToMany
+    {
+        return $this->belongsToMany(Module::class, 'tenant_module')
+            ->withPivot('is_active', 'subscribed_at', 'unsubscribed_at')
+            ->wherePivot('is_active', true)
+            ->withTimestamps();
+    }
+
+    /**
+     * Get active module codes for this tenant.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getActiveModules(): Collection
+    {
+        return $this->modules()->pluck('code');
+    }
+
+    /**
      * Alias for currentSubscription() for backward compatibility.
      */
-    public function activeSubscription(): HasOne
+    public function activeSubscription(): MorphOne
     {
         return $this->currentSubscription();
     }

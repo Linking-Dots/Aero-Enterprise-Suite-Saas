@@ -11,8 +11,11 @@ use Aero\Installation\Installation\Steps\FinalizeStep;
 use Aero\Installation\Installation\Steps\LicenseStep;
 use Aero\Installation\Installation\Steps\MigrationStep;
 use Aero\Installation\Installation\Steps\ModuleDiscoveryStep;
+use Aero\Installation\Installation\Steps\PlatformConfigurationStep;
+use Aero\Installation\Installation\Steps\PlanSeedingStep;
 use Aero\Installation\Installation\Steps\SeedingStep;
 use Aero\Installation\Installation\Steps\SettingsStep;
+use Aero\Installation\Installation\Steps\TenantModuleSetupStep;
 use Aero\Core\Models\Module;
 use Aero\Core\Models\ModuleComponent;
 use Aero\Core\Models\ModuleComponentAction;
@@ -774,25 +777,113 @@ class UnifiedInstallationController extends Controller
 
             return redirect('/install/processing');
         } catch (\Exception $e) {
-            return back()->withErrors(['message' => 'Failed to start installation: '.$e->getMessage()]);
+            Log::error("Installation execute failed", ['error' => $e->getMessage()]);
+            return back()->with('error', 'Failed to start installation: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Get installation progress for polling
+     */
+    public function progress()
+    {
+        Log::info("[Installation] progress() called");
+
+        $progressData = $this->getProgressData();
+
+        Log::info("[Installation] Progress data returned", [
+            'percentage' => $progressData['percentage'] ?? 0,
+            'current_step' => $progressData['currentStep'] ?? 'unknown',
+            'status' => $progressData['status'] ?? 'unknown',
+            'completed_steps' => $progressData['completedSteps'] ?? 0,
+            'total_steps' => $progressData['totalSteps'] ?? 0,
+        ]);
+
+        return response()->json($progressData);
     }
 
     /**
      * Get installation progress
      */
-    public function progress()
+    public function getProgressData()
     {
-        $progressFile = base_path(self::PROGRESS_FILE);
+        $mode = $this->getMode();
+        $orchestratorKey = 'installation_orchestrator_'.session()->getId();
 
-        if (! File::exists($progressFile)) {
-            // If no progress file, run the actual installation
+        // First check if orchestrator exists in cache (installation in progress)
+        if (Cache::has($orchestratorKey)) {
+            Log::info("[Installation] Orchestrator found in cache, continuing installation");
             return $this->runInstallation();
         }
 
-        $progress = json_decode(File::get($progressFile), true);
+        try {
+            // Try to read from database-based progress tracking
+            if (\Schema::hasTable('installation_progress')) {
+                $progress = \DB::table('installation_progress')
+                    ->where('session_id', session()->getId())
+                    ->first();
 
-        return response()->json($progress);
+                if ($progress) {
+                    // If installation is completed, return the stored progress
+                    if ($progress->status === 'completed') {
+                        return [
+                            'percentage' => $progress->percentage ?? 100,
+                            'currentStep' => $progress->step ?? 'complete',
+                            'status' => 'completed',
+                            'error' => $progress->error ?? null,
+                            'message' => 'Installation completed successfully',
+                            'completedSteps' => $this->calculateCompletedSteps($progress->percentage ?? 100),
+                            'totalSteps' => 12,
+                            'steps' => $this->getProgressSteps($mode),
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Log error but continue to fallback
+            Log::warning('Database progress read failed: '.$e->getMessage());
+        }
+
+        // Fallback to file-based progress tracking
+        try {
+            $progressFile = storage_path('app/installation_progress.json');
+            if (File::exists($progressFile)) {
+                $progress = json_decode(File::get($progressFile), true);
+                // Only return file progress if installation is completed
+                if ($progress['status'] === 'completed') {
+                    return $progress;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('File progress read failed: '.$e->getMessage());
+        }
+
+        // Try old progress file path for backwards compatibility
+        try {
+            $oldProgressFile = base_path(self::PROGRESS_FILE);
+            if (File::exists($oldProgressFile)) {
+                $progress = json_decode(File::get($oldProgressFile), true);
+                // Only return old file progress if installation is completed
+                if ($progress['status'] === 'completed') {
+                    return $progress;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Old file progress read failed: '.$e->getMessage());
+        }
+
+        // No progress found and no orchestrator in cache, start installation
+        Log::info("[Installation] No progress found, starting installation");
+        return $this->runInstallation();
+    }
+
+    /**
+     * Calculate completed steps from percentage
+     */
+    protected function calculateCompletedSteps(int $percentage): int
+    {
+        $totalSteps = 12;
+        return (int) round(($percentage / 100) * $totalSteps);
     }
 
     /**
@@ -805,34 +896,75 @@ class UnifiedInstallationController extends Controller
         $mode = $this->getMode();
         putenv("INSTALLATION_MODE={$mode}");
 
+        Log::info("[Installation::{$mode}] runInstallation() called", [
+            'mode' => $mode,
+            'session_id' => session()->getId(),
+        ]);
+
         try {
             // Get or create orchestrator in session
             $orchestratorKey = 'installation_orchestrator_'.session()->getId();
+            
+            Log::info("[Installation::{$mode}] Retrieving/creating orchestrator", [
+                'orchestrator_key' => $orchestratorKey,
+                'exists_in_cache' => Cache::has($orchestratorKey),
+            ]);
+
             $orchestrator = Cache::remember($orchestratorKey,
                 now()->addMinutes(30),
                 function () use ($mode) {
+                    Log::info("[Installation::{$mode}] Creating new orchestrator instance");
                     $orch = new InstallationOrchestrator($mode);
 
                     // Register all steps
-                    $orch->registerSteps([
+                    $stepsToRegister = [
                         new ConfigurationStep,
                         new DatabaseConnectionStep,
-                        new MigrationStep,
-                        new ModuleDiscoveryStep,
-                        new AdminUserStep,
-                        new SeedingStep,
+                        new MigrationStep($mode),
+                        new ModuleDiscoveryStep($mode),
+                        new PlanSeedingStep($mode),
+                        new PlatformConfigurationStep($mode),
+                        new AdminUserStep($mode),
+                        new SeedingStep($mode),
                         new SettingsStep,
                         new CacheStep,
                         new LicenseStep,
                         new FinalizeStep,
+                    ];
+
+                    Log::info("[Installation::{$mode}] Registering steps", [
+                        'count' => count($stepsToRegister),
+                        'steps' => array_map(fn($s) => get_class($s), $stepsToRegister),
                     ]);
+
+                    $orch->registerSteps($stepsToRegister);
+
+                    Log::info("[Installation::{$mode}] Steps registered successfully");
 
                     return $orch;
                 }
             );
 
+            Log::info("[Installation::{$mode}] Orchestrator retrieved", [
+                'completed_count' => count($orchestrator->completed ?? []),
+                'failed_count' => count($orchestrator->failed ?? []),
+            ]);
+
             // Execute next step
+            Log::info("[Installation::{$mode}] Executing next step");
             $progress = $orchestrator->executeNextStep();
+
+            Log::info("[Installation::{$mode}] Step execution result", [
+                'status' => $progress['status'] ?? 'unknown',
+                'current_step' => $progress['currentStep'] ?? 'unknown',
+                'percentage' => $progress['percentage'] ?? 0,
+                'completed_steps' => $progress['completedSteps'] ?? 0,
+                'total_steps' => $progress['totalSteps'] ?? 0,
+            ]);
+
+            // Save orchestrator state back to cache
+            Cache::put($orchestratorKey, $orchestrator, now()->addMinutes(30));
+            Log::info("[Installation::{$mode}] Orchestrator state saved to cache");
 
             // Update progress file for polling
             $this->updateProgress(
@@ -846,22 +978,14 @@ class UnifiedInstallationController extends Controller
             if (in_array($progress['status'], ['completed', 'failed'])) {
                 Cache::forget($orchestratorKey);
 
-                if ($progress['status'] === 'completed') {
+                // Only create lock file if truly completed (all steps executed, no failures)
+                if ($progress['status'] === 'completed' && ($progress['completedSteps'] ?? 0) >= ($progress['totalSteps'] ?? 1)) {
                     $this->createLockFile();
                 }
             }
 
             // Return progress for UI
-            return response()->json([
-                'percentage' => $progress['percentage'] ?? 0,
-                'currentStep' => $progress['currentStep'] ?? 'unknown',
-                'status' => $progress['status'] ?? 'running',
-                'error' => $progress['error'] ?? null,
-                'message' => $progress['message'] ?? null,
-                'completedSteps' => $progress['completedSteps'] ?? 0,
-                'totalSteps' => $progress['totalSteps'] ?? 10,
-                'steps' => $this->getProgressSteps($mode),
-            ]);
+            return $progress;
 
         } catch (\Throwable $e) {
             Log::error('Installation failed via orchestrator: '.$e->getMessage(), [
@@ -869,13 +993,14 @@ class UnifiedInstallationController extends Controller
             ]);
 
             // Return error response
-            return response()->json([
+            return [
                 'percentage' => 0,
                 'currentStep' => 'error',
                 'status' => 'failed',
                 'error' => $e->getMessage(),
-                'steps' => $this->getProgressSteps($mode),
-            ]);
+                'completedSteps' => 0,
+                'totalSteps' => 12,
+            ];
         }
     }
 
@@ -889,7 +1014,7 @@ class UnifiedInstallationController extends Controller
             'database' => $this->stepSetupDatabase($config),
             'migrations' => $this->stepRunMigrations($mode),
             'seeders' => $this->stepRunSeeders($mode),
-            'roles' => $this->stepCreateRoles(),
+            'roles' => $this->stepCreateRoles($mode),
             'admin' => $this->stepCreateAdmin($config, $mode),
             'settings' => $this->stepSaveSettings($config, $mode),
             'modules' => $this->stepInstallModules($config),
@@ -1146,10 +1271,15 @@ class UnifiedInstallationController extends Controller
      * Step: Create roles and permissions
      * Syncs module hierarchy directly without using Artisan commands
      */
-    protected function stepCreateRoles(): void
+    protected function stepCreateRoles(string $mode): void
     {
+        // Determine scope based on installation mode
+        // SaaS mode: sync platform-scoped modules for central database
+        // Standalone mode: sync all modules (scope='all')
+        $scope = ($mode === 'saas') ? 'platform' : 'all';
+        
         // Sync modules directly using ModuleDiscoveryService
-        $this->syncModuleHierarchy('tenant');
+        $this->syncModuleHierarchy($scope);
     }
 
     /**
@@ -1411,7 +1541,7 @@ class UnifiedInstallationController extends Controller
     public function complete()
     {
         if (! $this->isInstalled()) {
-            return redirect()->route('installation.index');
+            return redirect('/install');
         }
 
         $config = $this->getPersistedConfig();
@@ -1477,19 +1607,20 @@ class UnifiedInstallationController extends Controller
                 File::delete($lockFile);
             }
 
-            // Remove progress file
+            // Remove progress file (both old and new paths)
             $progressFile = base_path(self::PROGRESS_FILE);
             if (File::exists($progressFile)) {
                 File::delete($progressFile);
             }
 
-            // Clear persisted config
-            $this->clearPersistedConfig();
+            $newProgressFile = storage_path('app/installation_progress.json');
+            if (File::exists($newProgressFile)) {
+                File::delete($newProgressFile);
+            }
 
-            // Clear cache (including orchestrator)
+            // Clear installation cache
             Cache::forget('installation_in_progress');
             Cache::forget('installation_orchestrator_'.session()->getId());
-            $this->clearConfigCache();
 
             Log::info('Installation cleanup completed');
 
@@ -1514,18 +1645,12 @@ class UnifiedInstallationController extends Controller
      */
     public function retry()
     {
-        // Clear progress file to restart
-        $progressFile = base_path(self::PROGRESS_FILE);
-        if (File::exists($progressFile)) {
-            File::delete($progressFile);
-        }
-
-        // Clear cached orchestrator to start fresh
-        Cache::forget('installation_orchestrator_'.session()->getId());
+        // Do NOT clear progress file or cache - continue from where we left off
+        // The orchestrator will be retrieved from cache and continue execution
 
         return response()->json([
             'success' => true,
-            'message' => 'Retry started',
+            'message' => 'Retry started from last step',
         ]);
     }
 

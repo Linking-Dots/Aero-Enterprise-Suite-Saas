@@ -41,8 +41,8 @@ class PlanCanonicalService
             'description' => $plan->description,
             'tier' => $plan->tier,
             'plan_type' => $plan->plan_type,
-            'monthly_price' => $plan->monthly_price,
-            'yearly_price' => $plan->yearly_price,
+            'monthly_price' => $plan->monthly_price / 100, // Convert cents to dollars
+            'yearly_price' => $plan->yearly_price / 100, // Convert cents to dollars
             'trial_days' => $plan->trial_days,
             'is_active' => (bool) $plan->is_active,
             'is_featured' => (bool) $plan->is_featured,

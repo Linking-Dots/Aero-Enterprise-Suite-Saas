@@ -45,15 +45,24 @@ class Module extends Model
         'license_type',
         'dependencies',
         'release_date',
+        'monthly_price',
+        'yearly_price',
+        'stripe_monthly_price_id',
+        'stripe_yearly_price_id',
+        'stripe_product_id',
+        'is_featured',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'is_core' => 'boolean',
+        'is_featured' => 'boolean',
         'settings' => 'array',
         'dependencies' => 'array',
         'priority' => 'integer',
         'release_date' => 'date',
+        'monthly_price' => 'decimal:2',
+        'yearly_price' => 'decimal:2',
     ];
 
     // Module categories

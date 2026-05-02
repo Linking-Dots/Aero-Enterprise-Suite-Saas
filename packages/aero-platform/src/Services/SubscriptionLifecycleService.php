@@ -237,11 +237,20 @@ class SubscriptionLifecycleService
             return 0;
         }
 
+        // Determine the correct price based on the subscription's billing cycle
+        $oldPrice = $subscription->billing_cycle === 'yearly'
+            ? $oldPlan->yearly_price
+            : $oldPlan->monthly_price;
+
+        $newPrice = $subscription->billing_cycle === 'yearly'
+            ? $newPlan->yearly_price
+            : $newPlan->monthly_price;
+
         // Calculate unused portion of old plan
-        $unusedAmount = ($oldPlan->price / $totalDays) * $remainingDays;
+        $unusedAmount = ($oldPrice / $totalDays) * $remainingDays;
 
         // Calculate prorated amount for new plan
-        $newPlanProrated = ($newPlan->price / $totalDays) * $remainingDays;
+        $newPlanProrated = ($newPrice / $totalDays) * $remainingDays;
 
         return max(0, $newPlanProrated - $unusedAmount);
     }
@@ -323,20 +332,14 @@ class SubscriptionLifecycleService
 
     /**
      * Retrieve allowed modules from plan definition.
+     * Modules are now tenant-specific, not plan-specific.
+     * Returns null to indicate tenant modules should be used instead.
      */
     protected function getAllowedModulesFromPlan(Plan $plan): ?array
     {
-        $modules = $plan->module_codes ?? $plan->modules?->pluck('code')->all();
-
-        if ($modules === null) {
-            return null;
-        }
-
-        if (is_string($modules)) {
-            $modules = json_decode($modules, true) ?? [];
-        }
-
-        return array_values(array_filter($modules));
+        // Modules are now tenant-specific via tenant_module pivot table
+        // Plans no longer include module_codes
+        return null;
     }
 
     /**

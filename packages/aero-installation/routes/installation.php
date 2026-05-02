@@ -15,9 +15,12 @@
  */
 
 use Aero\Installation\Http\Controllers\UnifiedInstallationController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('install')->name('installation.')->middleware(['web', 'inertia.installation'])->group(function () {
+    // Exclude CSRF verification for installation routes (system not fully set up yet)
+    Route::withoutMiddleware([VerifyCsrfToken::class])->group(function () {
     // ==========================================================================
     // Page routes (render Inertia pages from aero-ui)
     // ==========================================================================
@@ -53,6 +56,7 @@ Route::prefix('install')->name('installation.')->middleware(['web', 'inertia.ins
     Route::post('/install', [UnifiedInstallationController::class, 'execute'])->name('install');
     Route::get('/progress', [UnifiedInstallationController::class, 'progress'])->name('progress');
     Route::post('/cleanup', [UnifiedInstallationController::class, 'cleanup'])->name('cleanup');
+    Route::get('/cleanup', [UnifiedInstallationController::class, 'cleanup'])->name('cleanup.get');
     Route::post('/retry', [UnifiedInstallationController::class, 'retry'])->name('retry');
     Route::post('/test-email', [UnifiedInstallationController::class, 'testEmail'])->name('test-email');
 
@@ -74,4 +78,5 @@ Route::prefix('install')->name('installation.')->middleware(['web', 'inertia.ins
     Route::post('/', [UnifiedInstallationController::class, 'execute'])->name('install.process');
     Route::get('/progress', [UnifiedInstallationController::class, 'progress'])->name('install.progress');
     Route::post('/test-email', [UnifiedInstallationController::class, 'testEmail'])->name('install.test-email');
+    });
 });

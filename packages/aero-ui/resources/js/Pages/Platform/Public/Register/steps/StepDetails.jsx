@@ -1,13 +1,7 @@
 import { useForm } from '@inertiajs/react';
-import { VStack, Field, Input, Button, Text } from '@aero/ui';
+import { VStack, Field, Input, Button } from '@aero/ui';
 import { SR } from '../signupRoutes.js';
 
-/**
- * StepDetails — company/personal details form.
- *
- * Collects: company name, work email, phone (optional), subdomain.
- * Shows a live subdomain preview below the subdomain field.
- */
 export default function StepDetails({ baseDomain = '', existingSubdomain = '', savedData = {} }) {
   const saved = savedData?.details ?? {};
 
@@ -23,10 +17,7 @@ export default function StepDetails({ baseDomain = '', existingSubdomain = '', s
     post(SR.storeDetails);
   }
 
-  // Strip everything except lowercase letters, numbers, hyphens for the preview
-  const previewSubdomain = data.subdomain
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '');
+  const previewSubdomain = data.subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
 
   return (
     <form onSubmit={submit} noValidate>
@@ -55,12 +46,7 @@ export default function StepDetails({ baseDomain = '', existingSubdomain = '', s
           />
         </Field>
 
-        <Field
-          label="Phone"
-          htmlFor="phone"
-          error={errors.phone}
-          hint="Optional, used for SMS verification"
-        >
+        <Field label="Phone" htmlFor="phone" error={errors.phone} hint="Optional, used for SMS verification">
           <Input
             id="phone"
             type="tel"
@@ -89,28 +75,10 @@ export default function StepDetails({ baseDomain = '', existingSubdomain = '', s
           )}
         </Field>
 
-        <Button
-          type="submit"
-          intent="primary"
-          fullWidth
-          size="lg"
-          loading={processing}
-          rightIcon="arrowRight"
-        >
+        <Button type="submit" intent="primary" fullWidth size="lg" loading={processing} rightIcon="arrowRight">
           Continue
         </Button>
       </VStack>
-
-      <style>{`
-        .rl-subdomain-preview {
-          margin-top: 6px;
-          font-family: var(--aeos-font-mono);
-          font-size: .82rem;
-          color: var(--aeos-primary);
-          letter-spacing: .01em;
-          padding: 0 2px;
-        }
-      `}</style>
     </form>
   );
 }

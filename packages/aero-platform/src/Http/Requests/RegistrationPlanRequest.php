@@ -2,6 +2,7 @@
 
 namespace Aero\Platform\Http\Requests;
 
+use Aero\Platform\Models\Module;
 use Aero\Platform\Models\Plan;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,8 +28,10 @@ class RegistrationPlanRequest extends FormRequest
         return [
             'billing_cycle' => ['required', Rule::in(['monthly', 'yearly'])],
             // Fix #22: Restrict to active plans only (inactive/archived plans must not be selectable).
-            'plan_id' => ['nullable', 'string', Rule::exists('plans', 'id')->where('is_active', true)],
-            'modules' => ['nullable', 'array'],
+            // Plan selection is now REQUIRED (not optional)
+            'plan_id' => ['required', 'string', Rule::exists('plans', 'id')->where('is_active', true)],
+            // Module selection is now REQUIRED with at least one product (core is auto-included)
+            'modules' => ['required', 'array', 'min:1'],
             // Module codes are alphanumeric identifiers (e.g. 'hrm', 'crm').
             // Per-plan module whitelisting is enforced in withValidator() below.
             // We intentionally do not restrict to a DB-driven list here because
@@ -48,36 +51,28 @@ class RegistrationPlanRequest extends FormRequest
             $planId = $this->input('plan_id');
             $modules = $this->input('modules', []);
 
-            // Ensure at least one selection is made (plan OR modules)
-            if (empty($planId) && empty($modules)) {
-                $validator->errors()->add('selection', 'Please select a plan or at least one module to continue.');
+            // Both plan and at least one module are now required
+            if (empty($planId)) {
+                $validator->errors()->add('plan_id', 'Please select a plan to continue.');
             }
 
-            // If a plan is selected, enforce that modules are a subset of the plan's modules
-            if ($planId) {
-                $plan = Plan::with('modules:code')->find($planId);
+            if (empty($modules)) {
+                $validator->errors()->add('modules', 'Please select at least one product to continue.');
+            }
 
-                if (! $plan) {
-                    $validator->errors()->add('plan_id', 'Selected plan is invalid.');
-
-                    return;
-                }
-
-                $allowed = $plan->module_codes ?? $plan->modules->pluck('code')->all();
+            // Validate selected modules against all active modules
+            if (! empty($modules)) {
+                $allowed = Module::where('is_active', true)->pluck('code')->all();
                 $allowed = array_values(array_filter($allowed));
 
-                // Intersect with allowed modules; if none provided, use full allowed set
-                $cleanModules = ! empty($modules)
-                    ? array_values(array_intersect($modules, $allowed))
-                    : $allowed;
-
-                // If user requested modules not in plan, reject
+                // If user requested modules not available, reject
                 $invalid = array_diff($modules, $allowed);
                 if (! empty($invalid)) {
-                    $validator->errors()->add('modules', 'Selected modules are not included in this plan.');
+                    $validator->errors()->add('modules', 'Selected modules are not available.');
                 }
 
-                // Normalize modules back onto the request so controller uses sanitized data
+                // Sanitize modules to only include allowed ones
+                $cleanModules = array_values(array_intersect($modules, $allowed));
                 $this->merge(['modules' => $cleanModules]);
             }
         });

@@ -234,3 +234,141 @@ export const DatePicker = forwardRef(function DatePicker(
     />
   );
 });
+
+/* ════════════════════════════════════════════════════════════════════
+   OTP INPUT — multi-digit code entry
+   ════════════════════════════════════════════════════════════════════ */
+
+export function OtpInput({
+  value = '',
+  onChange,
+  digits = 6,
+  error = false,
+  disabled = false,
+  autoFocus = false,
+  className,
+}) {
+  const inputs = Array.from({ length: digits }, (_, i) => i);
+
+  function getDigit(index) {
+    return value[index] ?? '';
+  }
+
+  function setDigit(index, char) {
+    const arr = value.split('');
+    arr[index] = char;
+    const next = arr.join('').slice(0, digits);
+    onChange?.(next);
+  }
+
+  function focusNext(index) {
+    const next = document.getElementById(`otp-${index + 1}`);
+    if (next) next.focus();
+  }
+
+  function focusPrev(index) {
+    const prev = document.getElementById(`otp-${index - 1}`);
+    if (prev) prev.focus();
+  }
+
+  function handleChange(index, e) {
+    const char = e.target.value.replace(/\D/g, '').slice(-1);
+    if (!char) return;
+    setDigit(index, char);
+    if (index < digits - 1) focusNext(index);
+  }
+
+  function handleKeyDown(index, e) {
+    if (e.key === 'Backspace') {
+      if (getDigit(index)) {
+        setDigit(index, '');
+      } else if (index > 0) {
+        focusPrev(index);
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      focusPrev(index);
+    } else if (e.key === 'ArrowRight' && index < digits - 1) {
+      focusNext(index);
+    }
+  }
+
+  function handlePaste(e) {
+    e.preventDefault();
+    const raw = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, digits);
+    if (!raw) return;
+    onChange?.(raw.padEnd(digits, '').slice(0, digits));
+    const targetIndex = Math.min(raw.length, digits - 1);
+    const target = document.getElementById(`otp-${targetIndex}`);
+    if (target) target.focus();
+  }
+
+  return (
+    <div className={cx('aeos-otp-grid', className)}>
+      {inputs.map(i => (
+        <input
+          key={i}
+          id={`otp-${i}`}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={1}
+          disabled={disabled}
+          autoFocus={autoFocus && i === 0}
+          className={cx('aeos-otp-input', error && 'error')}
+          value={getDigit(i)}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKeyDown(i, e)}
+          onPaste={handlePaste}
+          aria-label={`Digit ${i + 1} of ${digits}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PASSWORD STRENGTH METER
+   ════════════════════════════════════════════════════════════════════ */
+
+const STRENGTH_LABELS = ['Weak', 'Fair', 'Good', 'Strong'];
+
+function computeStrength(password = '') {
+  if (!password) return 0;
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  // Cap at 4, but require length
+  if (password.length < 6) score = Math.min(score, 1);
+  return Math.min(score, 4);
+}
+
+export function PasswordStrength({ value = '', className }) {
+  const strength = computeStrength(value);
+  const label = strength > 0 ? STRENGTH_LABELS[strength - 1] : '';
+
+  return (
+    <div className={className}>
+      <div className="aeos-strength-bars">
+        {[0, 1, 2, 3].map(i => {
+          const state = i < strength
+            ? strength === 1 ? 'is-weak'
+              : strength === 2 ? 'is-fair'
+                : strength === 3 ? 'is-good'
+                  : 'is-strong'
+            : '';
+          return (
+            <div
+              key={i}
+              className={cx('aeos-strength-bar', state)}
+            />
+          );
+        })}
+      </div>
+      {label && (
+        <div className="aeos-strength-label">{label} password</div>
+      )}
+    </div>
+  );
+}

@@ -169,12 +169,6 @@ class PlanController extends Controller
 
         $this->planCanonicalService->syncCanonicalQuotas($plan, $validated);
 
-        // Sync modules if provided
-        if (isset($validated['module_codes']) && is_array($validated['module_codes'])) {
-            $modules = Module::whereIn('code', $validated['module_codes'])->pluck('id');
-            $plan->modules()->sync($modules);
-        }
-
         // Audit log
         activity('plan')
             ->performedOn($plan)
@@ -183,7 +177,6 @@ class PlanController extends Controller
                 'plan_name' => $plan->name,
                 'tier' => $plan->tier,
                 'monthly_price' => $plan->monthly_price,
-                'module_codes' => $validated['module_codes'] ?? [],
             ])
             ->log('Plan created');
 
@@ -214,12 +207,6 @@ class PlanController extends Controller
 
         $this->planCanonicalService->syncCanonicalQuotas($plan, $validated);
 
-        // Sync modules if provided
-        if (isset($validated['module_codes']) && is_array($validated['module_codes'])) {
-            $modules = Module::whereIn('code', $validated['module_codes'])->pluck('id');
-            $plan->modules()->sync($modules);
-        }
-
         // Audit log
         activity('plan')
             ->performedOn($plan)
@@ -227,7 +214,6 @@ class PlanController extends Controller
             ->withProperties([
                 'old' => $oldValues,
                 'new' => $plan->only(['name', 'tier', 'monthly_price', 'yearly_price', 'is_active']),
-                'module_codes' => $validated['module_codes'] ?? [],
             ])
             ->log('Plan updated');
 

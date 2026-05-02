@@ -951,7 +951,7 @@ class UnifiedInstallationController extends Controller
             'database' => $this->stepSetupDatabase($config),
             'migrations' => $this->stepRunMigrations($mode),
             'seeders' => $this->stepRunSeeders($mode),
-            'roles' => $this->stepCreateRoles(),
+            'roles' => $this->stepCreateRoles($mode),
             'admin' => $this->stepCreateAdmin($config, $mode),
             'settings' => $this->stepSaveSettings($config, $mode),
             'modules' => $this->stepInstallModules($config),
@@ -1208,10 +1208,15 @@ class UnifiedInstallationController extends Controller
      * Step: Create roles and permissions
      * Syncs module hierarchy directly without using Artisan commands
      */
-    protected function stepCreateRoles(): void
+    protected function stepCreateRoles(string $mode): void
     {
+        // Determine scope based on installation mode
+        // SaaS mode: sync platform-scoped modules for central database
+        // Standalone mode: sync all modules (scope='all')
+        $scope = ($mode === 'saas') ? 'platform' : 'all';
+        
         // Sync modules directly using ModuleDiscoveryService
-        $this->syncModuleHierarchy('tenant');
+        $this->syncModuleHierarchy($scope);
     }
 
     /**

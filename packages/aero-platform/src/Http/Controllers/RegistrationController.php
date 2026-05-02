@@ -12,6 +12,7 @@ use Aero\Platform\Jobs\ProvisionTenant;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Services\Module\RegistrationModuleDiscovery;
 use Aero\Platform\Services\Monitoring\PlatformVerificationService;
 use Aero\Platform\Services\Monitoring\Tenant\TenantProvisioner;
 use Aero\Platform\Services\Monitoring\Tenant\TenantRegistrationSession;
@@ -30,6 +31,7 @@ class RegistrationController extends Controller
         private TenantRegistrationSession $registrationSession,
         private TenantProvisioner $tenantProvisioner,
         private PlatformVerificationService $verificationService,
+        private RegistrationModuleDiscovery $registrationModuleDiscovery,
     ) {}
 
     public function storeAccountType(RegistrationAccountTypeRequest $request): RedirectResponse
@@ -377,32 +379,17 @@ class RegistrationController extends Controller
             return to_route('platform.register.index');
         }
 
+        // Sync discovered modules to central DB so validation is consistent with installed packages
+        $this->registrationModuleDiscovery->syncToDatabase();
+
         $payload = $request->validated();
 
-        // Derive modules from the selected plan to prevent tampering
-        if (! empty($payload['plan_id'])) {
-            $plan = Plan::with('modules:code')->find($payload['plan_id']);
+        // Store selected modules in tenant data for later seeding via tenant_module
+        // Always include core module + user-selected products
+        $selectedModules = $payload['modules'] ?? [];
+        $payload['data']['selected_modules'] = array_unique(array_merge(['core'], $selectedModules));
 
-            if ($plan) {
-                $allowed = $plan->module_codes ?? $plan->modules->pluck('code')->all();
-                $allowed = array_values(array_filter($allowed));
-
-                $requested = $payload['modules'] ?? [];
-                $cleanModules = ! empty($requested)
-                    ? array_values(array_intersect($requested, $allowed))
-                    : $allowed;
-
-                $payload['modules'] = $cleanModules;
-            }
-        }
-
-        // Validate that at least one selection is made (plan OR modules)
-        if (empty($payload['plan_id']) && empty($payload['modules'])) {
-            return back()->withErrors([
-                'selection' => 'Please select a plan or at least one module to continue.',
-            ])->withInput();
-        }
-
+        // Both plan and at least one module are now required (validated in request)
         $this->registrationSession->putStep('plan', $payload);
 
         // Update registration step
@@ -517,50 +504,34 @@ class RegistrationController extends Controller
 
             // Store idempotency key to prevent duplicate submissions (valid for 1 hour)
             Cache::put($idempotencyKey, $tenant->id, now()->addHour());
+
+            // Check if tenant is already active (synchronous provisioning)
+            if ($tenant->status === Tenant::STATUS_ACTIVE) {
+                return to_route('platform.register.success')
+                    ->with('success', 'Your workspace is ready!');
+            }
+
+            return to_route('platform.register.provisioning', ['tenant' => $tenant->id])
+                ->with('success', 'Your trial has been activated. Setting up your workspace...');
+
         } catch (QueryException $e) {
-            Log::error('Tenant creation/update failed', [
+            Log::error('Registration trial activation database error', [
                 'error' => $e->getMessage(),
-                'sql' => $e->getSql() ?? null,
-                'subdomain' => $subdomain,
-                'email' => $email,
+                'sql' => $e->getSql(),
+                'bindings' => $e->getBindings(),
             ]);
 
-            $errorMessage = config('app.debug')
-                ? 'DB error: '.$e->getMessage()
-                : 'Failed to create workspace. Please try again.';
-
-            return back()->withErrors([
-                'error' => $errorMessage,
-            ])->withInput();
-        } catch (\Throwable $e) {
-            Log::error('Unexpected error during tenant provisioning', [
+            return back()
+                ->with('error', 'Unable to activate your trial. Please try again or contact support.');
+        } catch (Exception $e) {
+            Log::error('Registration trial activation error', [
                 'error' => $e->getMessage(),
-                'class' => get_class($e),
-                'subdomain' => $subdomain,
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            $errorMessage = config('app.debug')
-                ? get_class($e).': '.$e->getMessage()
-                : 'An unexpected error occurred. Please try again or contact support.';
-
-            return back()->withErrors([
-                'error' => $errorMessage,
-            ])->withInput();
+            return back()
+                ->with('error', 'Unable to activate your trial. Please try again or contact support.');
         }
-
-        // Store provisioning info for the waiting room
-        $this->registrationSession->rememberSuccess([
-            'tenant_id' => $tenant->id,
-            'name' => $tenant->name,
-            'subdomain' => $tenant->subdomain,
-            'status' => $tenant->status,
-            'trial_ends_at' => optional($tenant->trial_ends_at)?->toAtomString(),
-        ]);
-
-        $this->registrationSession->clear();
-
-        // Redirect to provisioning status page
-        return to_route('platform.register.provisioning', ['tenant' => $tenant->id]);
     }
 
     /**

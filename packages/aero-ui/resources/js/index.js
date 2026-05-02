@@ -11,6 +11,7 @@
 // ── Theme ─────────────────────────────────────────────────────────
 export { ThemeProvider, useTheme }          from './theme/ThemeProvider.jsx';
 export { default as ThemeDrawer }           from './theme/ThemeDrawer.jsx';
+export { default as ThemeToggle }           from './theme/ThemeToggle.jsx';
 
 // ── Shells ────────────────────────────────────────────────────────
 export {
@@ -52,6 +53,7 @@ export {
   NavItem, NavGroup,
   SectionHeader, PageHeader,
   Pagination,
+  Steps,
 }                                           from './components/Navigation.jsx';
 
 // ── Forms ─────────────────────────────────────────────────────────
@@ -59,6 +61,7 @@ export {
   Field, Input, Textarea, Select,
   Checkbox, Radio, RadioGroup,
   Toggle, SearchInput, FileInput, DatePicker,
+  OtpInput, PasswordStrength,
 }                                           from './components/Forms.jsx';
 
 // ── Actions ───────────────────────────────────────────────────────
@@ -83,3 +86,22 @@ export {
 
 // ── Icons ─────────────────────────────────────────────────────────
 export { Icon, icons }                      from './icons/icons.jsx';
+
+// ── App Chrome ───────────────────────────────────────────────
+export {
+  AeosLogo, AppBrand, AppTopbarTitle, AppUserMenu,
+}                                           from './components/AppChrome.jsx';
+
+// ── Public (Marketing) Components ────────────────────────────────
+export {
+  Section, Container,
+  PublicSectionHeader,
+  Marquee,
+  PublicFeatureCard,
+  PublicStatCard,
+  PublicTestimonialCard,
+  PublicPricingCard,
+  Accordion,
+  PublicHeader,
+  PublicFooter,
+}                                           from './components/Public.jsx';

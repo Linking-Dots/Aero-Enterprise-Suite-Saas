@@ -22,12 +22,16 @@ use Aero\Core\Services\ModuleAccessService;
 use Aero\Core\Services\ModuleManager;
 use Aero\Core\Services\ModuleRegistry;
 use Aero\Core\Services\NavigationRegistry;
+use Aero\Core\Services\Notifications\CoreMailContextResolver;
+use Aero\Core\Services\Notifications\CoreSmsContextResolver;
 use Aero\Core\Services\PlatformErrorReporter;
 use Aero\Core\Services\RuntimeLoader;
 use Aero\Core\Services\StandaloneTenantScope;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRM\Services\EmployeeService;
+use Aero\Notifications\Contracts\MailContextResolver;
+use Aero\Notifications\Contracts\SmsContextResolver;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Services\RoleModuleAccessService;
 use Aero\Platform\AeroPlatformServiceProvider;
@@ -107,6 +111,10 @@ class AeroCoreServiceProvider extends ServiceProvider
             $this->app->singleton(UserRelationshipRegistry::class);
             $this->app->singleton(DashboardWidgetRegistry::class);
             $this->app->singleton(DashboardRegistry::class);
+
+            // Bind notification context resolvers to new aero-notifications package
+            $this->app->singleton(MailContextResolver::class, CoreMailContextResolver::class);
+            $this->app->singleton(SmsContextResolver::class, CoreSmsContextResolver::class);
 
             // Register Module Access Services (with error handling for missing tables)
             // These services are lazy-loaded, so they won't cause issues pre-install

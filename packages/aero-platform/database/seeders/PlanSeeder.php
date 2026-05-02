@@ -10,18 +10,8 @@ use Illuminate\Database\Seeder;
  *
  * Creates a range of plans from Free to Enterprise.
  *
- * Module Codes Available:
- * - core: Core functionality (always included)
- * - hrm: Human Resources Management
- * - crm: Customer Relationship Management
- * - project: Project Management
- * - finance: Finance & Accounting
- * - scm: Supply Chain Management
- * - ims: Inventory Management System
- * - pos: Point of Sale
- * - quality: Quality Management
- * - dms: Document Management System
- * - compliance: Compliance Management
+ * Plans now provide quotas and platform features only.
+ * Products/modules are selectable separately and charged independently.
  */
 class PlanSeeder extends Seeder
 {
@@ -41,7 +31,6 @@ class PlanSeeder extends Seeder
                 'yearly_price' => 0,
                 'setup_fee' => 0,
                 'currency' => 'USD',
-                'module_codes' => ['core'],
                 'features' => [
                     'support' => 'community',
                 ],
@@ -72,7 +61,6 @@ class PlanSeeder extends Seeder
                 'yearly_price' => 290.00,
                 'setup_fee' => 0,
                 'currency' => 'USD',
-                'module_codes' => ['core', 'hrm'],
                 'features' => [
                     'support' => 'email',
                 ],
@@ -103,7 +91,6 @@ class PlanSeeder extends Seeder
                 'yearly_price' => 790.00,
                 'setup_fee' => 0,
                 'currency' => 'USD',
-                'module_codes' => ['core', 'hrm', 'crm', 'project'],
                 'features' => [
                     'support' => 'priority',
                     'sso' => true,
@@ -135,7 +122,6 @@ class PlanSeeder extends Seeder
                 'yearly_price' => 1490.00,
                 'setup_fee' => 0,
                 'currency' => 'USD',
-                'module_codes' => ['core', 'hrm', 'crm', 'project', 'finance', 'dms'],
                 'features' => [
                     'support' => 'priority',
                     'sso' => true,
@@ -168,7 +154,6 @@ class PlanSeeder extends Seeder
                 'yearly_price' => 2990.00,
                 'setup_fee' => 0,
                 'currency' => 'USD',
-                'module_codes' => ['core', 'hrm', 'crm', 'project', 'finance', 'scm', 'ims', 'pos', 'quality', 'dms', 'compliance'],
                 'features' => [
                     'support' => 'dedicated',
                     'sso' => true,
@@ -196,32 +181,10 @@ class PlanSeeder extends Seeder
         ];
 
         foreach ($plans as $planData) {
-            $moduleCodes = $planData['module_codes'] ?? [];
-            unset($planData['module_codes']);
-
             $plan = Plan::updateOrCreate(
                 ['slug' => $planData['slug']],
                 $planData
             );
-
-            // Persist module_codes directly as JSON on the plan record
-            if (! empty($moduleCodes)) {
-                $plan->module_codes = $moduleCodes;
-                $plan->save();
-            }
-
-            // Also sync via pivot relationship if Module records exist
-            if (! empty($moduleCodes)) {
-                try {
-                    $moduleIds = \Aero\Platform\Models\Module::whereIn('code', $moduleCodes)->pluck('id');
-                    if ($moduleIds->isNotEmpty()) {
-                        $plan->modules()->sync($moduleIds);
-                    }
-                } catch (\Exception $e) {
-                    // Gracefully handle missing Module table in standalone mode
-                    $this->command->warn("Could not sync modules for {$plan->name}: {$e->getMessage()}");
-                }
-            }
         }
 
         $this->command->info('✓ Created/Updated '.count($plans).' subscription plans');

@@ -45,12 +45,14 @@
 @import url('./components/navigation.css');
 @import url('./components/overlays.css');
 @import url('./components/feedback.css');
+@import url('./components/public.css');
 
 /* ── 5. Shells ──────────────────────────────────────────────── */
 @import url('./shells/sidebar.css');
 @import url('./shells/topnav.css');
 @import url('./shells/floating.css');
 @import url('./shells/command.css');
+@import url('./shells/app-chrome.css');
 
 /* ── 6. Templates ───────────────────────────────────────────── */
 @import url('./templates/page-layouts.css');

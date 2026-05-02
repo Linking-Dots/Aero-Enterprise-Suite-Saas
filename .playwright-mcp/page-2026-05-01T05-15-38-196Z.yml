@@ -1,0 +1,69 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic [ref=e11]: SaaS Mode
+  - generic [ref=e14]:
+    - generic [ref=e15]: SaaS Platform Setup
+    - generic [ref=e16]:
+      - heading "Welcome to AEOS Enterprise Suite" [level=1] [ref=e17]
+      - paragraph [ref=e18]: This wizard will guide you through setting up your multi-tenant SaaS platform. The process takes about 5 minutes.
+    - generic [ref=e19]:
+      - generic [ref=e20]: v1.0.0
+      - generic [ref=e21]: PHP 8.3.30
+      - generic [ref=e22]: Laravel 12.58.0
+      - generic [ref=e23]: SaaS Mode
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - img [ref=e27]
+        - generic [ref=e29]:
+          - heading "Multi-tenant" [level=3] [ref=e30]
+          - paragraph [ref=e31]: Full tenant isolation with per-tenant databases
+      - generic [ref=e32]:
+        - img [ref=e34]
+        - generic [ref=e36]:
+          - heading "Modular" [level=3] [ref=e37]
+          - paragraph [ref=e38]: 27+ enterprise modules, enable only what you need
+      - generic [ref=e39]:
+        - img [ref=e41]
+        - generic [ref=e43]:
+          - heading "AEOS Design" [level=3] [ref=e44]
+          - paragraph [ref=e45]: Stunning UI with 12 themes and full customizer
+      - generic [ref=e46]:
+        - img [ref=e48]
+        - generic [ref=e50]:
+          - heading "Analytics" [level=3] [ref=e51]
+          - paragraph [ref=e52]: Built-in KPIs, dashboards, and audit logs
+    - generic [ref=e53]:
+      - paragraph [ref=e54]: Installation steps
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e57]: "1"
+          - text: Welcome
+        - generic [ref=e58]:
+          - generic [ref=e59]: "2"
+          - text: Requirements
+        - generic [ref=e60]:
+          - generic [ref=e61]: "3"
+          - text: Database
+        - generic [ref=e62]:
+          - generic [ref=e63]: "4"
+          - text: Settings
+        - generic [ref=e64]:
+          - generic [ref=e65]: "5"
+          - text: Admin
+        - generic [ref=e66]:
+          - generic [ref=e67]: "6"
+          - text: Review
+        - generic [ref=e68]:
+          - generic [ref=e69]: "7"
+          - text: Processing
+        - generic [ref=e70]:
+          - generic [ref=e71]: "8"
+          - text: Complete
+    - button "Begin Setup" [ref=e73] [cursor=pointer]:
+      - generic [ref=e74]: Begin Setup
+      - img [ref=e75]
+  - paragraph [ref=e77]: AEOS365 Enterprise Suite · Setup Wizard

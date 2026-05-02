@@ -80,7 +80,6 @@ class Plan extends Model
         'stripe_monthly_price_id',
         'stripe_yearly_price_id',
         'stripe_product_id',
-        'module_codes',
     ];
 
     /**
@@ -97,7 +96,6 @@ class Plan extends Model
             'setup_fee' => 'decimal:2',
             'features' => 'array',
             'limits' => 'array',
-            'module_codes' => 'array',
             'trial_days' => 'integer',
             'grace_days' => 'integer',
             'sort_order' => 'integer',

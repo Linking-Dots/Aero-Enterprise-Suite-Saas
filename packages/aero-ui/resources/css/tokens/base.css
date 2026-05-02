@@ -90,6 +90,9 @@
   --aeos-glow-amber:    0 0 24px rgba(255, 179, 71, 0.25);
   --aeos-shadow-card:   0 8px 32px rgba(0, 0, 0, 0.40);
   --aeos-shadow-lift:   0 16px 48px rgba(0, 0, 0, 0.55);
+  --aeos-shadow-mockup: 0 0 0 1px rgba(0, 229, 255, 0.15),
+                        0 32px 80px rgba(0, 0, 0, 0.80),
+                        0 0 60px rgba(0, 229, 255, 0.08);
   --aeos-shadow-sm:  0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --aeos-shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --aeos-shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -100,6 +103,19 @@
   --aeos-font-body:    'DM Sans', system-ui, sans-serif;
   --aeos-font-mono:    'JetBrains Mono', ui-monospace, monospace;
   --aeos-font-scale:   1;
+
+  /* Legacy font-size token names (design system compatibility) */
+  --aeos-fs-display-hero: clamp(2.8rem, 7vw, 5.5rem);
+  --aeos-fs-display-sec:  clamp(2rem, 4vw, 3.2rem);
+  --aeos-fs-display-sm:   clamp(1.5rem, 2.5vw, 2.25rem);
+  --aeos-fs-h3:           1.5rem;
+  --aeos-fs-h4:           1.25rem;
+  --aeos-fs-body-lg:      1.125rem;
+  --aeos-fs-body:         1rem;
+  --aeos-fs-body-sm:      0.875rem;
+  --aeos-fs-label:        0.72rem;
+  --aeos-fs-micro:        0.6rem;
+
   --aeos-text-xs:   0.72rem;
   --aeos-text-sm:   0.875rem;
   --aeos-text-base: 1rem;
@@ -133,7 +149,7 @@
   --aeos-density-factor:  1;
   --aeos-pad-card:        calc(1.5rem * var(--aeos-density-factor));
   --aeos-stack-gap:       calc(20px * var(--aeos-density-factor));
-  --aeos-pad-section:     calc(24px * var(--aeos-density-factor));
+  --aeos-pad-section:     clamp(4rem, 8vw, 8rem);
   --aeos-gap-section:     1.5rem;
 
   /* Shell */
@@ -171,6 +187,89 @@
 @keyframes aeos-anim-fade-in  { from{opacity:0} to{opacity:1} }
 @keyframes aeos-anim-pop-in   { from{transform:scale(.95);opacity:0} to{transform:scale(1);opacity:1} }
 
+/* Additional design-system keyframes */
+@keyframes aeos-anim-scale-in        { from{transform:scale(0.96);opacity:0} to{transform:scale(1);opacity:1} }
+@keyframes aeos-anim-slide-out-right { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
+@keyframes aeos-anim-marquee         { 0%{transform:translateX(0%)} 100%{transform:translateX(-50%)} }
+@keyframes aeos-pulse-glow           { 0%,100%{box-shadow:0 0 20px rgba(0,229,255,.30)} 50%{box-shadow:0 0 40px rgba(0,229,255,.60)} }
+@keyframes aeos-shake                { 0%{transform:translateX(-4px)} 50%{transform:translateX(2px)} 100%{transform:translateX(0)} }
+
+/* Additional design-system animation utility classes */
+.aeos-anim-pulse-glow { animation: aeos-pulse-glow 3s ease-in-out infinite; }
+.aeos-anim-float      { animation: aeos-float 7s ease-in-out infinite; }
+.aeos-anim-shimmer {
+  background: linear-gradient(105deg, rgba(255,255,255,.03) 40%, rgba(0,229,255,.08) 50%, rgba(255,255,255,.03) 60%);
+  background-size: 200% 100%;
+  animation: aeos-shimmer 2s linear infinite;
+}
+
 /* ── Density data attributes ───────────────────────────────────────────── */
 body[data-density="compact"]  { --aeos-pad-card: 16px; }
 body[data-density="spacious"] { --aeos-pad-card: 32px; }
+
+/* ── System reduce-motion preference ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .aeos *, .aeos *::before, .aeos *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── JS-controlled performance overrides ─────────────────────────────────── */
+
+/* Reduce motion (JS writes this class on body) */
+.aeos--reduce-motion *,
+.aeos--reduce-motion *::before,
+.aeos--reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Motion preference driven by ThemeProvider data-motion attribute */
+body[data-motion="reduced"] .aeos *,
+body[data-motion="reduced"] .aeos *::before,
+body[data-motion="reduced"] .aeos *::after,
+body[data-motion="off"] .aeos *,
+body[data-motion="off"] .aeos *::before,
+body[data-motion="off"] .aeos *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* No blur — for low-GPU / battery-saver contexts */
+.aeos--no-blur .aeos-glass,
+.aeos--no-blur .aeos-glass-strong {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--aeos-bg-card);
+}
+
+/* No glow — for OLED conservation or accessibility preference */
+.aeos--no-glow .aeos-glow-ring-cyan,
+.aeos--no-glow .aeos-glow-ring-amber,
+.aeos--no-glow [class*="aeos-card-glow"] {
+  box-shadow: none;
+}
+
+/* No gradient text — for readability / high-contrast assistive modes */
+.aeos--no-gradient-text .aeos-text-gradient-cyan,
+.aeos--no-gradient-text .aeos-text-gradient-amber,
+.aeos--no-gradient-text .aeos-text-gradient-full,
+.aeos--no-gradient-text .aeos-stat-number {
+  background: none;
+  -webkit-text-fill-color: var(--aeos-text-primary);
+  color: var(--aeos-text-primary);
+}
+
+/* No grid texture — for performance */
+.aeos--no-grid-texture .aeos-grid-bg {
+  background-image: none;
+}
+
+/* Animation utility classes */
+.aeos-anim-scale-in        { animation: aeos-anim-scale-in var(--aeos-dur-base) var(--aeos-ease-out) both; }
+.aeos-anim-slide-out-right { animation: aeos-anim-slide-out-right var(--aeos-dur-base) var(--aeos-ease-out) both; }
+.aeos-anim-marquee         { animation: aeos-anim-marquee 24s linear infinite; }

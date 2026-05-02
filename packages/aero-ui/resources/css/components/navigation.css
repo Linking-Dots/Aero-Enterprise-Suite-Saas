@@ -51,3 +51,44 @@
   .aeos-page-header-row { flex-direction:column; }
   .aeos-page-actions { width:100%; }
 }
+
+/* ── Steps (Step Indicator) ──────────────────────────────────── */
+.aeos-steps { display:flex; align-items:center; width:100%; max-width:900px; padding:1.5rem 1.5rem 0; position:relative; z-index:1; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.aeos-steps::-webkit-scrollbar { display:none; }
+.aeos-step { display:flex; align-items:center; flex-shrink:0; gap:6px; }
+.aeos-step-line { flex:1; height:1px; min-width:16px; max-width:48px; background:var(--aeos-divider); margin-right:6px; transition:background .2s; }
+.aeos-step.is-done .aeos-step-line { background:rgba(0,229,255,.3); }
+.aeos-step-dot { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-family:var(--aeos-font-mono); flex-shrink:0; transition:all .2s; }
+.aeos-step-label { font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap; transition:color .2s; display:none; }
+@media (min-width:600px) { .aeos-step-label { display:inline; } }
+
+/* Step states */
+.aeos-step.is-done .aeos-step-dot    { background:rgba(0,229,255,.12); border:1px solid rgba(0,229,255,.35); color:var(--aeos-primary); }
+.aeos-step.is-done .aeos-step-label  { color:var(--aeos-text-secondary); }
+.aeos-step.is-current .aeos-step-dot { background:var(--aeos-primary); border:1px solid var(--aeos-primary); color:var(--aeos-bg-page); box-shadow:0 0 12px rgba(0,229,255,.45); }
+.aeos-step.is-current .aeos-step-label { color:var(--aeos-primary); font-weight:600; }
+.aeos-step.is-pending .aeos-step-dot  { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); color:var(--aeos-text-tertiary); }
+.aeos-step.is-pending .aeos-step-label { color:var(--aeos-text-tertiary); }
+
+/* Light mode overrides */
+.aeos--light .aeos-step.is-pending .aeos-step-dot { background:rgba(15,23,42,.04); border-color:rgba(15,23,42,.10); color:#94A3B8; }
+.aeos--light .aeos-step.is-current .aeos-step-dot { color:var(--aeos-bg-page-light); }
+.aeos--light .aeos-step-line { background:rgba(15,23,42,.08); }
+.aeos--light .aeos-step.is-done .aeos-step-line { background:rgba(0,163,184,.3); }
+
+/* ── Theme Toggle ────────────────────────────────────────────── */
+.aeos-theme-toggle { position:relative; display:inline-flex; align-items:center; gap:8px; padding:6px 8px; border-radius:var(--aeos-r-full); border:1px solid var(--aeos-glass-border); background:rgba(255,255,255,.04); cursor:pointer; transition:border-color var(--aeos-dur-fast),background var(--aeos-dur-fast); }
+.aeos-theme-toggle:hover { border-color:var(--aeos-primary); }
+.aeos-theme-toggle input { position:absolute; opacity:0; width:0; height:0; }
+.aeos-theme-toggle-slider { position:relative; width:40px; height:22px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.12); border-radius:22px; transition:background var(--aeos-dur-fast),border-color var(--aeos-dur-fast); flex-shrink:0; }
+.aeos-theme-toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:2px; top:2px; background:#fff; border-radius:50%; transition:transform var(--aeos-dur-fast) var(--aeos-ease-spring); }
+.aeos-theme-toggle input:checked + .aeos-theme-toggle-slider { background:var(--aeos-primary); border-color:transparent; }
+.aeos-theme-toggle input:checked + .aeos-theme-toggle-slider::before { transform:translateX(18px); }
+.aeos-theme-toggle-icon { width:16px; height:16px; color:var(--aeos-text-tertiary); transition:color var(--aeos-dur-fast); flex-shrink:0; }
+.aeos-theme-toggle:hover .aeos-theme-toggle-icon { color:var(--aeos-primary); }
+.aeos-theme-toggle input:checked ~ .aeos-theme-toggle-icon.sun,
+.aeos-theme-toggle input:not(:checked) ~ .aeos-theme-toggle-icon.moon { color:var(--aeos-primary); }
+
+/* Light mode */
+.aeos--light .aeos-theme-toggle { background:rgba(15,23,42,.04); }
+.aeos--light .aeos-theme-toggle-slider { background:rgba(15,23,42,.12); border-color:rgba(15,23,42,.15); }

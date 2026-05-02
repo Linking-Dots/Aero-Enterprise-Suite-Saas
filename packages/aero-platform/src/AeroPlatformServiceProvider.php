@@ -86,6 +86,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Cashier;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -252,6 +253,11 @@ class AeroPlatformServiceProvider extends ServiceProvider
     {
         // Register Plan audit observer
         Plan::observe(PlanAuditObserver::class);
+
+        // Configure Cashier to use our unified Subscription model as the single source of truth
+        // This eliminates drift between Cashier-managed Stripe data and lifecycle-managed fields.
+        Cashier::useSubscriptionModel(\Aero\Platform\Models\Subscription::class);
+        Cashier::useCustomerModel(\Aero\Platform\Models\Tenant::class);
 
         // Override tenancy bootstrappers after all providers registered
         // FilesystemTenancyBootstrapper disabled - causes "Undefined array key 'local'" error

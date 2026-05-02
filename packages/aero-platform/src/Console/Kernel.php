@@ -4,6 +4,9 @@ namespace Aero\Platform\Console;
 
 use App\Console\Commands\SendAttendanceReminders;
 use App\Models\NotificationLog;
+use Aero\Platform\Console\Commands\ExpireGracePeriods;
+use Aero\Platform\Console\Commands\ProcessPendingSubscriptionChanges;
+use Aero\Platform\Console\Commands\ProcessSubscriptionRenewals;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +20,9 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         SendAttendanceReminders::class,
+        ProcessSubscriptionRenewals::class,
+        ExpireGracePeriods::class,
+        ProcessPendingSubscriptionChanges::class,
     ];
 
     /**
@@ -156,6 +162,55 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/tenant-stats.log'));
+
+        // Subscription lifecycle scheduled tasks
+        $schedule->command('subscriptions:process-renewals')
+            ->dailyAt('01:00')
+            ->timezone(config('app.timezone', 'UTC'))
+            ->before(function () {
+                Log::info('Starting subscription renewal processing');
+            })
+            ->onSuccess(function () {
+                Log::info('Subscription renewals processed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('Subscription renewal processing failed');
+            })
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/subscription-renewals.log'));
+
+        $schedule->command('subscriptions:expire-grace-periods')
+            ->dailyAt('01:30')
+            ->timezone(config('app.timezone', 'UTC'))
+            ->before(function () {
+                Log::info('Starting grace period expiration');
+            })
+            ->onSuccess(function () {
+                Log::info('Grace period expiration completed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('Grace period expiration failed');
+            })
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/grace-periods.log'));
+
+        $schedule->command('subscriptions:process-pending')
+            ->dailyAt('02:00')
+            ->timezone(config('app.timezone', 'UTC'))
+            ->before(function () {
+                Log::info('Starting pending subscription changes processing');
+            })
+            ->onSuccess(function () {
+                Log::info('Pending subscription changes processed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('Pending subscription changes processing failed');
+            })
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/pending-subscription-changes.log'));
     }
 
     /**

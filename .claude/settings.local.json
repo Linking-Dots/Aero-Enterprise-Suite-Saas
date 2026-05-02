@@ -47,7 +47,24 @@
       "Bash(curl -s -I http://dbedc.aeos365.test/login)",
       "Bash(curl -s http://dbedc.aeos365.test/login -H \"Accept: application/json\")",
       "Bash(php -r ' *)",
-      "Bash(grep -n \"use Illuminate\\\\\\\\\\\\\\\\Support\\\\\\\\\\\\\\\\Facades\\\\\\\\\\\\\\\\Route\" /c/laragon/www/Aero-Enterprise-Suite-Saas/packages/aero-auth/src/AeroAuthServiceProvider.php)"
+      "Bash(grep -n \"use Illuminate\\\\\\\\\\\\\\\\Support\\\\\\\\\\\\\\\\Facades\\\\\\\\\\\\\\\\Route\" /c/laragon/www/Aero-Enterprise-Suite-Saas/packages/aero-auth/src/AeroAuthServiceProvider.php)",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "WebFetch(domain:aeos365.test)",
+      "Bash(curl -sk \"http://aeos365.test/install\" -L --max-redirs 5 -o /tmp/install_page.html -w \"HTTP Status: %{http_code}\\\\nFinal URL: %{url_effective}\\\\n\")",
+      "Bash(curl -s \"http://aeos365.test/install\" -L --max-redirs 5)",
+      "Bash(python3)",
+      "Bash(curl -sc /tmp/cookies.txt -o /tmp/welcome.html \"http://aeos365.test/install\" -L)",
+      "Read(//tmp/**)",
+      "Bash(curl -sb /tmp/cookies.txt -sc /tmp/cookies.txt -o /tmp/welcome.html \"http://aeos365.test/install\" -L -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(node -e \"require\\('playwright'\\)\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.get\\('devDependencies',{}\\).keys\\(\\)\\)[:20]\\)\")",
+      "Bash(where npx *)",
+      "Bash(npx playwright *)",
+      "Bash(node test_install_playwright.mjs)"
+    ],
+    "additionalDirectories": [
+      "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils"
     ]
   },
   "outputStyle": "default"

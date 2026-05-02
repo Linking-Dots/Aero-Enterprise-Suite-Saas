@@ -16,3 +16,23 @@
   --aeos-glass-border:  rgba(0,163,184,.18);
   --aeos-divider:       rgba(15,23,42,.08);
 }
+
+/* System-preference light mode (for .aeos--system) */
+@media (prefers-color-scheme: light) {
+  .aeos--system {
+    --aeos-bg-page:      var(--aeos-bg-page-light);
+    --aeos-bg-app:       var(--aeos-bg-app-light);
+    --aeos-bg-card:      var(--aeos-bg-card-light);
+    --aeos-bg-elevated:  var(--aeos-bg-elevated-light);
+    --aeos-bg-modal:     var(--aeos-bg-modal-light);
+    --aeos-text-primary:   var(--aeos-text-primary-light);
+    --aeos-text-secondary: var(--aeos-text-secondary-light);
+    --aeos-text-tertiary:  var(--aeos-text-tertiary-light);
+    --aeos-ink:       var(--aeos-text-primary-light);
+    --aeos-ink-muted: var(--aeos-text-secondary-light);
+    --aeos-ink-faint: var(--aeos-text-tertiary-light);
+    --aeos-glass-bg:     rgba(255, 255, 255, 0.80);
+    --aeos-glass-border: rgba(0, 163, 184, 0.18);
+    --aeos-divider:      rgba(15, 23, 42, 0.08);
+  }
+}

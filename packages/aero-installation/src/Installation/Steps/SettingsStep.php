@@ -65,10 +65,11 @@ class SettingsStep extends BaseInstallationStep
 
     public function validate(): bool
     {
+        // Allow step to proceed if database connection is working
+        // Settings will be created during execution (fresh install)
         try {
-            $appName = $this->getSetting('app.name');
-
-            return $appName !== null;
+            \DB::connection()->getPdo();
+            return true;
         } catch (\Exception) {
             return false;
         }

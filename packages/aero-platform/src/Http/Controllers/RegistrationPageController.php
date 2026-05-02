@@ -6,6 +6,7 @@ namespace Aero\Platform\Http\Controllers;
 
 use Aero\Core\Services\Module\ModuleDiscoveryService;
 use Aero\Core\Support\SafeRedirect;
+use Aero\Platform\Models\Module;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\Monitoring\Tenant\TenantRegistrationSession;
@@ -184,7 +185,7 @@ class RegistrationPageController extends Controller
         return $this->renderStep('plan', [
             'plans' => $plans,
             'modules' => $modules,
-            'modulePricing' => config('platform.registration.module_pricing', ['monthly' => 20, 'yearly' => 200]),
+            'modulePricing' => $this->getModulePricing(),
         ]);
     }
 
@@ -266,7 +267,7 @@ class RegistrationPageController extends Controller
             'baseDomain' => config('platform.central_domain'),
             'plans' => $plans,
             'modules' => $modules,
-            'modulePricing' => config('platform.registration.module_pricing', ['monthly' => 20, 'yearly' => 200]),
+            'modulePricing' => $this->getModulePricing(),
         ]);
     }
 
@@ -342,6 +343,22 @@ class RegistrationPageController extends Controller
             'result' => $result,
             'baseDomain' => config('platform.central_domain'),
         ]);
+    }
+
+    /**
+     * Get per-module pricing keyed by module code from the database.
+     * Replaces the legacy hardcoded config('platform.registration.module_pricing').
+     */
+    private function getModulePricing(): array
+    {
+        return Module::where('is_active', true)
+            ->get(['code', 'monthly_price', 'yearly_price'])
+            ->keyBy('code')
+            ->map(fn (Module $module) => [
+                'monthly' => (float) $module->monthly_price,
+                'yearly' => (float) $module->yearly_price,
+            ])
+            ->all();
     }
 
     private function renderStep(string $currentStep, array $props = []): Response

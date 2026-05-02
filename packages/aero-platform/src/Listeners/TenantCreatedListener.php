@@ -211,6 +211,51 @@ class TenantCreatedListener implements ShouldQueue
             ]);
             // Don't throw - seeder failure shouldn't prevent tenant creation
         }
+
+        // Seed tenant_module subscriptions
+        $this->seedTenantModules($tenant);
+    }
+
+    /**
+     * Seed tenant_module subscriptions from tenant data.
+     */
+    protected function seedTenantModules($tenant): void
+    {
+        Log::info("[TenantCreated] Seeding tenant_module subscriptions for tenant: {$tenant->id}");
+
+        try {
+            // Get selected modules from tenant data (set during registration)
+            $selectedModules = $tenant->data['selected_modules'] ?? ['core'];
+
+            // Ensure core is always included
+            if (! in_array('core', $selectedModules, true)) {
+                $selectedModules[] = 'core';
+            }
+
+            foreach ($selectedModules as $moduleCode) {
+                $module = \Aero\Platform\Models\Module::where('code', $moduleCode)->first();
+                if ($module) {
+                    DB::table('tenant_module')->insert([
+                        'tenant_id' => $tenant->id,
+                        'module_id' => $module->id,
+                        'is_active' => true,
+                        'subscribed_at' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    Log::info("[TenantCreated] Subscribed tenant {$tenant->id} to module: {$moduleCode}");
+                } else {
+                    Log::warning("[TenantCreated] Module not found: {$moduleCode}");
+                }
+            }
+
+            Log::info("[TenantCreated] Tenant_module seeding completed for tenant: {$tenant->id}");
+        } catch (\Throwable $e) {
+            Log::warning("[TenantCreated] Failed to seed tenant_module for tenant: {$tenant->id}", [
+                'error' => $e->getMessage(),
+            ]);
+            // Don't throw - module seeding failure shouldn't prevent tenant creation
+        }
     }
 
     /**

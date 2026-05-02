@@ -7,26 +7,31 @@ use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Cashier\Subscription as CashierSubscription;
 
 /**
- * EOS365 Subscription Model
+ * Unified Subscription Model
  *
- * Represents a tenant's subscription to a plan.
- * Tracks billing cycle, payment status, and validity period.
+ * Extends Laravel Cashier's Subscription to serve as the single source of truth
+ * for both Stripe-managed and lifecycle-managed subscription data.
+ *
+ * Cashier handles: stripe_id, stripe_status, stripe_price, billing via Stripe API.
+ * Lifecycle service handles: upgrades, downgrades, grace periods, pending changes.
  *
  * @property string $id UUID primary key
- * @property string $tenant_id Foreign key to tenants table
+ * @property string|null $tenant_id Legacy foreign key (kept for backward compat)
+ * @property string $billable_type Cashier polymorphic type
+ * @property string $billable_id Cashier polymorphic id
  * @property string $plan_id Foreign key to plans table
  * @property string $amount Charged amount (DECIMAL for precision)
  * @property string $status Subscription status: active, cancelled, past_due
  * @property Carbon $starts_at Subscription start date
  * @property Carbon|null $ends_at Subscription end date
- * @property string|null $payment_ref_id External payment gateway reference (Stripe/Paddle)
+ * @property string|null $stripe_id Stripe subscription ID (from Cashier)
  */
-class Subscription extends Model
+class Subscription extends CashierSubscription
 {
     /** @use HasFactory<SubscriptionFactory> */
     use HasFactory, HasUuids, SoftDeletes;
@@ -45,11 +50,34 @@ class Subscription extends Model
     public const STATUS_EXPIRED = 'expired';
 
     /**
+     * Override Cashier incrementing because we use UUID primary keys.
+     */
+    public $incrementing = false;
+
+    /**
+     * UUID key type.
+     */
+    protected $keyType = 'string';
+
+    /**
      * The attributes that are mass assignable.
+     *
+     * Includes both Cashier fields and custom lifecycle fields.
      *
      * @var array<string>
      */
     protected $fillable = [
+        // Cashier / Stripe fields
+        'billable_type',
+        'billable_id',
+        'type',
+        'name',
+        'stripe_id',
+        'stripe_status',
+        'stripe_price',
+        'quantity',
+        'trial_ends_at',
+        // Legacy / custom fields
         'tenant_id',
         'plan_id',
         'billing_cycle',
@@ -64,8 +92,8 @@ class Subscription extends Model
         'cancelled_at',
         'cancellation_reason',
         'payment_method',
-        'payment_ref_id',
         'metadata',
+        'next_billing_date',
         // Lifecycle fields
         'upgraded_from_plan_id',
         'upgraded_at',
@@ -79,26 +107,29 @@ class Subscription extends Model
 
     /**
      * The attributes that should be cast.
+     *
+     * Merges Cashier base casts with our custom lifecycle casts.
      */
-    protected function casts(): array
-    {
-        return [
-            'amount' => 'decimal:2',
-            'discount_amount' => 'decimal:2',
-            'trial_starts_at' => 'datetime',
-            'trial_ends_at' => 'datetime',
-            'starts_at' => 'datetime',
-            'ends_at' => 'datetime',
-            'cancelled_at' => 'datetime',
-            'metadata' => 'array',
-            // Lifecycle field casts
-            'upgraded_at' => 'datetime',
-            'downgraded_at' => 'datetime',
-            'downgrade_scheduled_at' => 'datetime',
-            'grace_period_ends_at' => 'datetime',
-            'current_period_start' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        // Cashier base casts
+        'quantity' => 'integer',
+        'trial_ends_at' => 'datetime',
+        'ends_at' => 'datetime',
+        // Custom casts
+        'amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'trial_starts_at' => 'datetime',
+        'starts_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'metadata' => 'array',
+        'next_billing_date' => 'datetime',
+        // Lifecycle field casts
+        'upgraded_at' => 'datetime',
+        'downgraded_at' => 'datetime',
+        'downgrade_scheduled_at' => 'datetime',
+        'grace_period_ends_at' => 'datetime',
+        'current_period_start' => 'datetime',
+    ];
 
     // =========================================================================
     // RELATIONSHIPS

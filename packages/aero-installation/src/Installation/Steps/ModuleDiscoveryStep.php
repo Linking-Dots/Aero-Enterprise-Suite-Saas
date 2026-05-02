@@ -322,7 +322,6 @@ class ModuleDiscoveryStep extends BaseInstallationStep
                         'code' => $action['code'],
                         'name' => $action['name'],
                         'description' => $action['description'] ?? null,
-                        'is_active' => true,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);

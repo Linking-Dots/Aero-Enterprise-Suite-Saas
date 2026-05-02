@@ -3,8 +3,10 @@
 namespace Aero\Platform\Http\Controllers\Billing;
 
 use Aero\Platform\Http\Controllers\Controller;
+use Aero\Platform\Models\Module;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Services\Billing\SslCommerzService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -169,6 +171,67 @@ class BillingController extends Controller
     }
 
     /**
+     * Initiate an SSL Commerz checkout session for regional payment.
+     *
+     * Returns a GatewayPageURL that the frontend should redirect to.
+     */
+    public function sslCommerzCheckout(Request $request, Plan $plan, SslCommerzService $sslCommerz): JsonResponse
+    {
+        if (! $sslCommerz->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Regional payment gateway is not configured.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'tenant_id' => ['required', 'exists:tenants,id'],
+            'billing_cycle' => ['required', 'in:monthly,yearly'],
+            'customer_name' => ['required', 'string', 'max:255'],
+            'customer_email' => ['required', 'email'],
+            'customer_phone' => ['required', 'string', 'max:20'],
+        ]);
+
+        $tenant = Tenant::findOrFail($validated['tenant_id']);
+
+        $amount = $validated['billing_cycle'] === 'yearly'
+            ? $plan->yearly_price
+            : $plan->monthly_price;
+
+        if ($amount <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid plan price.',
+            ], 422);
+        }
+
+        $result = $sslCommerz->initiatePayment([
+            'amount' => $amount,
+            'currency' => config('sslcommerz.currency', 'BDT'),
+            'customer_name' => $validated['customer_name'],
+            'customer_email' => $validated['customer_email'],
+            'customer_phone' => $validated['customer_phone'],
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'billing_cycle' => $validated['billing_cycle'],
+            'product_name' => "{$plan->name} — {$validated['billing_cycle']}",
+        ]);
+
+        if (! $result['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'] ?? 'Payment initiation failed.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'gateway_url' => $result['gateway_url'],
+            'session_key' => $result['session_key'],
+        ]);
+    }
+
+    /**
      * Swap subscription to a different plan.
      */
     public function changePlan(Request $request, Tenant $tenant): JsonResponse
@@ -310,6 +373,90 @@ class BillingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create billing portal session: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Initiate a Stripe Checkout session for a module add-on subscription.
+     *
+     * Allows tenants to purchase individual modules that are not included
+     * in their current plan. Creates a recurring subscription for the module.
+     */
+    public function moduleCheckout(Request $request, Module $module): JsonResponse
+    {
+        $validated = $request->validate([
+            'tenant_id' => ['required', 'exists:tenants,id'],
+            'billing_cycle' => ['required', 'in:monthly,yearly'],
+            'success_url' => ['required', 'url'],
+            'cancel_url' => ['required', 'url'],
+        ]);
+
+        $tenant = Tenant::findOrFail($validated['tenant_id']);
+
+        $price = $validated['billing_cycle'] === 'yearly'
+            ? $module->yearly_price
+            : $module->monthly_price;
+
+        if ($price <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Module has no price configured for '.$validated['billing_cycle'].' billing.',
+            ], 422);
+        }
+
+        try {
+            $stripeClient = new \Stripe\StripeClient(config('cashier.secret'));
+
+            // Ensure tenant has a Stripe customer
+            if (! $tenant->stripe_id) {
+                $customer = $stripeClient->customers->create([
+                    'email' => $tenant->stripeEmail(),
+                    'metadata' => ['tenant_id' => $tenant->id],
+                ]);
+                $tenant->update(['stripe_id' => $customer->id]);
+            }
+
+            $session = $stripeClient->checkout->sessions->create([
+                'customer' => $tenant->stripe_id,
+                'mode' => 'subscription',
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => config('cashier.currency', 'usd'),
+                        'product_data' => ['name' => $module->name],
+                        'unit_amount' => (int) ($price * 100),
+                        'recurring' => [
+                            'interval' => $validated['billing_cycle'] === 'yearly' ? 'year' : 'month',
+                        ],
+                    ],
+                    'quantity' => 1,
+                ]],
+                'success_url' => $validated['success_url'].'?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $validated['cancel_url'],
+                'metadata' => [
+                    'tenant_id' => $tenant->id,
+                    'module_id' => $module->id,
+                    'billing_cycle' => $validated['billing_cycle'],
+                    'type' => 'module_addon',
+                ],
+                'subscription_data' => [
+                    'metadata' => [
+                        'tenant_id' => $tenant->id,
+                        'module_id' => $module->id,
+                        'type' => 'module_addon',
+                    ],
+                ],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'checkout_url' => $session->url,
+                'session_id' => $session->id,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create module checkout: '.$e->getMessage(),
             ], 500);
         }
     }

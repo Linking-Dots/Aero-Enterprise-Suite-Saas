@@ -141,7 +141,7 @@ class TenantSubscriptionController extends Controller
                 'status' => $sub->status,
                 'starts_at' => $sub->starts_at?->toDateString(),
                 'ends_at' => $sub->ends_at?->toDateString(),
-                'payment_ref_id' => $sub->payment_ref_id,
+                'stripe_id' => $sub->stripe_id,
                 'created_at' => $sub->created_at?->toDateString(),
             ]);
 

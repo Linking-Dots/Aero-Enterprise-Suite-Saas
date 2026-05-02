@@ -30,7 +30,8 @@ class PlanEntitlementService
         $subscription = $this->getActiveSubscription($tenantId);
 
         if (! $subscription || ! $subscription->plan) {
-            return false; // No active plan, allow access
+            // No active subscription in SaaS mode = deny access
+            return true;
         }
 
         $plan = $subscription->plan;
@@ -62,7 +63,8 @@ class PlanEntitlementService
         $subscription = $this->getActiveSubscription($tenantId);
 
         if (! $subscription || ! $subscription->plan) {
-            return false;
+            // No active subscription in SaaS mode = deny access
+            return true;
         }
 
         $plan = $subscription->plan;
@@ -73,9 +75,27 @@ class PlanEntitlementService
             return false;
         }
 
-        // TODO: Implement actual storage calculation
-        // For now, assume not reached
-        return false;
+        $tenant = \Aero\Platform\Models\Tenant::find($tenantId);
+        if (! $tenant) {
+            return true;
+        }
+
+        // Use the latest tenant stat record (updated by MonitorStorageUsageJob)
+        $latestStat = \Aero\Platform\Models\TenantStat::where('tenant_id', $tenantId)
+            ->orderByDesc('date')
+            ->first();
+
+        if ($latestStat && $latestStat->storage_used_mb > 0) {
+            $storageUsedGb = $latestStat->storage_used_mb / 1024;
+
+            return $storageUsedGb >= $maxStorageGb;
+        }
+
+        // Fallback to tenant metadata if stats are not yet available
+        $metadata = $tenant->metadata ?? [];
+        $storageUsedGb = $metadata['storage_usage_gb'] ?? 0;
+
+        return $storageUsedGb >= $maxStorageGb;
     }
 
     /**

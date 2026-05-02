@@ -508,6 +508,16 @@ Route::middleware('admin.domain')->group(function () {
             ->middleware(['hrmac:subscriptions.payment-gateways'])
             ->name('admin.checkout');
 
+        // Module Add-on Checkout
+        Route::post('/checkout/module/{module}', [BillingController::class, 'moduleCheckout'])
+            ->middleware(['hrmac:subscriptions.payment-gateways'])
+            ->name('admin.checkout.module');
+
+        // SSL Commerz Regional Checkout
+        Route::post('/checkout/sslcommerz/{plan}', [BillingController::class, 'sslCommerzCheckout'])
+            ->middleware(['hrmac:subscriptions.payment-gateways'])
+            ->name('admin.checkout.sslcommerz');
+
         // =========================================================================
         // 6. NOTIFICATIONS MODULE (notifications)
         // =========================================================================

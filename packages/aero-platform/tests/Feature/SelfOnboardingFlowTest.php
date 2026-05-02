@@ -79,7 +79,6 @@ class SelfOnboardingFlowTest extends TestCase
             'slug' => 'starter',
             'is_active' => true,
             'features' => ['modules' => ['core', 'hrm']],
-            'module_codes' => ['core', 'hrm'],
         ]);
     }
 

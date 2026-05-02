@@ -8,3 +8,12 @@
   font-feature-settings: "ss01","cv11";
 }
 .aeos *, .aeos *::before, .aeos *::after { box-sizing: border-box; }
+
+/* System-preference dark mode (for .aeos--system)
+   Dark palette is the canonical :root default — no overrides needed. */
+@media (prefers-color-scheme: dark) {
+  .aeos--system {
+    /* Inherits all default dark tokens from :root */
+    font-synthesis-weight: auto;
+  }
+}

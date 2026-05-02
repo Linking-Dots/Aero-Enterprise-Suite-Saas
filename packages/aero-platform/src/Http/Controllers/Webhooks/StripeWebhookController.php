@@ -92,24 +92,100 @@ class StripeWebhookController extends CashierWebhookController
             ? Tenant::find($tenantId)
             : Tenant::where('stripe_id', $stripeCustomerId)->first();
 
-        if ($tenant && isset($metadata['plan_id'])) {
-            $plan = Plan::find($metadata['plan_id']);
+        if ($tenant) {
+            // Handle plan subscription
+            if (isset($metadata['plan_id'])) {
+                $plan = Plan::find($metadata['plan_id']);
 
-            if ($plan) {
-                $tenant->update([
-                    'plan_id' => $plan->id,
-                    'subscription_plan' => $metadata['billing_cycle'] ?? 'monthly',
-                    'status' => Tenant::STATUS_ACTIVE,
-                ]);
+                if ($plan) {
+                    $tenant->update([
+                        'plan_id' => $plan->id,
+                        'subscription_plan' => $metadata['billing_cycle'] ?? 'monthly',
+                        'status' => Tenant::STATUS_ACTIVE,
+                    ]);
 
-                Log::info('Stripe webhook: Subscription created, tenant activated', [
-                    'tenant_id' => $tenant->id,
-                    'plan_id' => $plan->id,
-                ]);
+                    Log::info('Stripe webhook: Subscription created, tenant activated', [
+                        'tenant_id' => $tenant->id,
+                        'plan_id' => $plan->id,
+                    ]);
+                }
+            }
+
+            // Handle module add-on subscription
+            if (($metadata['type'] ?? null) === 'module_addon' && isset($metadata['module_id'])) {
+                $module = \Aero\Platform\Models\Module::find($metadata['module_id']);
+
+                if ($module) {
+                    $tenant->modules()->syncWithoutDetaching([
+                        $module->id => [
+                            'is_active' => true,
+                            'subscribed_at' => now(),
+                            'unsubscribed_at' => null,
+                        ],
+                    ]);
+
+                    Log::info('Stripe webhook: Module add-on subscribed', [
+                        'tenant_id' => $tenant->id,
+                        'module_id' => $module->id,
+                        'module_code' => $module->code,
+                    ]);
+                }
             }
         }
 
         return $response;
+    }
+
+    /**
+     * Handle customer subscription trial will end.
+     *
+     * Fired three days before a subscription trial ends.
+     * Notifies the tenant admin to take action before the trial expires.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    protected function handleCustomerSubscriptionTrialWillEnd(array $payload): Response
+    {
+        $data = $payload['data']['object'];
+        $stripeCustomerId = $data['customer'] ?? null;
+        $stripeSubscriptionId = $data['id'] ?? null;
+        $trialEnd = $data['trial_end'] ?? null;
+
+        if (! $stripeCustomerId || ! $stripeSubscriptionId) {
+            Log::warning('Stripe webhook: trial_will_end missing customer or subscription ID');
+
+            return $this->successMethod();
+        }
+
+        $tenant = Tenant::where('stripe_id', $stripeCustomerId)->first();
+
+        if ($tenant) {
+            $trialEndDate = $trialEnd ? Carbon::createFromTimestamp($trialEnd) : now()->addDays(3);
+
+            $tenant->data['trial_will_end_notified_at'] = now()->toIso8601String();
+            $tenant->data['trial_ends_at'] = $trialEndDate->toIso8601String();
+            $tenant->save();
+
+            // Find the subscription to log the event
+            $subscription = Subscription::where('stripe_id', $stripeSubscriptionId)->first();
+
+            Log::info('Stripe webhook: Trial will end soon', [
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription?->id,
+                'stripe_subscription_id' => $stripeSubscriptionId,
+                'trial_ends_at' => $trialEndDate->toDateTimeString(),
+            ]);
+
+            // Dispatch notification job to tenant admin email
+            \Aero\Platform\Jobs\Notifications\SendTrialEndingNotification::dispatch($tenant, $trialEndDate);
+        } else {
+            Log::warning('Stripe webhook: trial_will_end tenant not found', [
+                'stripe_customer_id' => $stripeCustomerId,
+                'stripe_subscription_id' => $stripeSubscriptionId,
+            ]);
+        }
+
+        return $this->successMethod();
     }
 
     /**

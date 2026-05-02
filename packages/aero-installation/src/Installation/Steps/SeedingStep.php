@@ -112,10 +112,11 @@ class SeedingStep extends BaseInstallationStep
 
     public function validate(): bool
     {
-        // Check that roles exist (permissions are handled by HRMAC via role module access)
+        // Allow step to proceed if database connection is working
+        // Roles will be created during execution (fresh install)
         try {
-            $hasRoles = \DB::table('roles')->exists();
-            return $hasRoles;
+            \DB::connection()->getPdo();
+            return true;
         } catch (\Exception) {
             return false;
         }

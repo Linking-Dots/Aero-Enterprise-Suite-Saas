@@ -63,7 +63,9 @@ class RoleModuleAccessSeeder extends Seeder
                 foreach ($modules as $module) {
                     $this->assignModuleAccess($role->id, $module->id);
                 }
-                $this->command->info("Role '{$role->name}' assigned access to ALL modules ({$this->mode} mode)");
+                if ($this->command) {
+                    $this->command->info("Role '{$role->name}' assigned access to ALL modules ({$this->mode} mode)");
+                }
             } elseif ($accessConfig === 'core') {
                 // Administrator/User gets access to core modules
                 foreach ($modules as $module) {
@@ -71,7 +73,9 @@ class RoleModuleAccessSeeder extends Seeder
                         $this->assignModuleAccess($role->id, $module->id);
                     }
                 }
-                $this->command->info("Role '{$role->name}' assigned access to core modules");
+                if ($this->command) {
+                    $this->command->info("Role '{$role->name}' assigned access to core modules");
+                }
             } elseif (is_array($accessConfig)) {
                 // Other roles get access to specific modules by code
                 // Uses dynamic discovery to find modules by code
@@ -79,16 +83,22 @@ class RoleModuleAccessSeeder extends Seeder
                     $module = $modules->firstWhere('code', $moduleCode);
                     if ($module) {
                         $this->assignModuleAccess($role->id, $module->id);
-                        $this->command->info("Role '{$role->name}' assigned access to module: {$moduleCode}");
+                        if ($this->command) {
+                            $this->command->info("Role '{$role->name}' assigned access to module: {$moduleCode}");
+                        }
                     } else {
                         // Module not found - log warning but don't fail
-                        $this->command->warn("Module '{$moduleCode}' not found for role '{$role->name}' - skipped");
+                        if ($this->command) {
+                            $this->command->warn("Module '{$moduleCode}' not found for role '{$role->name}' - skipped");
+                        }
                     }
                 }
             }
         }
 
-        $this->command->info('Role module access seeding completed successfully for ' . $this->mode . ' mode!');
+        if ($this->command) {
+            $this->command->info('Role module access seeding completed successfully for ' . $this->mode . ' mode!');
+        }
     }
 
     /**
@@ -103,14 +113,23 @@ class RoleModuleAccessSeeder extends Seeder
             ->first();
 
         if (!$existing) {
-            DB::table('role_module_access')->insert([
+            // Check if role_module_access table has is_active column
+            $hasIsActive = \Schema::hasColumn('role_module_access', 'is_active');
+
+            $attributes = [
                 'id' => (string) \Illuminate\Support\Str::uuid(),
                 'role_id' => $roleId,
                 'module_id' => $moduleId,
-                'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+
+            // Only add is_active if the column exists
+            if ($hasIsActive) {
+                $attributes['is_active'] = true;
+            }
+
+            DB::table('role_module_access')->insert($attributes);
         }
     }
 }

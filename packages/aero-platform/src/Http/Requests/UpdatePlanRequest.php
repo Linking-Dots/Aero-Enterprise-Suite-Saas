@@ -77,10 +77,6 @@ class UpdatePlanRequest extends FormRequest
             'duration_in_months' => ['nullable', 'integer', 'min:1', 'max:120'],
             'supports_custom_duration' => ['boolean'],
 
-            // Modules
-            'module_codes' => ['nullable', 'array'],
-            'module_codes.*' => ['string', 'max:50'],
-
             // Stripe Integration
             'stripe_product_id' => ['nullable', 'string', 'max:255'],
             'stripe_monthly_price_id' => ['nullable', 'string', 'max:255'],

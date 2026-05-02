@@ -77,10 +77,6 @@ class StorePlanRequest extends FormRequest
             'duration_in_months' => ['nullable', 'integer', 'min:1', 'max:120'],
             'supports_custom_duration' => ['boolean'],
 
-            // Modules - validate against available installed modules
-            'module_codes' => ['nullable', 'array', 'min:1'],
-            'module_codes.*' => ['string', 'max:50', Rule::in($this->getAvailableModuleCodes())],
-
             // Stripe Integration
             'stripe_product_id' => ['nullable', 'string', 'max:255'],
             'stripe_monthly_price_id' => ['nullable', 'string', 'max:255'],

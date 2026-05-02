@@ -156,3 +156,41 @@ export function Pagination({ page = 1, total = 1, onChange, className }) {
     </nav>
   );
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   STEPS — horizontal step progress indicator
+   ════════════════════════════════════════════════════════════════════ */
+
+export function Steps({ steps = [], currentStep, className }) {
+  const currentIndex = steps.findIndex(s =>
+    typeof s === 'string' ? s === currentStep : s?.key === currentStep
+  );
+
+  return (
+    <nav className={cx('aeos-steps', className)} aria-label="Signup progress">
+      {steps.map((step, i) => {
+        const key = typeof step === 'string' ? step : (step?.key ?? i);
+        const label = typeof step === 'string' ? step : (step?.label ?? step?.key ?? '');
+        const isDone = i < currentIndex;
+        const isCurrent = i === currentIndex;
+        const state = isDone ? 'is-done' : isCurrent ? 'is-current' : 'is-pending';
+
+        return (
+          <div key={key || i} className={cx('aeos-step', state)}>
+            {i > 0 && <div className="aeos-step-line" aria-hidden="true" />}
+            <div className="aeos-step-dot" aria-current={isCurrent ? 'step' : undefined}>
+              {isDone ? (
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                  <path d="M2 5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <span>{i + 1}</span>
+              )}
+            </div>
+            <span className="aeos-step-label">{label}</span>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}

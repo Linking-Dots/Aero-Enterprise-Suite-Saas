@@ -2,7 +2,7 @@
 
 namespace Aero\Installation\Installation;
 
-use Aero\Core\Installation\Steps\BaseInstallationStep;
+use Aero\Installation\Installation\Steps\BaseInstallationStep;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -64,15 +64,25 @@ class InstallationOrchestrator
     /**
      * Register installation steps
      */
-    public function registerSteps(array $steps): self
+    public function registerSteps(array $steps): void
     {
+        $this->log("registerSteps() called", [
+            'step_count' => count($steps),
+            'steps' => array_map(fn($s) => get_class($s), $steps),
+        ]);
+
         foreach ($steps as $step) {
-            if ($step instanceof BaseInstallationStep) {
-                $this->steps->push($step);
+            if (! $step instanceof BaseInstallationStep) {
+                throw new \InvalidArgumentException('All steps must extend BaseInstallationStep');
             }
+
+            $this->steps->put($step->name(), $step);
         }
 
-        return $this;
+        $this->log("Steps registered successfully", [
+            'registered_count' => $this->steps->count(),
+            'step_names' => $this->steps->keys()->toArray(),
+        ]);
     }
 
     /**
@@ -86,68 +96,86 @@ class InstallationOrchestrator
     }
 
     /**
-     * Execute full installation pipeline
+     * Execute full installation pipeline with atomic transaction
      */
     public function execute(): array
     {
-        try {
-            $this->startTime = now();
-            $this->log("Starting installation in {$this->mode} mode");
+        $this->log("execute() called", [
+            'mode' => $this->mode,
+            'steps_count' => $this->steps->count(),
+        ]);
 
-            $ordered = $this->getOrderedSteps();
+        return \DB::transaction(function () {
+            try {
+                $this->startTime = now();
+                $this->log("Starting installation in {$this->mode} mode");
 
-            if ($ordered->isEmpty()) {
-                throw new \Exception('No installation steps registered');
-            }
+                // Acquire mutex lock to prevent concurrent installations
+                $this->acquireLock();
 
-            // Execute each step in order
-            foreach ($ordered as $step) {
-                // Skip steps based on mode
-                if ($this->shouldSkipStep($step)) {
-                    $this->log("Skipping step '{$step->name()}' for {$this->mode} mode");
-                    $this->completed[$step->name()] = [
-                        'skipped' => true,
-                        'timestamp' => now(),
-                    ];
+                $ordered = $this->getOrderedSteps();
 
-                    continue;
+                if ($ordered->isEmpty()) {
+                    throw new \Exception('No installation steps registered');
                 }
 
-                // Check dependencies
-                $depCheck = $this->checkDependencies($step);
-                if (! $depCheck['satisfied']) {
-                    throw new \Exception(
-                        "Dependencies not satisfied for step '{$step->name()}': "
-                        .implode(', ', $depCheck['missing'])
-                    );
+                $this->log("Steps to execute", [
+                    'count' => $ordered->count(),
+                    'steps' => $ordered->map(fn($s) => $s->name())->toArray(),
+                ]);
+
+                // Execute each step in order
+                foreach ($ordered as $step) {
+                    // Skip steps based on mode
+                    if ($this->shouldSkipStep($step)) {
+                        $this->log("Skipping step '{$step->name()}' for {$this->mode} mode");
+                        $this->completed[$step->name()] = [
+                            'skipped' => true,
+                            'timestamp' => now(),
+                        ];
+
+                        continue;
+                    }
+
+                    // Check dependencies
+                    $depCheck = $this->checkDependencies($step);
+                    if (! $depCheck['satisfied']) {
+                        throw new \Exception(
+                            "Dependencies not satisfied for step '{$step->name()}': "
+                            .implode(', ', $depCheck['missing'])
+                        );
+                    }
+
+                    // Execute the step
+                    $this->executeStep($step);
                 }
 
-                // Execute the step
-                $this->executeStep($step);
+                $duration = now()->diffInSeconds($this->startTime);
+                $this->log("Installation completed successfully in {$duration}s");
+
+                // Release lock on success
+                $this->releaseLock();
+
+                return [
+                    'status' => 'success',
+                    'message' => 'Installation completed',
+                    'completed_steps' => array_keys($this->completed),
+                    'failed_steps' => [],
+                    'duration_seconds' => $duration,
+                ];
+
+            } catch (\Throwable $e) {
+                $this->logError('Installation failed: '.$e->getMessage());
+
+                // Rollback steps in reverse order
+                $this->rollback();
+
+                // Release lock on failure
+                $this->releaseLock();
+
+                throw $e;
             }
-
-            $duration = now()->diffInSeconds($this->startTime);
-            $this->log("Installation completed successfully in {$duration}s");
-
-            return [
-                'status' => 'success',
-                'message' => 'Installation completed',
-                'completed_steps' => array_keys($this->completed),
-                'failed_steps' => [],
-                'duration_seconds' => $duration,
-            ];
-
-        } catch (\Throwable $e) {
-            $this->logError('Installation failed: '.$e->getMessage());
-
-            return [
-                'status' => 'failed',
-                'message' => $e->getMessage(),
-                'completed_steps' => array_keys($this->completed),
-                'failed_steps' => array_keys($this->failed),
-                'error' => $e->getMessage(),
-            ];
-        }
+        });
     }
 
     /**
@@ -157,11 +185,6 @@ class InstallationOrchestrator
     {
         // License step only in standalone mode
         if ($step->name() === 'license' && $this->mode !== 'standalone') {
-            return true;
-        }
-
-        // Seeding and Settings are optional
-        if (in_array($step->name(), ['seeding', 'settings']) && $step->canSkip()) {
             return true;
         }
 
@@ -175,6 +198,9 @@ class InstallationOrchestrator
     {
         $maxAttempts = $step->isRetriable() ? 3 : 1;
         $lastException = null;
+
+        // Update progress to indicate step is running
+        $this->updateProgress($step->name(), 'running', $this->calculateProgress($step->name()));
 
         for ($attempts = 1; $attempts <= $maxAttempts; $attempts++) {
             try {
@@ -206,6 +232,9 @@ class InstallationOrchestrator
                     'timestamp' => now(),
                 ];
 
+                // Update progress to indicate step completed
+                $this->updateProgress($step->name(), 'completed', $this->calculateProgress($step->name()));
+
                 return;
 
             } catch (\Exception $e) {
@@ -224,6 +253,10 @@ class InstallationOrchestrator
 
         // All attempts exhausted or non-retriable
         $step->onFailure($lastException);
+
+        // Update progress with error
+        $this->updateProgress($step->name(), 'failed', $this->calculateProgress($step->name()), $lastException->getMessage());
+
         throw $lastException;
     }
 
@@ -253,40 +286,93 @@ class InstallationOrchestrator
      */
     public function executeNextStep(): array
     {
+        $this->log("executeNextStep() called", [
+            'completed_count' => count($this->completed),
+            'failed_count' => count($this->failed),
+        ]);
+
         $ordered = $this->getOrderedSteps();
         $totalSteps = $ordered->count();
         $completedCount = count($this->completed);
 
-        // Find next pending step
+        // Build steps array for UI
+        $steps = $ordered->map(function (BaseInstallationStep $step) {
+            return [
+                'key' => $step->name(),
+                'label' => $step->description(),
+            ];
+        })->values()->toArray();
+
+        $this->log("Getting ordered steps", [
+            'total_steps' => $totalSteps,
+            'completed_count' => $completedCount,
+        ]);
+
+        // Check if installation is complete
+        if ($completedCount >= $totalSteps) {
+            $this->log("Installation complete", [
+                'completed_count' => $completedCount,
+                'total_steps' => $totalSteps,
+            ]);
+
+            return [
+                'status' => 'completed',
+                'percentage' => 100,
+                'currentStep' => 'complete',
+                'completedSteps' => $completedCount,
+                'totalSteps' => $totalSteps,
+                'steps' => $steps,
+            ];
+        }
+
+        // Check if there are failed steps
+        if (count($this->failed) > 0) {
+            $this->log("Installation has failed steps, cannot continue", [
+                'failed_count' => count($this->failed),
+                'failed_steps' => array_keys($this->failed),
+            ]);
+
+            return [
+                'status' => 'failed',
+                'percentage' => (int) round(($completedCount / $totalSteps) * 100),
+                'currentStep' => array_key_first($this->failed),
+                'error' => end($this->failed)['error'] ?? 'Installation failed',
+                'completedSteps' => $completedCount,
+                'totalSteps' => $totalSteps,
+                'steps' => $steps,
+            ];
+        }
+
+        // Get next pending step
         $nextStep = $ordered->first(function (BaseInstallationStep $step) {
             return ! isset($this->completed[$step->name()]) && ! isset($this->failed[$step->name()]);
         });
 
-        // Check if installation complete
         if (! $nextStep) {
-            if (count($this->failed) === 0) {
-                return [
-                    'status' => 'completed',
-                    'percentage' => 100,
-                    'currentStep' => 'finalize',
-                    'completedSteps' => count($this->completed),
-                    'totalSteps' => $totalSteps,
-                ];
-            } else {
-                return [
-                    'status' => 'failed',
-                    'percentage' => ($completedCount / $totalSteps) * 100,
-                    'currentStep' => array_key_first($this->failed),
-                    'error' => end($this->failed)['error'] ?? 'Installation failed',
-                    'completedSteps' => $completedCount,
-                    'totalSteps' => $totalSteps,
-                ];
-            }
+            $this->log("No pending step found, installation complete");
+
+            return [
+                'status' => 'completed',
+                'percentage' => 100,
+                'currentStep' => 'complete',
+                'completedSteps' => $completedCount,
+                'totalSteps' => $totalSteps,
+                'steps' => $steps,
+            ];
         }
+
+        $this->log("Next pending step", [
+            'next_step' => $nextStep->name(),
+        ]);
 
         // Check dependencies
         $depCheck = $this->checkDependencies($nextStep);
         if (! $depCheck['satisfied']) {
+            $this->log("Dependencies not satisfied", [
+                'step' => $nextStep->name(),
+                'missing' => $depCheck['missing'],
+            ]);
+
             return [
                 'status' => 'failed',
                 'percentage' => ($completedCount / $totalSteps) * 100,
@@ -294,13 +380,23 @@ class InstallationOrchestrator
                 'error' => 'Missing dependencies: '.implode(', ', $depCheck['missing']),
                 'completedSteps' => $completedCount,
                 'totalSteps' => $totalSteps,
+                'steps' => $steps,
             ];
         }
+
+        $this->log("Dependencies satisfied, executing step", [
+            'step' => $nextStep->name(),
+        ]);
 
         // Execute the step
         try {
             $this->executeStep($nextStep);
             $completedCount++;
+
+            $this->log("Step executed successfully", [
+                'step' => $nextStep->name(),
+                'new_completed_count' => $completedCount,
+            ]);
 
             return [
                 'status' => 'running',
@@ -309,6 +405,7 @@ class InstallationOrchestrator
                 'completedSteps' => $completedCount,
                 'totalSteps' => $totalSteps,
                 'message' => $nextStep->description(),
+                'steps' => $steps,
             ];
 
         } catch (\Exception $e) {
@@ -317,6 +414,12 @@ class InstallationOrchestrator
                 'timestamp' => now(),
             ];
 
+            $this->logError("Step execution failed", [
+                'step' => $nextStep->name(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return [
                 'status' => 'failed',
                 'percentage' => ($completedCount / $totalSteps) * 100,
@@ -324,6 +427,7 @@ class InstallationOrchestrator
                 'error' => $e->getMessage(),
                 'completedSteps' => $completedCount,
                 'totalSteps' => $totalSteps,
+                'steps' => $steps,
             ];
         }
     }
@@ -341,6 +445,14 @@ class InstallationOrchestrator
             return ! isset($this->completed[$step->name()]) && ! isset($this->failed[$step->name()]);
         });
 
+        // Build steps array for UI
+        $steps = $ordered->map(function (BaseInstallationStep $step) {
+            return [
+                'key' => $step->name(),
+                'label' => $step->description(),
+            ];
+        })->values()->toArray();
+
         if (count($this->failed) > 0) {
             return [
                 'status' => 'failed',
@@ -349,6 +461,7 @@ class InstallationOrchestrator
                 'error' => end($this->failed)['error'] ?? 'Installation failed',
                 'completedSteps' => $completedCount,
                 'totalSteps' => $totalSteps,
+                'steps' => $steps,
             ];
         }
 
@@ -359,6 +472,7 @@ class InstallationOrchestrator
                 'currentStep' => 'complete',
                 'completedSteps' => $completedCount,
                 'totalSteps' => $totalSteps,
+                'steps' => $steps,
             ];
         }
 
@@ -369,6 +483,7 @@ class InstallationOrchestrator
             'completedSteps' => $completedCount,
             'totalSteps' => $totalSteps,
             'message' => $currentStep->description(),
+            'steps' => $steps,
         ];
     }
 
@@ -388,5 +503,135 @@ class InstallationOrchestrator
     protected function logError(string $message, array $context = []): void
     {
         Log::error("[Installation::{$this->mode}] {$message}", $context);
+    }
+
+    /**
+     * Calculate progress percentage based on completed steps
+     */
+    protected function calculateProgress(string $currentStep): int
+    {
+        $ordered = $this->getOrderedSteps();
+        $totalSteps = $ordered->count();
+        $completedCount = count($this->completed);
+
+        if ($totalSteps === 0) {
+            return 0;
+        }
+
+        // Calculate percentage based on completed steps
+        $percentage = ($completedCount / $totalSteps) * 100;
+
+        return (int) round($percentage);
+    }
+
+    /**
+     * Update progress in database for UI polling
+     * Falls back to file-based tracking if database not available
+     */
+    protected function updateProgress(string $step, string $status, int $percentage, ?string $error = null, ?array $metadata = null): void
+    {
+        try {
+            // Try database-based progress tracking
+            $sessionId = session()->getId();
+
+            // Check if table exists first
+            if (! \Schema::hasTable('installation_progress')) {
+                throw new \Exception('installation_progress table does not exist');
+            }
+
+            \DB::table('installation_progress')->updateOrInsert(
+                ['session_id' => $sessionId],
+                [
+                    'step' => $step,
+                    'status' => $status,
+                    'percentage' => $percentage,
+                    'error' => $error,
+                    'metadata' => $metadata ? json_encode($metadata) : null,
+                    'started_at' => $this->startTime,
+                    'updated_at' => now(),
+                ]
+            );
+        } catch (\Exception $e) {
+            // Fallback to file-based progress tracking
+            $this->warn('Database progress tracking failed, using file-based: '.$e->getMessage());
+            $this->updateProgressFile($step, $status, $percentage, $error, $metadata);
+        }
+    }
+
+    /**
+     * Fallback file-based progress tracking
+     */
+    protected function updateProgressFile(string $step, string $status, int $percentage, ?string $error = null, ?array $metadata = null): void
+    {
+        try {
+            $progressFile = storage_path('app/installation_progress.json');
+            $progress = [
+                'step' => $step,
+                'status' => $status,
+                'percentage' => $percentage,
+                'error' => $error,
+                'metadata' => $metadata,
+                'updated_at' => now()->toIso8601String(),
+            ];
+            
+            // Ensure directory exists
+            $directory = dirname($progressFile);
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            
+            file_put_contents($progressFile, json_encode($progress, JSON_PRETTY_PRINT));
+        } catch (\Exception $e) {
+            $this->warn('Failed to update file-based progress: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Acquire mutex lock to prevent concurrent installations
+     */
+    protected function acquireLock(): void
+    {
+        $lockKey = 'installation_lock_'.$this->mode;
+        $locked = \Cache::lock($lockKey, 3600)->acquire();
+
+        if (! $locked) {
+            throw new \Exception('Installation already in progress. Please wait or contact administrator.');
+        }
+
+        $this->log('Acquired installation lock');
+    }
+
+    /**
+     * Release mutex lock
+     */
+    protected function releaseLock(): void
+    {
+        $lockKey = 'installation_lock_'.$this->mode;
+        \Cache::lock($lockKey)->release();
+        $this->log('Released installation lock');
+    }
+
+    /**
+     * Rollback completed steps in reverse order
+     */
+    protected function rollback(): void
+    {
+        $this->log('Starting rollback of completed steps');
+
+        $ordered = $this->getOrderedSteps()->reverse();
+
+        foreach ($ordered as $step) {
+            if (isset($this->completed[$step->name()]) && ! ($this->completed[$step->name()]['skipped'] ?? false)) {
+                $this->log("Rolling back step '{$step->name()}'");
+                try {
+                    $step->rollback();
+                } catch (\Exception $e) {
+                    $this->warn("Rollback failed for step '{$step->name()}': ".$e->getMessage());
+                    // Continue with other rollbacks
+                }
+            }
+        }
+
+        $this->log('Rollback completed');
     }
 }

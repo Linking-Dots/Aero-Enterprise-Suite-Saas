@@ -9,7 +9,8 @@ use Aero\Core\Models\SubModule;
 use Aero\Core\Models\User;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Services\RoleModuleAccessService;
-use App\Models\Plan;
+use Aero\Platform\Models\Plan;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Module Access Service
@@ -454,21 +455,30 @@ class ModuleAccessService
         $activeModuleCodes = Cache::remember($cacheKey, 300, function () use ($tenant) {
             $moduleCodes = [];
 
-            // Check 1: Get modules from subscription plan (if plan_id exists)
-            if ($tenant->plan_id) {
-                $plan = Plan::find($tenant->plan_id);
-                if ($plan) {
-                    $planModules = $plan->modules()
-                        ->where('is_active', true)
-                        ->pluck('modules.code')
-                        ->toArray();
-                    $moduleCodes = array_merge($moduleCodes, $planModules);
-                }
+            // In SaaS mode, only include plan and custom modules if subscription is active
+            $includePaidModules = true;
+            if (is_saas_mode()) {
+                $subscription = $tenant->currentSubscription;
+                $includePaidModules = $subscription && $subscription->isActive();
             }
 
-            // Check 2: Get modules from tenant's custom modules collection
-            if (! empty($tenant->modules) && is_array($tenant->modules)) {
-                $moduleCodes = array_merge($moduleCodes, $tenant->modules);
+            if ($includePaidModules) {
+                // Check 1: Get modules from subscription plan (if plan_id exists)
+                if ($tenant->plan_id) {
+                    $plan = Plan::find($tenant->plan_id);
+                    if ($plan) {
+                        $planModules = $plan->modules()
+                            ->where('is_active', true)
+                            ->pluck('modules.code')
+                            ->toArray();
+                        $moduleCodes = array_merge($moduleCodes, $planModules);
+                    }
+                }
+
+                // Check 2: Get modules from tenant's custom modules collection
+                if (! empty($tenant->modules) && is_array($tenant->modules)) {
+                    $moduleCodes = array_merge($moduleCodes, $tenant->modules);
+                }
             }
 
             // Add core modules (always accessible)

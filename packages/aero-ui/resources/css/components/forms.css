@@ -236,3 +236,35 @@ select.aeos-input {
 .aeos-input-addon .aeos-input:last-child {
   border-radius: 0 var(--aeos-r-md) var(--aeos-r-md) 0;
 }
+
+/* ── OTP Input Grid ──────────────────────────────────────────── */
+.aeos-otp-grid { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.aeos-otp-input {
+  width:52px; height:56px; text-align:center;
+  font-size:1.5rem; font-family:var(--aeos-font-mono); font-weight:600;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10);
+  color:var(--aeos-text-primary); border-radius:var(--aeos-r-md); outline:none;
+  transition:border-color var(--aeos-dur-fast), box-shadow var(--aeos-dur-fast);
+}
+.aeos-otp-input:focus {
+  border-color:rgba(0,229,255,.50); box-shadow:0 0 0 3px rgba(0,229,255,.12);
+}
+.aeos-otp-input.error {
+  border-color:rgba(255,107,107,.50); box-shadow:0 0 0 3px rgba(255,107,107,.10);
+  animation:aeos-shake 240ms var(--aeos-ease-out);
+}
+
+/* ── Password Strength Meter ────────────────────────────────── */
+.aeos-strength-bars { display:flex; gap:4px; }
+.aeos-strength-bar { flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,.08); transition:background var(--aeos-dur-fast); }
+.aeos-strength-bar.is-weak    { background:var(--aeos-destructive); }
+.aeos-strength-bar.is-fair    { background:var(--aeos-secondary); }
+.aeos-strength-bar.is-good    { background:var(--aeos-primary); }
+.aeos-strength-bar.is-strong  { background:var(--aeos-success); }
+.aeos-strength-label { font-size:0.72rem; font-family:var(--aeos-font-mono); color:var(--aeos-text-tertiary); margin-top:4px; }
+
+/* ── Light mode overrides ────────────────────────────────────── */
+.aeos--light .aeos-otp-input { background:rgba(15,23,42,.03); border-color:rgba(15,23,42,.12); color:var(--aeos-text-primary); }
+.aeos--light .aeos-otp-input:focus { border-color:rgba(0,163,184,.50); box-shadow:0 0 0 3px rgba(0,163,184,.12); }
+.aeos--light .aeos-strength-bar { background:rgba(15,23,42,.08); }
+.aeos--light .aeos-otp-input.error { border-color:rgba(220,38,38,.50); box-shadow:0 0 0 3px rgba(220,38,38,.10); }

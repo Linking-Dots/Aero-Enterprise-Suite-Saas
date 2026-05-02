@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services\Monitoring\Tenant;
 
+use Aero\Platform\Models\Module;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Support\Arr;
@@ -100,6 +101,9 @@ class TenantProvisioner
                 ]);
             }
 
+            // Sync tenant_module pivot records for provisioning
+            $this->syncTenantModules($existingTenant, $modules);
+
             return $existingTenant->fresh();
         }
 
@@ -137,6 +141,9 @@ class TenantProvisioner
             'domain' => $this->buildDomain($subdomain),
             'is_primary' => true,
         ]);
+
+        // Sync tenant_module pivot records for provisioning
+        $this->syncTenantModules($tenant, $modules);
 
         return $tenant;
     }
@@ -198,6 +205,9 @@ class TenantProvisioner
             ]);
         }
 
+        // Sync tenant_module pivot records for provisioning
+        $this->syncTenantModules($tenant, $modules);
+
         return $tenant->fresh();
     }
 
@@ -229,31 +239,61 @@ class TenantProvisioner
             return $modules;
         }
 
-        $plan = Plan::with('modules:code')->find($planId);
-        if (! $plan) {
-            return $modules;
-        }
-
-        $allowed = $plan->module_codes ?? $plan->modules->pluck('code')->all();
+        // Since plans no longer include modules, validate against all active modules
+        $allowed = Module::where('is_active', true)->pluck('code')->all();
         $allowed = array_values(array_filter($allowed));
 
-        // Validate that plan has at least one module configured
+        // Validate that at least one module exists
         if (empty($allowed)) {
-            Log::warning('Plan has no module_codes configured', [
-                'plan_id' => $planId,
-                'plan_name' => $plan->name ?? 'unknown',
-            ]);
+            Log::warning('No active modules found in system');
             throw new \InvalidArgumentException(
-                "The selected plan '{$plan->name}' has no modules configured. Please contact support."
+                "No active modules found in the system. Please contact support."
             );
         }
 
-        // If no modules requested, default to full allowed set
+        // If no modules requested, default to core module
         if (empty($modules)) {
-            return $allowed;
+            $modules = ['core'];
         }
 
-        return array_values(array_intersect($modules, $allowed));
+        // Validate requested modules against available modules
+        $invalid = array_diff($modules, $allowed);
+        if (! empty($invalid)) {
+            Log::warning('Requested modules not available', [
+                'plan_id' => $planId,
+                'requested' => $modules,
+                'allowed' => $allowed,
+                'invalid' => $invalid,
+            ]);
+            throw new \InvalidArgumentException(
+                "The following modules are not available: ".implode(', ', $invalid)
+            );
+        }
+
+        return $modules;
+    }
+
+    /**
+     * Sync tenant_module pivot records for the given module codes.
+     */
+    private function syncTenantModules(Tenant $tenant, array $moduleCodes): void
+    {
+        $moduleCodes = array_values(array_unique(array_filter($moduleCodes)));
+        if (empty($moduleCodes)) {
+            return;
+        }
+
+        $moduleIds = Module::whereIn('code', $moduleCodes)
+            ->where('is_active', true)
+            ->pluck('id')
+            ->all();
+
+        $syncData = array_fill_keys($moduleIds, [
+            'is_active' => true,
+            'subscribed_at' => now(),
+        ]);
+
+        $tenant->modules()->sync($syncData);
     }
 
     private function buildDomain(?string $subdomain): string
