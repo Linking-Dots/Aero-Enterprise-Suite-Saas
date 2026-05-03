@@ -10,8 +10,8 @@ use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Notification\NotificationController;
 use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
-use Aero\Core\Http\Controllers\Settings\IpWhitelistController;
-use Aero\Core\Http\Controllers\Settings\NotificationSettingController;
+use Aero\Core\Http\Controllers\Settings\InvoiceBrandingController;
+use Aero\Core\Http\Controllers\Settings\OrganizationProfileController;
 use Aero\Core\Http\Controllers\Settings\PasswordPolicyController;
 use Aero\Core\Http\Controllers\Settings\SystemSettingController;
 use Aero\Core\Http\Controllers\Upload\FileManagerController;
@@ -462,6 +462,18 @@ Route::middleware('auth:web')->group(function () {
     });
 
     // Session management and 2FA routes are registered by AeroAuthServiceProvider.
+
+    // ========================================================================
+    // ORGANIZATION PROFILE ROUTES
+    // ========================================================================
+    Route::prefix('organization')->name('core.organization.')->group(function () {
+        Route::get('/profile', [OrganizationProfileController::class, 'index'])
+            ->name('profile.index')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::put('/profile', [OrganizationProfileController::class, 'update'])
+            ->name('profile.update')
+            ->middleware('hrmac:core.organization.org_profile.update');
+    });
 
     // ========================================================================
     // PROFILE ROUTES
