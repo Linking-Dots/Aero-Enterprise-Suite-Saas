@@ -21,6 +21,7 @@ class SystemSettingResource extends JsonResource
             'slug' => $setting->slug,
             'organization' => $setting->getOrganizationSummary(),
             'branding' => $setting->getBrandingPayload(),
+            'localization' => $setting->getLocalizationPayload(),
             'metadata' => $setting->metadata ?? [],
             'email_settings' => $setting->getSanitizedEmailSettings(),
             'notification_channels' => $setting->notification_channels ?? [],

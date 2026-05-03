@@ -980,9 +980,9 @@ class AeroPlatformServiceProvider extends ServiceProvider
                         return $files;
                     }
 
-                    // During installation, allow ALL package migrations to run on central DB
+                    // During installation or testing, allow ALL package migrations to run on central DB
                     // Core, HRMAC, and other package migrations are needed for the initial setup
-                    if (! file_exists(storage_path('app/aeos.installed'))) {
+                    if (! file_exists(storage_path('app/aeos.installed')) || app()->environment('testing')) {
                         return $files;
                     }
 

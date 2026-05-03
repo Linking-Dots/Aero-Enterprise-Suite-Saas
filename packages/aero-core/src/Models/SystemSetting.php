@@ -36,6 +36,10 @@ class SystemSetting extends Model implements HasMedia
         'website_url',
         'timezone',
         'currency',
+        'locale',
+        'date_format',
+        'time_format',
+        'first_day_of_week',
         'default_dark_mode',
         'address_line1',
         'address_line2',
@@ -142,6 +146,18 @@ class SystemSetting extends Model implements HasMedia
 
             return null;
         }
+    }
+
+    public function getLocalizationPayload(): array
+    {
+        return [
+            'timezone' => $this->timezone,
+            'currency' => $this->currency,
+            'locale' => $this->locale,
+            'date_format' => $this->date_format,
+            'time_format' => $this->time_format,
+            'first_day_of_week' => $this->first_day_of_week,
+        ];
     }
 
     public function getOrganizationSummary(): array

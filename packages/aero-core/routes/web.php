@@ -10,7 +10,10 @@ use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Notification\NotificationController;
 use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
+use Aero\Core\Http\Controllers\Settings\BrandingSettingsController;
 use Aero\Core\Http\Controllers\Settings\InvoiceBrandingController;
+use Aero\Core\Http\Controllers\Settings\LocalizationSettingsController;
+use Aero\Core\Http\Controllers\Settings\MailSettingsController;
 use Aero\Core\Http\Controllers\Settings\OrganizationProfileController;
 use Aero\Core\Http\Controllers\Settings\PasswordPolicyController;
 use Aero\Core\Http\Controllers\Settings\SystemSettingController;
@@ -398,9 +401,22 @@ Route::middleware('auth:web')->group(function () {
         // System Settings
         Route::get('/system', [SystemSettingController::class, 'index'])->name('system.index');
         Route::get('/security', [SystemSettingController::class, 'index'])->name('security.index'); // Security settings
-        Route::get('/branding', [SystemSettingController::class, 'index'])->name('branding.index'); // Branding & appearance
-        Route::get('/localization', [SystemSettingController::class, 'index'])->name('localization.index'); // Localization settings
-        Route::get('/mail', [SystemSettingController::class, 'index'])->name('mail.index'); // Email (SMTP) settings
+        // Branding & Appearance
+        Route::prefix('branding')->name('branding.')->middleware('hrmac:core.settings.branding.view')->group(function () {
+            Route::get('/', [BrandingSettingsController::class, 'index'])->name('index');
+            Route::post('/', [BrandingSettingsController::class, 'update'])->name('update')->middleware('hrmac:core.settings.branding.update');
+        });
+        // Localization Settings
+        Route::prefix('localization')->name('localization.')->middleware('hrmac:core.settings.localization.view')->group(function () {
+            Route::get('/', [LocalizationSettingsController::class, 'index'])->name('index');
+            Route::put('/', [LocalizationSettingsController::class, 'update'])->name('update')->middleware('hrmac:core.settings.localization.edit');
+        });
+        // Email (SMTP) Settings
+        Route::prefix('mail')->name('mail.')->middleware('hrmac:core.settings.mail.view')->group(function () {
+            Route::get('/', [MailSettingsController::class, 'index'])->name('index');
+            Route::post('/', [MailSettingsController::class, 'update'])->name('update')->middleware('hrmac:core.settings.mail.update');
+            Route::post('/test', [MailSettingsController::class, 'sendTest'])->name('test')->middleware('hrmac:core.settings.mail.test');
+        });
         Route::get('/integrations', [SystemSettingController::class, 'index'])->name('integrations.index'); // API & integrations
         Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update');
         Route::post('/system/test-email', [SystemSettingController::class, 'sendTestEmail'])->name('system.test-email');

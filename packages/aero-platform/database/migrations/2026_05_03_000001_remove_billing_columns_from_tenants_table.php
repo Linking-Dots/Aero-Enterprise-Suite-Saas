@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -19,6 +20,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // SQLite does not support dropping columns that have implicit FK indexes.
+        // In a fresh test DB these columns do not exist anyway, so skip safely.
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('tenants', function (Blueprint $table) {
             // Drop plan FK first
             if (Schema::hasColumn('tenants', 'plan_id')) {

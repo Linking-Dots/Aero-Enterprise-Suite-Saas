@@ -237,8 +237,8 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
     public function boot(): void
     {
         try {
-            // Load migrations
-            if ($this->app->runningInConsole()) {
+            // Load migrations (console for normal ops, testing for PHPUnit/CI)
+            if ($this->app->runningInConsole() || $this->app->environment('testing')) {
                 $migrationsPath = $this->getModulePath('database/migrations');
                 if (is_dir($migrationsPath)) {
                     $this->loadMigrationsFrom($migrationsPath);
