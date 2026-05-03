@@ -107,6 +107,27 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
 
         /* Enhanced selected state for all interactive cards */
         .rl-card-selected { border-color: var(--aeos-primary) !important; background: rgba(0,229,255,.04) !important; box-shadow: 0 0 0 3px rgba(0,229,255,.12), 0 4px 12px rgba(0,229,255,.06) !important; }
+
+        /* Option B: Split-screen plan layout */
+        .rl-plan-split { display: grid; grid-template-columns: 1fr 280px; gap: 2rem; }
+        @media (max-width: 860px) { .rl-plan-split { grid-template-columns: 1fr; } }
+        .rl-plan-main { min-width: 0; }
+        .rl-plan-sidebar { position: sticky; top: 1.5rem; align-self: start; }
+        @media (max-width: 860px) { .rl-plan-sidebar { position: static; } }
+        .rl-plan-grid-b { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        @media (max-width: 560px) { .rl-plan-grid-b { grid-template-columns: 1fr; } }
+        .rl-module-grid-b { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+        @media (max-width: 560px) { .rl-module-grid-b { grid-template-columns: 1fr; } }
+        .rl-summary-card { background: var(--aeos-bg-elevated); border: 1px solid rgba(0,229,255,.15); border-radius: var(--aeos-r-xl); padding: 1.5rem; display: flex; flex-direction: column; gap: .75rem; backdrop-filter: blur(12px); box-shadow: 0 16px 48px rgba(0,0,0,.55); }
+        .rl-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; }
+        .rl-summary-row .rl-label { color: var(--aeos-text-secondary); }
+        .rl-summary-row .rl-value { font-weight: 600; }
+        .rl-summary-divider { height: 1px; background: var(--aeos-divider); margin: .25rem 0; }
+        .rl-summary-total .rl-value { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 800; color: var(--aeos-primary); }
+        .rl-summary-btn { width: 100%; margin-top: .5rem; }
+        .rl-plan-intro { margin-bottom: 1.5rem; }
+        .rl-plan-billing { margin-bottom: 1.5rem; }
+        .rl-plan-eyebrow { margin-top: 1.5rem; }
         .rl-card-selected:hover { background: rgba(0,229,255,.06) !important; box-shadow: 0 0 0 3px rgba(0,229,255,.15), 0 6px 16px rgba(0,229,255,.08) !important; }
 
         /* ── Provisioning step ──────────────────────────────────────── */

@@ -3,7 +3,7 @@
 namespace Aero\Platform\Notifications;
 
 use Aero\Platform\Models\Tenant;
-use Aero\Platform\Services\MailService;
+use Aero\Notifications\Services\Mail\MailService;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 

@@ -2,8 +2,8 @@
 
 namespace Aero\Platform\Jobs;
 
-use Aero\Platform\Services\MailService;
-use Aero\Platform\Services\SmsService;
+use Aero\Notifications\Services\Mail\MailService;
+use Aero\Notifications\Services\Sms\SmsService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

@@ -1,6 +1,6 @@
 # Aero CMS - Content Management System
 
-A powerful, block-based CMS system for the Aero Enterprise Suite SaaS platform built with Laravel 11 and React 18, featuring visual page builder, HRMAC permission integration, and HeroUI components.
+A powerful, block-based CMS system for the aeos365 SaaS platform built with Laravel 11 and React 18, featuring visual page builder, HRMAC permission integration, and HeroUI components.
 
 ## Overview
 

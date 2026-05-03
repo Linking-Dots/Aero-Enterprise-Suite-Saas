@@ -12,20 +12,45 @@ class CoreMailContextResolver implements MailContextResolver
     public function resolve(): array
     {
         try {
-            $settings = \Aero\Core\Models\SystemSetting::get('mail_config');
-            if ($settings && ! empty($settings['host'])) {
-                return [
+            $settings = \Aero\Core\Models\SystemSetting::current()->email_settings ?? [];
+            if ($settings && ! empty($settings['driver'])) {
+                $driver = $settings['driver'];
+                $base = [
                     'configured' => true,
-                    'driver' => $settings['driver'] ?? 'smtp',
-                    'host' => $settings['host'],
-                    'port' => (int) ($settings['port'] ?? 587),
-                    'username' => $settings['username'] ?? '',
-                    'password' => $settings['password'] ?? '',
-                    'encryption' => $settings['encryption'] ?? 'tls',
-                    'verify_peer' => $settings['verify_peer'] ?? false,
+                    'driver' => $driver,
                     'from_address' => $settings['from_address'] ?? config('mail.from.address'),
                     'from_name' => $settings['from_name'] ?? config('mail.from.name', config('app.name')),
                 ];
+
+                return match ($driver) {
+                    'smtp' => array_merge($base, [
+                        'host' => $settings['host'] ?? '127.0.0.1',
+                        'port' => (int) ($settings['port'] ?? 587),
+                        'username' => $settings['username'] ?? '',
+                        'password' => $settings['password'] ?? '',
+                        'encryption' => $settings['encryption'] ?? 'tls',
+                        'verify_peer' => $settings['verify_peer'] ?? false,
+                    ]),
+                    'sendmail' => array_merge($base, [
+                        'sendmail_path' => $settings['sendmail_path'] ?? '/usr/sbin/sendmail -bs',
+                    ]),
+                    'mailgun' => array_merge($base, [
+                        'mailgun_domain' => $settings['mailgun_domain'] ?? null,
+                        'mailgun_secret' => $settings['mailgun_secret'] ?? null,
+                        'mailgun_endpoint' => $settings['mailgun_endpoint'] ?? null,
+                        'mailgun_scheme' => $settings['mailgun_scheme'] ?? null,
+                    ]),
+                    'postmark' => array_merge($base, [
+                        'postmark_token' => $settings['postmark_token'] ?? null,
+                    ]),
+                    'ses' => array_merge($base, [
+                        'ses_key' => $settings['ses_key'] ?? null,
+                        'ses_secret' => $settings['ses_secret'] ?? null,
+                        'ses_region' => $settings['ses_region'] ?? null,
+                    ]),
+                    'log', 'array' => $base,
+                    default => array_merge($base, $settings),
+                };
             }
         } catch (\Throwable $e) {
             Log::debug('CoreMailContextResolver: No system settings, falling back to env');

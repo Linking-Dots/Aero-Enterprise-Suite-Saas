@@ -50,7 +50,7 @@
         "aero": {
             "package": "analytics",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Business Intelligence platform with executive dashboards, advanced reporting, data warehouse, and predictive analytics"
         }
     },

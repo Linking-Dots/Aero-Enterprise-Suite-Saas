@@ -3,6 +3,7 @@
 namespace Aero\Auth\Listeners;
 
 use Aero\Core\Models\User;
+use Aero\Notifications\Models\UserNotificationPreference;
 use Illuminate\Auth\Events\Attempting;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\CurrentDeviceLogout;
@@ -137,6 +138,16 @@ class AuthEventSubscriber
             'user_agent' => request()->userAgent(),
             'referrer' => request()->header('referer'),
         ]);
+
+        // Seed default notification preferences for the new user
+        try {
+            UserNotificationPreference::seedDefaultsForUser($event->user->id);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to seed default notification preferences', [
+                'user_id' => $event->user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         Log::channel('auth')->info('New user registered', [
             'user_id' => $event->user->id,

@@ -23,7 +23,7 @@
         "aero": {
             "package": "compliance",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Compliance management system with regulatory tracking, audit trails, and compliance reporting"
         }
     },

@@ -309,37 +309,26 @@ class SubscriptionLifecycleService
     }
 
     /**
-     * Align tenant modules to the active plan and clear entitlement cache.
+     * Clear entitlement cache after a plan subscription change.
+     *
+     * Plans and products/modules are separate concerns:
+     * - Plan subscription controls limits (users, storage).
+     * - Module access is managed independently via tenant_module pivot
+     *   and subscription_modules table.
+     *
+     * Plan upgrades/downgrades only affect quota limits, so we clear
+     * the entitlement cache to refresh user/storage limit checks.
      */
     protected function reconcileTenantModules(Subscription $subscription, Plan $plan): void
     {
-        $tenant = Tenant::find($subscription->tenant_id);
+        $tenant = $subscription->tenant;
 
         if (! $tenant) {
             return;
         }
 
-        $allowed = $this->getAllowedModulesFromPlan($plan);
-
-        if ($allowed === null) {
-            return;
-        }
-
-        $tenant->update(['modules' => $allowed]);
-
+        // Clear entitlement cache so updated plan limits take effect immediately
         app(PlanEntitlementService::class)->clearCache($tenant->id);
-    }
-
-    /**
-     * Retrieve allowed modules from plan definition.
-     * Modules are now tenant-specific, not plan-specific.
-     * Returns null to indicate tenant modules should be used instead.
-     */
-    protected function getAllowedModulesFromPlan(Plan $plan): ?array
-    {
-        // Modules are now tenant-specific via tenant_module pivot table
-        // Plans no longer include module_codes
-        return null;
     }
 
     /**

@@ -358,7 +358,7 @@ class LeaveCalendarService
 
         $ical = "BEGIN:VCALENDAR\r\n";
         $ical .= "VERSION:2.0\r\n";
-        $ical .= "PRODID:-//Aero Enterprise Suite//Leave Calendar//EN\r\n";
+        $ical .= "PRODID:-//aeos365//Leave Calendar//EN\r\n";
         $ical .= "CALSCALE:GREGORIAN\r\n";
         $ical .= "METHOD:PUBLISH\r\n";
         $ical .= "X-WR-CALNAME:Team Leave Calendar\r\n";

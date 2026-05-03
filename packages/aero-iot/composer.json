@@ -18,6 +18,12 @@
             "providers": [
                 "Aero\\IoT\\Providers\\IoTServiceProvider"
             ]
+        },
+        "aero": {
+            "package": "iot",
+            "version": "1.0.0",
+            "category": "product",
+            "description": "IoT Device Management System with Device Monitoring, Sensor Data Collection, and Edge Computing"
         }
     }
 }

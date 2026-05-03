@@ -7,16 +7,10 @@
     "main": "resources/js/index.js",
     "exports": {
         ".": "./resources/js/index.js",
-        "./Components/*": "./resources/js/Components/*",
-        "./Tables/*": "./resources/js/Tables/*",
-        "./Forms/*": "./resources/js/Forms/*",
-        "./Hooks/*": "./resources/js/Hooks/*",
-        "./Context/*": "./resources/js/Context/*",
-        "./Layouts/*": "./resources/js/Layouts/*",
-        "./utils/*": "./resources/js/utils/*",
+        "./css": "./resources/css/app.css",
         "./theme/*": "./resources/js/theme/*",
-        "./aeos.css": "./resources/js/theme/aeos.css",
-        "./theme-drawer.css": "./resources/js/theme/theme-drawer.css"
+        "./hooks/*": "./resources/js/hooks/*",
+        "./icons/*": "./resources/js/icons/*"
     },
     "scripts": {
         "build": "vite build",

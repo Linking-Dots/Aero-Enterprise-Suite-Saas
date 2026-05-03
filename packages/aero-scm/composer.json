@@ -22,7 +22,7 @@
         "aero": {
             "package": "scm",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Supply chain management with procurement, logistics, production planning, and supplier management"
         }
     },

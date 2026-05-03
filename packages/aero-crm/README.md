@@ -1,6 +1,6 @@
 # Aero CRM Module
 
-Customer Relationship Management module for the Aero Enterprise Suite.
+Customer Relationship Management module for the aeos365.
 
 ## Features
 

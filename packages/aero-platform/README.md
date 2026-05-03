@@ -433,7 +433,7 @@ php artisan db:seed --class=PermissionSeeder
 
 ## 📄 License
 
-Proprietary - Aero Enterprise Suite
+Proprietary - aeos365
 
 ## 🔗 Related Packages
 

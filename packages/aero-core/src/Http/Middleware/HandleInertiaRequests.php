@@ -169,6 +169,7 @@ class HandleInertiaRequests extends Middleware
             'locale' => App::getLocale(),
             ...app(TranslationService::class)->getSharedProps(),
             'navigation' => fn () => $this->getNavigationProps($user),
+            'navigationGroups' => fn () => $this->getNavigationGroupsProps($user),
             'userNavMetadata' => fn () => $user ? app(NavigationRegistry::class)->getUserNavigationMetadata($user) : null,
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -293,6 +294,37 @@ class HandleInertiaRequests extends Middleware
             }
         } catch (Throwable $e) {
             \Log::error('Navigation error: '.$e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * Get grouped navigation items from NavigationRegistry.
+     * Returns section-grouped navigation for CommandShell and other grouped UIs.
+     */
+    protected function getNavigationGroupsProps($user): array
+    {
+        if (! $user) {
+            return [];
+        }
+
+        try {
+            if (app()->bound(NavigationRegistry::class)) {
+                $registry = app(NavigationRegistry::class);
+
+                // Determine subscribed modules for plan-based filtering
+                $subscribedModules = null;
+                $isSaaSMode = function_exists('aero_mode') && aero_mode() === 'saas';
+
+                if ($isSaaSMode && function_exists('tenant') && tenant()) {
+                    $subscribedModules = $this->getSubscribedModuleCodes();
+                }
+
+                return $registry->toFrontendGroups('tenant', $user, $subscribedModules);
+            }
+        } catch (Throwable $e) {
+            \Log::error('Navigation groups error: '.$e->getMessage());
         }
 
         return [];
@@ -470,15 +502,9 @@ class HandleInertiaRequests extends Middleware
                     $modules = array_merge($modules, $directPlanModules);
                 }
 
-                // Tenant-level module overrides (stored on tenant record)
-                // modules may be a JSON string, PHP array, or ArrayObject depending on the tenant model casting
-                $tenantModules = $tenant->modules;
-                if ($tenantModules instanceof \ArrayObject) {
-                    $tenantModules = $tenantModules->getArrayCopy();
-                } elseif (is_string($tenantModules)) {
-                    $tenantModules = json_decode($tenantModules, true) ?? [];
-                }
-                if (! empty($tenantModules) && is_array($tenantModules)) {
+                // Tenant-level module overrides (from tenant_module pivot)
+                $tenantModules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
+                if (! empty($tenantModules)) {
                     $modules = array_merge($modules, $tenantModules);
                 }
             }

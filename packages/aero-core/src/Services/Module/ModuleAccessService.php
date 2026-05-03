@@ -463,21 +463,20 @@ class ModuleAccessService
             }
 
             if ($includePaidModules) {
-                // Check 1: Get modules from subscription plan (if plan_id exists)
-                if ($tenant->plan_id) {
-                    $plan = Plan::find($tenant->plan_id);
-                    if ($plan) {
-                        $planModules = $plan->modules()
-                            ->where('is_active', true)
-                            ->pluck('modules.code')
-                            ->toArray();
-                        $moduleCodes = array_merge($moduleCodes, $planModules);
-                    }
+                // Check 1: Get modules from subscription plan (if plan exists)
+                $plan = $tenant->plan;
+                if ($plan) {
+                    $planModules = $plan->modules()
+                        ->where('is_active', true)
+                        ->pluck('modules.code')
+                        ->toArray();
+                    $moduleCodes = array_merge($moduleCodes, $planModules);
                 }
 
                 // Check 2: Get modules from tenant's custom modules collection
-                if (! empty($tenant->modules) && is_array($tenant->modules)) {
-                    $moduleCodes = array_merge($moduleCodes, $tenant->modules);
+                $tenantModules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
+                if (! empty($tenantModules)) {
+                    $moduleCodes = array_merge($moduleCodes, $tenantModules);
                 }
             }
 

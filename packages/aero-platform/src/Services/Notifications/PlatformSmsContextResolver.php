@@ -12,7 +12,7 @@ class PlatformSmsContextResolver implements SmsContextResolver
     public function resolve(): array
     {
         try {
-            $config = \Aero\Platform\Models\PlatformSetting::get('sms_config');
+            $config = \Aero\Platform\Models\PlatformSetting::current()->sms_settings ?? [];
             if ($config && ! empty($config['provider'])) {
                 return ['configured' => true, 'provider' => $config['provider'], 'credentials' => $config['credentials'] ?? []];
             }

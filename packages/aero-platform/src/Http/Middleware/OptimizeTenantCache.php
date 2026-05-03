@@ -134,7 +134,7 @@ class OptimizeTenantCache
     {
         try {
             $tenant = tenant();
-            $modules = $tenant->modules ?? [];
+            $modules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
 
             $this->taggedCache($tenantId)->put(
                 'enabled_modules',

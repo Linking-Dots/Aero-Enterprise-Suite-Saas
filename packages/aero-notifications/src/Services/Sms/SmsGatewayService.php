@@ -83,4 +83,26 @@ class SmsGatewayService
         if (str_starts_with($number, '0')) $number = '+88'.$number;
         return $number;
     }
+
+    /**
+     * Apply SMS settings from database/runtime configuration.
+     * Backward-compatible method for platform setting controllers.
+     */
+    public function applySmsSettings(): void
+    {
+        $config = app(SmsContextResolver::class)->resolve();
+        if (! empty($config['configured'])) {
+            config(['services.sms.default' => $config['provider'] ?? 'log']);
+            config(['services.sms.credentials' => $config['credentials'] ?? []]);
+        }
+    }
+
+    /**
+     * Send a test SMS to the given phone number.
+     * Backward-compatible method for platform setting controllers.
+     */
+    public function sendTestSms(string $phone): array
+    {
+        return $this->send($phone, 'This is a test SMS from aeos365.');
+    }
 }

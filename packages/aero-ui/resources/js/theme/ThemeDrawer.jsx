@@ -213,7 +213,7 @@ export default function ThemeDrawer() {
                 <div className="aeos-theme-select">
                   <select
                     value={theme.fontDisplay}
-                    onChange={e => theme.setFonts({ fontDisplay: e.target.value })}
+                    onChange={e => theme.setFonts({ display: e.target.value })}
                   >
                     {FONT_PAIRS.map(p => (
                       <option key={p.value} value={p.value}>{p.label}</option>

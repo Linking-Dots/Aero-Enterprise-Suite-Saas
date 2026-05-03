@@ -12,6 +12,7 @@
 import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import { AppShell, AppBrand, AppTopbarTitle, AppUserMenu } from '@aero/ui';
+import { useTheme } from '../theme/ThemeProvider.jsx';
 
 // ─── HeroIcon → engine icon name map ─────────────────────────────────────────
 const HERO_TO_ENGINE = {
@@ -122,6 +123,22 @@ function transformNavigation(backendNav, currentUrl) {
   return result.length ? result : null;
 }
 
+function mapGroupItem(item, currentUrl) {
+  const href = item.path || item.children?.[0]?.path || '#';
+  return { icon: mapIcon(item.icon), label: item.name ?? '', href, active: isActive(href, currentUrl) };
+}
+
+function transformNavigationGroups(backendGroups, currentUrl) {
+  if (!backendGroups?.length) return null;
+
+  return backendGroups
+    .map(group => ({
+      title: group.title ?? '',
+      items: (group.items ?? []).map(item => mapGroupItem(item, currentUrl)),
+    }))
+    .filter(g => g.items.length > 0);
+}
+
 const FALLBACK_NAV = [
   { icon: 'layout',   label: 'Dashboard', href: '/dashboard'       },
   { divider: true },
@@ -142,10 +159,14 @@ function buildFallbackNav(currentUrl) {
 
 // ─── App layout ───────────────────────────────────────────────────────────────
 export default function App({ title, children }) {
-  const { auth, navigation, url } = usePage().props;
+  const { auth, navigation, navigationGroups, url } = usePage().props;
+  const theme = useTheme();
   const currentUrl = url ?? (typeof window !== 'undefined' ? window.location.pathname : '/dashboard');
 
-  const nav = transformNavigation(navigation, currentUrl) ?? buildFallbackNav(currentUrl);
+  const isCommand = theme.shell === 'command';
+  const nav = isCommand
+    ? (transformNavigationGroups(navigationGroups, currentUrl) ?? [])
+    : (transformNavigation(navigation, currentUrl) ?? buildFallbackNav(currentUrl));
 
   return (
     <>

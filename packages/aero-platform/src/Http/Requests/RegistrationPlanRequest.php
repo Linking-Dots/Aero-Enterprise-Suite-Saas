@@ -60,9 +60,10 @@ class RegistrationPlanRequest extends FormRequest
                 $validator->errors()->add('modules', 'Please select at least one product to continue.');
             }
 
-            // Validate selected modules against all active modules
+            // Validate selected modules against module_pricing table (not central modules table,
+            // which in SaaS mode only contains 'platform'). module_pricing holds all sellable products.
             if (! empty($modules)) {
-                $allowed = Module::where('is_active', true)->pluck('code')->all();
+                $allowed = \DB::table('module_pricing')->where('is_active', true)->pluck('module_code')->all();
                 $allowed = array_values(array_filter($allowed));
 
                 // If user requested modules not available, reject

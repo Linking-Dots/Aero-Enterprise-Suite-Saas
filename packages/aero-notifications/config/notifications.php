@@ -45,7 +45,7 @@ return [
 
     // Branding fallback (packages can inject tenant/platform branding via callbacks)
     'branding' => [
-        'company_name' => config('app.name', 'Aero Enterprise Suite'),
+        'company_name' => config('app.name', 'aeos365'),
         'logo_url' => null,
         'primary_color' => '#3B82F6',
         'support_email' => 'support@aeroenterprise.com',

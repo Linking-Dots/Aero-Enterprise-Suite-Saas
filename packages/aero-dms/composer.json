@@ -1,6 +1,6 @@
 {
     "name": "aero/dms",
-    "description": "Document Management System module for Aero Enterprise Suite",
+    "description": "Document Management System module for aeos365",
     "type": "library",
     "license": "proprietary",
     "authors": [
@@ -25,11 +25,10 @@
             ]
         },
         "aero": {
-            "module": {
-                "code": "dms",
-                "name": "Document Management",
-                "version": "1.0.0"
-            }
+            "package": "dms",
+            "version": "1.0.0",
+            "category": "product",
+            "description": "Document Management System module for aeos365"
         }
     },
     "config": {

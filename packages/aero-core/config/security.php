@@ -7,7 +7,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file contains all security-related configuration for the
-    | Aero Enterprise Suite. Settings here control password policies,
+    | aeos365. Settings here control password policies,
     | authentication requirements, session security, and more.
     |
     */

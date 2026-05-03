@@ -3,8 +3,9 @@
 namespace Aero\Platform\Services\Monitoring;
 
 use Aero\Platform\Models\Tenant;
-use Aero\Platform\Services\MailService;
-use Aero\Platform\Services\Notification\SmsGatewayService;
+use Aero\Notifications\Services\Mail\MailService;
+use Aero\Notifications\Services\Sms\SmsGatewayService;
+use Aero\Notifications\Services\Sms\SmsService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 

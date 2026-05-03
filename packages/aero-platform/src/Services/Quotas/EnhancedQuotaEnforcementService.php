@@ -8,7 +8,7 @@ use Aero\Platform\Models\QuotaEnforcementSetting;
 use Aero\Platform\Models\QuotaWarning;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\NotificationTemplateService;
-use Aero\Platform\Services\SmsService;
+use Aero\Notifications\Services\Sms\SmsService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;

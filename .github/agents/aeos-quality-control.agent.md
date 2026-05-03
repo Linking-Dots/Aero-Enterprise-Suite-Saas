@@ -1,6 +1,6 @@
 ---
 name: AEOS Quality Control Agent
-description: "Use when writing, reviewing, or running tests for any backend or frontend code in aeos365 or Aero Enterprise Suite packages. Generates PHPUnit feature and unit tests, reviews code for security flaws, edge cases, performance bottlenecks, and DSOP compliance. Use when: test, PHPUnit, unit test, feature test, code review, quality, coverage, edge case, regression, review controller, review service, review component, audit code, find bugs, performance, N+1, security review, test coverage."
+description: "Use when writing, reviewing, or running tests for any backend or frontend code in aeos365 or aeos365 packages. Generates PHPUnit feature and unit tests, reviews code for security flaws, edge cases, performance bottlenecks, and DSOP compliance. Use when: test, PHPUnit, unit test, feature test, code review, quality, coverage, edge case, regression, review controller, review service, review component, audit code, find bugs, performance, N+1, security review, test coverage."
 tools: [read, search, edit, execute, todo, browser, vscode/askQuestions, vscode/reviewPlan, agent/runSubagent]
 argument-hint: Describe the code to test or review (file path or feature name), whether you want unit tests, feature tests, or a code review, and the target package.
 user-invocable: true

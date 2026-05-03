@@ -50,6 +50,12 @@
             "providers": [
                 "Aero\\Blockchain\\Providers\\BlockchainServiceProvider"
             ]
+        },
+        "aero": {
+            "package": "blockchain",
+            "version": "1.0.0",
+            "category": "product",
+            "description": "Distributed ledger technology integration for enterprise applications with smart contracts, transaction verification, and consensus mechanisms"
         }
     },
     "config": {

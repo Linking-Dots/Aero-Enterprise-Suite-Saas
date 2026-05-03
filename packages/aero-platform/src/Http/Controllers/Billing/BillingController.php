@@ -143,10 +143,26 @@ class BillingController extends Controller
                 $subscriptionBuilder->create();
             }
 
-            // Update tenant's plan reference
+            // Enrich the Cashier-created subscription row with our lifecycle fields
+            $subscription = $tenant->subscription('default');
+            if ($subscription) {
+                $amount = $validated['billing_cycle'] === 'yearly'
+                    ? $plan->yearly_price
+                    : $plan->monthly_price;
+
+                $subscription->update([
+                    'plan_id' => $plan->id,
+                    'billing_cycle' => $validated['billing_cycle'],
+                    'amount' => $amount,
+                    'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
+                    'status' => \Aero\Platform\Models\Subscription::STATUS_ACTIVE,
+                    'starts_at' => now(),
+                    'ends_at' => now()->addMonths($plan->duration_in_months ?? 1),
+                ]);
+            }
+
+            // Activate tenant
             $tenant->update([
-                'plan_id' => $plan->id,
-                'subscription_plan' => $validated['billing_cycle'],
                 'status' => Tenant::STATUS_ACTIVE,
             ]);
 
@@ -255,12 +271,19 @@ class BillingController extends Controller
         }
 
         try {
-            $tenant->subscription('default')->swap($priceId);
+            $subscription = $tenant->subscription('default');
+            $subscription->swap($priceId);
 
-            // Update tenant's plan reference
-            $tenant->update([
+            // Update subscription row with new plan details
+            $amount = $validated['billing_cycle'] === 'yearly'
+                ? $plan->yearly_price
+                : $plan->monthly_price;
+
+            $subscription->update([
                 'plan_id' => $plan->id,
-                'subscription_plan' => $validated['billing_cycle'],
+                'billing_cycle' => $validated['billing_cycle'],
+                'amount' => $amount,
+                'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
             ]);
 
             return response()->json([
@@ -394,9 +417,21 @@ class BillingController extends Controller
 
         $tenant = Tenant::findOrFail($validated['tenant_id']);
 
+        $pricing = \DB::table('module_pricing')
+            ->where('module_code', $module->code)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $pricing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Module has no pricing configured.',
+            ], 422);
+        }
+
         $price = $validated['billing_cycle'] === 'yearly'
-            ? $module->yearly_price
-            : $module->monthly_price;
+            ? $pricing->yearly_price
+            : $pricing->monthly_price;
 
         if ($price <= 0) {
             return response()->json([

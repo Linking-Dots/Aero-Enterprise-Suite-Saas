@@ -47,7 +47,7 @@
         "aero": {
             "package": "finance",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Financial management system with chart of accounts, general ledger, AP/AR, and journal entries"
         }
     },

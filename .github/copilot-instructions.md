@@ -1,4 +1,4 @@
-# Aero Enterprise Suite SaaS - AI Agent Instructions
+# aeos365 SaaS - AI Agent Instructions
 
 ## Project Overview
 This is a **multi-tenant, multi-module SaaS ERP system** built with Laravel 11 + Inertia.js v2 + React 18 + Tailwind CSS v4 + HeroUI. The application supports multiple tenant isolation strategies (subdomain-based) with a modular architecture where features are gradually migrated, extended, or newly developed.

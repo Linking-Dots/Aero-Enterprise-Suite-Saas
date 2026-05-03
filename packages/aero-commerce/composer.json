@@ -50,7 +50,7 @@
         "aero": {
             "package": "commerce",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "E-commerce platform with product catalog, shopping cart, order management, payment gateway integration, and multi-vendor marketplace support"
         }
     },

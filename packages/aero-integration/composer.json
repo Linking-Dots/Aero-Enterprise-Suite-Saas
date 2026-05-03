@@ -18,6 +18,12 @@
             "providers": [
                 "Aero\\Integration\\Providers\\IntegrationServiceProvider"
             ]
+        },
+        "aero": {
+            "package": "integration",
+            "version": "1.0.0",
+            "category": "product",
+            "description": "Enterprise Integration Platform with API Gateway, ETL, and Workflow Automation"
         }
     }
 }

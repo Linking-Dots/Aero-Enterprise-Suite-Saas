@@ -17,7 +17,7 @@ HRMAC (Hierarchical Role Module Access Control) provides a complete solution for
 
 ## Installation
 
-The package is designed as part of the Aero Enterprise Suite monorepo. Add it to your host app's `composer.json`:
+The package is designed as part of the aeos365 monorepo. Add it to your host app's `composer.json`:
 
 ```json
 {
@@ -352,8 +352,8 @@ public function test_employee_can_access_hrm_module()
 
 ## License
 
-This package is part of the Aero Enterprise Suite and is proprietary software.
+This package is part of the aeos365 and is proprietary software.
 
 ---
 
-Built with ❤️ by the Aero Enterprise Suite team.
+Built with ❤️ by the aeos365 team.

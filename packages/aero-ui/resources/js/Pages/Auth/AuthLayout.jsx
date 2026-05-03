@@ -1,11 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
+import { useTheme } from '../../theme/ThemeProvider.jsx';
 
 /**
  * AuthLayout — centred full-viewport shell for all auth pages.
  *
- * Renders the AEOS gradient mesh background, a top brand bar,
- * a glass-strong centred card, and a footer. All auth pages use
- * this layout via the static `.layout` property pattern.
+ * Renders the AEOS gradient mesh background, a top brand bar with
+ * dark/light mode toggle, a glass-strong centred card, and a footer.
+ * All auth pages use this layout via the static `.layout` property pattern.
  *
  * @param {object}          props
  * @param {string}          props.title    - Page <title> and card heading
@@ -13,6 +14,9 @@ import { Head, Link } from '@inertiajs/react';
  * @param {React.ReactNode} props.children - Form content
  */
 export default function AuthLayout({ title, eyebrow, children }) {
+  const theme = useTheme();
+  const isDark = theme.isDark;
+
   return (
     <>
       <Head title={`${title} · AEOS365`} />
@@ -21,7 +25,7 @@ export default function AuthLayout({ title, eyebrow, children }) {
         {/* Ambient gradient mesh */}
         <div className="al-mesh" aria-hidden="true" />
 
-        {/* Brand */}
+        {/* Brand header with theme toggle */}
         <header className="al-brand">
           <Link href="/" className="al-brand-link" aria-label="AEOS365 home">
             <span className="al-logo-mark">
@@ -38,6 +42,25 @@ export default function AuthLayout({ title, eyebrow, children }) {
             </span>
             <span className="aeos-logo-text">aeos365</span>
           </Link>
+
+          <button
+            type="button"
+            className="al-theme-toggle"
+            onClick={() => theme.setMode(isDark ? 'light' : 'dark')}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+              </svg>
+            )}
+          </button>
         </header>
 
         {/* Card */}
@@ -74,7 +97,9 @@ export default function AuthLayout({ title, eyebrow, children }) {
           position: relative;
           overflow: hidden;
         }
-        /* Kill any shell grid the ThemeProvider wrote to <body> */
+        /* Prevent shell grid from breaking centred layout.
+           ThemeProvider still runs (no data-no-theme) so CSS variables
+           like --aeos-bg-page update correctly for dark/light mode. */
         body[data-aeos-shell] { display: block !important; }
         .al-mesh {
           position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -85,8 +110,11 @@ export default function AuthLayout({ title, eyebrow, children }) {
         }
         .al-brand {
           width: 100%; max-width: 460px;
-          padding: 2rem 0 0;
+          padding: 2rem 1rem 0;
           position: relative; z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
         .al-brand-link {
           display: inline-flex; align-items: center; gap: 10px;
@@ -95,6 +123,20 @@ export default function AuthLayout({ title, eyebrow, children }) {
         .al-logo-mark {
           display: flex; align-items: center;
           filter: drop-shadow(0 0 14px rgba(0,229,255,.35));
+        }
+        .al-theme-toggle {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 50%;
+          border: 1px solid var(--aeos-divider);
+          background: transparent;
+          color: var(--aeos-text-secondary);
+          cursor: pointer;
+          transition: background .15s, color .15s, border-color .15s;
+        }
+        .al-theme-toggle:hover {
+          background: rgba(0, 229, 255, .08);
+          color: var(--aeos-primary);
+          border-color: rgba(0, 229, 255, .25);
         }
         .al-main {
           flex: 1; display: flex; align-items: center; justify-content: center;

@@ -36,7 +36,7 @@ class InstallationCommand extends Command
     {
         $this->line('');
         $this->info('╔══════════════════════════════════════════════════════════════╗');
-        $this->info('║         Aero Enterprise Suite - Installation Wizard           ║');
+        $this->info('║         aeos365 - Installation Wizard           ║');
         $this->info('╚══════════════════════════════════════════════════════════════╝');
         $this->line('');
 

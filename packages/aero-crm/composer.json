@@ -46,7 +46,7 @@
         "aero": {
             "package": "crm",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Customer Relationship Management module with deals, opportunities, pipelines, and customer management"
         }
     },

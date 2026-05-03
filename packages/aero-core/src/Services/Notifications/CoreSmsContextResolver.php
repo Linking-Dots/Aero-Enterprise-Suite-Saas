@@ -12,7 +12,7 @@ class CoreSmsContextResolver implements SmsContextResolver
     public function resolve(): array
     {
         try {
-            $config = \Aero\Core\Models\SystemSetting::get('sms_config');
+            $config = \Aero\Core\Models\SystemSetting::current()->sms_settings ?? [];
             if ($config && ! empty($config['provider'])) {
                 return ['configured' => true, 'provider' => $config['provider'], 'credentials' => $config['credentials'] ?? []];
             }

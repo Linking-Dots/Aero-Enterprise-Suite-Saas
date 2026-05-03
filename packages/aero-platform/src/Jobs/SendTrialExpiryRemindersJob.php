@@ -2,8 +2,8 @@
 
 namespace Aero\Platform\Jobs;
 
-use Aero\Platform\Services\MailService;
-use Aero\Platform\Services\SmsService;
+use Aero\Notifications\Services\Mail\MailService;
+use Aero\Notifications\Services\Sms\SmsService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -43,10 +43,13 @@ class SendTrialExpiryRemindersJob implements ShouldQueue
     {
         $targetDate = now()->addDays($days)->toDateString();
 
-        // Get tenants whose trial expires on the target date
-        $tenants = DB::table('tenants')
-            ->where('trial_ends_at', 'like', $targetDate.'%')
-            ->where('plan_id', null) // Still on trial, no paid plan
+        // Get tenants whose trial subscription expires on the target date
+        $tenants = Tenant::query()
+            ->whereHas('subscription', function ($q) use ($targetDate) {
+                $q->where('status', Subscription::STATUS_TRIALING)
+                    ->whereNotNull('trial_ends_at')
+                    ->whereDate('trial_ends_at', $targetDate);
+            })
             ->whereNull('deleted_at')
             ->get();
 
@@ -71,7 +74,7 @@ class SendTrialExpiryRemindersJob implements ShouldQueue
      */
     protected function sendReminderToTenant($tenant, int $days): void
     {
-        $trialEnds = Carbon::parse($tenant->trial_ends_at);
+        $trialEnds = Carbon::parse($tenant->subscription('default')?->trial_ends_at);
 
         // Get tenant admin email and phone
         $adminUser = DB::table('users')

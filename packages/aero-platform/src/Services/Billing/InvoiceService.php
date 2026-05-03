@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services\Billing;
 
+use Aero\Platform\Models\Invoice;
+use Aero\Platform\Models\InvoiceLineItem;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\UsageRecord;
@@ -100,11 +102,15 @@ class InvoiceService
         $lineItems = [];
 
         // Add subscription charge
+        $effectivePrice = $subscription->billing_cycle === 'yearly'
+            ? ($plan->yearly_price ?? $plan->monthly_price)
+            : $plan->monthly_price;
+
         $lineItems[] = [
-            'description' => "{$plan->name} Subscription",
+            'description' => "{$plan->name} Subscription ({$subscription->billing_cycle})",
             'quantity' => 1,
-            'unit_price' => $plan->price,
-            'amount' => $plan->price,
+            'unit_price' => $effectivePrice,
+            'amount' => $effectivePrice,
             'type' => 'subscription',
         ];
 
@@ -131,41 +137,45 @@ class InvoiceService
         $creditsUsed = min($creditsApplied, $total);
         $amountDue = $total - $creditsUsed;
 
-        $invoice = [
-            'invoice_number' => $this->generateInvoiceNumber($tenant),
-            'tenant_id' => $tenant->id,
+        $invoiceNumber = $this->generateInvoiceNumber($tenant);
+
+        $invoice = Invoice::create([
+            'billable_type' => Tenant::class,
+            'billable_id' => $tenant->id,
             'subscription_id' => $subscription->id,
-            'type' => self::TYPE_SUBSCRIPTION,
+            'invoice_number' => $invoiceNumber,
             'status' => self::STATUS_PENDING,
             'currency' => $plan->currency ?? 'USD',
             'billing_period_start' => $billingPeriodStart->toDateString(),
             'billing_period_end' => $billingPeriodEnd->toDateString(),
             'issue_date' => now()->toDateString(),
             'due_date' => now()->addDays(30)->toDateString(),
-            'line_items' => $lineItems,
             'subtotal' => $subtotal,
-            'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
-            'credits_applied' => $creditsUsed,
             'total' => $total,
             'amount_due' => $amountDue,
-            'notes' => null,
             'metadata' => [
                 'plan_id' => $plan->id,
                 'plan_name' => $plan->name,
+                'tax_rate' => $taxRate,
+                'credits_applied' => $creditsUsed,
             ],
-            'created_at' => now()->toDateTimeString(),
-        ];
+        ]);
 
-        // Store the invoice
-        $this->storeInvoice($tenant, $invoice);
+        foreach ($lineItems as $sort => $item) {
+            $invoice->lineItems()->create(
+                array_merge($item, ['sort_order' => $sort])
+            );
+        }
 
         // Deduct credits used
         if ($creditsUsed > 0) {
-            $this->deductCredits($tenant, $creditsUsed, $invoice['invoice_number']);
+            $this->deductCredits($tenant, $creditsUsed, $invoiceNumber);
         }
 
-        return $invoice;
+        Log::info("Invoice {$invoiceNumber} created for tenant {$tenant->id}");
+
+        return $this->invoiceToArray($invoice->fresh('lineItems'));
     }
 
     /**
@@ -221,35 +231,41 @@ class InvoiceService
         $taxAmount = round($subtotal * ($taxRate / 100), 2);
         $total = $subtotal + $taxAmount;
 
-        $invoice = [
-            'invoice_number' => $this->generateInvoiceNumber($tenant, 'USG'),
-            'tenant_id' => $tenant->id,
+        $invoiceNumber = $this->generateInvoiceNumber($tenant, 'USG');
+
+        $invoice = Invoice::create([
+            'billable_type' => Tenant::class,
+            'billable_id' => $tenant->id,
+            'invoice_number' => $invoiceNumber,
             'type' => self::TYPE_USAGE,
             'status' => self::STATUS_PENDING,
             'currency' => 'USD',
             'billing_period_start' => $billingPeriodStart->toDateString(),
             'billing_period_end' => $billingPeriodEnd->toDateString(),
-            'issue_date' => now()->toDateString(),
-            'due_date' => now()->addDays(15)->toDateString(),
-            'line_items' => $lineItems,
             'subtotal' => $subtotal,
-            'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
-            'credits_applied' => 0,
             'total' => $total,
             'amount_due' => $total,
             'notes' => 'Usage-based charges for additional consumption beyond plan limits.',
-            'created_at' => now()->toDateTimeString(),
-        ];
+            'metadata' => [
+                'tax_rate' => $taxRate,
+                'credits_applied' => 0,
+            ],
+        ]);
 
-        // Store the invoice
-        $this->storeInvoice($tenant, $invoice);
+        foreach ($lineItems as $sort => $item) {
+            $invoice->lineItems()->create(
+                array_merge($item, ['sort_order' => $sort])
+            );
+        }
 
         // Mark usage records as billed
         UsageRecord::whereIn('id', $usageRecords->pluck('id'))
             ->update(['billed' => true, 'billed_at' => now()]);
 
-        return $invoice;
+        Log::info("Usage invoice {$invoiceNumber} created for tenant {$tenant->id}");
+
+        return $this->invoiceToArray($invoice->fresh('lineItems'));
     }
 
     /**
@@ -313,9 +329,13 @@ class InvoiceService
      */
     public function getInvoice(Tenant $tenant, string $invoiceNumber): ?array
     {
-        $invoices = $tenant->data['invoices'] ?? [];
+        $invoice = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->where('invoice_number', $invoiceNumber)
+            ->with('lineItems')
+            ->first();
 
-        return $invoices[$invoiceNumber] ?? null;
+        return $invoice ? $this->invoiceToArray($invoice) : null;
     }
 
     /**
@@ -323,30 +343,30 @@ class InvoiceService
      */
     public function getInvoices(Tenant $tenant, array $filters = []): Collection
     {
-        $invoices = collect($tenant->data['invoices'] ?? []);
+        $query = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->with('lineItems')
+            ->orderByDesc('issue_date');
 
-        // Apply filters
         if (isset($filters['status'])) {
-            $invoices = $invoices->where('status', $filters['status']);
+            $query->where('status', $filters['status']);
         }
 
         if (isset($filters['type'])) {
-            $invoices = $invoices->where('type', $filters['type']);
+            $query->where('type', $filters['type']);
         }
 
         if (isset($filters['from_date'])) {
-            $invoices = $invoices->filter(function ($invoice) use ($filters) {
-                return Carbon::parse($invoice['issue_date'])->gte($filters['from_date']);
-            });
+            $query->whereDate('issue_date', '>=', $filters['from_date']);
         }
 
         if (isset($filters['to_date'])) {
-            $invoices = $invoices->filter(function ($invoice) use ($filters) {
-                return Carbon::parse($invoice['issue_date'])->lte($filters['to_date']);
-            });
+            $query->whereDate('issue_date', '<=', $filters['to_date']);
         }
 
-        return $invoices->sortByDesc('issue_date')->values();
+        return $query->get()
+            ->map(fn (Invoice $invoice) => $this->invoiceToArray($invoice))
+            ->values();
     }
 
     /**
@@ -359,25 +379,24 @@ class InvoiceService
         string $invoiceNumber,
         array $paymentDetails = []
     ): array {
-        $invoices = $tenant->data['invoices'] ?? [];
+        $invoice = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->where('invoice_number', $invoiceNumber)
+            ->first();
 
-        if (! isset($invoices[$invoiceNumber])) {
+        if (! $invoice) {
             throw new \RuntimeException("Invoice {$invoiceNumber} not found.");
         }
 
-        $invoices[$invoiceNumber]['status'] = self::STATUS_PAID;
-        $invoices[$invoiceNumber]['paid_at'] = now()->toDateTimeString();
-        $invoices[$invoiceNumber]['payment_method'] = $paymentDetails['method'] ?? null;
-        $invoices[$invoiceNumber]['payment_reference'] = $paymentDetails['reference'] ?? null;
-        $invoices[$invoiceNumber]['amount_paid'] = $paymentDetails['amount'] ?? $invoices[$invoiceNumber]['amount_due'];
-
-        $data = $tenant->data;
-        $data['invoices'] = $invoices;
-        $tenant->update(['data' => $data]);
+        $invoice->markPaid(
+            method: $paymentDetails['method'] ?? null,
+            reference: $paymentDetails['reference'] ?? null,
+            amount: $paymentDetails['amount'] ?? $invoice->amount_due
+        );
 
         Log::info("Invoice {$invoiceNumber} marked as paid for tenant {$tenant->id}");
 
-        return $invoices[$invoiceNumber];
+        return $this->invoiceToArray($invoice->fresh('lineItems'));
     }
 
     /**
@@ -385,34 +404,31 @@ class InvoiceService
      */
     public function cancelInvoice(Tenant $tenant, string $invoiceNumber, string $reason = ''): array
     {
-        $invoices = $tenant->data['invoices'] ?? [];
+        $invoice = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->where('invoice_number', $invoiceNumber)
+            ->first();
 
-        if (! isset($invoices[$invoiceNumber])) {
+        if (! $invoice) {
             throw new \RuntimeException("Invoice {$invoiceNumber} not found.");
         }
 
-        if ($invoices[$invoiceNumber]['status'] === self::STATUS_PAID) {
+        if ($invoice->status === self::STATUS_PAID) {
             throw new \RuntimeException('Cannot cancel a paid invoice. Use refund instead.');
         }
 
-        $invoices[$invoiceNumber]['status'] = self::STATUS_CANCELLED;
-        $invoices[$invoiceNumber]['cancelled_at'] = now()->toDateTimeString();
-        $invoices[$invoiceNumber]['cancellation_reason'] = $reason;
+        $invoice->markVoid($reason);
 
         // Restore credits if any were applied
-        if (($invoices[$invoiceNumber]['credits_applied'] ?? 0) > 0) {
+        if ($invoice->credits_applied > 0) {
             $this->addCredits(
                 $tenant,
-                $invoices[$invoiceNumber]['credits_applied'],
+                $invoice->credits_applied,
                 "Credits restored from cancelled invoice {$invoiceNumber}"
             );
         }
 
-        $data = $tenant->data;
-        $data['invoices'] = $invoices;
-        $tenant->update(['data' => $data]);
-
-        return $invoices[$invoiceNumber];
+        return $this->invoiceToArray($invoice->fresh('lineItems'));
     }
 
     /**
@@ -426,34 +442,29 @@ class InvoiceService
         float $amount,
         string $reason
     ): array {
-        $originalInvoice = $this->getInvoice($tenant, $originalInvoiceNumber);
+        $original = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->where('invoice_number', $originalInvoiceNumber)
+            ->first();
 
-        if (! $originalInvoice) {
+        if (! $original) {
             throw new \RuntimeException("Original invoice {$originalInvoiceNumber} not found.");
         }
 
-        if ($amount > $originalInvoice['amount_paid']) {
+        if ($amount > (float) $original->amount_paid) {
             throw new \RuntimeException('Refund amount exceeds paid amount.');
         }
 
-        $creditNote = [
-            'invoice_number' => $this->generateInvoiceNumber($tenant, 'CR'),
-            'tenant_id' => $tenant->id,
+        $creditNoteNumber = $this->generateInvoiceNumber($tenant, 'CR');
+
+        $creditNote = Invoice::create([
+            'billable_type' => Tenant::class,
+            'billable_id' => $tenant->id,
+            'invoice_number' => $creditNoteNumber,
             'type' => self::TYPE_CREDIT,
             'status' => self::STATUS_PAID,
-            'currency' => $originalInvoice['currency'],
-            'issue_date' => now()->toDateString(),
-            'line_items' => [
-                [
-                    'description' => "Refund for Invoice {$originalInvoiceNumber}",
-                    'quantity' => 1,
-                    'unit_price' => -$amount,
-                    'amount' => -$amount,
-                    'type' => 'refund',
-                ],
-            ],
+            'currency' => $original->currency,
             'subtotal' => -$amount,
-            'tax_rate' => 0,
             'tax_amount' => 0,
             'total' => -$amount,
             'amount_due' => 0,
@@ -462,28 +473,23 @@ class InvoiceService
                 'original_invoice' => $originalInvoiceNumber,
                 'refund_reason' => $reason,
             ],
-            'created_at' => now()->toDateTimeString(),
-        ];
+        ]);
 
-        $this->storeInvoice($tenant, $creditNote);
+        $creditNote->lineItems()->create([
+            'description' => "Refund for Invoice {$originalInvoiceNumber}",
+            'quantity' => 1,
+            'unit_price' => -$amount,
+            'amount' => -$amount,
+            'type' => 'refund',
+        ]);
 
         // Add the refund amount as credit
         $this->addCredits($tenant, $amount, "Refund from invoice {$originalInvoiceNumber}");
 
-        // Update original invoice
-        $invoices = $tenant->data['invoices'] ?? [];
-        $invoices[$originalInvoiceNumber]['refunded_amount'] =
-            ($invoices[$originalInvoiceNumber]['refunded_amount'] ?? 0) + $amount;
+        // Mark original invoice refunded
+        $original->markRefunded($amount);
 
-        if ($invoices[$originalInvoiceNumber]['refunded_amount'] >= $invoices[$originalInvoiceNumber]['amount_paid']) {
-            $invoices[$originalInvoiceNumber]['status'] = self::STATUS_REFUNDED;
-        }
-
-        $data = $tenant->data;
-        $data['invoices'] = $invoices;
-        $tenant->update(['data' => $data]);
-
-        return $creditNote;
+        return $this->invoiceToArray($creditNote->fresh('lineItems'));
     }
 
     /**
@@ -493,31 +499,17 @@ class InvoiceService
      */
     public function processOverdueInvoices(): int
     {
+        $invoices = Invoice::where('status', self::STATUS_PENDING)
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', now())
+            ->get();
+
         $count = 0;
-
-        Tenant::chunk(100, function ($tenants) use (&$count) {
-            foreach ($tenants as $tenant) {
-                $invoices = $tenant->data['invoices'] ?? [];
-                $updated = false;
-
-                foreach ($invoices as $number => &$invoice) {
-                    if (
-                        $invoice['status'] === self::STATUS_PENDING &&
-                        Carbon::parse($invoice['due_date'])->isPast()
-                    ) {
-                        $invoice['status'] = self::STATUS_OVERDUE;
-                        $updated = true;
-                        $count++;
-                    }
-                }
-
-                if ($updated) {
-                    $data = $tenant->data;
-                    $data['invoices'] = $invoices;
-                    $tenant->update(['data' => $data]);
-                }
-            }
-        });
+        foreach ($invoices as $invoice) {
+            $invoice->update(['status' => self::STATUS_OVERDUE]);
+            Log::info("Invoice {$invoice->invoice_number} marked as overdue");
+            $count++;
+        }
 
         return $count;
     }
@@ -527,25 +519,26 @@ class InvoiceService
      */
     public function getInvoiceSummary(Tenant $tenant): array
     {
-        $invoices = collect($tenant->data['invoices'] ?? []);
+        $query = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id);
 
         return [
-            'total_invoices' => $invoices->count(),
-            'total_revenue' => $invoices->where('status', self::STATUS_PAID)->sum('amount_paid'),
-            'pending_amount' => $invoices->where('status', self::STATUS_PENDING)->sum('amount_due'),
-            'overdue_amount' => $invoices->where('status', self::STATUS_OVERDUE)->sum('amount_due'),
+            'total_invoices' => (clone $query)->count(),
+            'total_revenue' => (clone $query)->where('status', self::STATUS_PAID)->sum('amount_paid'),
+            'pending_amount' => (clone $query)->where('status', self::STATUS_PENDING)->sum('amount_due'),
+            'overdue_amount' => (clone $query)->where('status', self::STATUS_OVERDUE)->sum('amount_due'),
             'by_status' => [
-                'paid' => $invoices->where('status', self::STATUS_PAID)->count(),
-                'pending' => $invoices->where('status', self::STATUS_PENDING)->count(),
-                'overdue' => $invoices->where('status', self::STATUS_OVERDUE)->count(),
-                'cancelled' => $invoices->where('status', self::STATUS_CANCELLED)->count(),
+                'paid' => (clone $query)->where('status', self::STATUS_PAID)->count(),
+                'pending' => (clone $query)->where('status', self::STATUS_PENDING)->count(),
+                'overdue' => (clone $query)->where('status', self::STATUS_OVERDUE)->count(),
+                'cancelled' => (clone $query)->where('status', self::STATUS_VOID)->count(),
             ],
             'available_credits' => $this->getAvailableCredits($tenant),
         ];
     }
 
     /**
-     * Generate a unique invoice number.
+     * Generate a unique invoice number using the DB sequence counter.
      */
     protected function generateInvoiceNumber(Tenant $tenant, string $prefix = 'INV'): string
     {
@@ -553,25 +546,56 @@ class InvoiceService
         $month = now()->format('m');
         $tenantCode = strtoupper(substr($tenant->id, 0, 4));
 
-        // Get next sequence number
-        $invoices = $tenant->data['invoices'] ?? [];
-        $sequence = count($invoices) + 1;
+        $count = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->count();
+
+        $sequence = $count + 1;
 
         return sprintf('%s-%s%s-%s-%04d', $prefix, $year, $month, $tenantCode, $sequence);
     }
 
     /**
-     * Store invoice in tenant data.
+     * Convert an Invoice model to the legacy array format for consumers.
      */
-    protected function storeInvoice(Tenant $tenant, array $invoice): void
+    protected function invoiceToArray(Invoice $invoice): array
     {
-        $data = $tenant->data ?? [];
-        $data['invoices'] = $data['invoices'] ?? [];
-        $data['invoices'][$invoice['invoice_number']] = $invoice;
+        $lineItems = $invoice->lineItems->map(fn ($item) => [
+            'description' => $item->description,
+            'quantity' => $item->quantity,
+            'unit_price' => $item->unit_price,
+            'amount' => $item->amount,
+            'type' => $item->type,
+        ])->toArray();
 
-        $tenant->update(['data' => $data]);
-
-        Log::info("Invoice {$invoice['invoice_number']} created for tenant {$tenant->id}");
+        return [
+            'invoice_number' => $invoice->invoice_number,
+            'tenant_id' => $invoice->billable_id,
+            'subscription_id' => $invoice->subscription_id,
+            'type' => $invoice->type,
+            'status' => $invoice->status,
+            'currency' => $invoice->currency,
+            'billing_period_start' => $invoice->billing_period_start?->toDateString(),
+            'billing_period_end' => $invoice->billing_period_end?->toDateString(),
+            'issue_date' => $invoice->created_at?->toDateString(),
+            'due_date' => $invoice->due_date?->toDateString(),
+            'paid_at' => $invoice->paid_at?->toDateTimeString(),
+            'line_items' => $lineItems,
+            'subtotal' => (float) $invoice->subtotal,
+            'tax_rate' => $invoice->metadata['tax_rate'] ?? 0,
+            'tax_amount' => (float) $invoice->tax_amount,
+            'credits_applied' => $invoice->metadata['credits_applied'] ?? 0,
+            'total' => (float) $invoice->total,
+            'amount_due' => (float) $invoice->amount_due,
+            'amount_paid' => (float) $invoice->amount_paid,
+            'payment_method' => $invoice->payment_method,
+            'payment_reference' => $invoice->metadata['payment_reference'] ?? null,
+            'notes' => $invoice->notes,
+            'metadata' => $invoice->metadata,
+            'created_at' => $invoice->created_at?->toDateTimeString(),
+        ];
     }
 
     /**

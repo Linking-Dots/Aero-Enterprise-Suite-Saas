@@ -3,7 +3,7 @@
 namespace Aero\HRM\Jobs;
 
 use Aero\Core\Models\User;
-use Aero\Core\Services\Notification\FcmNotificationService;
+use Aero\Notifications\Services\Push\FcmNotificationService;
 use Aero\HRM\Models\AttendanceSetting;
 use Aero\HRM\Models\Holiday;
 use Aero\HRM\Models\Leave;

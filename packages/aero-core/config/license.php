@@ -136,7 +136,7 @@ return [
             'description' => 'Project Management System',
         ],
         'AES-FULL' => [
-            'name' => 'Aero Enterprise Suite',
+            'name' => 'aeos365',
             'included_modules' => ['all'],
             'description' => 'Complete ERP Suite with all modules',
         ],

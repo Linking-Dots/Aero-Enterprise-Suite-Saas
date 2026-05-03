@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class PhoneVerificationService
 {
     public function __construct(
-        protected SmsGatewayService $smsGateway
+        protected \Aero\Notifications\Services\Sms\SmsGatewayService $smsGateway
     ) {}
 
     /**

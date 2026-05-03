@@ -111,7 +111,8 @@ class ProvisionTenant implements ShouldQueue
     {
         // Fix #26: Eager-load frequently accessed relations up-front to prevent N+1 queries
         // throughout the provisioning pipeline.
-        $this->tenant->loadMissing(['plan', 'domains']);
+        // 'plan' is an accessor (via currentSubscription), not a direct relationship.
+        $this->tenant->loadMissing(['domains', 'currentSubscription.plan']);
 
         $context = [
             'tenant_id' => $this->tenant->id,
@@ -176,9 +177,11 @@ class ProvisionTenant implements ShouldQueue
             $this->logStep('🎊 PROVISIONING COMPLETED SUCCESSFULLY - AWAITING ADMIN SETUP', $context);
 
             // Audit: Log provisioning completed
+            $planId = $this->tenant->data['plan_id'] ?? null;
+            $planName = $planId ? (\Aero\Platform\Models\Plan::find($planId)?->name) : null;
             $this->logAuditEvent('tenant.provisioning.completed', array_merge($context, [
-                'plan_id' => $this->tenant->plan_id,
-                'plan_name' => $this->tenant->plan?->name,
+                'plan_id' => $planId,
+                'plan_name' => $planName,
                 'modules' => $this->tenant->getActiveModules()->all() ?? [],
                 'database' => $this->tenant->database()?->getName(),
             ]));
@@ -234,12 +237,14 @@ class ProvisionTenant implements ShouldQueue
             throw new \RuntimeException('Database connection failed: '.$e->getMessage());
         }
 
-        // 4. Validate tenant has a plan (optional but log warning)
-        if (! $this->tenant->plan_id || ! $this->tenant->plan) {
+        // 4. Validate tenant has a plan selected (stored in data JSON)
+        $planId = $this->tenant->data['plan_id'] ?? null;
+        $plan = $planId ? \Aero\Platform\Models\Plan::find($planId) : null;
+        if (! $planId || ! $plan) {
             $this->logStep('   ⚠️  Tenant has no plan assigned - will provision with core only', [], 'warning');
         } else {
             // 5. Validate plan has modules
-            $moduleCount = $this->tenant->plan->modules()->count();
+            $moduleCount = $plan->modules()->count();
             if ($moduleCount === 0) {
                 $this->logStep('   ⚠️  Plan has no modules - will provision with core only', [], 'warning');
             } else {

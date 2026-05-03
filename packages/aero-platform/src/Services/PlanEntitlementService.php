@@ -7,6 +7,7 @@ namespace Aero\Platform\Services;
 use Aero\Core\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -100,6 +101,11 @@ class PlanEntitlementService
 
     /**
      * Check if tenant has module access.
+     *
+     * Plans and products/modules are separate concerns:
+     * - Plans control limits (users, storage).
+     * - Module access is determined by the tenant_module pivot
+     *   and independent module subscriptions (subscription_modules).
      */
     public function hasModuleAccess(string $tenantId, string $moduleCode): bool
     {
@@ -108,20 +114,13 @@ class PlanEntitlementService
             return true;
         }
 
-        $subscription = $this->getActiveSubscription($tenantId);
+        $tenant = Tenant::find($tenantId);
 
-        if (! $subscription || ! $subscription->plan) {
-            // Restrict access by default if no active subscription
+        if (! $tenant) {
             return false;
         }
 
-        $plan = $subscription->plan;
-
-        // Check if module is in plan's modules
-        return $plan->modules()
-            ->where('code', $moduleCode)
-            ->wherePivot('is_enabled', true)
-            ->exists();
+        return $tenant->hasActiveSubscription($moduleCode);
     }
 
     /**
@@ -162,7 +161,8 @@ class PlanEntitlementService
         return Cache::remember(
             "tenant:{$tenantId}:active_subscription",
             now()->addMinutes(5),
-            fn () => Subscription::where('tenant_id', $tenantId)
+            fn () => Subscription::where('billable_type', Tenant::class)
+                ->where('billable_id', $tenantId)
                 ->with('plan.modules')
                 ->active()
                 ->first()

@@ -35,8 +35,8 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  * @property \ArrayObject $data Flexible metadata storage (owner_name, address, etc.)
  * @property string $status Tenant status: pending, provisioning, active, failed, cancelled, suspended, archived
  * @property bool $maintenance_mode Whether tenant is in maintenance mode
- * @property Carbon|null $trial_ends_at Trial period end date
- * @property string|null $plan_id Foreign key to plans table
+ * @property Carbon|null $trial_ends_at (via subscription relation) Trial period end date
+ * @property string|null $plan_id (via subscription relation) Foreign key to plans table
  * @property string|null $stripe_id Stripe Customer ID
  * @property string|null $pm_type Payment method type (card, etc.)
  * @property string|null $pm_last_four Last 4 digits of payment method
@@ -114,11 +114,11 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'subdomain',
             'email',
             'phone',
-            'plan_id',           // FK to plans table
-            'subscription_plan', // billing cycle: monthly/yearly
-            'modules',
-            'trial_ends_at',
-            'subscription_ends_at',
+            // Billing state is intentionally REMOVED from tenants table.
+            // Plan, modules, trial, and subscription lifecycle now live in:
+            //   - subscriptions          (base plan subscription)
+            //   - subscription_modules     (module add-ons)
+            //   - tenant_module pivot    (feature access registry)
             'status',
             'provisioning_step', // Async provisioning: creating_db, migrating, seeding, creating_admin
             'admin_data',        // Temporary admin credentials during provisioning
@@ -156,10 +156,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return [
             'data' => AsArrayObject::class,
-            'modules' => AsArrayObject::class,
             'admin_data' => AsArrayObject::class,
-            'trial_ends_at' => 'datetime',
-            'subscription_ends_at' => 'datetime',
             'stripe_trial_ends_at' => 'datetime',
             'maintenance_mode' => 'boolean',
             'admin_email_verified_at' => 'datetime',
@@ -202,11 +199,11 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
-     * Get the subscription plan for this tenant.
+     * Get the subscription plan for this tenant via the active subscription.
      */
-    public function plan(): BelongsTo
+    public function getPlanAttribute(): ?Plan
     {
-        return $this->belongsTo(Plan::class);
+        return $this->currentSubscription?->plan;
     }
 
     /**
@@ -225,7 +222,24 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
-     * Get all modules subscribed by this tenant.
+     * Get all module add-on subscriptions for this tenant.
+     */
+    public function moduleSubscriptions(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(SubscriptionModule::class, 'billable');
+    }
+
+    /**
+     * Get all invoices for this tenant (polymorphic billable).
+     */
+    public function invoices(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Invoice::class, 'billable')
+            ->orderByDesc('created_at');
+    }
+
+    /**
+     * Get all modules subscribed by this tenant (feature access registry).
      */
     public function modules(): BelongsToMany
     {
@@ -270,9 +284,11 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      */
     public function scopeOnTrial($query)
     {
-        return $query->where('status', 'pending')
-            ->whereNotNull('trial_ends_at')
-            ->where('trial_ends_at', '>', now());
+        return $query->whereHas('subscriptions', function ($q) {
+            $q->where('status', Subscription::STATUS_TRIALING)
+                ->whereNotNull('trial_ends_at')
+                ->where('trial_ends_at', '>', now());
+        });
     }
 
     /**
@@ -348,7 +364,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      */
     public function isOnTrial(): bool
     {
-        return $this->trial_ends_at?->isFuture() ?? false;
+        return $this->subscription('default')?->trial_ends_at?->isFuture() ?? false;
     }
 
     /**
@@ -356,7 +372,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      */
     public function hasTrialExpired(): bool
     {
-        return $this->trial_ends_at?->isPast() ?? false;
+        return $this->subscription('default')?->trial_ends_at?->isPast() ?? false;
     }
 
     /**
@@ -449,51 +465,37 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
-     * Check if the tenant has an active subscription that includes a specific module.
+     * Check if the tenant has an active module subscription for a specific module.
      *
      * This is the core gating method used by CheckModuleAccess middleware.
-     * Returns true if:
-     * 1. Tenant has an active subscription (within date range)
-     * 2. The subscription's plan includes the specified module
+     * Plans and products/modules are separate concerns:
+     * - Plan subscription controls limits (users, storage).
+     * - Module access is determined by the tenant_module pivot and
+     *   independent module subscriptions (subscription_modules table).
      *
      * @param  string  $moduleName  Module code e.g., 'hrm', 'crm'
      */
     public function hasActiveSubscription(string $moduleName): bool
     {
-        // Check 1: Look for active subscriptions with plans that include this module
-        $hasSubscription = $this->subscriptions()
-            ->where('status', Subscription::STATUS_ACTIVE)
-            ->where('starts_at', '<=', now())
-            ->where(function ($query) {
-                $query->whereNull('ends_at')
-                    ->orWhere('ends_at', '>=', now());
-            })
-            ->whereHas('plan.modules', function ($query) use ($moduleName) {
-                $query->where('code', $moduleName)
-                    ->where('is_active', true);
-            })
-            ->exists();
-
-        if ($hasSubscription) {
+        // Check 1: Active module in tenant_module pivot (covers manual grants + synced modules)
+        if ($this->modules()->where('code', $moduleName)->exists()) {
             return true;
         }
 
-        // Check 2: Also check direct plan relationship (legacy/simple setup)
-        if ($this->plan_id && $this->plan) {
-            return $this->plan->modules()
-                ->where('code', $moduleName)
-                ->where('is_active', true)
-                ->exists();
-        }
+        // Check 2: Active module subscription via subscription_modules table
+        $hasModuleSub = $this->moduleSubscriptions()
+            ->where('module_code', $moduleName)
+            ->where(function ($q) {
+                $q->where('status', SubscriptionModule::STATUS_ACTIVE)
+                    ->orWhere('status', SubscriptionModule::STATUS_TRIALING);
+            })
+            ->where(function ($q) {
+                $q->whereNull('ends_at')
+                    ->orWhere('ends_at', '>=', now());
+            })
+            ->exists();
 
-        // Check 3: Check tenant's custom modules array (for manual module grants)
-        if (! empty($this->modules) && is_array($this->modules)) {
-            if (in_array($moduleName, $this->modules)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $hasModuleSub;
     }
 
     /**

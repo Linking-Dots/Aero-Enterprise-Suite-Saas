@@ -48,7 +48,7 @@
         "aero": {
             "package": "rfi",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "RFI management with daily works, objections, and work locations"
         }
     },

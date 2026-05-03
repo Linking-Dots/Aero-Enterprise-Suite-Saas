@@ -11,6 +11,8 @@ use Aero\Platform\Http\Requests\RegistrationTrialRequest;
 use Aero\Platform\Jobs\ProvisionTenant;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlatformSetting;
+use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\SubscriptionModule;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\Module\RegistrationModuleDiscovery;
 use Aero\Platform\Services\Monitoring\PlatformVerificationService;
@@ -379,8 +381,7 @@ class RegistrationController extends Controller
             return to_route('platform.register.index');
         }
 
-        // Sync discovered modules to central DB so validation is consistent with installed packages
-        $this->registrationModuleDiscovery->syncToDatabase();
+    
 
         $payload = $request->validated();
 
@@ -491,6 +492,89 @@ class RegistrationController extends Controller
                     $tenant = $this->tenantProvisioner->createFromRegistration($payload);
                 }
 
+                // Create trial subscription record in subscriptions table (not on tenant row)
+                $planPayload = $payload['plan'] ?? [];
+                $planId = $planPayload['plan_id'] ?? null;
+                $billingCycle = $planPayload['billing_cycle'] ?? 'monthly';
+
+                if ($planId) {
+                    $plan = Plan::find($planId);
+                    if ($plan) {
+                        $trialDays = (int) ($plan->trial_days ?? config('platform.trial_days', 14));
+                        $trialEndsAt = now()->addDays($trialDays);
+                        $amount = $billingCycle === 'yearly'
+                            ? $plan->yearly_price
+                            : $plan->monthly_price;
+
+                        Subscription::create([
+                            'id' => (string) Str::uuid(),
+                            'billable_type' => Tenant::class,
+                            'billable_id' => $tenant->id,
+                            'name' => 'default',
+                            'type' => 'default',
+                            'plan_id' => $plan->id,
+                            'billing_cycle' => $billingCycle,
+                            'amount' => $amount,
+                            'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
+                            'status' => Subscription::STATUS_TRIALING,
+                            'trial_starts_at' => now(),
+                            'trial_ends_at' => $trialEndsAt,
+                            'starts_at' => now(),
+                            'ends_at' => $trialEndsAt,
+                        ]);
+
+                        // Create separate trial subscriptions for each selected product module
+                        $selectedModules = (array) ($tenant->data['selected_modules'] ?? []);
+                        $productModules = array_values(array_diff($selectedModules, ['core']));
+
+                        if (! empty($productModules)) {
+                            $modulePricingRows = DB::table('module_pricing')
+                                ->whereIn('module_code', $productModules)
+                                ->where('is_active', true)
+                                ->get()
+                                ->keyBy('module_code');
+
+                            foreach ($productModules as $moduleCode) {
+                                if (SubscriptionModule::where('billable_type', Tenant::class)
+                                    ->where('billable_id', $tenant->id)
+                                    ->where('module_code', $moduleCode)
+                                    ->exists()
+                                ) {
+                                    continue;
+                                }
+
+                                $pricing = $modulePricingRows->get($moduleCode);
+                                if (! $pricing) {
+                                    Log::warning('Module pricing not found for selected module during trial activation', [
+                                        'tenant_id' => $tenant->id,
+                                        'module_code' => $moduleCode,
+                                    ]);
+                                    continue;
+                                }
+
+                                $moduleAmount = $billingCycle === 'yearly'
+                                    ? $pricing->yearly_price
+                                    : $pricing->monthly_price;
+
+                                SubscriptionModule::create([
+                                    'id' => (string) Str::uuid(),
+                                    'billable_type' => Tenant::class,
+                                    'billable_id' => $tenant->id,
+                                    'module_code' => $moduleCode,
+                                    'billing_cycle' => $billingCycle,
+                                    'amount' => $moduleAmount,
+                                    'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
+                                    'status' => SubscriptionModule::STATUS_TRIALING,
+                                    'trial_starts_at' => now(),
+                                    'trial_ends_at' => $trialEndsAt,
+                                    'starts_at' => now(),
+                                    'ends_at' => $trialEndsAt,
+                                ]);
+                            }
+                        }
+                    }
+                }
+
                 return $tenant;
             });
 
@@ -523,7 +607,7 @@ class RegistrationController extends Controller
 
             return back()
                 ->with('error', 'Unable to activate your trial. Please try again or contact support.');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Registration trial activation error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

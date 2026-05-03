@@ -22,7 +22,7 @@
         "aero": {
             "package": "project",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Project management with tasks, milestones, time tracking, and Gantt charts"
         }
     },

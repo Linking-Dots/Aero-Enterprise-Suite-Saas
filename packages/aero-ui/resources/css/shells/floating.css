@@ -22,7 +22,7 @@
 /* ── Floating Sidebar Pill ───────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-sidebar {
   width: 56px;
-  background: rgba(13, 17, 32, 0.90);
+  background: var(--aeos-shell-floating-bg);
   border: 1px solid rgba(0, 229, 255, 0.10);
   border-radius: 14px;
   display: flex;
@@ -94,14 +94,13 @@
 /* ── Floating Content Panel ──────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-content {
   flex: 1;
-  background: rgba(13, 17, 32, 0.60);
+  background: var(--aeos-shell-panel-bg);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 14px;
   padding: 20px;
   overflow-y: auto;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  min-height: calc(100vh - 32px);
 }
 
 /* ── Optional Topbar inside content ─────────────────────────── */
@@ -164,6 +163,5 @@
 
   [data-aeos-shell="floating"] .aeos-shell-content {
     padding: 14px;
-    min-height: calc(100vh - 16px);
   }
 }

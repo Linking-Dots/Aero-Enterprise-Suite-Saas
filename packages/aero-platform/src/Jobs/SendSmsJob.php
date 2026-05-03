@@ -2,7 +2,7 @@
 
 namespace Aero\Platform\Jobs;
 
-use Aero\Platform\Services\SmsService;
+use Aero\Notifications\Services\Sms\SmsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -42,10 +42,10 @@ class SendSmsJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(SmsService $smsService): void
     {
         try {
-            $result = SmsService::sendDirectly($this->phoneNumber, $this->message);
+            $result = $smsService->sendDirectly($this->phoneNumber, $this->message);
 
             if (! $result['success']) {
                 throw new \Exception($result['message'] ?? 'SMS sending failed');

@@ -22,7 +22,7 @@
         "aero": {
             "package": "pos",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Point of sale system with sales processing, inventory integration, and payment management"
         }
     },

@@ -65,7 +65,7 @@
         "aero": {
             "package": "platform",
             "version": "1.0.0",
-            "category": "landlord",
+            "category": "foundation",
             "description": "Platform management package providing multi-tenancy orchestration, landlord authentication, and platform administration",
             "has-assets": true,
             "build-command": "php artisan aero:build-assets"

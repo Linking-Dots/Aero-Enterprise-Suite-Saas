@@ -20,7 +20,7 @@ export default function Welcome({ mode, version, phpVersion, laravelVersion, ste
       </Eyebrow>
 
       <div>
-        <h1 className="il-title">Welcome to AEOS Enterprise Suite</h1>
+        <h1 className="il-title">Welcome to aeos365</h1>
         <p className="il-desc">
           This wizard will guide you through setting up your{' '}
           {mode === 'saas' ? 'multi-tenant SaaS platform' : 'enterprise installation'}.

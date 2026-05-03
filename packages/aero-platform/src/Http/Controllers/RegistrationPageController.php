@@ -115,19 +115,9 @@ class RegistrationPageController extends Controller
             return SafeRedirect::toRoute('platform.register.index', [], 'platform.register.index');
         }
 
-        // Fetch all sellable modules from installed Composer packages
-        // Excludes: core (hidden layer), platform (admin system), ui (shared components)
-        $excludedModules = ['core', 'platform', 'ui'];
-
-        $discoveredModules = $this->moduleDiscovery->getModuleDefinitions()
-            ->filter(function ($module) use ($excludedModules) {
-                // Exclude core/platform/ui and modules marked as core
-                $code = $module['code'] ?? '';
-                $isCore = $module['is_core'] ?? false;
-
-                return ! in_array($code, $excludedModules) && ! $isCore;
-            })
-            ->keyBy('code');
+        // Fetch sellable modules from module_pricing table (authoritative source for products)
+        // Enrich with metadata from ModuleDiscoveryService for names, descriptions, icons
+        $discoveredModules = $this->getSellableModules();
 
         // Fetch plans and enrich with discovered module data
         $plans = Plan::where('is_active', true)
@@ -171,7 +161,7 @@ class RegistrationPageController extends Controller
         $modules = $discoveredModules
             ->map(function ($module) {
                 return [
-                    'id' => $module['code'], // Use code as ID for discovered modules
+                    'id' => $module['code'],
                     'code' => $module['code'],
                     'name' => $module['name'],
                     'description' => $module['description'] ?? '',
@@ -208,17 +198,8 @@ class RegistrationPageController extends Controller
             );
         }
 
-        // Fetch all sellable modules from installed Composer packages
-        $excludedModules = ['core', 'platform', 'ui'];
-
-        $discoveredModules = $this->moduleDiscovery->getModuleDefinitions()
-            ->filter(function ($module) use ($excludedModules) {
-                $code = $module['code'] ?? '';
-                $isCore = $module['is_core'] ?? false;
-
-                return ! in_array($code, $excludedModules) && ! $isCore;
-            })
-            ->keyBy('code');
+        // Fetch sellable modules from module_pricing table (authoritative source for products)
+        $discoveredModules = $this->getSellableModules();
 
         // Fetch plans and enrich with discovered module data
         $plans = Plan::where('is_active', true)
@@ -346,17 +327,36 @@ class RegistrationPageController extends Controller
     }
 
     /**
-     * Get per-module pricing keyed by module code from the database.
-     * Replaces the legacy hardcoded config('platform.registration.module_pricing').
+     * Get sellable modules from module_pricing table, enriched with metadata
+     * from ModuleDiscoveryService. This is the authoritative source for products
+     * displayed in the registration plan step.
+     */
+    private function getSellableModules(): \Illuminate\Support\Collection
+    {
+        $pricingCodes = \DB::table('module_pricing')
+            ->where('is_active', true)
+            ->pluck('module_code');
+
+        $allDefinitions = $this->moduleDiscovery->getModuleDefinitions()->keyBy('code');
+
+        return $pricingCodes
+            ->map(fn (string $code) => $allDefinitions->get($code))
+            ->filter()
+            ->keyBy('code');
+    }
+
+    /**
+     * Get per-module pricing keyed by module code from the module_pricing table.
      */
     private function getModulePricing(): array
     {
-        return Module::where('is_active', true)
-            ->get(['code', 'monthly_price', 'yearly_price'])
-            ->keyBy('code')
-            ->map(fn (Module $module) => [
-                'monthly' => (float) $module->monthly_price,
-                'yearly' => (float) $module->yearly_price,
+        return \DB::table('module_pricing')
+            ->where('is_active', true)
+            ->get(['module_code', 'monthly_price', 'yearly_price'])
+            ->keyBy('module_code')
+            ->map(fn ($row) => [
+                'monthly' => (float) $row->monthly_price,
+                'yearly'  => (float) $row->yearly_price,
             ])
             ->all();
     }

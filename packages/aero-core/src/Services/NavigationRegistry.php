@@ -351,6 +351,51 @@ class NavigationRegistry
     }
 
     /**
+     * Get navigation items grouped by section for shell-aware rendering.
+     *
+     * Returns an array of groups where each group has a title and items array.
+     * Suitable for CommandShell and other grouped navigation UIs.
+     *
+     * @param  string|null  $scope  Filter by scope: 'platform' for admin, 'tenant' for tenant users
+     * @param  User|null  $user  Optional user to filter dashboards by permissions
+     * @param  array|null  $subscribedModules  Array of subscribed module codes
+     * @return array{title: string, items: array}[]
+     */
+    public function toFrontendGroups(?string $scope = null, $user = null, ?array $subscribedModules = null): array
+    {
+        $flat = $this->toFrontend($scope, $user, $subscribedModules);
+
+        $sectionTitles = [
+            'dashboards'      => 'Dashboards',
+            'my-workspace'    => 'My Workspace',
+            'administration'  => 'Administration',
+            'modules'         => 'Modules',
+        ];
+
+        $sectionOrder = ['dashboards', 'my-workspace', 'administration', 'modules'];
+
+        $grouped = collect($flat)->groupBy(fn ($item) => $item['section'] ?? 'others');
+
+        // Sort groups by known section order, then alphabetical for module codes
+        $sortedKeys = $grouped->keys()->sortBy(fn ($key) => array_search($key, $sectionOrder, true) !== false
+            ? array_search($key, $sectionOrder, true)
+            : 999 + ord($key[0] ?? 'z')
+        )->values();
+
+        return $sortedKeys->map(function ($section) use ($grouped, $sectionTitles) {
+            $items = $grouped->get($section);
+            if (empty($items)) {
+                return null;
+            }
+
+            return [
+                'title' => $sectionTitles[$section] ?? ucfirst(str_replace('-', ' ', $section)),
+                'items' => $items->values()->toArray(),
+            ];
+        })->filter()->values()->toArray();
+    }
+
+    /**
      * Check if a navigation item is a dashboard item.
      *
      * Dashboard items should be excluded from regular navigation

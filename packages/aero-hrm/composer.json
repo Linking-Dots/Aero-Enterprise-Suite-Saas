@@ -2,7 +2,7 @@
 {
   "name": "aero/hrm",
   "version": "1.0.0",
-  "description": "Human Resource Management Module for Aero Enterprise Suite",
+  "description": "Human Resource Management Module for aeos365",
   "type": "library",
   "license": "proprietary",
   "keywords": ["laravel", "hrm", "payroll", "attendance", "leave"],
@@ -48,7 +48,7 @@
     "aero": {
       "package": "hrm",
       "version": "1.0.0",
-      "category": "business",
+      "category": "product",
       "description": "Complete HR management system with employee records, attendance, leave, payroll, performance reviews, and recruitment"
     }
   },

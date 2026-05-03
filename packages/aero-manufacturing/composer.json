@@ -49,7 +49,7 @@
         "aero": {
             "package": "manufacturing",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Manufacturing Execution System with work orders, BOM, production planning, shop floor control, and quality management"
         }
     },

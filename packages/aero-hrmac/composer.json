@@ -1,6 +1,6 @@
 {
     "name": "aero/hrmac",
-    "description": "Hierarchical Role-Module Access Control for Aero Enterprise Suite",
+    "description": "Hierarchical Role-Module Access Control for aeos365",
     "type": "library",
     "license": "proprietary",
     "authors": [
@@ -28,6 +28,12 @@
             "aliases": {
                 "HRMAC": "Aero\\HRMAC\\Facades\\HRMAC"
             }
+        },
+        "aero": {
+            "package": "hrmac",
+            "version": "1.0.0",
+            "category": "foundation",
+            "description": "Hierarchical Role-Module Access Control for aeos365"
         }
     },
     "minimum-stability": "stable"

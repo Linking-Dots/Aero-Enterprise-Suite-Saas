@@ -51,7 +51,9 @@ use Aero\Platform\Listeners\TenantCreatedListener;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Models\Subscription;
 use Aero\Platform\Observers\PlanAuditObserver;
+use Aero\Platform\Observers\SubscriptionObserver;
 use Aero\Platform\Policies\PlanPolicy;
 use Aero\Platform\Policies\TenantPolicy;
 use Aero\Platform\Providers\TenancyBootstrapServiceProvider;
@@ -63,6 +65,10 @@ use Aero\Platform\Services\Monitoring\Tenant\ErrorLogService;
 use Aero\Platform\Services\PlatformSettingService;
 use Aero\Platform\Services\PlatformWidgetRegistry;
 use Aero\Platform\Services\SaaSTenantScope;
+use Aero\Notifications\Contracts\MailContextResolver;
+use Aero\Notifications\Contracts\SmsContextResolver;
+use Aero\Platform\Services\Notifications\PlatformMailContextResolver;
+use Aero\Platform\Services\Notifications\PlatformSmsContextResolver;
 use Aero\Platform\Services\Tenant\TenantPurgeService;
 use Aero\Platform\Services\Tenant\TenantRetentionService;
 use Aero\Platform\Widgets\BillingOverviewWidget;
@@ -212,6 +218,10 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Register Platform's own widget registry (independent from Core)
         $this->app->singleton(PlatformWidgetRegistry::class);
 
+        // Bind notification context resolvers to platform implementations
+        $this->app->singleton(MailContextResolver::class, PlatformMailContextResolver::class);
+        $this->app->singleton(SmsContextResolver::class, PlatformSmsContextResolver::class);
+
         // Configure auth guards and providers programmatically
         $this->configureAuth();
 
@@ -251,8 +261,9 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register Plan audit observer
+        // Register audit observers
         Plan::observe(PlanAuditObserver::class);
+        Subscription::observe(SubscriptionObserver::class);
 
         // Configure Cashier to use our unified Subscription model as the single source of truth
         // This eliminates drift between Cashier-managed Stripe data and lifecycle-managed fields.

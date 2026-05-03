@@ -1,5 +1,7 @@
 /* ── Trigger bubble ───────────────────────────────────────────── */
-.aeos-theme-drawer-trigger { position:fixed; bottom:1.5rem; right:1.5rem; width:48px; height:48px; border-radius:50%; background:var(--aeos-primary); border:none; color:var(--aeos-obsidian); cursor:pointer; z-index:1000; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,229,255,.4); transition:transform .2s,box-shadow .2s; }
+.aeos-theme-drawer-trigger { position:fixed; bottom:1.5rem; right:1.5rem; width:48px; height:48px; border-radius:50%; background:var(--aeos-primary); border:none; color:var(--aeos-obsidian); cursor:pointer; z-index:1000; display:none; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,229,255,.4); transition:transform .2s,box-shadow .2s; }
+/* Show trigger only when an authenticated shell is rendered as a DOM sibling */
+[data-aeos-shell] ~ .aeos-theme-drawer-trigger { display:flex; }
 .aeos-theme-drawer-trigger:hover { transform:scale(1.05); box-shadow:0 6px 24px rgba(0,229,255,.5); }
 
 /* ── Drawer overlay ───────────────────────────────────────────── */

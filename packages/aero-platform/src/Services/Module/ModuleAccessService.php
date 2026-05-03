@@ -433,7 +433,10 @@ class ModuleAccessService
     }
 
     /**
-     * Check if the tenant's plan allows access to a specific item.
+     * Check if the tenant has access to a specific module/item.
+     *
+     * Module access is determined by the tenant_module pivot and
+     * independent module subscriptions (subscription_modules), not by the plan.
      *
      * @param  string  $type  Type: module, submodule, component, action
      */
@@ -456,22 +459,23 @@ class ModuleAccessService
         $activeModuleCodes = TenantCache::remember($cacheKey, 300, function () use ($tenant) {
             $moduleCodes = [];
 
-            // Check 1: Get modules from subscription plan (if plan_id exists)
-            if ($tenant->plan_id) {
-                $plan = Plan::find($tenant->plan_id);
-                if ($plan) {
-                    $planModules = $plan->modules()
-                        ->where('is_active', true)
-                        ->pluck('modules.code')
-                        ->toArray();
-                    $moduleCodes = array_merge($moduleCodes, $planModules);
-                }
-            }
+            // Check 1: Get modules from tenant_module pivot (active subscribed modules)
+            $tenantModules = $tenant->modules()->pluck('code')->toArray();
+            $moduleCodes = array_merge($moduleCodes, $tenantModules);
 
-            // Check 2: Get modules from tenant's custom modules collection
-            if (! empty($tenant->modules) && is_array($tenant->modules)) {
-                $moduleCodes = array_merge($moduleCodes, $tenant->modules);
-            }
+            // Check 2: Get modules from active module subscriptions (subscription_modules table)
+            $moduleSubCodes = $tenant->moduleSubscriptions()
+                ->where(function ($q) {
+                    $q->where('status', 'active')
+                        ->orWhere('status', 'trialing');
+                })
+                ->where(function ($q) {
+                    $q->whereNull('ends_at')
+                        ->orWhere('ends_at', '>=', now());
+                })
+                ->pluck('module_code')
+                ->toArray();
+            $moduleCodes = array_merge($moduleCodes, $moduleSubCodes);
 
             // Add core modules (always accessible)
             $coreModules = Module::where('is_core', true)

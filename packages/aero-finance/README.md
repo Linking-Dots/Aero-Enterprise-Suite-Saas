@@ -1,6 +1,6 @@
 # Aero Finance Module
 
-**Financial Management System** for the Aero Enterprise Suite SaaS platform.
+**Financial Management System** for the aeos365 SaaS platform.
 
 ## Features
 
@@ -80,7 +80,7 @@ return [
 
 ## Integration with Main Platform
 
-The Finance module integrates seamlessly with the Aero Enterprise Suite:
+The Finance module integrates seamlessly with the aeos365:
 
 ### Multi-Tenancy Support
 All routes automatically scoped to current tenant.
@@ -103,8 +103,8 @@ Routes protected by module permissions via `module:finance` middleware.
 
 ## License
 
-Proprietary - Aero Enterprise Suite
+Proprietary - aeos365
 
 ---
 
-**Made with ❤️ for the Aero Enterprise Suite Platform**
+**Made with ❤️ for the aeos365 Platform**

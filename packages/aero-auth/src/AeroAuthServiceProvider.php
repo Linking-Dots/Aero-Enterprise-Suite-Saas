@@ -82,7 +82,17 @@ class AeroAuthServiceProvider extends ServiceProvider
             $this->commands([
                 AuthSecurityAudit::class,
             ]);
+
+            // Publish configs
+            $this->publishes([
+                __DIR__.'/../config/logging.php' => config_path('logging.php'),
+                __DIR__.'/../config/activitylog.php' => config_path('activitylog.php'),
+            ], 'aero-auth-config');
         }
+
+        // Merge configs
+        $this->mergeConfigFrom(__DIR__.'/../config/logging.php', 'logging');
+        $this->mergeConfigFrom(__DIR__.'/../config/activitylog.php', 'activitylog');
 
         // Auth-specific migrations (devices, sessions, impersonations, social auth, password reset tokens)
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');

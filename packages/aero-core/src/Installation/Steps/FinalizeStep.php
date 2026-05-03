@@ -127,7 +127,7 @@ class FinalizeStep extends BaseInstallationStep
     protected function generateSummary(): array
     {
         return [
-            'application_name' => env('APP_NAME', 'Aero Enterprise Suite'),
+            'application_name' => env('APP_NAME', 'aeos365'),
             'application_url' => env('APP_URL'),
             'installation_mode' => env('INSTALLATION_MODE', 'standalone'),
             'installed_at' => now(),

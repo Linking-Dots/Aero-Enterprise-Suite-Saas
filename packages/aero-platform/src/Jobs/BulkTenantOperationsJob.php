@@ -204,11 +204,14 @@ class BulkTenantOperationsJob implements ShouldQueue
             throw new \InvalidArgumentException('plan_id is required for update_plan operation');
         }
 
-        $oldPlanId = $tenant->plan_id;
+        $subscription = $tenant->subscription('default');
+        $oldPlanId = $subscription?->plan_id;
 
-        $tenant->update([
-            'plan_id' => $this->options['plan_id'],
-        ]);
+        if ($subscription) {
+            $subscription->update([
+                'plan_id' => $this->options['plan_id'],
+            ]);
+        }
 
         $eventDispatcher->dispatch('tenant.updated', [
             'tenant_id' => $tenant->id,

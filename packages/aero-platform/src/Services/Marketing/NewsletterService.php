@@ -6,7 +6,7 @@ namespace Aero\Platform\Services\Marketing;
 
 use Aero\Platform\Models\NewsletterSubscriber;
 use Aero\Platform\Models\PlatformSetting;
-use Aero\Platform\Services\MailService;
+use Aero\Notifications\Services\Mail\MailService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

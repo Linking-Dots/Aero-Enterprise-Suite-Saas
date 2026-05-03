@@ -22,7 +22,7 @@
 
 /* ── Left Nav Panel ──────────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-left {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--aeos-shell-panel-bg);
   border-right: 1px solid var(--aeos-divider);
   padding: 16px;
   overflow-y: auto;
@@ -104,7 +104,7 @@
   height: var(--aeos-shell-topnav-h, 48px);
   padding: 0 20px;
   border-bottom: 1px solid var(--aeos-divider);
-  background: rgba(0, 0, 0, 0.20);
+  background: var(--aeos-shell-topbar-bg);
   gap: 12px;
   flex-shrink: 0;
   position: sticky;
@@ -121,7 +121,7 @@
 
 /* ── Right Context Panel ─────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-right {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--aeos-shell-panel-bg);
   border-left: 1px solid var(--aeos-divider);
   padding: 16px;
   overflow-y: auto;

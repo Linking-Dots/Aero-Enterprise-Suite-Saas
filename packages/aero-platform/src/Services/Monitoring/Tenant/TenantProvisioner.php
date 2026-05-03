@@ -8,6 +8,8 @@ use Aero\Platform\Models\Module;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -48,20 +50,33 @@ class TenantProvisioner
         $plan = $payload['plan'] ?? [];
         $trial = $payload['trial'] ?? [];
 
-        $trialEndsAt = now()->addDays((int) config('platform.trial_days', 14));
         $planId = $plan['plan_id'] ?? $this->resolvePlanId($plan['plan_slug'] ?? null);
         $modules = $this->sanitizeModulesAgainstPlan($planId, $this->cleanModules($plan['modules'] ?? []));
 
         $email = (string) Arr::get($details, 'email');
         $subdomain = (string) Arr::get($details, 'subdomain');
 
-        // Check if tenant already exists from verification step
-        // This preserves admin_email_verified_at and admin_phone_verified_at
-        // Fix: Use AND (not OR) to prevent tenant takeover by matching only one field
+        // Look for an existing pending/failed tenant to reuse.
+        // Order of preference: exact match (email + subdomain), then subdomain,
+        // then email. This prevents duplicate-key violations when a tenant was
+        // created in a previous request but the session was lost.
+        $pendingStatuses = [Tenant::STATUS_PENDING, Tenant::STATUS_FAILED];
         $existingTenant = Tenant::where('email', $email)
             ->where('subdomain', $subdomain)
-            ->whereIn('status', [Tenant::STATUS_PENDING, Tenant::STATUS_FAILED])
+            ->whereIn('status', $pendingStatuses)
             ->first();
+
+        if (! $existingTenant) {
+            $existingTenant = Tenant::where('subdomain', $subdomain)
+                ->whereIn('status', $pendingStatuses)
+                ->first();
+        }
+
+        if (! $existingTenant) {
+            $existingTenant = Tenant::where('email', $email)
+                ->whereIn('status', $pendingStatuses)
+                ->first();
+        }
 
         if ($existingTenant) {
             // Update existing tenant with full registration data
@@ -72,11 +87,6 @@ class TenantProvisioner
                 'subdomain' => $subdomain,
                 'email' => $email,
                 'phone' => Arr::get($details, 'phone'),
-                'plan_id' => $planId,
-                'subscription_plan' => Arr::get($plan, 'billing_cycle'),
-                'modules' => $modules,
-                'trial_ends_at' => $trialEndsAt,
-                'subscription_ends_at' => null,
                 'status' => Tenant::STATUS_PENDING,
                 'provisioning_step' => null,
                 'admin_data' => null,
@@ -87,6 +97,9 @@ class TenantProvisioner
                     'owner_phone' => Arr::get($details, 'owner_phone'),
                     'team_size' => Arr::get($details, 'team_size'),
                     'industry' => Arr::get($details, 'industry'),
+                    'plan_id' => $planId,
+                    'billing_cycle' => Arr::get($plan, 'billing_cycle'),
+                    'selected_modules' => $modules,
                     'notes' => Arr::get($plan, 'notes'),
                     'registration_ip' => request()->ip(),
                     'registered_at' => now()->toIso8601String(),
@@ -115,11 +128,6 @@ class TenantProvisioner
             'subdomain' => $subdomain,
             'email' => $email,
             'phone' => Arr::get($details, 'phone'),
-            'plan_id' => $planId,
-            'subscription_plan' => Arr::get($plan, 'billing_cycle'),
-            'modules' => $modules,
-            'trial_ends_at' => $trialEndsAt,
-            'subscription_ends_at' => null,
             'status' => Tenant::STATUS_PENDING,
             'provisioning_step' => null,
             'admin_data' => null,
@@ -130,6 +138,9 @@ class TenantProvisioner
                 'owner_phone' => Arr::get($details, 'owner_phone'),
                 'team_size' => Arr::get($details, 'team_size'),
                 'industry' => Arr::get($details, 'industry'),
+                'plan_id' => $planId,
+                'billing_cycle' => Arr::get($plan, 'billing_cycle'),
+                'selected_modules' => $modules,
                 'notes' => Arr::get($plan, 'notes'),
                 'registration_ip' => request()->ip(),
                 'registered_at' => now()->toIso8601String(),
@@ -163,7 +174,6 @@ class TenantProvisioner
         $details = $payload['details'] ?? [];
         $plan = $payload['plan'] ?? [];
 
-        $trialEndsAt = now()->addDays((int) config('platform.trial_days', 14));
         $planId = $plan['plan_id'] ?? $this->resolvePlanId($plan['plan_slug'] ?? null);
         $modules = $this->sanitizeModulesAgainstPlan($planId, $this->cleanModules($plan['modules'] ?? []));
 
@@ -177,11 +187,6 @@ class TenantProvisioner
         $tenant->update([
             'name' => (string) Arr::get($details, 'name', $tenant->name),
             'type' => (string) Arr::get($account, 'type', $tenant->type ?? 'company'),
-            'plan_id' => $planId ?? $tenant->plan_id,
-            'subscription_plan' => Arr::get($plan, 'billing_cycle', $tenant->subscription_plan),
-            'modules' => ! empty($modules) ? $modules : $tenant->modules,
-            'trial_ends_at' => $trialEndsAt,
-            'subscription_ends_at' => null,
             'status' => Tenant::STATUS_PENDING,
             'provisioning_step' => null,
             'maintenance_mode' => false,
@@ -191,6 +196,9 @@ class TenantProvisioner
                 'owner_phone' => Arr::get($details, 'owner_phone'),
                 'team_size' => Arr::get($details, 'team_size'),
                 'industry' => Arr::get($details, 'industry'),
+                'plan_id' => $planId,
+                'billing_cycle' => Arr::get($plan, 'billing_cycle'),
+                'selected_modules' => $modules,
                 'notes' => Arr::get($plan, 'notes'),
                 'registration_ip' => request()->ip(),
                 'registered_at' => now()->toIso8601String(),
@@ -239,15 +247,18 @@ class TenantProvisioner
             return $modules;
         }
 
-        // Since plans no longer include modules, validate against all active modules
-        $allowed = Module::where('is_active', true)->pluck('code')->all();
-        $allowed = array_values(array_filter($allowed));
+        // Product modules are authoritative in module_pricing; core is always available
+        $productModules = DB::table('module_pricing')
+            ->where('is_active', true)
+            ->pluck('module_code')
+            ->all();
+        $allowed = array_values(array_unique(array_merge(['core'], array_filter($productModules))));
 
-        // Validate that at least one module exists
-        if (empty($allowed)) {
-            Log::warning('No active modules found in system');
+        // Validate that at least one sellable product exists
+        if (empty($productModules)) {
+            Log::warning('No active products found in module_pricing table');
             throw new \InvalidArgumentException(
-                "No active modules found in the system. Please contact support."
+                "No active products found in the system. Please contact support."
             );
         }
 

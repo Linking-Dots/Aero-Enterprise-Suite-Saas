@@ -137,10 +137,25 @@ class Subscription extends CashierSubscription
 
     /**
      * Get the tenant that owns this subscription.
+     *
+     * Uses the polymorphic billable relation so this works seamlessly
+     * with Laravel Cashier while still supporting our custom columns.
      */
-    public function tenant(): BelongsTo
+    public function getTenantAttribute(): ?Tenant
     {
-        return $this->belongsTo(Tenant::class);
+        if ($this->billable_type === Tenant::class) {
+            return Tenant::find($this->billable_id);
+        }
+
+        return null;
+    }
+
+    /**
+     * Cashier polymorphic billable relation alias.
+     */
+    public function owner(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo(__FUNCTION__, 'billable_type', 'billable_id');
     }
 
     /**
@@ -149,6 +164,17 @@ class Subscription extends CashierSubscription
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * Get all platform invoices generated for this subscription.
+     *
+     * Named billingInvoices to avoid collision with Cashier's
+     * invoices() method which queries Stripe invoice objects.
+     */
+    public function billingInvoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     // =========================================================================
@@ -162,10 +188,10 @@ class Subscription extends CashierSubscription
      * 1. Status is 'active'
      * 2. ends_at is in the future (or null for lifetime subscriptions)
      */
-    public function scopeActive(Builder $query): Builder
+    public function scopeActive($query)
     {
         return $query->where('status', self::STATUS_ACTIVE)
-            ->where(function (Builder $q) {
+            ->where(function ($q) {
                 $q->whereNull('ends_at')
                     ->orWhere('ends_at', '>', now());
             });
@@ -174,7 +200,7 @@ class Subscription extends CashierSubscription
     /**
      * Scope to filter subscriptions currently in trial.
      */
-    public function scopeTrialing(Builder $query): Builder
+    public function scopeTrialing($query)
     {
         return $query->where('status', self::STATUS_TRIALING)
             ->where('trial_ends_at', '>', now());
@@ -183,7 +209,7 @@ class Subscription extends CashierSubscription
     /**
      * Scope to filter cancelled subscriptions.
      */
-    public function scopeCancelled(Builder $query): Builder
+    public function scopeCancelled($query)
     {
         return $query->where('status', self::STATUS_CANCELLED);
     }
@@ -191,7 +217,7 @@ class Subscription extends CashierSubscription
     /**
      * Scope to filter past due subscriptions.
      */
-    public function scopePastDue(Builder $query): Builder
+    public function scopePastDue($query)
     {
         return $query->where('status', self::STATUS_PAST_DUE);
     }
@@ -199,7 +225,7 @@ class Subscription extends CashierSubscription
     /**
      * Scope to filter expired subscriptions.
      */
-    public function scopeExpired(Builder $query): Builder
+    public function scopeExpired($query)
     {
         return $query->where('ends_at', '<', now());
     }
@@ -284,15 +310,29 @@ class Subscription extends CashierSubscription
 
     /**
      * Renew the subscription for another billing cycle.
+     *
+     * Updates amount from the current plan price, preserves the billing
+     * cycle, and advances next_billing_date alongside ends_at.
      */
     public function renew(): bool
     {
-        $duration = $this->plan->duration_in_months ?? 1;
+        $plan = $this->plan;
+        $cycle = $this->billing_cycle ?? 'monthly';
+        $duration = $cycle === 'yearly' ? 12 : ($plan->duration_in_months ?? 1);
+
+        $effectivePrice = $cycle === 'yearly'
+            ? ($plan->yearly_price ?? $plan->monthly_price)
+            : $plan->monthly_price;
+
+        $newEnd = now()->addMonths($duration);
 
         return $this->update([
             'status' => self::STATUS_ACTIVE,
             'starts_at' => now(),
-            'ends_at' => now()->addMonths($duration),
+            'ends_at' => $newEnd,
+            'next_billing_date' => $newEnd,
+            'amount' => $effectivePrice,
+            'billing_cycle' => $cycle,
             'cancelled_at' => null,
             'cancellation_reason' => null,
         ]);

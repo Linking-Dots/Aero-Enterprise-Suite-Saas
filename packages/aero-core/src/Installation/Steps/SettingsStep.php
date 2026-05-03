@@ -37,7 +37,7 @@ class SettingsStep extends BaseInstallationStep
 
         // Default settings to configure
         $defaultSettings = [
-            'app.name' => env('APP_NAME', 'Aero Enterprise Suite'),
+            'app.name' => env('APP_NAME', 'aeos365'),
             'app.url' => env('APP_URL'),
             'app.timezone' => env('APP_TIMEZONE', 'UTC'),
             'app.locale' => env('APP_LOCALE', 'en'),

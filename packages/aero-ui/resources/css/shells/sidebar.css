@@ -21,7 +21,7 @@
 
 /* ── Sidebar Rail ────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar {
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--aeos-shell-sidebar-bg);
   border-right: 1px solid var(--aeos-divider);
   display: flex;
   flex-direction: column;
@@ -91,6 +91,7 @@
   flex-direction: column;
   min-height: 100vh;
   overflow: hidden;
+  width: 100%;
 }
 
 /* ── Topbar ──────────────────────────────────────────────────── */
@@ -100,7 +101,7 @@
   height: var(--aeos-shell-topnav-h, 48px);
   padding: 0 16px;
   border-bottom: 1px solid var(--aeos-divider);
-  background: rgba(0, 0, 0, 0.20);
+  background: var(--aeos-shell-topbar-bg);
   gap: 12px;
   flex-shrink: 0;
 }
@@ -178,4 +179,22 @@
     align-items: flex-start;
     padding: 16px 12px;
   }
+
+  .aeos-shell-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 998;
+  }
+}
+
+.aeos-shell-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 998;
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
 }

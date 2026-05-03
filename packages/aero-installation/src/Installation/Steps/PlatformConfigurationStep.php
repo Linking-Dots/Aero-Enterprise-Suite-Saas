@@ -115,7 +115,7 @@ class PlatformConfigurationStep extends BaseInstallationStep
         // Only use columns that exist in the platform_settings table
         $settings = [
             'slug' => 'platform',
-            'site_name' => env('SITE_NAME', 'Aero Enterprise Suite'),
+            'site_name' => env('SITE_NAME', 'aeos365'),
             'legal_name' => env('COMPANY_NAME', 'Aero Enterprise'),
             'tagline' => env('TAGLINE', null),
             'support_email' => env('SUPPORT_EMAIL', 'support@aero-suite.com'),

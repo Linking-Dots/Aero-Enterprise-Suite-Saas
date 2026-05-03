@@ -7,6 +7,7 @@ namespace Aero\Platform\Tests\Feature;
 use Aero\Platform\Jobs\ProvisionTenant;
 use Aero\Platform\Models\Domain;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -177,7 +178,7 @@ class SelfOnboardingFlowTest extends TestCase
         $this->assertNotNull($tenant);
         $this->assertEquals('Acme Corporation', $tenant->name);
         $this->assertEquals('admin@acme-corp.test', $tenant->email);
-        $this->assertNotNull($tenant->plan_id);
+        $this->assertDatabaseHas('subscriptions', ['billable_type' => Tenant::class, 'billable_id' => $tenant->id]);
 
         // Verify domain was created
         $this->assertDatabaseHas('domains', [
@@ -608,7 +609,7 @@ class SelfOnboardingFlowTest extends TestCase
         $this->assertNotNull($tenant);
         $this->assertEquals('Flow Test Corp', $tenant->name);
         $this->assertEquals('flow@test.test', $tenant->email);
-        $this->assertEquals($this->plan->id, $tenant->plan_id);
+        $this->assertDatabaseHas('subscriptions', ['billable_type' => Tenant::class, 'billable_id' => $tenant->id, 'plan_id' => $this->plan->id]);
     }
 
     public function test_trial_activation_creates_domain_record(): void

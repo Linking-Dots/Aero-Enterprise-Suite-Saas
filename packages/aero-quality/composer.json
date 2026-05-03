@@ -19,8 +19,9 @@
             ]
         },
         "aero": {
-            "module": "quality",
-            "name": "Quality Management",
+            "package": "quality",
+            "version": "1.0.0",
+            "category": "product",
             "description": "Quality assurance, inspections, and non-conformance tracking"
         }
     },

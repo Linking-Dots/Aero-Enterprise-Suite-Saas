@@ -99,6 +99,7 @@ class AeroNotificationsServiceProvider extends ServiceProvider
     protected function registerCommands(): void
     {
         $this->commands([
+            Console\Commands\RetryFailedNotifications::class,
             Console\Commands\TestMailConfiguration::class,
         ]);
     }

@@ -24,12 +24,8 @@ use Illuminate\Support\Facades\File;
 class RegistrationModuleDiscovery
 {
     /**
-     * Foundation packages that should never be exposed as selectable products.
-     */
-    protected const EXCLUDED_PACKAGES = ['platform', 'ui', 'installation'];
-
-    /**
      * Discover all product modules from composer.json.
+     * Only includes packages where extra.aero.category === 'product'.
      *
      * @return Collection<int, array>
      */
@@ -50,13 +46,13 @@ class RegistrationModuleDiscovery
         foreach ($aeroPackages as $package) {
             $code = str_replace('aero/', '', $package);
 
-            // Skip excluded foundation packages
-            if (in_array($code, self::EXCLUDED_PACKAGES, true)) {
+            // Skip core (already added)
+            if ($code === 'core') {
                 continue;
             }
 
-            // Skip core (already added)
-            if ($code === 'core') {
+            // Only include product packages (read category from package's own composer.json)
+            if ($this->getPackageCategory($code) !== 'product') {
                 continue;
             }
 
@@ -64,6 +60,34 @@ class RegistrationModuleDiscovery
         }
 
         return $modules->values();
+    }
+
+    /**
+     * Read the category from a package's own composer.json.
+     * Checks vendor/aero/{code}/composer.json and packages/aero-{code}/composer.json.
+     */
+    protected function getPackageCategory(string $code): ?string
+    {
+        $paths = [
+            base_path("vendor/aero/{$code}/composer.json"),
+            base_path("packages/aero-{$code}/composer.json"),
+        ];
+
+        foreach ($paths as $path) {
+            if (File::exists($path)) {
+                try {
+                    $content = File::get($path);
+                    $data = json_decode($content, true);
+                    if (is_array($data) && isset($data['extra']['aero']['category'])) {
+                        return $data['extra']['aero']['category'];
+                    }
+                } catch (\Throwable $e) {
+                    // Fall through to next path
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -76,30 +100,7 @@ class RegistrationModuleDiscovery
         return $this->discover()->keyBy('code')->toArray();
     }
 
-    /**
-     * Sync discovered modules into the central database modules table.
-     * Upserts records so the table always reflects installed packages.
-     */
-    public function syncToDatabase(): void
-    {
-        foreach ($this->discover() as $module) {
-            \Aero\Platform\Models\Module::updateOrCreate(
-                ['code' => $module['code']],
-                [
-                    'name' => $module['name'],
-                    'description' => $module['description'],
-                    'icon' => $module['icon'] ?? null,
-                    'route_prefix' => $module['route_prefix'] ?? null,
-                    'category' => $module['category'],
-                    'priority' => $module['priority'],
-                    'is_active' => $module['is_active'],
-                    'is_core' => $module['is_core'],
-                    'version' => $module['version'],
-                    'scope' => $module['scope'] ?? 'tenant',
-                ]
-            );
-        }
-    }
+  
 
     /**
      * Create the core module definition.
@@ -202,3 +203,4 @@ class RegistrationModuleDiscovery
         return is_array($data) ? $data : [];
     }
 }
+

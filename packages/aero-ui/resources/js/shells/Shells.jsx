@@ -22,6 +22,7 @@ export function SidebarShell({
   expanded: expandedProp, onExpandedChange,
 }) {
   const [localExp, setLocalExp] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const expanded = expandedProp ?? localExp;
   const toggle = () => {
     const next = !expanded;
@@ -66,7 +67,14 @@ export function SidebarShell({
             <button
               type="button"
               className="aeos-icon-btn"
-              onClick={toggle}
+              onClick={() => {
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                  setMobileOpen(v => !v);
+                } else {
+                  toggle();
+                }
+              }}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
               <Icon name="menu" size={16} />
@@ -124,11 +132,37 @@ export function TopNavShell({ brand, nav = [], actions, subbar, footer, maxWidth
 }
 
 /* ── FloatingShell ──────────────────────────────────────────────── */
-export function FloatingShell({ brand, nav = [], actions, footer, maxWidth, children }) {
+export function FloatingShell({
+  brand, nav = [], actions, footer, maxWidth, children,
+  expanded: expandedProp, onExpandedChange,
+}) {
+  const [localExp, setLocalExp] = useState(false);
+  const expanded = expandedProp ?? localExp;
+  const toggle = () => {
+    const next = !expanded;
+    setLocalExp(next);
+    onExpandedChange?.(next);
+  };
+
   return (
-    <div data-aeos-shell="floating">
+    <div
+      data-aeos-shell="floating"
+      className={cx(expanded && 'sidebar-expanded')}
+    >
       <nav className="aeos-shell-sidebar" aria-label="Side navigation">
-        {brand && <div className="aeos-shell-sidebar-brand">{brand}</div>}
+        {brand && (
+          <div className="aeos-shell-sidebar-brand">
+            {brand}
+            <button
+              type="button"
+              className="aeos-icon-btn"
+              onClick={toggle}
+              aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              <Icon name="menu" size={16} />
+            </button>
+          </div>
+        )}
         {nav.map((item, i) => {
           if (item.divider) return <div key={i} className="aeos-shell-sidebar-divider" aria-hidden="true" />;
           if (item.spacer)  return <div key={i} className="aeos-shell-sidebar-spacer" aria-hidden="true" />;
@@ -172,12 +206,17 @@ export function CommandShell({
   rail, railTitle, railWidth,
   footer, children,
 }) {
+  // Auto-wrap flat nav items into a single default group for backward compatibility
+  const groups = nav.length > 0 && nav[0].items
+    ? nav
+    : [{ title: null, items: nav.filter(item => !item.divider && !item.spacer) }];
+
   return (
     <div data-aeos-shell="command">
       {/* Left nav panel */}
       <aside className="aeos-shell-left" aria-label="Navigation">
         {brand && <div className="aeos-shell-cmd-brand">{brand}</div>}
-        {nav.map((group, gi) => (
+        {groups.map((group, gi) => (
           <div key={gi} className="aeos-shell-cmd-nav-group">
             {group.title && (
               <div className="aeos-shell-nav-section">{group.title}</div>

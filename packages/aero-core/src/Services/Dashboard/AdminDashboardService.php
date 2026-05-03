@@ -8,7 +8,7 @@ use Aero\Core\Contracts\ModuleSummaryProvider;
 use Aero\Core\Models\Announcement;
 use Aero\Core\Models\AuditLog;
 use Aero\Core\Models\CompanySetting;
-use Aero\Core\Models\NotificationLog;
+use Aero\Notifications\Models\NotificationLog;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserDevice;
 use Aero\Core\Models\UserSession;
@@ -387,9 +387,7 @@ class AdminDashboardService
                 if (method_exists($tenant, 'onTrial')) {
                     $isOnTrial = $tenant->onTrial();
                 }
-                if (isset($tenant->trial_ends_at)) {
-                    $trialEndsAt = $tenant->trial_ends_at;
-                }
+                $trialEndsAt = $tenant->subscription('default')?->trial_ends_at;
 
                 $expiresAt = $subscription?->ends_at ?? $trialEndsAt;
                 $daysRemaining = $expiresAt ? now()->diffInDays(Carbon::parse($expiresAt), false) : null;

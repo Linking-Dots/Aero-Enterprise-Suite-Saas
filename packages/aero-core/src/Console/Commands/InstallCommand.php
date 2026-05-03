@@ -34,7 +34,7 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Install Aero Enterprise Suite in standalone mode';
+    protected $description = 'Install aeos365 in standalone mode';
 
     /**
      * Installation lock file
@@ -47,7 +47,7 @@ class InstallCommand extends Command
     public function handle(): int
     {
         $this->info('==============================================');
-        $this->info('  Aero Enterprise Suite - Standalone Installation');
+        $this->info('  aeos365 - Standalone Installation');
         $this->info('==============================================');
         $this->newLine();
 

@@ -138,9 +138,9 @@ function applyPrefs(p) {
   /* 1. Theme class names ───────────────────────────────────────────── */
   const newClasses = buildBodyClasses(p.mode, p.variant);
 
-  // Remove any previously-applied aeos theme classes, keep the rest
+  // Remove only aeos theme-variant classes (aeos--*), keep the rest
   const existingNonAeos = Array.from(body.classList).filter(
-    (cls) => !cls.startsWith('aeos')
+    (cls) => !cls.match(/^aeos--/)
   );
   body.className = [...existingNonAeos, ...newClasses].join(' ');
 

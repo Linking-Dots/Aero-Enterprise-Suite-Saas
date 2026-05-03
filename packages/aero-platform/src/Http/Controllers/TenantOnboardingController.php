@@ -29,12 +29,6 @@ use Inertia\Response;
 class TenantOnboardingController extends Controller
 {
     /**
-     * Foundation packages to exclude from module discovery.
-     * These are hidden infrastructure packages, not user-facing modules.
-     */
-    protected const FOUNDATION_PACKAGES = ['platform', 'core', 'ui'];
-
-    /**
      * Module discovery service instance.
      */
     protected ModuleDiscoveryService $moduleDiscovery;
@@ -409,22 +403,24 @@ class TenantOnboardingController extends Controller
     }
 
     /**
-     * Get available modules from installed packages.
-     *
-     * Excludes foundation packages (platform, core, ui) which are
-     * hidden infrastructure layers, not user-facing modules.
+     * Get available product modules from module_pricing table.
+     * Enriches with metadata from ModuleDiscoveryService.
+     * Foundation packages are excluded because they have no pricing entry.
      *
      * @return array<int, array{code: string, name: string, description: string, icon: string}>
      */
     protected function getAvailableModules(): array
     {
-        $modules = $this->moduleDiscovery->getModuleDefinitions()
-            ->filter(function ($module) {
-                // Filter out foundation packages
-                $code = $module['code'] ?? '';
+        $pricingCodes = DB::connection(config('tenancy.database.central_connection', 'mysql'))
+            ->table('module_pricing')
+            ->where('is_active', true)
+            ->pluck('module_code');
 
-                return ! in_array($code, self::FOUNDATION_PACKAGES, true);
-            })
+        $allDefinitions = $this->moduleDiscovery->getModuleDefinitions()->keyBy('code');
+
+        return $pricingCodes
+            ->map(fn (string $code) => $allDefinitions->get($code))
+            ->filter()
             ->map(function ($module) {
                 return [
                     'code' => $module['code'] ?? '',
@@ -437,7 +433,5 @@ class TenantOnboardingController extends Controller
             })
             ->values()
             ->toArray();
-
-        return $modules;
     }
 }

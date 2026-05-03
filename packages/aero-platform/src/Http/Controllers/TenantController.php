@@ -6,7 +6,9 @@ namespace Aero\Platform\Http\Controllers;
 
 use Aero\Platform\Jobs\ProvisionTenant;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
+use Illuminate\Support\Str;
 use Aero\Platform\Services\Tenant\TenantPurgeService;
 use Aero\Platform\Services\Tenant\TenantRetentionService;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +41,7 @@ class TenantController extends Controller
         $this->authorize('viewAny', Tenant::class);
 
         $query = Tenant::query()
-            ->with(['plan', 'domains'])
+            ->with(['currentSubscription.plan', 'domains'])
             ->when($request->boolean('include_archived'), function ($q) {
                 $q->withTrashed();
             })
@@ -54,24 +56,11 @@ class TenantController extends Controller
             ->when($request->filled('status'), function ($q) use ($request) {
                 $q->where('status', $request->input('status'));
             })
-            ->when($request->filled('plan_id'), function ($q) use ($request) {
-                $q->where('plan_id', $request->input('plan_id'));
-            })
-            ->when($request->filled('plan'), function ($q) use ($request) {
-                $q->where('plan_id', $request->input('plan'));
-            })
             ->when($request->filled('type'), function ($q) use ($request) {
                 $q->where('type', $request->input('type'));
-            })
-            ->when($request->filled('trial_status'), function ($q) use ($request) {
-                $trialStatus = $request->input('trial_status');
-                match ($trialStatus) {
-                    'on_trial' => $q->whereNotNull('trial_ends_at')->where('trial_ends_at', '>', now()),
-                    'trial_expired' => $q->whereNotNull('trial_ends_at')->where('trial_ends_at', '<=', now()),
-                    'not_trial' => $q->whereNull('trial_ends_at'),
-                    default => null,
-                };
             });
+        // NOTE: plan_id and trial_status filters removed from tenant table.
+        // Use subscription-based filters or the Billing dashboard instead.
 
         // Sorting
         $sortField = $request->input('sort', 'created_at');
@@ -113,13 +102,8 @@ class TenantController extends Controller
                 'archived' => Tenant::where('status', Tenant::STATUS_ARCHIVED)->count(),
                 'provisioning' => Tenant::where('status', Tenant::STATUS_PROVISIONING)->count(),
                 'failed' => Tenant::where('status', Tenant::STATUS_FAILED)->count(),
-                'on_trial' => Tenant::whereNotNull('trial_ends_at')
-                    ->where('trial_ends_at', '>', now())
-                    ->count(),
-                'trial_expired' => Tenant::whereNotNull('trial_ends_at')
-                    ->where('trial_ends_at', '<=', now())
-                    ->where('status', '!=', Tenant::STATUS_ACTIVE)
-                    ->count(),
+                'on_trial' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', now()))->count(),
+                'trial_expired' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '<=', now()))->where('status', '!=', Tenant::STATUS_ACTIVE)->count(),
                 'new_this_month' => Tenant::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
                     ->count(),
@@ -161,6 +145,7 @@ class TenantController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'type' => ['required', 'string', Rule::in(['business', 'enterprise', 'startup'])],
             'plan_id' => ['required', 'exists:plans,id'],
+            'billing_cycle' => ['nullable', 'in:monthly,yearly'],
             'trial_days' => ['nullable', 'integer', 'min:0', 'max:90'],
             'admin_name' => ['required', 'string', 'max:255'],
             'admin_email' => ['required', 'email', 'max:255'],
@@ -176,17 +161,42 @@ class TenantController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
                 'type' => $validated['type'],
-                'plan_id' => $validated['plan_id'],
                 'status' => Tenant::STATUS_PENDING,
-                'trial_ends_at' => isset($validated['trial_days'])
-                    ? now()->addDays($validated['trial_days'])
-                    : null,
+                'data' => [
+                    'plan_id' => $validated['plan_id'],
+                    'billing_cycle' => $validated['billing_cycle'] ?? 'monthly',
+                ],
                 'admin_data' => [
                     'name' => $validated['admin_name'],
                     'email' => $validated['admin_email'],
                     'password' => $validated['admin_password'] ?? null,
                 ],
             ]);
+
+            // Create trial subscription record (kept in subscriptions table, not tenant row)
+            $plan = Plan::find($validated['plan_id']);
+            if ($plan) {
+                $trialDays = (int) ($validated['trial_days'] ?? $plan->trial_days ?? 14);
+                $trialEndsAt = now()->addDays($trialDays);
+                $billingCycle = $validated['billing_cycle'] ?? 'monthly';
+                $amount = $billingCycle === 'yearly' ? $plan->yearly_price : $plan->monthly_price;
+
+                Subscription::create([
+                    'id' => (string) Str::uuid(),
+                    'billable_type' => Tenant::class,
+                    'billable_id' => $tenant->id,
+                    'name' => 'default',
+                    'plan_id' => $plan->id,
+                    'billing_cycle' => $billingCycle,
+                    'amount' => $amount,
+                    'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
+                    'status' => Subscription::STATUS_TRIALING,
+                    'trial_starts_at' => now(),
+                    'trial_ends_at' => $trialEndsAt,
+                    'starts_at' => now(),
+                    'ends_at' => $trialEndsAt,
+                ]);
+            }
 
             // Create domain
             $tenant->createDomain([
@@ -223,26 +233,8 @@ class TenantController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'plan_id' => ['sometimes', 'exists:plans,id'],
-            'trial_ends_at' => ['nullable', 'date'],
-            'subscription_ends_at' => ['nullable', 'date'],
+            'status' => ['sometimes', 'string'],
         ]);
-
-        // Plan change validation
-        if (isset($validated['plan_id']) && $validated['plan_id'] !== $tenant->plan_id) {
-            $newPlan = Plan::find($validated['plan_id']);
-            $oldPlan = $tenant->plan;
-
-            if ($newPlan && $oldPlan) {
-                // Plans no longer include modules - module changes handled separately via tenant_module
-                Log::info('Tenant plan change detected', [
-                    'tenant_id' => $tenant->id,
-                    'tenant_name' => $tenant->name,
-                    'old_plan' => $oldPlan->name,
-                    'new_plan' => $newPlan->name,
-                ]);
-            }
-        }
 
         $tenant->update($validated);
 
@@ -587,7 +579,7 @@ class TenantController extends Controller
         $query = Tenant::query()
             ->with(['plan'])
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
-            ->when($request->filled('plan_id'), fn ($q) => $q->where('plan_id', $request->input('plan_id')))
+            // plan_id filter removed: plan is now stored in subscriptions table
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->input('search');
                 $q->where(function ($query) use ($search) {
@@ -621,8 +613,7 @@ class TenantController extends Controller
                 'Type',
                 'Status',
                 'Plan',
-                'Trial Ends At',
-                'Subscription Ends At',
+                'Trial Status',
                 'Created At',
                 'Updated At',
             ]);
@@ -639,8 +630,7 @@ class TenantController extends Controller
                         $tenant->type,
                         $tenant->status,
                         $tenant->plan?->name ?? 'No Plan',
-                        $tenant->trial_ends_at?->toDateString(),
-                        $tenant->subscription_ends_at?->toDateString(),
+                        optional($tenant->subscription()->first())->status ?? 'N/A',
                         $tenant->created_at?->toDateTimeString(),
                         $tenant->updated_at?->toDateTimeString(),
                     ]);

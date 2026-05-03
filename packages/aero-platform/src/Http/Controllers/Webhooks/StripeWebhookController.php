@@ -5,7 +5,9 @@ namespace Aero\Platform\Http\Controllers\Webhooks;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Models\WebhookEvent;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierWebhookController;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +22,47 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class StripeWebhookController extends CashierWebhookController
 {
+    /**
+     * Override the parent handleWebhook to add idempotency.
+     *
+     * Duplicate Stripe webhook deliveries are detected by event ID
+     * and safely skipped to prevent double-processing.
+     */
+    public function handleWebhook(Request $request): Response
+    {
+        $payload = $request->all();
+        $eventId = $payload['id'] ?? null;
+        $eventType = $payload['type'] ?? 'unknown';
+
+        // Guard: skip duplicate events
+        if ($eventId && WebhookEvent::alreadyProcessed('stripe', $eventId)) {
+            Log::info('Stripe webhook: duplicate event skipped', [
+                'event_id' => $eventId,
+                'event_type' => $eventType,
+            ]);
+
+            return $this->successMethod();
+        }
+
+        try {
+            $response = parent::handleWebhook($request);
+
+            // Record successful processing
+            if ($eventId) {
+                WebhookEvent::recordProcessed('stripe', $eventId, $eventType);
+            }
+
+            return $response;
+        } catch (\Exception $e) {
+            // Record failed processing
+            if ($eventId) {
+                WebhookEvent::recordFailed('stripe', $eventId, $eventType, $e->getMessage());
+            }
+
+            throw $e;
+        }
+    }
+
     /**
      * Handle customer subscription updated.
      *
@@ -99,10 +142,23 @@ class StripeWebhookController extends CashierWebhookController
 
                 if ($plan) {
                     $tenant->update([
-                        'plan_id' => $plan->id,
-                        'subscription_plan' => $metadata['billing_cycle'] ?? 'monthly',
                         'status' => Tenant::STATUS_ACTIVE,
                     ]);
+
+                    // Enrich the Cashier subscription record with our plan metadata
+                    $subscription = $tenant->subscription('default');
+                    if ($subscription) {
+                        $billingCycle = $metadata['billing_cycle'] ?? 'monthly';
+                        $amount = $billingCycle === 'yearly' ? $plan->yearly_price : $plan->monthly_price;
+
+                        $subscription->update([
+                            'plan_id' => $plan->id,
+                            'billing_cycle' => $billingCycle,
+                            'amount' => $amount,
+                            'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
+                            'status' => Subscription::STATUS_ACTIVE,
+                        ]);
+                    }
 
                     Log::info('Stripe webhook: Subscription created, tenant activated', [
                         'tenant_id' => $tenant->id,
@@ -162,12 +218,17 @@ class StripeWebhookController extends CashierWebhookController
         if ($tenant) {
             $trialEndDate = $trialEnd ? Carbon::createFromTimestamp($trialEnd) : now()->addDays(3);
 
-            $tenant->data['trial_will_end_notified_at'] = now()->toIso8601String();
-            $tenant->data['trial_ends_at'] = $trialEndDate->toIso8601String();
-            $tenant->save();
-
-            // Find the subscription to log the event
+            // Update the subscription record with the Stripe trial end date
             $subscription = Subscription::where('stripe_id', $stripeSubscriptionId)->first();
+            if ($subscription) {
+                $subscription->update([
+                    'trial_ends_at' => $trialEndDate,
+                    'ends_at' => $trialEndDate,
+                ]);
+            }
+
+            $tenant->data['trial_will_end_notified_at'] = now()->toIso8601String();
+            $tenant->save();
 
             Log::info('Stripe webhook: Trial will end soon', [
                 'tenant_id' => $tenant->id,

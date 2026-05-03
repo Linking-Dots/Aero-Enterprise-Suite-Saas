@@ -33,8 +33,8 @@ class PublicPageController extends Controller
                         'id' => $plan->slug,
                         'name' => $plan->name,
                         'tagline' => $plan->description ?? '',
-                        'monthlyPrice' => $plan->monthly_price / 100, // Convert cents to dollars
-                        'annualPrice' => $plan->yearly_price / 100, // Convert cents to dollars
+                        'monthlyPrice' => $plan->monthly_price, // Convert cents to dollars
+                        'annualPrice' => $plan->yearly_price, // Convert cents to dollars
                         'currency' => '$',
                         'highlight' => $plan->is_featured ?? false,
                         'badge' => $plan->is_featured ? ($plan->tier === 2 ? 'Most Popular' : null) : null,

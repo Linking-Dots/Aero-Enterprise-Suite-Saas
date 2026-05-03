@@ -120,8 +120,7 @@ class PlatformStatsWidget extends AbstractPlatformWidget
 
         // Trial tenants
         $onTrial = Tenant::where('status', Tenant::STATUS_ACTIVE)
-            ->whereNotNull('trial_ends_at')
-            ->where('trial_ends_at', '>', now())
+            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', now()))
             ->count();
 
         return [

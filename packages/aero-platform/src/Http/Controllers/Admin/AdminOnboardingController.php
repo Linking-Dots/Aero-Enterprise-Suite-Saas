@@ -65,7 +65,7 @@ class AdminOnboardingController extends Controller
 
         $query = Tenant::query()
             ->where('status', Tenant::STATUS_PENDING)
-            ->with(['plan']);
+            ->with(['currentSubscription.plan']);
 
         // Apply search filter
         if ($search) {
@@ -166,7 +166,7 @@ class AdminOnboardingController extends Controller
         $filter = $request->input('filter', 'all'); // all, expiring_soon, expired, active
 
         $query = Tenant::query()
-            ->whereNotNull('trial_ends_at')
+            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))
             ->where('status', Tenant::STATUS_ACTIVE)
             ->with(['plan', 'subscriptions']);
 
@@ -177,39 +177,36 @@ class AdminOnboardingController extends Controller
             });
         }
 
-        // Apply filter
+        // Apply filter via subscription relation
         $now = Carbon::now();
         switch ($filter) {
             case 'expiring_soon':
-                $query->whereBetween('trial_ends_at', [$now, $now->copy()->addDays(7)]);
+                $query->whereHas('subscription', fn ($q) => $q->whereBetween('trial_ends_at', [$now, $now->copy()->addDays(7)]));
                 break;
             case 'expired':
-                $query->where('trial_ends_at', '<', $now);
+                $query->whereHas('subscription', fn ($q) => $q->where('trial_ends_at', '<', $now));
                 break;
             case 'active':
-                $query->where('trial_ends_at', '>', $now);
+                $query->whereHas('subscription', fn ($q) => $q->where('trial_ends_at', '>', $now));
                 break;
         }
 
         $trials = $query
-            ->orderBy('trial_ends_at', 'asc')
+            ->with(['subscription' => fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)])
             ->paginate($perPage);
 
         $stats = [
-            'total' => Tenant::whereNotNull('trial_ends_at')
+            'total' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))
                 ->where('status', Tenant::STATUS_ACTIVE)
                 ->count(),
-            'active' => Tenant::whereNotNull('trial_ends_at')
+            'active' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', $now))
                 ->where('status', Tenant::STATUS_ACTIVE)
-                ->where('trial_ends_at', '>', $now)
                 ->count(),
-            'expiringSoon' => Tenant::whereNotNull('trial_ends_at')
+            'expiringSoon' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereBetween('trial_ends_at', [$now, $now->copy()->addDays(7)]))
                 ->where('status', Tenant::STATUS_ACTIVE)
-                ->whereBetween('trial_ends_at', [$now, $now->copy()->addDays(7)])
                 ->count(),
-            'expired' => Tenant::whereNotNull('trial_ends_at')
+            'expired' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '<', $now))
                 ->where('status', Tenant::STATUS_ACTIVE)
-                ->where('trial_ends_at', '<', $now)
                 ->count(),
             'conversionRate' => $this->calculateConversionRate(),
         ];
@@ -466,12 +463,16 @@ class AdminOnboardingController extends Controller
         ]);
 
         try {
-            $currentEnd = $tenant->trial_ends_at ?? Carbon::now();
+            $subscription = $tenant->subscription('default');
+            $currentEnd = $subscription?->trial_ends_at ?? Carbon::now();
             $newEnd = Carbon::parse($currentEnd)->addDays($request->days);
 
-            $tenant->update([
-                'trial_ends_at' => $newEnd,
-            ]);
+            if ($subscription) {
+                $subscription->update([
+                    'trial_ends_at' => $newEnd,
+                    'ends_at' => $newEnd,
+                ]);
+            }
 
             Log::info('Trial extended', [
                 'tenant_id' => $tenant->id,
@@ -514,11 +515,14 @@ class AdminOnboardingController extends Controller
 
             // Create subscription
             $subscription = Subscription::create([
-                'tenant_id' => $tenant->id,
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'billable_type' => Tenant::class,
+                'billable_id' => $tenant->id,
+                'name' => 'default',
                 'plan_id' => $plan->id,
                 'billing_cycle' => $request->billing_cycle,
                 'amount' => $request->billing_cycle === 'yearly' ? $plan->yearly_price : $plan->monthly_price,
-                'currency' => 'USD',
+                'currency' => $plan->currency ?? config('cashier.currency', 'USD'),
                 'status' => Subscription::STATUS_ACTIVE,
                 'starts_at' => Carbon::now(),
                 'ends_at' => $request->billing_cycle === 'yearly'
@@ -526,12 +530,11 @@ class AdminOnboardingController extends Controller
                     : Carbon::now()->addMonth(),
             ]);
 
-            // Update tenant
-            $tenant->update([
-                'trial_ends_at' => null,
-                'plan_id' => $plan->id,
-                'subscription_plan' => $request->billing_cycle,
-            ]);
+            // Clear trial subscription if present
+            $trialSubscription = $tenant->subscription('default');
+            if ($trialSubscription && $trialSubscription->id !== $subscription->id) {
+                $trialSubscription->update(['status' => Subscription::STATUS_CANCELLED]);
+            }
 
             Log::info('Trial converted to paid', [
                 'tenant_id' => $tenant->id,
@@ -791,15 +794,20 @@ class AdminOnboardingController extends Controller
         ]);
 
         try {
-            if (! $tenant->trial_ends_at) {
+            $subscription = $tenant->subscription('default');
+            if (! $subscription?->onTrial()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Tenant does not have an active trial.',
                 ], 422);
             }
 
-            $tenant->update([
+            $subscription->update([
                 'trial_ends_at' => null,
+                'status' => Subscription::STATUS_CANCELLED,
+            ]);
+
+            $tenant->update([
                 'status' => $tenant->subscriptions()
                     ->where('status', Subscription::STATUS_ACTIVE)
                     ->exists() ? $tenant->status : Tenant::STATUS_CANCELLED,
@@ -851,9 +859,8 @@ class AdminOnboardingController extends Controller
 
             return [
                 'pendingRegistrations' => Tenant::where('status', Tenant::STATUS_PENDING)->count(),
-                'activeTrials' => Tenant::whereNotNull('trial_ends_at')
+                'activeTrials' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', $now))
                     ->where('status', Tenant::STATUS_ACTIVE)
-                    ->where('trial_ends_at', '>', $now)
                     ->count(),
                 'cancelledTenants' => Tenant::where('status', Tenant::STATUS_CANCELLED)->count(),
                 'conversionRate' => $this->calculateConversionRate(),
@@ -908,11 +915,8 @@ class AdminOnboardingController extends Controller
      */
     private function getExpiringTrials(): array
     {
-        return Tenant::whereNotNull('trial_ends_at')
+        return Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at')->whereBetween('trial_ends_at', [Carbon::now(), Carbon::now()->addDays(14)]))
             ->where('status', Tenant::STATUS_ACTIVE)
-            ->where('trial_ends_at', '>', Carbon::now())
-            ->where('trial_ends_at', '<', Carbon::now()->addDays(14))
-            ->orderBy('trial_ends_at', 'asc')
             ->limit(5)
             ->with('plan')
             ->get()
@@ -920,8 +924,8 @@ class AdminOnboardingController extends Controller
                 'id' => $tenant->id,
                 'companyName' => $tenant->name,
                 'plan' => $tenant->plan?->name ?? 'No Plan',
-                'daysRemaining' => Carbon::now()->diffInDays($tenant->trial_ends_at),
-                'expiresAt' => $tenant->trial_ends_at->format('M d, Y'),
+                'daysRemaining' => Carbon::now()->diffInDays($tenant->subscription('default')?->trial_ends_at),
+                'expiresAt' => $tenant->subscription('default')?->trial_ends_at?->format('M d, Y'),
             ])
             ->toArray();
     }
@@ -974,14 +978,14 @@ class AdminOnboardingController extends Controller
             $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        $totalTrials = (clone $query)->whereNotNull('trial_ends_at')->count();
+        $totalTrials = (clone $query)->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))->count();
 
         if ($totalTrials === 0) {
             return 0;
         }
 
         $converted = (clone $query)
-            ->whereNotNull('trial_ends_at')
+            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))
             ->whereHas('subscriptions', fn ($q) => $q->where('status', Subscription::STATUS_ACTIVE))
             ->count();
 
@@ -1049,9 +1053,10 @@ class AdminOnboardingController extends Controller
      */
     private function getPlanDistribution(): array
     {
-        return Tenant::selectRaw('plan_id, COUNT(*) as count')
+        return Subscription::selectRaw('plan_id, COUNT(DISTINCT billable_id) as count')
+            ->where('billable_type', Tenant::class)
             ->whereNotNull('plan_id')
-            ->where('status', Tenant::STATUS_ACTIVE)
+            ->where('status', Subscription::STATUS_ACTIVE)
             ->groupBy('plan_id')
             ->with('plan:id,name')
             ->get()
@@ -1109,7 +1114,7 @@ class AdminOnboardingController extends Controller
     private function calculateAverageTrialDays(Carbon $startDate, Carbon $endDate): float
     {
         $converted = Tenant::whereBetween('created_at', [$startDate, $endDate])
-            ->whereNotNull('trial_ends_at')
+            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))
             ->whereHas('subscriptions', fn ($q) => $q->where('status', Subscription::STATUS_ACTIVE))
             ->with('subscriptions')
             ->get();

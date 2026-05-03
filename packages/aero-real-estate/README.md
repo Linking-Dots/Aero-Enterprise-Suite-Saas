@@ -200,4 +200,4 @@ $maintenance->update([
 
 ## License
 
-This package is part of the Aero Enterprise Suite and is proprietary software.
+This package is part of the aeos365 and is proprietary software.

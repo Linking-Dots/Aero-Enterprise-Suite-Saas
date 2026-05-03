@@ -193,7 +193,7 @@ class UnifiedInstallationController extends Controller
         $steps = $this->getSteps();
 
         return Inertia::render('Installation/Welcome', [
-            'title' => 'Welcome to Aero Enterprise Suite',
+            'title' => 'Welcome to aeos365',
             'mode' => $mode,
             'version' => config('app.version', '1.0.0'),
             'phpVersion' => PHP_VERSION,
@@ -787,10 +787,10 @@ class UnifiedInstallationController extends Controller
 
             // Send test email
             Mail::raw(
-                'This is a test email from the Aero Enterprise Suite installation wizard. If you received this email, your SMTP configuration is working correctly.',
+                'This is a test email from the aeos365 installation wizard. If you received this email, your SMTP configuration is working correctly.',
                 function ($message) use ($request) {
                     $message->to($request->test_email)
-                        ->subject('Aero Enterprise Suite - Test Email');
+                        ->subject('aeos365 - Test Email');
                 }
             );
 

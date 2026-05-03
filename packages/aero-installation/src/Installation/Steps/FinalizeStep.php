@@ -4,6 +4,8 @@ namespace Aero\Installation\Installation\Steps;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
  * Finalize Step
@@ -40,6 +42,24 @@ class FinalizeStep extends BaseInstallationStep
     {
         $results = [];
 
+        // ================================================================
+        // STEP 1: Mark installation as complete FIRST (critical ordering)
+        // ================================================================
+        // Service providers (AeroPlatformServiceProvider) check for
+        // storage/app/aeos.installed to decide whether to register platform
+        // and tenant routes. We MUST create the lock file BEFORE generating
+        // any caches (route cache, config cache, etc.) so those routes are
+        // included in the cached manifest.
+        $this->log('Marking installation as complete');
+        try {
+            $this->markInstallationComplete();
+            $this->createLockFile();
+            $results['marked_complete'] = true;
+        } catch (\Exception $e) {
+            $this->warn('Failed to mark installation complete: '.$e->getMessage());
+            $results['marked_complete'] = false;
+        }
+
         // Verify HRMAC structure is complete
         $this->log('Verifying HRMAC structure');
         try {
@@ -66,6 +86,12 @@ class FinalizeStep extends BaseInstallationStep
             $results['cache_cleared'] = false;
         }
 
+        // Ensure views directory exists so optimize/view:cache won't crash
+        $viewsPath = resource_path('views');
+        if (! is_dir($viewsPath)) {
+            mkdir($viewsPath, 0755, true);
+        }
+
         // Optimize application
         $this->log('Optimizing application');
         try {
@@ -74,16 +100,21 @@ class FinalizeStep extends BaseInstallationStep
         } catch (\Exception $e) {
             $this->warn('Optimization failed: '.$e->getMessage());
             $results['optimized'] = false;
-        }
 
-        // Mark installation as complete
-        $this->log('Marking installation as complete');
-        try {
-            $this->markInstallationComplete();
-            $results['marked_complete'] = true;
-        } catch (\Exception $e) {
-            $this->warn('Failed to mark installation complete: '.$e->getMessage());
-            $results['marked_complete'] = false;
+            // Fallback: run individual cache commands so route cache is still generated
+            $this->log('Running fallback optimization (config:cache + route:cache)');
+            try {
+                Artisan::call('config:cache');
+            } catch (\Exception $configEx) {
+                $this->warn('Fallback config:cache failed: '.$configEx->getMessage());
+            }
+            try {
+                Artisan::call('route:cache');
+                $results['route_cached'] = true;
+            } catch (\Exception $routeEx) {
+                $this->warn('Fallback route:cache failed: '.$routeEx->getMessage());
+                $results['route_cached'] = false;
+            }
         }
 
         // Generate completion summary
@@ -209,7 +240,7 @@ class FinalizeStep extends BaseInstallationStep
     protected function generateSummary(): array
     {
         return [
-            'application_name' => env('APP_NAME', 'Aero Enterprise Suite'),
+            'application_name' => env('APP_NAME', 'aeos365'),
             'application_url' => env('APP_URL'),
             'installation_mode' => env('INSTALLATION_MODE', 'standalone'),
             'installed_at' => now(),
@@ -222,6 +253,33 @@ class FinalizeStep extends BaseInstallationStep
                 '4. Display feature modules',
             ],
         ];
+    }
+
+    /**
+     * Create installation lock files
+     *
+     * Writes the unified lock file (aeos.installed) and mode file (aeos.mode)
+     * to storage/app. Both aero-core and aero-platform packages check for
+     * aeos.installed to decide whether to register runtime routes.
+     */
+    protected function createLockFile(): void
+    {
+        $lockFile = storage_path('app/aeos.installed');
+        $mode = env('INSTALLATION_MODE', 'standalone');
+
+        $lockData = [
+            'installed_at' => now()->toDateTimeString(),
+            'version'      => config('app.version', '1.0.0'),
+            'mode'         => $mode,
+            'key'          => Str::uuid()->toString(),
+        ];
+
+        File::ensureDirectoryExists(dirname($lockFile));
+        File::put($lockFile, json_encode($lockData, JSON_PRETTY_PRINT));
+
+        // Also write the mode file used by service providers
+        $modeFile = storage_path('app/aeos.mode');
+        File::put($modeFile, $mode);
     }
 
     public function canSkip(): bool

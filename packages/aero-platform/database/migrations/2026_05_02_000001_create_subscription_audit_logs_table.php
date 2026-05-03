@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('subscription_audit_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
-            $table->foreignId('subscription_id')->nullable()->constrained('subscriptions')->nullOnDelete();
+            $table->string('tenant_id');
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
+            $table->uuid('subscription_id')->nullable();
+            $table->foreign('subscription_id')->references('id')->on('subscriptions')->nullOnDelete();
             $table->string('event_type', 64); // plan_change, module_add, module_remove, cancel, resume, payment_method_update, admin_override
             $table->string('description', 512);
             $table->json('old_values')->nullable();

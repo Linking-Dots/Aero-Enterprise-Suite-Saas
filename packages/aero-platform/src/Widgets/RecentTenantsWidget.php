@@ -66,7 +66,7 @@ class RecentTenantsWidget extends AbstractPlatformWidget
      */
     public function getData(): array
     {
-        $recentTenants = Tenant::with(['plan', 'domains'])
+        $recentTenants = Tenant::with(['currentSubscription.plan', 'domains'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
@@ -81,8 +81,8 @@ class RecentTenantsWidget extends AbstractPlatformWidget
                     'planColor' => $this->getPlanColor($tenant->plan?->code),
                     'createdAt' => $tenant->created_at?->diffForHumans() ?? 'Unknown',
                     'createdAtFull' => $tenant->created_at?->format('M d, Y H:i') ?? null,
-                    'isOnTrial' => $tenant->trial_ends_at && $tenant->trial_ends_at->isFuture(),
-                    'trialEndsAt' => $tenant->trial_ends_at?->diffForHumans() ?? null,
+                    'isOnTrial' => $tenant->subscription('default')?->onTrial() ?? false,
+                    'trialEndsAt' => $tenant->subscription('default')?->trial_ends_at?->diffForHumans() ?? null,
                 ];
             })
             ->toArray();

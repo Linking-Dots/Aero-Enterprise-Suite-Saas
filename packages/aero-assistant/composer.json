@@ -50,7 +50,7 @@
         "aero": {
             "package": "assistant",
             "version": "1.0.0",
-            "category": "productivity",
+            "category": "product",
             "description": "AI-powered assistant with RAG capabilities for user guidance, task automation, and contextual help"
         }
     },

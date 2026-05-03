@@ -204,7 +204,7 @@ class HandleInertiaRequests extends Middleware
                 'subdomain' => tenant('subdomain'),
                 'status' => tenant('status'),
                 'onTrial' => tenant()?->isOnTrial() ?? false,
-                'trialEndsAt' => tenant('trial_ends_at'),
+                'trialEndsAt' => tenant()->subscription('default')?->trial_ends_at,
             ],
             'app' => [
                 'name' => $companyName,
@@ -534,8 +534,9 @@ class HandleInertiaRequests extends Middleware
                 $modules = array_merge($modules, $directPlanModules);
             }
 
-            if (! empty(tenant()->modules) && is_array(tenant()->modules)) {
-                $modules = array_merge($modules, tenant()->modules);
+            $tenantModuleCodes = tenant()->modules()->pluck('code')->toArray();
+            if (! empty($tenantModuleCodes)) {
+                $modules = array_merge($modules, $tenantModuleCodes);
             }
 
             return array_unique($modules);
@@ -751,7 +752,7 @@ class HandleInertiaRequests extends Middleware
             'features' => array_merge($defaultLimits['features'], $planFeatures['features'] ?? []),
             'plan_name' => $plan->name,
             'plan_id' => $plan->id,
-            'billing_cycle' => $tenant->subscription_plan,
+            'billing_cycle' => $tenant->subscription('default')?->billing_cycle,
         ];
     }
 

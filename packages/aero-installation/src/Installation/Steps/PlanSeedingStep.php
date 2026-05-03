@@ -128,8 +128,8 @@ class PlanSeedingStep extends BaseInstallationStep
                 'slug' => 'starter',
                 'tier' => 1,
                 'plan_type' => 'subscription',
-                'monthly_price' => 2900, // $29.00
-                'yearly_price' => 29000, // $290.00
+                'monthly_price' => 29.00,
+                'yearly_price' => 290.00,
                 'setup_fee' => 0,
                 'trial_days' => 14,
                 'grace_days' => 7,
@@ -155,8 +155,8 @@ class PlanSeedingStep extends BaseInstallationStep
                 'slug' => 'professional',
                 'tier' => 2,
                 'plan_type' => 'subscription',
-                'monthly_price' => 7900, // $79.00
-                'yearly_price' => 79000, // $790.00
+                'monthly_price' => 79.00,
+                'yearly_price' => 790.00,
                 'setup_fee' => 0,
                 'trial_days' => 14,
                 'grace_days' => 7,
@@ -183,8 +183,8 @@ class PlanSeedingStep extends BaseInstallationStep
                 'slug' => 'business',
                 'tier' => 3,
                 'plan_type' => 'subscription',
-                'monthly_price' => 14900, // $149.00
-                'yearly_price' => 149000, // $1,490.00
+                'monthly_price' => 149.00,
+                'yearly_price' => 1490.00,
                 'setup_fee' => 0,
                 'trial_days' => 14,
                 'grace_days' => 7,
@@ -212,8 +212,8 @@ class PlanSeedingStep extends BaseInstallationStep
                 'slug' => 'enterprise',
                 'tier' => 4,
                 'plan_type' => 'subscription',
-                'monthly_price' => 29900, // $299.00
-                'yearly_price' => 299000, // $2,990.00
+                'monthly_price' => 299.00,
+                'yearly_price' => 2990.00,
                 'setup_fee' => 0,
                 'trial_days' => 30,
                 'grace_days' => 14,
@@ -247,50 +247,96 @@ class PlanSeedingStep extends BaseInstallationStep
     }
 
     /**
-     * Seed module pricing for all discovered modules
-     * Core module is free, other modules are $10/mo or $100/yr
+     * Seed module pricing for all discovered aero packages into module_pricing table.
+     * Reads composer.json directly so all tenant modules get priced even though the
+     * central modules table only stores 'platform' in SaaS mode.
+     * Core module is free; all others are $20/mo or $200/yr.
      * Returns the count of module pricing records seeded
      */
     protected function seedModulePricing(): int
     {
         if (! Schema::hasTable('module_pricing')) {
-            $this->warn('Module pricing table does not exist, skipping module pricing seeding');
+            $this->warn('module_pricing table does not exist, skipping module pricing seeding');
             return 0;
         }
 
-        $now = now();
-        $modules = DB::table('modules')->where('is_active', true)->get();
+        // Read composer.json to discover all aero packages for pricing
+        $composerJson = $this->readComposerJson();
+        $aeroPackages = array_filter(array_keys($composerJson['require'] ?? []), function ($package) {
+            return str_starts_with($package, 'aero/');
+        });
+
         $count = 0;
 
-        foreach ($modules as $module) {
-            // Core module is free
-            if ($module->is_core) {
-                DB::table('module_pricing')->insert([
-                    'id' => (string) Str::uuid(),
-                    'module_id' => $module->id,
-                    'monthly_price' => 0,
-                    'yearly_price' => 0,
-                    'is_active' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
-                $this->log("Seeded module pricing for core module (free)");
-            } else {
-                // Other modules are $10/mo or $100/yr
-                DB::table('module_pricing')->insert([
-                    'id' => (string) Str::uuid(),
-                    'module_id' => $module->id,
-                    'monthly_price' => 1000, // $10.00
-                    'yearly_price' => 10000, // $100.00
-                    'is_active' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
-                $this->log("Seeded module pricing for module: {$module->name} ($10/mo)");
+        foreach ($aeroPackages as $package) {
+            $moduleCode = str_replace('aero/', '', $package);
+
+            // Only seed pricing for product packages (read category from package's own composer.json)
+            if ($this->getPackageCategory($moduleCode) !== 'product') {
+                $this->log("Skipped module pricing for {$moduleCode} (foundation package)");
+                continue;
             }
+
+            DB::table('module_pricing')->updateOrInsert(
+                ['module_code' => $moduleCode],
+                [
+                    'monthly_price' => 20.00,
+                    'yearly_price'  => 200.00,
+                    'is_active'     => true,
+                    'updated_at'    => now(),
+                    'created_at'    => now(),
+                ]
+            );
+
+            $this->log("Seeded module pricing: {$moduleCode} ($20/mo, $200/yr)");
             $count++;
         }
 
         return $count;
+    }
+
+    /**
+     * Read the category from a package's own composer.json.
+     * Checks vendor/aero/{code}/composer.json and packages/aero-{code}/composer.json.
+     */
+    protected function getPackageCategory(string $code): ?string
+    {
+        $paths = [
+            base_path("vendor/aero/{$code}/composer.json"),
+            base_path("packages/aero-{$code}/composer.json"),
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                $data = json_decode($content, true);
+                if (is_array($data) && isset($data['extra']['aero']['category'])) {
+                    return $data['extra']['aero']['category'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Read composer.json file
+     */
+    private function readComposerJson(): array
+    {
+        $composerJsonPath = base_path('composer.json');
+
+        if (! file_exists($composerJsonPath)) {
+            throw new \Exception('composer.json not found at ' . $composerJsonPath);
+        }
+
+        $content = file_get_contents($composerJsonPath);
+        $data = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception('Invalid composer.json: ' . json_last_error_msg());
+        }
+
+        return $data;
     }
 }

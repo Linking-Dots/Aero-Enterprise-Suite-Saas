@@ -5,6 +5,8 @@ namespace Aero\Platform\Console;
 use App\Console\Commands\SendAttendanceReminders;
 use App\Models\NotificationLog;
 use Aero\Platform\Console\Commands\ExpireGracePeriods;
+use Aero\Platform\Console\Commands\ExpireTrialSubscriptions;
+use Aero\Platform\Console\Commands\ProcessOverdueInvoices;
 use Aero\Platform\Console\Commands\ProcessPendingSubscriptionChanges;
 use Aero\Platform\Console\Commands\ProcessSubscriptionRenewals;
 use Illuminate\Console\Scheduling\Schedule;
@@ -22,7 +24,9 @@ class Kernel extends ConsoleKernel
         SendAttendanceReminders::class,
         ProcessSubscriptionRenewals::class,
         ExpireGracePeriods::class,
+        ExpireTrialSubscriptions::class,
         ProcessPendingSubscriptionChanges::class,
+        ProcessOverdueInvoices::class,
     ];
 
     /**
@@ -179,6 +183,38 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/subscription-renewals.log'));
+
+        $schedule->command('subscriptions:expire-trials')
+            ->dailyAt('01:15')
+            ->timezone(config('app.timezone', 'UTC'))
+            ->before(function () {
+                Log::info('Starting trial subscription expiration');
+            })
+            ->onSuccess(function () {
+                Log::info('Trial subscription expiration completed');
+            })
+            ->onFailure(function () {
+                Log::error('Trial subscription expiration failed');
+            })
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/trial-expirations.log'));
+
+        $schedule->command('invoices:process-overdue')
+            ->dailyAt('01:45')
+            ->timezone(config('app.timezone', 'UTC'))
+            ->before(function () {
+                Log::info('Starting overdue invoice processing');
+            })
+            ->onSuccess(function () {
+                Log::info('Overdue invoice processing completed');
+            })
+            ->onFailure(function () {
+                Log::error('Overdue invoice processing failed');
+            })
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/overdue-invoices.log'));
 
         $schedule->command('subscriptions:expire-grace-periods')
             ->dailyAt('01:30')

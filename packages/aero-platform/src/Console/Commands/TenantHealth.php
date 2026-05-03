@@ -329,7 +329,7 @@ class TenantHealth extends Command
      */
     protected function checkModules(Tenant $tenant): array
     {
-        $modules = $tenant->data['modules'] ?? [];
+        $modules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
 
         if (empty($modules)) {
             return [
@@ -340,13 +340,11 @@ class TenantHealth extends Command
             ];
         }
 
-        $enabled = collect($modules)->filter(fn ($enabled) => $enabled)->keys();
-
         return [
             'name' => 'Modules',
             'status' => 'ok',
-            'value' => $enabled->count(),
-            'message' => 'Enabled: '.$enabled->implode(', '),
+            'value' => count($modules),
+            'message' => 'Enabled: '.implode(', ', $modules),
         ];
     }
 

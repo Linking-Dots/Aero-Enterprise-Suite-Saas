@@ -50,7 +50,7 @@
         "aero": {
             "package": "field-service",
             "version": "1.0.0",
-            "category": "business",
+            "category": "product",
             "description": "Field service management with work order dispatch, mobile apps, technician management, and service agreements"
         }
     },

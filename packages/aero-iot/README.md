@@ -589,6 +589,6 @@ The Aero IoT package is open-sourced software licensed under the [MIT license](L
 
 ## Credits
 
-- **Development Team**: Aero Enterprise Suite Team
+- **Development Team**: aeos365 Team
 - **Contributors**: [All Contributors](https://github.com/aero/iot/contributors)
 - **Special Thanks**: Laravel Community, IoT Open Source Projects

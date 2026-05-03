@@ -3,7 +3,7 @@
 namespace Aero\Platform\Notifications;
 
 use Aero\Platform\Models\Tenant;
-use Aero\Platform\Services\MailService;
+use Aero\Notifications\Services\Mail\MailService;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
@@ -37,8 +37,9 @@ class WelcomeToTenant extends Notification
     {
         $domain = $this->tenant->domains()->where('is_primary', true)->first();
         $loginUrl = $domain ? "https://{$domain->domain}/login" : '#';
-        $trialDays = $this->tenant->trial_ends_at
-            ? now()->diffInDays($this->tenant->trial_ends_at)
+        $trialEndsAt = $this->tenant->subscription('default')?->trial_ends_at;
+        $trialDays = $trialEndsAt
+            ? now()->diffInDays($trialEndsAt)
             : config('platform.trial_days', 14);
 
         $appName = config('app.name');

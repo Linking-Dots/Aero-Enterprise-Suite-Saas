@@ -182,7 +182,7 @@ class LicenseValidationService
             // First, verify purchase code with Envato API
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$personalToken,
-                'User-Agent' => 'Aero Enterprise Suite',
+                'User-Agent' => 'aeos365',
             ])->get($apiUrl.'/v3/market/author/sale', [
                 'code' => $licenseKey,
             ]);
@@ -315,7 +315,7 @@ class LicenseValidationService
             'Aero RFI' => ['core', 'rfi'],
             'Aero Finance' => ['core', 'finance'],
             'Aero Project' => ['core', 'project'],
-            'Aero Enterprise Suite' => ['all'], // Full suite
+            'aeos365' => ['all'], // Full suite
         ];
 
         foreach ($moduleMap as $name => $modules) {

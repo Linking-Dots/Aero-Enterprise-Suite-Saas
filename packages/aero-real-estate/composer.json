@@ -18,6 +18,12 @@
             "providers": [
                 "Aero\\RealEstate\\Providers\\RealEstateServiceProvider"
             ]
+        },
+        "aero": {
+            "package": "real-estate",
+            "version": "1.0.0",
+            "category": "product",
+            "description": "Real Estate Management System with Property Management, MLS Integration, and Lease Management"
         }
     }
 }

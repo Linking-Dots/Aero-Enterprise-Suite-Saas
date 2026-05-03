@@ -1,28 +1,17 @@
-import { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { Box, HStack, VStack, Card, Text, Eyebrow } from '@aero/ui';
+import { Box, HStack, VStack, Card, Text } from '@aero/ui';
+import { useTheme } from '../../theme/ThemeProvider.jsx';
 
 /**
- * InstallLayout — wizard shell for all installation pages.
+ * InstallLayout — wizard shell for all installation / onboarding pages.
  *
- * Forces light theme on body and blocks ThemeProvider from interfering
- * via `data-no-theme`. Rebuilds using engine components exclusively.
+ * Provides a centred card layout with step progress, a brand header
+ * identical to registration pages, and a dark/light mode toggle that
+ * syncs with `localStorage` so the chosen theme persists to the app.
  */
 export default function InstallLayout({ title, step, steps = [], mode, children }) {
-  useEffect(() => {
-    const prev      = document.body.className;
-    const prevAttr  = document.body.dataset.noTheme;
-
-    document.body.dataset.noTheme = '1';
-    document.body.className       = 'aeos aeos--light';
-    document.body.removeAttribute('data-aeos-shell');
-
-    return () => {
-      delete document.body.dataset.noTheme;
-      document.body.className = prev;
-      if (prevAttr !== undefined) document.body.dataset.noTheme = prevAttr;
-    };
-  }, []);
+  const theme = useTheme();
+  const isDark = theme.isDark;
 
   const totalSteps = steps.length;
   const pct = totalSteps > 0 ? Math.round((step / totalSteps) * 100) : 0;
@@ -45,32 +34,50 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
             radial-gradient(ellipse 40% 50% at 5%  75%, rgba(180,83,9,.04),   transparent 55%)`,
         }} />
 
-        {/* Top bar */}
-        <HStack
-          justify="space-between"
-          style={{ width: '100%', maxWidth: 800, padding: '1.5rem 1rem 0', position: 'relative', zIndex: 1 }}
-        >
-          <Link href="/" aria-label="AEOS365 home" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <span style={{ filter: 'drop-shadow(0 0 10px rgba(0,163,184,.3))', display: 'flex' }}>
+        {/* Brand header — identical to AuthLayout registration pages */}
+        <header className="il-brand">
+          <Link href="/" className="il-brand-link" aria-label="AEOS365 home">
+            <span className="il-logo-mark">
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
                 <rect width="30" height="30" rx="8" fill="url(#il-grad)" />
                 <path d="M9 21L15 9l6 12H9z" fill="white" fillOpacity=".92" />
                 <defs>
                   <linearGradient id="il-grad" x1="0" y1="0" x2="30" y2="30">
-                    <stop stopColor="var(--aeos-primary)" />
-                    <stop offset="1" stopColor="var(--aeos-tertiary)" />
+                    <stop stopColor="var(--aeos-primary, #00E5FF)" />
+                    <stop offset="1" stopColor="var(--aeos-tertiary, #6366F1)" />
                   </linearGradient>
                 </defs>
               </svg>
             </span>
-            <span className="aeos-logo-text" style={{ fontSize: '0.95rem' }}>aeos365</span>
+            <span className="aeos-logo-text">aeos365</span>
           </Link>
-          {mode && (
-            <span className="aeos-badge aeos-badge-mono">
-              {mode === 'saas' ? 'SaaS Mode' : 'Standalone'}
-            </span>
-          )}
-        </HStack>
+
+          <div className="il-header-actions">
+            {mode && (
+              <span className="aeos-badge aeos-badge-mono">
+                {mode === 'saas' ? 'SaaS Mode' : 'Standalone'}
+              </span>
+            )}
+            <button
+              type="button"
+              className="il-theme-toggle"
+              onClick={() => theme.setMode(isDark ? 'light' : 'dark')}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </header>
 
         {/* Step progress */}
         {totalSteps > 0 && (
@@ -137,14 +144,62 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
 
         {/* Footer */}
         <Text as="p" size="xs" tone="tertiary" style={{ paddingBottom: '2rem', position: 'relative', zIndex: 1 }}>
-          AEOS365 Enterprise Suite · Setup Wizard
+          aeos365 · Setup Wizard
         </Text>
       </Box>
 
       <style>{`
-        /* Kill shell grid; hide customizer */
+        /* Prevent shell grid from breaking centred wizard layout.
+           ThemeProvider still runs so CSS variables update correctly. */
         body[data-aeos-shell] { display: block !important; }
         .aeos-theme-drawer-trigger { display: none !important; }
+
+        /* ── Brand header (identical to AuthLayout registration pages) ── */
+        .il-brand {
+          width: 100%;
+          max-width: 800px;
+          padding: 1.5rem 1rem 0;
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .il-brand-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          text-decoration: none;
+        }
+        .il-logo-mark {
+          display: flex;
+          align-items: center;
+          filter: drop-shadow(0 0 10px rgba(0,163,184,.3));
+        }
+        .il-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        /* Theme toggle button */
+        .il-theme-toggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 1px solid var(--aeos-divider);
+          background: transparent;
+          color: var(--aeos-text-secondary);
+          cursor: pointer;
+          transition: background .15s, color .15s, border-color .15s;
+        }
+        .il-theme-toggle:hover {
+          background: rgba(0, 229, 255, .08);
+          color: var(--aeos-primary);
+          border-color: rgba(0, 229, 255, .25);
+        }
         /* Show step labels on wider screens */
         @media (min-width: 560px) { .il-step-lbl { display: inline !important; } }
         /* Wizard typography */

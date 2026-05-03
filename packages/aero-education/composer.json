@@ -18,6 +18,12 @@
             "providers": [
                 "Aero\\Education\\Providers\\EducationServiceProvider"
             ]
+        },
+        "aero": {
+            "package": "education",
+            "version": "1.0.0",
+            "category": "product",
+            "description": "Educational Management System with Student Information System, Course Management, and Academic Administration"
         }
     }
 }

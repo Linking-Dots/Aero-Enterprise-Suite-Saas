@@ -14,6 +14,7 @@ use Aero\Auth\Http\Controllers\Auth\SamlController;
 use Aero\Auth\Http\Controllers\Auth\SessionController;
 use Aero\Auth\Http\Controllers\Auth\SocialAuthController;
 use Aero\Auth\Http\Controllers\Auth\TwoFactorController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,7 +45,8 @@ Route::middleware(['throttle:5,10'])->group(function () {
     Route::get('admin-setup', [AdminSetupController::class, 'show'])->name('admin.setup.show');
     Route::post('admin-setup', [AdminSetupController::class, 'store'])
         ->name('admin.setup.store')
-        ->middleware('throttle:3,15');
+        ->middleware('throttle:3,15')
+        ->withoutMiddleware([VerifyCsrfToken::class]);
 });
 
 // ============================================================================

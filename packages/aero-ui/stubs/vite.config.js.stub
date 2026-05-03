@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
 /**
- * Aero Enterprise Suite - Vite Configuration
+ * aeos365 - Vite Configuration
  * 
  * AUTO-INSTALLED by aero/ui package.
  * 

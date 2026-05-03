@@ -134,8 +134,7 @@ class AdminDashboardController extends Controller
 
         // Trial tenants
         $trialTenants = Tenant::where('status', Tenant::STATUS_ACTIVE)
-            ->whereNotNull('trial_ends_at')
-            ->where('trial_ends_at', '>', now())
+            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', now()))
             ->count();
 
         // User statistics
@@ -266,7 +265,7 @@ class AdminDashboardController extends Controller
      */
     protected function resolveTenantDisplayStatus(Tenant $tenant): string
     {
-        if ($tenant->status === Tenant::STATUS_ACTIVE && $tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()) {
+        if ($tenant->status === Tenant::STATUS_ACTIVE && ($tenant->subscription('default')?->onTrial() ?? false)) {
             return 'trial';
         }
 

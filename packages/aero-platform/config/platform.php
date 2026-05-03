@@ -14,7 +14,7 @@ return [
     */
 
     // Platform name
-    'name' => env('PLATFORM_NAME', 'Aero Enterprise Suite'),
+    'name' => env('PLATFORM_NAME', 'aeos365'),
 
     // Installation secret used by installation controller when reading package config
     'installation_secret_hash' => env('INSTALLATION_SECRET_HASH', '$2y$10$KPYdv5U6b/ViDNc6y6qe9.d05R7PMfCSWySMA9ACHInMEC/3E7yFi'),

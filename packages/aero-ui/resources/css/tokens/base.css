@@ -152,10 +152,17 @@
   --aeos-pad-section:     clamp(4rem, 8vw, 8rem);
   --aeos-gap-section:     1.5rem;
 
-  /* Shell */
+  /* Shell dimensions */
   --aeos-shell-sidebar-w:     56px;
   --aeos-shell-sidebar-w-exp: 240px;
   --aeos-shell-topnav-h:      48px;
+
+  /* Shell chrome backgrounds (token-driven, overridden per theme)
+     Dark defaults — light themes override these in their own blocks. */
+  --aeos-shell-sidebar-bg:   rgba(0, 0, 0, 0.45);
+  --aeos-shell-topbar-bg:    rgba(0, 0, 0, 0.25);
+  --aeos-shell-panel-bg:     rgba(0, 0, 0, 0.15);
+  --aeos-shell-floating-bg:  rgba(13, 17, 32, 0.90);
 
   /* Motion */
   --aeos-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
@@ -175,6 +182,15 @@
   --aeos-cyan-300: #22d3ee; --aeos-cyan-400: #06b6d4; --aeos-cyan-500: #0891b2; --aeos-cyan-600: #0e7490;
   --aeos-amber-50: #fef3c7; --aeos-amber-100: #fde68a; --aeos-amber-200: #fcd34d;
   --aeos-amber-300: #fbbf24; --aeos-amber-400: #f59e0b; --aeos-amber-500: #d97706; --aeos-amber-600: #b45309;
+}
+
+/* ── Light theme shell background overrides ───────────────────────────── */
+body.aeos--light,
+body[data-mode="light"] {
+  --aeos-shell-sidebar-bg:   rgba(255, 255, 255, 0.85);
+  --aeos-shell-topbar-bg:    rgba(241, 245, 249, 0.90);
+  --aeos-shell-panel-bg:     rgba(248, 250, 252, 0.80);
+  --aeos-shell-floating-bg:  rgba(255, 255, 255, 0.90);
 }
 
 /* ── Motion keyframes ──────────────────────────────────────────────────── */

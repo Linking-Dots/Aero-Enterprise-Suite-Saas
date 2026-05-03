@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 /**
  * Aero UI Service Provider
  *
- * This package contains ALL frontend code for the Aero Enterprise Suite:
+ * This package contains ALL frontend code for the aeos365:
  * - React components, pages, hooks, contexts
  * - The single app.blade.php view for Inertia
  * - CSS and theme configuration

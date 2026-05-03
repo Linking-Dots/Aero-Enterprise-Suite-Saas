@@ -2,7 +2,7 @@
 
 namespace Aero\HRM\Services;
 
-use Aero\Core\Services\MailService;
+use Aero\Notifications\Services\Mail\MailService;
 use Aero\HRM\Models\Payroll;
 use Aero\HRM\Models\Payslip;
 use Barryvdh\DomPDF\Facade\Pdf;

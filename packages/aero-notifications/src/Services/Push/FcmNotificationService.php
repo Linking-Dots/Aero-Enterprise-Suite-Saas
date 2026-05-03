@@ -25,6 +25,11 @@ class FcmNotificationService
 
     public function sendNotification(string $token, string $title, string $body, array $data = []): bool
     {
+        return $this->send($token, $title, $body, $data);
+    }
+
+    public function send(string $token, string $title, string $body, array $data = []): bool
+    {
         if (! $this->messaging) { Log::error('FCM not configured'); return false; }
         try {
             $msg = CloudMessage::new()->withTarget('token', $token)->withNotification(Notification::create($title, $body))->withData($data);

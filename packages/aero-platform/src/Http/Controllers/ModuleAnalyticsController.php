@@ -45,8 +45,9 @@ class ModuleAnalyticsController extends Controller
         $avgModulesPerTenant = DB::table('subscriptions')
             ->join('plan_module', 'subscriptions.plan_id', '=', 'plan_module.plan_id')
             ->where('subscriptions.status', 'active')
+            ->where('subscriptions.billable_type', Tenant::class)
             ->where('plan_module.is_enabled', true)
-            ->select('subscriptions.tenant_id')
+            ->select('subscriptions.billable_id')
             ->distinct()
             ->count();
 
@@ -68,7 +69,8 @@ class ModuleAnalyticsController extends Controller
         }])->get();
 
         $totalActiveTenants = Subscription::where('status', 'active')
-            ->distinct('tenant_id')
+            ->where('billable_type', Tenant::class)
+            ->distinct('billable_id')
             ->count();
 
         return $modules->map(function ($module) use ($totalActiveTenants) {
@@ -82,7 +84,7 @@ class ModuleAnalyticsController extends Controller
                 ->get()
                 ->pluck('subscriptions')
                 ->flatten()
-                ->unique('tenant_id')
+                ->unique('billable_id')
                 ->count();
 
             return [
@@ -134,12 +136,13 @@ class ModuleAnalyticsController extends Controller
             ->join('plan_module', 'subscriptions.plan_id', '=', 'plan_module.plan_id')
             ->join('modules', 'plan_module.module_id', '=', 'modules.id')
             ->where('subscriptions.status', 'active')
+            ->where('subscriptions.billable_type', Tenant::class)
             ->where('subscriptions.created_at', '>=', now()->subDays(30))
             ->select(
                 'modules.id',
                 'modules.code',
                 'modules.name',
-                DB::raw('COUNT(DISTINCT subscriptions.tenant_id) as new_adoptions')
+                DB::raw('COUNT(DISTINCT subscriptions.billable_id) as new_adoptions')
             )
             ->groupBy('modules.id', 'modules.code', 'modules.name')
             ->orderByDesc('new_adoptions')
@@ -174,7 +177,7 @@ class ModuleAnalyticsController extends Controller
                 ->get()
                 ->pluck('subscriptions')
                 ->flatten()
-                ->unique('tenant_id')
+                ->unique('billable_id')
                 ->count();
 
             return [

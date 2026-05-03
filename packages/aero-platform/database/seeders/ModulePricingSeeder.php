@@ -2,14 +2,17 @@
 
 namespace Aero\Platform\Database\Seeders;
 
-use Aero\Platform\Models\Module;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Seeds standard pricing for all modules/products.
+ * Seeds standard pricing for all product modules into the module_pricing table.
  *
- * Sets a standard fixed price for all modules (except core which is free).
- * Modules can be selected independently by tenants and charged separately.
+ * Only seeds pricing for packages where extra.aero.category === 'product'.
+ * Foundation packages (core, auth, ui, platform, etc.) are excluded.
+ *
+ * Billing pricing lives in module_pricing, not the modules table (which is
+ * reserved for the feature/permission registry).
  */
 class ModulePricingSeeder extends Seeder
 {
@@ -27,35 +30,68 @@ class ModulePricingSeeder extends Seeder
     {
         $this->command->info('🏷️  Seeding module pricing...');
 
-        $modules = Module::all();
+        // Discover installed aero packages from composer.json
+        $composerJsonPath = base_path('composer.json');
+        if (! file_exists($composerJsonPath)) {
+            $this->command->warn('composer.json not found, skipping module pricing seeding');
+            return;
+        }
+
+        $composerJson = json_decode(file_get_contents($composerJsonPath), true);
+        $aeroPackages = array_filter(array_keys($composerJson['require'] ?? []), function ($package) {
+            return str_starts_with($package, 'aero/');
+        });
 
         $updatedCount = 0;
 
-        foreach ($modules as $module) {
-            // Core module is always free
-            if ($module->code === 'core') {
-                $module->monthly_price = 0;
-                $module->yearly_price = 0;
-                $module->is_active = true;
-                $module->is_featured = false;
-                $module->save();
-                $updatedCount++;
+        foreach ($aeroPackages as $package) {
+            $moduleCode = str_replace('aero/', '', $package);
 
-                $this->command->line("   ✓ {$module->code}: Free (Core module)");
+            // Only seed pricing for product packages (read category from package's own composer.json)
+            if ($this->getPackageCategory($moduleCode) !== 'product') {
+                $this->command->line("   ⊘ {$moduleCode}: skipped (foundation package)");
                 continue;
             }
 
-            // All other modules get standard pricing
-            $module->monthly_price = self::STANDARD_MONTHLY_PRICE;
-            $module->yearly_price = self::STANDARD_YEARLY_PRICE;
-            $module->is_active = true;
-            $module->is_featured = false;
-            $module->save();
-            $updatedCount++;
+            DB::table('module_pricing')->updateOrInsert(
+                ['module_code' => $moduleCode],
+                [
+                    'monthly_price' => self::STANDARD_MONTHLY_PRICE,
+                    'yearly_price'  => self::STANDARD_YEARLY_PRICE,
+                    'is_active'     => true,
+                    'updated_at'    => now(),
+                    'created_at'    => now(),
+                ]
+            );
 
-            $this->command->line("   ✓ {$module->code}: $".self::STANDARD_MONTHLY_PRICE.'/mo or $'.self::STANDARD_YEARLY_PRICE.'/yr');
+            $updatedCount++;
+            $this->command->line("   ✓ {$moduleCode}: $" . self::STANDARD_MONTHLY_PRICE . '/mo or $' . self::STANDARD_YEARLY_PRICE . '/yr');
         }
 
-        $this->command->info("✅ Updated pricing for {$updatedCount} modules");
+        $this->command->info("✅ Updated pricing for {$updatedCount} product modules in module_pricing table");
+    }
+
+    /**
+     * Read the category from a package's own composer.json.
+     * Checks vendor/aero/{code}/composer.json and packages/aero-{code}/composer.json.
+     */
+    protected function getPackageCategory(string $code): ?string
+    {
+        $paths = [
+            base_path("vendor/aero/{$code}/composer.json"),
+            base_path("packages/aero-{$code}/composer.json"),
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                $data = json_decode($content, true);
+                if (is_array($data) && isset($data['extra']['aero']['category'])) {
+                    return $data['extra']['aero']['category'];
+                }
+            }
+        }
+
+        return null;
     }
 }

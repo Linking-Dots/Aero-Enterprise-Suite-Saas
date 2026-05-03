@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\View;
 class NotificationTemplateService
 {
     protected array $platformBranding = [
-        'company_name' => 'Aero Enterprise Suite',
+        'company_name' => 'aeos365',
         'logo_url' => '/images/platform-logo.png',
         'primary_color' => '#3B82F6',
         'support_email' => 'support@aeroenterprise.com',
