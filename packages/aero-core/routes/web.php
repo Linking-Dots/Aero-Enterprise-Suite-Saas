@@ -16,6 +16,7 @@ use Aero\Core\Http\Controllers\Settings\LocalizationSettingsController;
 use Aero\Core\Http\Controllers\Settings\MailSettingsController;
 use Aero\Core\Http\Controllers\Settings\OrganizationProfileController;
 use Aero\Core\Http\Controllers\Settings\PasswordPolicyController;
+use Aero\Core\Http\Controllers\Settings\SecuritySettingsController;
 use Aero\Core\Http\Controllers\Settings\SystemSettingController;
 use Aero\Core\Http\Controllers\Upload\FileManagerController;
 use Aero\Core\Http\Middleware\EnsureTenantContext;
@@ -256,7 +257,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // USER MANAGEMENT ROUTES
     // ========================================================================
-    Route::prefix('users')->name('core.users.')->group(function () {
+    Route::prefix('users')->name('core.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
         // List & View
         Route::get('/', [CoreUserController::class, 'index'])->name('index');
         Route::get('/paginate', [CoreUserController::class, 'paginate'])->name('paginate');
@@ -319,7 +320,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-roles' capability can access these routes
-    Route::prefix('roles')->name('core.roles.')->middleware(['can:manage-roles'])->group(function () {
+    Route::prefix('roles')->name('core.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
         // View
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/export', [RoleController::class, 'exportRoles'])->name('export');
@@ -343,7 +344,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-modules' capability can access these routes
-    Route::prefix('modules')->name('core.modules.')->middleware(['can:manage-modules'])->group(function () {
+    Route::prefix('modules')->name('core.modules.')->middleware('hrmac:core.roles_permissions.module_access.view')->group(function () {
         // View
         Route::get('/', [ModuleController::class, 'index'])->name('index');
         Route::get('/api', [ModuleController::class, 'apiIndex'])->name('api.index');
@@ -363,7 +364,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // AUDIT LOGS
     // ========================================================================
-    Route::prefix('audit-logs')->name('core.audit-logs.')->group(function () {
+    Route::prefix('audit-logs')->name('core.audit-logs.')->middleware('hrmac:core.audit_logs.activity_logs.view')->group(function () {
         Route::get('/', [AuditLogController::class, 'index'])->name('index');
         Route::get('/activity', [AuditLogController::class, 'activityLogs'])->name('activity');
         Route::get('/security', [AuditLogController::class, 'securityLogs'])->name('security');
@@ -386,12 +387,12 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // FILE MANAGER
     // ========================================================================
-    Route::prefix('files')->name('core.files.')->group(function () {
-        Route::get('/', [FileManagerController::class, 'index'])->name('index');
-        Route::get('/browse', [FileManagerController::class, 'browse'])->name('browse');
-        Route::post('/upload', [FileManagerController::class, 'upload'])->name('upload');
-        Route::delete('/{id}', [FileManagerController::class, 'destroy'])->name('destroy');
-        Route::get('/stats', [FileManagerController::class, 'stats'])->name('stats');
+    Route::prefix('file-manager')->name('core.file-manager.')->group(function () {
+        Route::get('/', [FileManagerController::class, 'index'])->name('index')->middleware('hrmac:core.file_manager.storage.view');
+        Route::get('/browse', [FileManagerController::class, 'browse'])->name('browse')->middleware('hrmac:core.file_manager.storage.view');
+        Route::post('/upload', [FileManagerController::class, 'upload'])->name('upload')->middleware('hrmac:core.file_manager.media_library.upload');
+        Route::delete('/{id}', [FileManagerController::class, 'destroy'])->name('destroy')->middleware('hrmac:core.file_manager.media_library.delete');
+        Route::get('/stats', [FileManagerController::class, 'stats'])->name('stats')->middleware('hrmac:core.file_manager.storage.view');
     });
 
     // ========================================================================
@@ -399,8 +400,8 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     Route::prefix('settings')->name('core.settings.')->group(function () {
         // System Settings
-        Route::get('/system', [SystemSettingController::class, 'index'])->name('system.index');
-        Route::get('/security', [SystemSettingController::class, 'index'])->name('security.index'); // Security settings
+        Route::get('/system', [SystemSettingController::class, 'index'])->name('system.index')->middleware('hrmac:core.settings.general.view');
+        Route::get('/security', [SecuritySettingsController::class, 'index'])->name('security.index')->middleware('hrmac:core.settings.security.view'); // Security settings
         // Branding & Appearance
         Route::prefix('branding')->name('branding.')->middleware('hrmac:core.settings.branding.view')->group(function () {
             Route::get('/', [BrandingSettingsController::class, 'index'])->name('index');
@@ -432,19 +433,19 @@ Route::middleware('auth:web')->group(function () {
         });
 
         // Password Policy Settings
-        Route::prefix('password-policy')->name('password-policy.')->middleware('hrmac:core.settings.security.edit')->group(function () {
-            Route::get('/', [PasswordPolicyController::class, 'index'])->name('index');
-            Route::put('/', [PasswordPolicyController::class, 'update'])->name('update');
-            Route::post('/test', [PasswordPolicyController::class, 'test'])->name('test');
+        Route::prefix('password-policy')->name('password-policy.')->group(function () {
+            Route::get('/', [PasswordPolicyController::class, 'index'])->name('index')->middleware('hrmac:core.settings.password_policy.view');
+            Route::put('/', [PasswordPolicyController::class, 'update'])->name('update')->middleware('hrmac:core.settings.password_policy.edit');
+            Route::post('/test', [PasswordPolicyController::class, 'test'])->name('test')->middleware('hrmac:core.settings.password_policy.edit');
         });
 
         // IP Access Control
-        Route::prefix('ip-whitelist')->name('ip-whitelist.')->middleware('hrmac:core.settings.security.edit')->group(function () {
-            Route::get('/', [IpWhitelistController::class, 'index'])->name('index');
-            Route::put('/', [IpWhitelistController::class, 'update'])->name('update');
-            Route::post('/add-ip', [IpWhitelistController::class, 'addIp'])->name('add-ip');
-            Route::delete('/remove-ip', [IpWhitelistController::class, 'removeIp'])->name('remove-ip');
-            Route::post('/test-ip', [IpWhitelistController::class, 'testIp'])->name('test-ip');
+        Route::prefix('ip-whitelist')->name('ip-whitelist.')->group(function () {
+            Route::get('/', [IpWhitelistController::class, 'index'])->name('index')->middleware('hrmac:core.settings.ip_whitelist.view');
+            Route::put('/', [IpWhitelistController::class, 'update'])->name('update')->middleware('hrmac:core.settings.ip_whitelist.edit');
+            Route::post('/add-ip', [IpWhitelistController::class, 'addIp'])->name('add-ip')->middleware('hrmac:core.settings.ip_whitelist.edit');
+            Route::delete('/remove-ip', [IpWhitelistController::class, 'removeIp'])->name('remove-ip')->middleware('hrmac:core.settings.ip_whitelist.edit');
+            Route::post('/test-ip', [IpWhitelistController::class, 'testIp'])->name('test-ip')->middleware('hrmac:core.settings.ip_whitelist.edit');
         });
 
         // Domain Management (SaaS mode only - requires aero-platform)

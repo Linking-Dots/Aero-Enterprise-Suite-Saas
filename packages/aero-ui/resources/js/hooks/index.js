@@ -160,3 +160,7 @@ export function useMediaQuery(query) {
 export function useReducedMotion() {
   return useMediaQuery('(prefers-reduced-motion: reduce)');
 }
+
+/* ── HRMAC permissions ────────────────────────────────────────────── */
+
+export { useHRMAC, useHRMACMany } from './useHRMAC.js';

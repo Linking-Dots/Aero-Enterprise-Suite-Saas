@@ -82,6 +82,7 @@ export { Toast, useToast }                  from './components/Feedback.jsx';
 // ── Hooks ─────────────────────────────────────────────────────────
 export {
   useBreakpoint, useReducedMotion, useMediaQuery,
+  useHRMAC, useHRMACMany,
 }                                           from './hooks/index.js';
 
 // ── Icons ─────────────────────────────────────────────────────────

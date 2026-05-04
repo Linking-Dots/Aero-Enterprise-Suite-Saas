@@ -28,7 +28,7 @@ class PasswordPolicyController extends Controller
             return response()->json(['policy' => $policy]);
         }
 
-        return Inertia::render('Settings/PasswordPolicy', [
+        return Inertia::render('Core/Settings/PasswordPolicy', [
             'title' => 'Password Policy',
             'policy' => $policy,
         ]);

@@ -12,6 +12,7 @@ import {
   Button, Card, CardHeader, CardBody,
   HStack, VStack, Text,
   useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
@@ -82,23 +83,25 @@ export default function OrganizationProfile({ organization }) {
         ]}
         description="Manage your company identity, contact details, and fiscal settings."
         actions={
-          <HStack gap={3}>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => reset()}
-              disabled={processing}
-            >
-              Reset
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={processing}
-            >
-              Save Changes
-            </Button>
-          </HStack>
+          canEdit && (
+            <HStack gap={3}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => reset()}
+                disabled={processing}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={processing}
+              >
+                Save Changes
+              </Button>
+            </HStack>
+          )
         }
       >
         <VStack gap={6}>

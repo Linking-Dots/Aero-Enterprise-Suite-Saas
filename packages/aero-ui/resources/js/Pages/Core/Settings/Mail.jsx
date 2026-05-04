@@ -11,6 +11,7 @@ import {
   Field, Input, Button, Card, CardHeader, CardBody,
   HStack, VStack, Text,
   useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
@@ -102,23 +103,25 @@ export default function MailSettings({ emailSettings }) {
         ]}
         description="Configure your tenant's outgoing email server (SMTP) settings and sender identity."
         actions={
-          <HStack gap={3}>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => reset()}
-              disabled={processing}
-            >
-              Reset
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={processing}
-            >
-              Save Changes
-            </Button>
-          </HStack>
+          canEdit && (
+            <HStack gap={3}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => reset()}
+                disabled={processing}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={processing}
+              >
+                Save Changes
+              </Button>
+            </HStack>
+          )
         }
       >
         <VStack gap={6}>

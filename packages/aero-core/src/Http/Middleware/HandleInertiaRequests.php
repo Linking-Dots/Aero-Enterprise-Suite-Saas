@@ -7,6 +7,8 @@ use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\HRMAC\Models\Action;
+use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Aero\I18n\Services\TranslationService;
@@ -230,12 +232,16 @@ class HandleInertiaRequests extends Middleware
         $accessibleModules = null;
         $modulesLookup = null;
         $subModulesLookup = null;
+        $permissionsMap = null;
 
-        if (! $isSuperAdmin) {
+        if ($isSuperAdmin) {
+            $permissionsMap = ['*' => true];
+        } else {
             $moduleAccess = $this->getUserModuleAccess($user);
             $accessibleModules = $this->getUserAccessibleModules($user);
             $modulesLookup = $this->getModulesLookup();
             $subModulesLookup = $this->getSubModulesLookup();
+            $permissionsMap = $this->getUserPermissionsMap($user);
         }
 
         return [
@@ -252,6 +258,7 @@ class HandleInertiaRequests extends Middleware
                 'accessible_modules' => $accessibleModules,
                 'modules_lookup' => $modulesLookup,
                 'sub_modules_lookup' => $subModulesLookup,
+                'permissions_map' => $permissionsMap,
             ],
             'isAuthenticated' => true,
             'sessionValid' => true,
@@ -463,6 +470,65 @@ class HandleInertiaRequests extends Middleware
                     ->mapWithKeys(fn ($sm) => [$sm->id => $sm->module->code.'.'.$sm->code])
                     ->toArray();
             } catch (Throwable $e) {
+                return [];
+            }
+        });
+    }
+
+    /**
+     * Get user's permissions as a flat dot-notation map for frontend use.
+     * Resolves numeric action IDs into `module.submodule.component.action` strings.
+     *
+     * @return array<string, true>
+     */
+    protected function getUserPermissionsMap($user): array
+    {
+        if (! $user) {
+            return [];
+        }
+
+        $cacheKey = "user_permissions_map:{$user->id}";
+
+        return Cache::remember($cacheKey, 600, function () use ($user) {
+            try {
+                if (! class_exists(Action::class) || ! class_exists(Component::class)) {
+                    return [];
+                }
+
+                $moduleAccess = $this->getUserModuleAccess($user);
+                $actionIds = collect($moduleAccess['actions'] ?? [])
+                    ->pluck('id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                if (empty($actionIds)) {
+                    return [];
+                }
+
+                $actions = Action::with('component.subModule.module')
+                    ->whereIn('id', $actionIds)
+                    ->get();
+
+                $map = [];
+                foreach ($actions as $action) {
+                    $component = $action->component;
+                    if (! $component) {
+                        continue;
+                    }
+                    $subModule = $component->subModule;
+                    $module = $subModule?->module;
+                    if (! $subModule || ! $module) {
+                        continue;
+                    }
+                    $key = $module->code . '.' . $subModule->code . '.' . $component->code . '.' . $action->code;
+                    $map[$key] = true;
+                }
+
+                return $map;
+            } catch (Throwable $e) {
+                Log::warning('Failed to build user permissions map', ['error' => $e->getMessage()]);
                 return [];
             }
         });

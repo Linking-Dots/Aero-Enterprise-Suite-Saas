@@ -74,7 +74,7 @@ class CoreUserController extends Controller
 
         $users = $query->paginate($request->per_page ?? 15);
 
-        return Inertia::render('Shared/UsersList', [
+        return Inertia::render('Core/Users/Index', [
             'title' => 'Users',
             'users' => $users,
             'roles' => Role::all(['id', 'name']),

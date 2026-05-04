@@ -5,25 +5,66 @@ namespace Aero\Core\Http\Controllers\Admin;
 use Aero\Core\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AuditLogController extends Controller
 {
     /**
-     * Display the audit logs listing.
+     * Display the audit logs listing with stats, logs and filters as Inertia props.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $tab = $request->get('tab', 'activity');
+        $perPage = $request->get('per_page', 15);
+        $search = $request->get('search', '');
+        $userId = $request->get('user_id');
+        $action = $request->get('action');
+        $eventType = $request->get('event_type');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
+        $stats = $this->getStats();
+        $logs = [];
+        $meta = [
+            'current_page' => 1,
+            'last_page' => 1,
+            'per_page' => $perPage,
+            'total' => 0,
+        ];
+
+        if ($tab === 'activity') {
+            $result = $this->getActivityLogs($perPage, $search, $userId, $action, $dateFrom, $dateTo);
+            $logs = $result['data'] ?? [];
+            $meta = $result['meta'] ?? $meta;
+        } elseif ($tab === 'security') {
+            $result = $this->getSecurityLogs($perPage, $search, $eventType, $dateFrom, $dateTo);
+            $logs = $result['data'] ?? [];
+            $meta = $result['meta'] ?? $meta;
+        }
+
         return Inertia::render('Core/AuditLogs/Index', [
             'title' => 'Audit & Activity Logs',
+            'stats' => $stats,
+            'tab' => $tab,
+            'logs' => $logs,
+            'meta' => $meta,
+            'filters' => [
+                'search' => $search,
+                'user_id' => $userId,
+                'action' => $action,
+                'event_type' => $eventType,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+            ],
         ]);
     }
 
     /**
-     * Get paginated activity logs.
+     * Get paginated activity logs (JSON API).
      */
-    public function activityLogs(Request $request)
+    public function activityLogs(Request $request): JsonResponse
     {
         $perPage = $request->get('per_page', 15);
         $search = $request->get('search', '');
@@ -32,9 +73,62 @@ class AuditLogController extends Controller
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        // Check if activity_log table exists
+        $result = $this->getActivityLogs($perPage, $search, $userId, $action, $dateFrom, $dateTo);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Get paginated security logs (JSON API).
+     */
+    public function securityLogs(Request $request): JsonResponse
+    {
+        $perPage = $request->get('per_page', 15);
+        $search = $request->get('search', '');
+        $eventType = $request->get('event_type');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
+        $result = $this->getSecurityLogs($perPage, $search, $eventType, $dateFrom, $dateTo);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Export activity logs.
+     */
+    public function exportActivityLogs(Request $request): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Export functionality coming soon',
+        ]);
+    }
+
+    /**
+     * Export security logs.
+     */
+    public function exportSecurityLogs(Request $request): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Export functionality coming soon',
+        ]);
+    }
+
+    /**
+     * Get audit log statistics (JSON API).
+     */
+    public function stats(): JsonResponse
+    {
+        return response()->json($this->getStats());
+    }
+
+    /**
+     * Build activity logs query and return paginated array.
+     */
+    private function getActivityLogs(int $perPage, string $search, ?string $userId, ?string $action, ?string $dateFrom, ?string $dateTo): array
+    {
         if (! $this->tableExists('activity_log')) {
-            return response()->json([
+            return [
                 'data' => [],
                 'meta' => [
                     'current_page' => 1,
@@ -43,7 +137,7 @@ class AuditLogController extends Controller
                     'total' => 0,
                 ],
                 'message' => 'Activity logging not configured',
-            ]);
+            ];
         }
 
         $query = DB::table('activity_log')
@@ -62,7 +156,6 @@ class AuditLogController extends Controller
                 'users.email as causer_email',
             ]);
 
-        // Apply filters
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('activity_log.description', 'like', "%{$search}%")
@@ -90,23 +183,24 @@ class AuditLogController extends Controller
         $logs = $query->orderBy('activity_log.created_at', 'desc')
             ->paginate($perPage);
 
-        return response()->json($logs);
+        return [
+            'data' => $logs->items(),
+            'meta' => [
+                'current_page' => $logs->currentPage(),
+                'last_page' => $logs->lastPage(),
+                'per_page' => $logs->perPage(),
+                'total' => $logs->total(),
+            ],
+        ];
     }
 
     /**
-     * Get paginated security logs.
+     * Build security logs query and return paginated array.
      */
-    public function securityLogs(Request $request)
+    private function getSecurityLogs(int $perPage, string $search, ?string $eventType, ?string $dateFrom, ?string $dateTo): array
     {
-        $perPage = $request->get('per_page', 15);
-        $search = $request->get('search', '');
-        $eventType = $request->get('event_type');
-        $dateFrom = $request->get('date_from');
-        $dateTo = $request->get('date_to');
-
-        // Check if security_logs table exists
         if (! $this->tableExists('security_logs')) {
-            return response()->json([
+            return [
                 'data' => [],
                 'meta' => [
                     'current_page' => 1,
@@ -115,7 +209,7 @@ class AuditLogController extends Controller
                     'total' => 0,
                 ],
                 'message' => 'Security logging not configured',
-            ]);
+            ];
         }
 
         $query = DB::table('security_logs')
@@ -132,7 +226,6 @@ class AuditLogController extends Controller
                 'users.email as user_email',
             ]);
 
-        // Apply filters
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('security_logs.description', 'like', "%{$search}%")
@@ -156,35 +249,21 @@ class AuditLogController extends Controller
         $logs = $query->orderBy('security_logs.created_at', 'desc')
             ->paginate($perPage);
 
-        return response()->json($logs);
+        return [
+            'data' => $logs->items(),
+            'meta' => [
+                'current_page' => $logs->currentPage(),
+                'last_page' => $logs->lastPage(),
+                'per_page' => $logs->perPage(),
+                'total' => $logs->total(),
+            ],
+        ];
     }
 
     /**
-     * Export activity logs.
+     * Build stats array.
      */
-    public function exportActivityLogs(Request $request)
-    {
-        // TODO: Implement export functionality
-        return response()->json([
-            'message' => 'Export functionality coming soon',
-        ]);
-    }
-
-    /**
-     * Export security logs.
-     */
-    public function exportSecurityLogs(Request $request)
-    {
-        // TODO: Implement export functionality
-        return response()->json([
-            'message' => 'Export functionality coming soon',
-        ]);
-    }
-
-    /**
-     * Get audit log statistics.
-     */
-    public function stats()
+    private function getStats(): array
     {
         $stats = [
             'total_activities' => 0,
@@ -206,7 +285,6 @@ class AuditLogController extends Controller
                 ->count();
         }
 
-        // Active users today from sessions or activity
         if ($this->tableExists('sessions')) {
             $stats['active_users_today'] = DB::table('sessions')
                 ->whereNotNull('user_id')
@@ -214,7 +292,7 @@ class AuditLogController extends Controller
                 ->count('user_id');
         }
 
-        return response()->json($stats);
+        return $stats;
     }
 
     /**

@@ -10,6 +10,7 @@ import {
   Field, Input, Button, Card, CardHeader, CardBody,
   HStack, VStack, Text,
   useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
@@ -86,23 +87,25 @@ export default function LocalizationSettings({ localization, timezones }) {
         ]}
         description="Configure your tenant's timezone, currency, locale, date format, and regional preferences."
         actions={
-          <HStack gap={3}>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => reset()}
-              disabled={processing}
-            >
-              Reset
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={processing}
-            >
-              Save Changes
-            </Button>
-          </HStack>
+          canEdit && (
+            <HStack gap={3}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => reset()}
+                disabled={processing}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={processing}
+              >
+                Save Changes
+              </Button>
+            </HStack>
+          )
         }
       >
         <VStack gap={6}>

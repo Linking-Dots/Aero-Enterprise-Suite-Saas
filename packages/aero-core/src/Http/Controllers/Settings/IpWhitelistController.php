@@ -28,7 +28,7 @@ class IpWhitelistController extends Controller
             return response()->json(['config' => $config]);
         }
 
-        return Inertia::render('Settings/IpWhitelist', [
+        return Inertia::render('Core/Settings/IpWhitelist', [
             'title' => 'IP Access Control',
             'config' => $config,
         ]);

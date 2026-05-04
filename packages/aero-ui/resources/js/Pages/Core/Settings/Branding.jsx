@@ -11,6 +11,7 @@ import {
   Field, Input, Button, Card, CardHeader, CardBody,
   HStack, VStack, Text,
   useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
@@ -51,6 +52,7 @@ function FilePreview({ url, label }) {
 
 export default function BrandingSettings({ branding }) {
   const toast = useToast();
+  const canEdit = useHRMAC('core.settings.branding.edit');
 
   const { data, setData, post, processing, errors, reset, progress } = useForm({
     logo_light: null,
@@ -102,23 +104,25 @@ export default function BrandingSettings({ branding }) {
         ]}
         description="Customize your tenant's visual identity including logos, colors, and display preferences."
         actions={
-          <HStack gap={3}>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => reset()}
-              disabled={processing}
-            >
-              Reset
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={processing}
-            >
-              Save Changes
-            </Button>
-          </HStack>
+          canEdit && (
+            <HStack gap={3}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => reset()}
+                disabled={processing}
+              >
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={processing}
+              >
+                Save Changes
+              </Button>
+            </HStack>
+          )
         }
       >
         <VStack gap={6}>
