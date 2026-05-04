@@ -19,7 +19,7 @@ import App from '../../App.jsx';
 
 export default function SystemSettings({ systemSettings }) {
   const toast = useToast();
-  const canEdit = useHRMAC('core.settings.system_settings.edit');
+  const canEdit = useHRMAC('core.settings.general.edit');
 
   const org = systemSettings?.organization ?? {};
 

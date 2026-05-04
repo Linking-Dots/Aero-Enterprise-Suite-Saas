@@ -15,7 +15,7 @@ import App from '../../App.jsx';
 
 export default function UsersEdit({ user, roles }) {
   const toast = useToast();
-  const canEdit = useHRMAC('core.users.edit');
+  const canEdit = useHRMAC('core.user_management.users.edit');
 
   const form = useForm({
     name: user.name || '',

@@ -11,7 +11,7 @@
  */
 import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
-import { AppShell, AppBrand, AppTopbarTitle, AppUserMenu } from '@aero/ui';
+import { AppShell, AppBrand, AppTopbarTitle, AppUserMenu, SearchOverlay } from '@aero/ui';
 import { useTheme } from '../theme/ThemeProvider.jsx';
 
 // ─── HeroIcon → engine icon name map ─────────────────────────────────────────
@@ -179,6 +179,7 @@ export default function App({ title, children }) {
       >
         {children}
       </AppShell>
+      <SearchOverlay />
     </>
   );
 }

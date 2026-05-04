@@ -2,9 +2,11 @@
 
 namespace Aero\Core\Models;
 
+use Aero\Core\Contracts\Searchable;
 use Aero\Core\Contracts\UserContract;
 use Aero\Core\Database\Factories\UserFactory;
 use Aero\Core\Services\UserRelationshipRegistry;
+use Aero\Core\Traits\Searchable as SearchableTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -55,10 +57,11 @@ use Illuminate\Support\Facades\Log;
  * @property string|null $password
  * @property bool $active
  */
-class User extends Authenticatable implements MustVerifyEmail, UserContract
+class User extends Authenticatable implements MustVerifyEmail, UserContract, Searchable
 {
     use HasFactory;
     use Notifiable;
+    use SearchableTrait;
     use SoftDeletes;
 
     /**
@@ -1017,5 +1020,39 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    // =====================================================================
+    // Searchable Interface Implementation
+    // =====================================================================
+
+    public function getSearchableColumns(): array
+    {
+        return ['name', 'user_name', 'email', 'phone'];
+    }
+
+    public function getSearchResultTitle(): string
+    {
+        return $this->name ?? $this->email ?? ('User #' . $this->id);
+    }
+
+    public function getSearchResultUrl(): ?string
+    {
+        return route('core.users.index');
+    }
+
+    public function getSearchResultType(): string
+    {
+        return 'User';
+    }
+
+    public function getSearchResultSubtitle(): ?string
+    {
+        return $this->email;
+    }
+
+    public function getSearchResultIcon(): ?string
+    {
+        return 'user';
     }
 }

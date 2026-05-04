@@ -2,6 +2,8 @@
 
 namespace Aero\Core\Models;
 
+use Aero\Core\Contracts\Searchable;
+use Aero\Core\Traits\Searchable as SearchableTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,8 +27,10 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property array|null $metadata
  * @property Carbon $created_at
  */
-class AuditLog extends Model
+class AuditLog extends Model implements Searchable
 {
+    use SearchableTrait;
+
     /**
      * Disable updated_at timestamp (audit logs are immutable).
      */
@@ -158,5 +162,39 @@ class AuditLog extends Model
             'bulk_roles_assigned' => 'Bulk Roles Assigned',
             default => ucfirst(str_replace('_', ' ', $this->action)),
         };
+    }
+
+    // =====================================================================
+    // Searchable Interface Implementation
+    // =====================================================================
+
+    public function getSearchableColumns(): array
+    {
+        return ['user_name', 'user_email', 'action', 'description', 'auditable_type'];
+    }
+
+    public function getSearchResultTitle(): string
+    {
+        return $this->action_name . ' — ' . ($this->user_name ?? 'System');
+    }
+
+    public function getSearchResultUrl(): ?string
+    {
+        return route('core.audit-logs.index');
+    }
+
+    public function getSearchResultType(): string
+    {
+        return 'Audit Log';
+    }
+
+    public function getSearchResultSubtitle(): ?string
+    {
+        return $this->description;
+    }
+
+    public function getSearchResultIcon(): ?string
+    {
+        return 'document';
     }
 }

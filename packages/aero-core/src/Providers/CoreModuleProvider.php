@@ -18,11 +18,13 @@ use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
 use Aero\Core\Http\Middleware\ModuleAccessMiddleware;
 use Aero\Core\Http\Middleware\PermissionMiddleware;
 use Aero\Core\Http\Middleware\PreventInstalledAccess;
+use Aero\Core\Models\AuditLog;
 use Aero\Core\Models\User;
 use Aero\Core\Observers\UserQuotaObserver;
 use Aero\Core\Policies\RolePolicy;
 use Aero\Core\Policies\UserPolicy;
 use Aero\Core\Services\DashboardRegistry;
+use Aero\Core\Services\Search\GlobalSearchService;
 use Aero\HRMAC\Models\Role;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Gate;
@@ -104,6 +106,15 @@ class CoreModuleProvider extends AbstractModuleProvider
             return new DashboardRegistry;
         });
 
+        // Register GlobalSearchService and bind core searchable models
+        $this->app->singleton(GlobalSearchService::class, function ($app) {
+            $service = new GlobalSearchService;
+            $service->registerModel(User::class);
+            $service->registerModel(AuditLog::class);
+
+            return $service;
+        });
+
         // In standalone mode, push the global BootstrapGuard middleware
         // This runs before route matching and handles:
         // 1. Installation status check
@@ -155,6 +166,13 @@ class CoreModuleProvider extends AbstractModuleProvider
                 'icon' => 'HomeIcon',
                 'route' => 'dashboard.index',
                 'priority' => 1,
+            ],
+            [
+                'code' => 'search',
+                'name' => 'Search',
+                'icon' => 'MagnifyingGlassIcon',
+                'route' => 'core.search.index',
+                'priority' => 0,
             ],
             [
                 'code' => 'users',

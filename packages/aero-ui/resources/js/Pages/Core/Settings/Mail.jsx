@@ -32,6 +32,7 @@ function Section({ title, children }) {
 
 export default function MailSettings({ emailSettings }) {
   const toast = useToast();
+  const canEdit = useHRMAC('core.settings.mail_settings.update');
   const [showPassword, setShowPassword] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [sendingTest, setSendingTest] = useState(false);

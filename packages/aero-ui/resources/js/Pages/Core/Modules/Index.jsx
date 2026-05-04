@@ -16,7 +16,7 @@ import App from '../../App.jsx';
 
 export default function ModulesIndex({ modules, roles, statistics, accessScopes, readonly }) {
   const toast = useToast();
-  const canConfigure = useHRMAC('core.module_management.configure');
+  const canConfigure = useHRMAC('core.roles_permissions.module_access.configure');
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
   const [selectedRoleId, setSelectedRoleId] = useState(null);

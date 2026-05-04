@@ -18,10 +18,10 @@ import App from '../../App.jsx';
 
 export default function UsersIndex({ users, roles, filters, stats }) {
   const toast = useToast();
-  const canCreate = useHRMAC('core.users.create');
-  const canEdit = useHRMAC('core.users.edit');
-  const canDelete = useHRMAC('core.users.delete');
-  const canView = useHRMAC('core.users.view');
+  const canCreate = useHRMAC('core.user_management.users.create');
+  const canEdit = useHRMAC('core.user_management.users.edit');
+  const canDelete = useHRMAC('core.user_management.users.delete');
+  const canView = useHRMAC('core.user_management.users.view');
   const [selectedIds, setSelectedIds] = useState([]);
   const [search, setSearch] = useState(filters?.search || '');
   const [status, setStatus] = useState(filters?.status || '');

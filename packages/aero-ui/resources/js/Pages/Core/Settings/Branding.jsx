@@ -52,7 +52,7 @@ function FilePreview({ url, label }) {
 
 export default function BrandingSettings({ branding }) {
   const toast = useToast();
-  const canEdit = useHRMAC('core.settings.branding.edit');
+  const canEdit = useHRMAC('core.settings.branding.update');
 
   const { data, setData, post, processing, errors, reset, progress } = useForm({
     logo_light: null,

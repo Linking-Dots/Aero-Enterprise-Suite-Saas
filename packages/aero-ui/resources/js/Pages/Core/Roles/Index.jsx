@@ -18,10 +18,10 @@ import App from '../../App.jsx';
 
 export default function RolesIndex({ roles, users, can_manage_super_admin, error }) {
   const toast = useToast();
-  const canCreate = useHRMAC('core.roles.create');
-  const canEdit = useHRMAC('core.roles.edit');
-  const canDelete = useHRMAC('core.roles.delete');
-  const canAssign = useHRMAC('core.roles.assign_permissions');
+  const canCreate = useHRMAC('core.roles_permissions.roles.create');
+  const canEdit = useHRMAC('core.roles_permissions.roles.edit');
+  const canDelete = useHRMAC('core.roles_permissions.roles.delete');
+  const canAssign = useHRMAC('core.roles_permissions.roles.assign');
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
   const [showCreate, setShowCreate] = useState(false);

@@ -54,6 +54,7 @@ const WEEKDAY_OPTIONS = [
 
 export default function LocalizationSettings({ localization, timezones }) {
   const toast = useToast();
+  const canEdit = useHRMAC('core.settings.localization.edit');
 
   const { data, setData, put, processing, errors, reset } = useForm({
     timezone: localization?.timezone ?? 'UTC',

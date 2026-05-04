@@ -33,6 +33,7 @@ function Section({ title, children }) {
 
 export default function OrganizationProfile({ organization }) {
   const toast = useToast();
+  const canEdit = useHRMAC('core.organization.org_profile.update');
 
   const { data, setData, put, processing, errors, reset } = useForm({
     company_name: organization?.company_name ?? '',

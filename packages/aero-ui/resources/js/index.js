@@ -93,6 +93,9 @@ export {
   AeosLogo, AppBrand, AppTopbarTitle, AppUserMenu,
 }                                           from './components/AppChrome.jsx';
 
+// ── Global Search ───────────────────────────────────────────
+export { default as SearchOverlay }         from './components/SearchOverlay.jsx';
+
 // ── Public (Marketing) Components ────────────────────────────────
 export {
   Section, Container,

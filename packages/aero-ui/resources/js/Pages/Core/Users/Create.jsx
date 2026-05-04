@@ -15,7 +15,7 @@ import App from '../../App.jsx';
 
 export default function UsersCreate({ roles }) {
   const toast = useToast();
-  const canCreate = useHRMAC('core.users.create');
+  const canCreate = useHRMAC('core.user_management.users.create');
 
   const form = useForm({
     name: '',
