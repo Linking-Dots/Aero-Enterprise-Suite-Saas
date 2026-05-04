@@ -4,13 +4,13 @@ import { Steps, ThemeToggle, Text } from '@aero/ui';
 export default function RegistrationLayout({ title, currentStep, steps = [], wide = false, children }) {
   return (
     <>
-      <Head title={`${title} · AEOS365`} />
+      <Head title={`${title} · aeos365`} />
 
       <div className="rl-root">
         <div className="rl-mesh" aria-hidden="true" />
 
         <header className="rl-brand">
-          <Link href="/" className="rl-brand-link" aria-label="AEOS365 home">
+          <Link href="/" className="rl-brand-link" aria-label="aeos365 home">
             <span className="rl-logo-mark">
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
                 <rect width="30" height="30" rx="8" fill="url(#rl-grad)" />
@@ -43,7 +43,7 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
 
         <footer className="rl-footer">
           <Text tone="tertiary" size="xs">
-            &copy; {new Date().getFullYear()} AEOS365 &middot; Enterprise Edition
+            &copy; {new Date().getFullYear()} aeos365
           </Text>
         </footer>
       </div>

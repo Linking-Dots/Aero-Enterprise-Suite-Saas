@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Shell: Floating / Inset Sidebar (Phase 2)
+   aeos365 — Shell: Floating / Inset Sidebar (Phase 2)
    The sidebar is a floating pill inset from the page edge.
    Usage: <div data-aeos-shell="floating">
             <nav class="aeos-shell-sidebar">
@@ -12,33 +12,33 @@
 [data-aeos-shell="floating"] {
   display: flex;
   min-height: 100vh;
-  padding: 16px;
+  padding: var(--aeos-space-4);
   background: var(--aeos-grad-mesh), var(--aeos-bg-page);
-  gap: 16px;
+  gap: var(--aeos-gap-card);
   font-family: var(--aeos-font-body);
   box-sizing: border-box;
 }
 
 /* ── Floating Sidebar Pill ───────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-sidebar {
-  width: 56px;
+  width: var(--aeos-space-14);
   background: var(--aeos-shell-floating-bg);
-  border: 1px solid rgba(0, 229, 255, 0.10);
-  border-radius: 14px;
+  border: 1px solid var(--aeos-primary-tint);
+  border-radius: var(--aeos-r-xl);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0;
-  gap: 8px;
+  padding: var(--aeos-space-3) 0;
+  gap: var(--aeos-gap-items);
   flex-shrink: 0;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh - var(--aeos-space-8));
   overflow-y: auto;
   overflow-x: hidden;
   position: sticky;
-  top: 16px;
+  top: var(--aeos-space-4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.40);
+  box-shadow: var(--aeos-shadow-elevated);
   scrollbar-width: none;
 }
 
@@ -48,10 +48,10 @@
 
 /* ── Sidebar Items ───────────────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  width: var(--aeos-space-8);
+  height: var(--aeos-space-8);
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-tint);
   border: 1px solid transparent;
   cursor: pointer;
   transition:
@@ -67,20 +67,20 @@
 }
 
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--aeos-bg-hover);
   color: var(--aeos-text-primary);
 }
 
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item.active {
-  background: rgba(0, 229, 255, 0.12);
-  border-color: rgba(0, 229, 255, 0.25);
+  background: var(--aeos-primary-bg);
+  border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 12px var(--aeos-primary-tint);
 }
 
 /* Divider between groups */
 [data-aeos-shell="floating"] .aeos-shell-sidebar-divider {
-  width: 24px;
+  width: var(--aeos-space-6);
   height: 1px;
   background: var(--aeos-divider);
   flex-shrink: 0;
@@ -95,9 +95,9 @@
 [data-aeos-shell="floating"] .aeos-shell-content {
   flex: 1;
   background: var(--aeos-shell-panel-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  padding: 20px;
+  border: 1px solid var(--aeos-border-subtle);
+  border-radius: var(--aeos-r-xl);
+  padding: var(--aeos-space-5);
   overflow-y: auto;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -107,11 +107,11 @@
 [data-aeos-shell="floating"] .aeos-shell-topbar {
   display: flex;
   align-items: center;
-  height: 48px;
-  padding: 0 4px 16px;
+  height: var(--aeos-h-topbar);
+  padding: 0 4px var(--aeos-space-4);
   border-bottom: 1px solid var(--aeos-divider);
-  margin-bottom: 16px;
-  gap: 12px;
+  margin-bottom: var(--aeos-space-4);
+  gap: var(--aeos-space-3);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -120,17 +120,16 @@
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar {
   width: 200px;
   align-items: flex-start;
-  padding: 16px 10px;
+  padding: var(--aeos-space-4) 10px;
 }
 
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item {
   width: 100%;
-  height: 38px;
+  height: var(--aeos-h-nav-item);
   justify-content: flex-start;
-  padding: 0 12px;
-  border-radius: var(--aeos-r-md);
-  gap: 10px;
-  font-size: 0.875rem;
+  padding: 0 var(--aeos-pad-nav-x);
+  gap: var(--aeos-space-3);
+  font-size: var(--aeos-text-sm);
   font-weight: 500;
 }
 
@@ -149,19 +148,19 @@
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
   [data-aeos-shell="floating"] {
-    padding: 8px;
-    gap: 8px;
+    padding: var(--aeos-space-2);
+    gap: var(--aeos-space-2);
   }
 
   [data-aeos-shell="floating"] .aeos-shell-sidebar {
     width: 44px;
-    padding: 8px 0;
-    gap: 6px;
-    top: 8px;
-    max-height: calc(100vh - 16px);
+    padding: var(--aeos-space-2) 0;
+    gap: var(--aeos-space-1-5);
+    top: var(--aeos-space-2);
+    max-height: calc(100vh - var(--aeos-space-4));
   }
 
   [data-aeos-shell="floating"] .aeos-shell-content {
-    padding: 14px;
+    padding: var(--aeos-space-4);
   }
 }

@@ -74,19 +74,25 @@ export function cx(...args) {
  * converted to a `var(--aeos-space-N)` reference.
  * Any other value (e.g. '2rem', '0', 'auto') is passed through raw.
  */
-const SPACE_SCALE = new Set([1, 2, 3, 4, 6, 8, 12, 16, 24]);
+const SPACE_SCALE = new Set([0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24]);
 
 /**
  * `resolveSpace` — convert a spacing prop value to a CSS string.
+ *
+ * Fractional keys (0.5, 1.5) map to `--aeos-space-0-5`, `--aeos-space-1-5`.
+ * `'px'` maps to `--aeos-space-px`.
  *
  * @param {number|string|undefined} value
  * @returns {string|undefined}
  */
 function resolveSpace(value) {
   if (value === undefined || value === null) return undefined;
+  if (value === 'px') return 'var(--aeos-space-px)';
   const num = Number(value);
   if (!Number.isNaN(num) && SPACE_SCALE.has(num)) {
-    return `var(--aeos-space-${num})`;
+    if (num === 0) return '0';
+    const key = String(num).replace('.', '-');
+    return `var(--aeos-space-${key})`;
   }
   if (value === 0 || value === '0') return '0';
   return String(value);

@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Card Styles (Phase 2)
+   aeos365 — Card Styles (Phase 2)
    10 variants: flat, elevated, glass, glass-strong, bento,
                 cta-glass, glow, gradient-border, outline, noise
    + .aeos-card-auto (customizer-driven)
@@ -180,7 +180,7 @@ body[data-card-style="flat"] .aeos-card-auto {
 
 body[data-card-style="glass"] .aeos-card-auto {
   all: revert;
-  background: var(--aeos-glass-bg);
+  background: rgba(255, 255, 255, 0.07);
   border: 1px solid var(--aeos-glass-border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -227,4 +227,42 @@ body[data-card-style="noise"] .aeos-card-auto {
   padding: var(--aeos-pad-card);
   position: relative;
   overflow: hidden;
+}
+
+body[data-card-style="noise"] .aeos-card-auto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* D-08 — Elevated (was missing from auto block) */
+body[data-card-style="elevated"] .aeos-card-auto {
+  all: revert;
+  background: var(--aeos-bg-elevated);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: var(--aeos-card-radius);
+  padding: var(--aeos-pad-card);
+  box-shadow: var(--aeos-shadow-card);
+}
+
+/* D-12 — Glass-strong (was missing from auto block) */
+body[data-card-style="glass-strong"] .aeos-card-auto {
+  all: revert;
+  background: var(--aeos-glass-bg-strong);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: var(--aeos-card-radius);
+  padding: var(--aeos-pad-card);
+}
+
+/* D-04 — all:revert inside body[data-card-style] .aeos-card-auto (specificity 0,2,1)
+   restores browser link/button defaults (color:blue, text-decoration:underline) when
+   Card is rendered as <a> or <button>. This rule (specificity 0,2,2) re-suppresses them. */
+body[data-card-style] a.aeos-card-auto,
+body[data-card-style] button.aeos-card-auto {
+  color: inherit;
+  text-decoration: none;
 }

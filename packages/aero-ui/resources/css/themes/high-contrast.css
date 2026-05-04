@@ -34,5 +34,6 @@
 .aeos--high-contrast .aeos-glass,
 .aeos--high-contrast .aeos-glass-strong { backdrop-filter:none; -webkit-backdrop-filter:none; background:#FFFFFF; border:2px solid #000000; }
 .aeos--high-contrast .aeos-card,
-.aeos--high-contrast .aeos-card-elevated { background:#FFFFFF; border:2px solid #000000; }
+.aeos--high-contrast .aeos-card-elevated,
+.aeos--high-contrast .aeos-card-auto { background:#FFFFFF; border:2px solid #000000; }
 .aeos--high-contrast .aeos-text-grad { background:none; -webkit-text-fill-color:#000000; color:#000000; }

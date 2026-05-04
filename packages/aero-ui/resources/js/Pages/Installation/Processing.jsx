@@ -112,7 +112,7 @@ export default function Processing({ mode }) {
 
       <div>
         <h1 className="il-title">
-          {status === 'completed' ? 'Installation Complete!' : status === 'failed' ? 'Installation Failed' : 'Installing AEOS365'}
+          {status === 'completed' ? 'Installation Complete!' : status === 'failed' ? 'Installation Failed' : 'Installing aeos365'}
         </h1>
         <Text tone="secondary">{message}</Text>
       </div>

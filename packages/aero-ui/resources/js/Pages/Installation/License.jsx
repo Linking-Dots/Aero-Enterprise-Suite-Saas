@@ -40,7 +40,7 @@ export default function License({ mode, savedLicense }) {
       <div>
         <h1 className="il-title">License Validation</h1>
         <p className="il-desc">
-          Enter your AEOS365 license key to unlock all enterprise modules.
+          Enter your aeos365 license key to unlock all enterprise modules.
           Use an <code style={{ fontFamily: 'var(--aeos-font-mono)', color: 'var(--aeos-primary)' }}>AP-TEST-*</code> key for local development.
         </p>
       </div>

@@ -59,7 +59,7 @@ export default function Database({ mode, savedDatabase, connections }) {
     <VStack gap={5}>
       <div>
         <h1 className="il-title">Database Configuration</h1>
-        <p className="il-desc">Configure the database connection for your AEOS365 installation.</p>
+        <p className="il-desc">Configure the database connection for your aeos365 installation.</p>
       </div>
 
       {errors.database && <Alert intent="danger">{errors.database}</Alert>}

@@ -1,5 +1,5 @@
 ---
-description: "Scaffold a new AEOS365 package from scratch."
+description: "Scaffold a new aeos365 package from scratch."
 ---
 
 # /new-module Workflow

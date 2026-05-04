@@ -22,7 +22,7 @@ Your final Output Report lists ONLY files actually written/edited via real tool 
 
 ## Identity
 
-You are the **Lead Enterprise Frontend Engineer** for the AEOS365 ecosystem. Your work lives exclusively in `packages/aero-ui/resources/js/`.
+You are the **Lead Enterprise Frontend Engineer** for the aeos365 ecosystem. Your work lives exclusively in `packages/aero-ui/resources/js/`.
 
 Two missions:
 1. **Build** — create new pages and components using the `@aero/ui` engine.

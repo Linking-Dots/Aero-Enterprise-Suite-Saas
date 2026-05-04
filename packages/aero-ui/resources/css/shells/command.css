@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Shell: Three-Panel / Command Layout (Phase 2)
+   aeos365 — Shell: Three-Panel / Command Layout (Phase 2)
    Left: nav tree, Center: main workspace, Right: context panel.
    Inspired by VS Code / Figma / enterprise dashboard patterns.
    Usage: <div data-aeos-shell="command">
@@ -24,11 +24,11 @@
 [data-aeos-shell="command"] .aeos-shell-left {
   background: var(--aeos-shell-panel-bg);
   border-right: 1px solid var(--aeos-divider);
-  padding: 16px;
+  padding: var(--aeos-space-4);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--aeos-space-1);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -37,18 +37,18 @@
 /* Section label */
 [data-aeos-shell="command"] .aeos-shell-nav-section {
   font-family: var(--aeos-font-mono);
-  font-size: 0.58rem;
+  font-size: var(--aeos-text-2xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--aeos-text-tertiary);
-  padding: 12px 12px 6px;
-  margin-top: 4px;
+  padding: var(--aeos-space-3) var(--aeos-space-3) var(--aeos-space-1);
+  margin: var(--aeos-space-2) 0;
 }
 
 [data-aeos-shell="command"] .aeos-shell-nav-item {
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  padding: var(--aeos-pad-nav-y) var(--aeos-pad-nav-x);
+  border-radius: var(--aeos-r-md);
+  font-size: var(--aeos-text-sm);
   color: var(--aeos-text-secondary);
   cursor: pointer;
   transition:
@@ -59,20 +59,20 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--aeos-space-2);
   font-weight: 500;
   user-select: none;
   white-space: nowrap;
 }
 
 [data-aeos-shell="command"] .aeos-shell-nav-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--aeos-bg-hover);
   color: var(--aeos-text-primary);
 }
 
 [data-aeos-shell="command"] .aeos-shell-nav-item.active {
-  background: rgba(0, 229, 255, 0.08);
-  border-color: rgba(0, 229, 255, 0.20);
+  background: var(--aeos-primary-tint);
+  border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
 }
 
@@ -80,7 +80,7 @@
 [data-aeos-shell="command"] .aeos-shell-nav-divider {
   height: 1px;
   background: var(--aeos-divider);
-  margin: 8px 0;
+  margin: var(--aeos-space-2) 0;
 }
 
 /* Spacer */
@@ -90,7 +90,7 @@
 
 /* ── Center Main Panel ───────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-main {
-  padding: 0;
+  padding: var(--aeos-space-5);
   overflow-y: auto;
   background: var(--aeos-bg-page);
   display: flex;
@@ -101,21 +101,21 @@
 [data-aeos-shell="command"] .aeos-shell-topbar {
   display: flex;
   align-items: center;
-  height: var(--aeos-shell-topnav-h, 48px);
-  padding: 0 20px;
+  height: var(--aeos-shell-topnav-h, var(--aeos-h-topbar));
+  padding: 0 var(--aeos-space-5);
   border-bottom: 1px solid var(--aeos-divider);
   background: var(--aeos-shell-topbar-bg);
-  gap: 12px;
+  gap: var(--aeos-space-3);
   flex-shrink: 0;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--aeos-z-sticky);
 }
 
 /* Content scrollable area */
 [data-aeos-shell="command"] .aeos-shell-content {
   flex: 1;
-  padding: 20px;
+  padding: var(--aeos-space-4);
   overflow-y: auto;
 }
 
@@ -123,11 +123,11 @@
 [data-aeos-shell="command"] .aeos-shell-right {
   background: var(--aeos-shell-panel-bg);
   border-left: 1px solid var(--aeos-divider);
-  padding: 16px;
+  padding: var(--aeos-space-4);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--aeos-gap-card);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -135,19 +135,19 @@
 
 /* ── Right Panel Widgets ─────────────────────────────────────── */
 .aeos-shell-widget {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--aeos-bg-subtle);
   border: 1px solid var(--aeos-divider);
   border-radius: var(--aeos-r-lg);
-  padding: 14px;
+  padding: var(--aeos-space-4);
 }
 
 .aeos-shell-widget-title {
   font-family: var(--aeos-font-mono);
-  font-size: 0.60rem;
+  font-size: var(--aeos-text-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--aeos-text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: var(--aeos-space-3);
 }
 
 /* ══════════════════════════════════════════════════════════════

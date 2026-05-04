@@ -1,9 +1,9 @@
 ---
 name: frontend-engine
-description: "Build or modify React pages using the @aero/ui design system for AEOS365. Covers App.jsx layout wrapper, page templates, ThemeProvider, primitives, data components, forms, overlays, hooks, and icons. Detects vanilla HTML leakage and legacy HeroUI/framer-motion/showToast.promise patterns."
+description: "Build or modify React pages using the @aero/ui design system for aeos365. Covers App.jsx layout wrapper, page templates, ThemeProvider, primitives, data components, forms, overlays, hooks, and icons. Detects vanilla HTML leakage and legacy HeroUI/framer-motion/showToast.promise patterns."
 ---
 
-# AEOS365 Frontend Engineering Skill
+# aeos365 Frontend Engineering Skill
 
 ## Active Design System: @aero/ui (NOT HeroUI)
 

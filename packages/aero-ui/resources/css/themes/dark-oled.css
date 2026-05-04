@@ -1,5 +1,6 @@
 .aeos--oled {
   --aeos-bg-page:      #000000;
+  --aeos-grad-mesh:    none;
   --aeos-bg-app:       #050505;
   --aeos-bg-card:      #0A0A0A;
   --aeos-bg-elevated:  #111111;

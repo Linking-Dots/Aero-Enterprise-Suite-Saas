@@ -138,7 +138,7 @@ export default function AdminSetup({ tenant = {} }) {
 
 AdminSetup.layout = page => (
   <AuthLayout
-    title={`Welcome to ${page.props.tenant?.name ?? 'AEOS365'}`}
+    title={`Welcome to ${page.props.tenant?.name ?? 'aeos365'}`}
     eyebrow="Complete your account setup"
   >
     {page}

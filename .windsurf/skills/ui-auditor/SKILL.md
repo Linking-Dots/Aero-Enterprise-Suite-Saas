@@ -1,13 +1,13 @@
 ---
 name: ui-auditor
-description: "Audit AEOS365 JSX and PHP files for pattern violations. Detects vanilla HTML leakage, legacy imports (HeroUI, framer-motion, heroicons), inline validation, env() misuse, missing HRMAC middleware, and design system inconsistencies."
+description: "Audit aeos365 JSX and PHP files for pattern violations. Detects vanilla HTML leakage, legacy imports (HeroUI, framer-motion, heroicons), inline validation, env() misuse, missing HRMAC middleware, and design system inconsistencies."
 ---
 
 # UI Auditor Skill
 
 ## Purpose
 
-Scan changed or new files for violations against the AEOS365 `@aero/ui` design system and Laravel backend patterns. Report drift with severity and actionable fix suggestions.
+Scan changed or new files for violations against the aeos365 `@aero/ui` design system and Laravel backend patterns. Report drift with severity and actionable fix suggestions.
 
 ## Audit Matrix
 

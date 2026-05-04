@@ -3,7 +3,7 @@ name: backend-engine
 description: "Build Laravel backend code in packages/aero-*. Enforces Form Requests over inline validation, config() over env(), thin controllers, HRMAC middleware, and Eloquent best practices. Detects existing violations across the codebase."
 ---
 
-# AEOS365 Backend Engineering Skill
+# aeos365 Backend Engineering Skill
 
 ## Monorepo Boundaries
 

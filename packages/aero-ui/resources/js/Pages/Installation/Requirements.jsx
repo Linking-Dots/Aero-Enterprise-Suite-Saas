@@ -67,7 +67,7 @@ export default function Requirements({ mode, checks: initialChecks, canProceed: 
   return (
     <div>
       <h1 className="il-title">System Requirements</h1>
-      <p className="il-desc">Checking that your server meets the minimum requirements to run AEOS365.</p>
+      <p className="il-desc">Checking that your server meets the minimum requirements to run aeos365.</p>
 
       {canProceed
         ? <Alert intent="success" title="All requirements met" style={{ marginBottom: '1.5rem' }}>Your server is ready to proceed with the installation.</Alert>

@@ -57,3 +57,20 @@
 /* ── 6. Templates ───────────────────────────────────────────── */
 @import url('./templates/page-layouts.css');
 @import url('./templates/theme-drawer.css');
+
+/* ── 7. Global overrides ─────────────────────────────────────── */
+
+/* D-01/D-02 — ThemeProvider writes data-aeos-shell on body for JS use.
+   Shell CSS uses [data-aeos-shell="sidebar"] which also matches body,
+   turning it into a grid container and constraining the React root to 56px.
+   This override (specificity 0,1,1 > 0,1,0) restores body to block layout. */
+body[data-aeos-shell] {
+  display: block;
+}
+
+/* D-04 — Reset browser link defaults (blue + underline) that bleed through
+   in light mode since no AEOS-level anchor reset was defined. */
+a {
+  color: inherit;
+  text-decoration: none;
+}

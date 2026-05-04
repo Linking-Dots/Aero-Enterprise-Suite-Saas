@@ -1,4 +1,4 @@
-# AEOS365 Design System Upgrade — Design Spec
+# aeos365 Design System Upgrade — Design Spec
 **Date:** 2026-04-26  
 **Scope:** 1st pass — CSS/HTML format only. aero-ui React adoption is a separate follow-on task.
 
@@ -6,7 +6,7 @@
 
 ## Goal
 
-Upgrade the AEOS365 design system (`aeos365-design-system/`) from a single monolithic CSS file into a modular, fully themeable system with:
+Upgrade the aeos365 design system (`aeos365-design-system/`) from a single monolithic CSS file into a modular, fully themeable system with:
 
 1. 12 theme variants (7 dark including OLED, 4 light, 1 high-contrast)
 2. 10 card surface classes total — 6 selectable presets in the customizer drawer (flat, glass, glow, gradient-border, outline, noise) plus 4 existing specialty classes (card-elevated, glass-strong, bento, cta-glass)

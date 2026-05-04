@@ -19,7 +19,7 @@ export default function AuthLayout({ title, eyebrow, children }) {
 
   return (
     <>
-      <Head title={`${title} · AEOS365`} />
+      <Head title={`${title} · aeos365`} />
 
       <div className="al-root">
         {/* Ambient gradient mesh */}
@@ -27,7 +27,7 @@ export default function AuthLayout({ title, eyebrow, children }) {
 
         {/* Brand header with theme toggle */}
         <header className="al-brand">
-          <Link href="/" className="al-brand-link" aria-label="AEOS365 home">
+          <Link href="/" className="al-brand-link" aria-label="aeos365 home">
             <span className="al-logo-mark">
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
                 <rect width="30" height="30" rx="8" fill="url(#al-grad)" />
@@ -81,7 +81,7 @@ export default function AuthLayout({ title, eyebrow, children }) {
         {/* Footer */}
         <footer className="al-footer">
           <span className="aeos-text-xs aeos-text-tertiary">
-            © {new Date().getFullYear()} AEOS365 · Enterprise Edition
+            © {new Date().getFullYear()} aeos365
           </span>
         </footer>
       </div>

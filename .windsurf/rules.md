@@ -1,4 +1,4 @@
-# AEOS365 Cascade Rules
+# aeos365 Cascade Rules
 
 ## Monorepo Boundaries
 - Host app `aeos365/` is OFF-LIMITS for business logic. Only `.env`, `composer.json`, `vite.config.js`, `bootstrap/`, `public/`, `storage/`.

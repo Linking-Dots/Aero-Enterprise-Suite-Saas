@@ -1,5 +1,5 @@
 ---
-description: "Build a new feature end-to-end in an AEOS365 package."
+description: "Build a new feature end-to-end in an aeos365 package."
 ---
 
 # /new-feature Workflow

@@ -27,7 +27,7 @@ export default function StepSuccess({ result = {}, baseDomain = '' }) {
       </div>
 
       <VStack gap={2} align="center">
-        <h1 className="rl-title">Welcome to AEOS365, {name}!</h1>
+        <h1 className="rl-title">Welcome to aeos365, {name}!</h1>
         <Text tone="secondary" as="p">Your workspace has been provisioned and is ready to use.</Text>
       </VStack>
 

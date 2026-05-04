@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Data Visualization Components (Phase 2)
+   aeos365 — Data Visualization Components (Phase 2)
    KPI tiles, Stat cards, Sparklines, Progress bars
    All numeric values use JetBrains Mono with "tnum" feature.
    ══════════════════════════════════════════════════════════════ */
@@ -10,17 +10,17 @@
   flex-direction: column;
   padding: var(--aeos-pad-card);
   background: var(--aeos-bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--aeos-border-subtle);
   border-radius: var(--aeos-card-radius);
 }
 
 .aeos-kpi-label {
   font-family: var(--aeos-font-mono);
-  font-size: 0.60rem;
+  font-size: var(--aeos-text-2xs);
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--aeos-text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: var(--aeos-space-2);
 }
 
 .aeos-kpi-value {
@@ -29,8 +29,8 @@
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 600;
   color: var(--aeos-text-primary);
-  line-height: 1;
-  margin-bottom: 6px;
+  line-height: var(--aeos-leading-none);
+  margin-bottom: var(--aeos-space-1-5);
 }
 
 /* Cyan-highlighted KPI value */
@@ -46,10 +46,10 @@
 .aeos-kpi-delta {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--aeos-space-1);
   font-family: var(--aeos-font-mono);
   font-feature-settings: "tnum";
-  font-size: 0.72rem;
+  font-size: var(--aeos-text-xs);
   font-weight: 500;
 }
 
@@ -67,14 +67,14 @@
 
 /* ── Sparkline (inline bar chart) ────────────────────────────── */
 .aeos-sparkline {
-  margin-top: 8px;
-  height: 32px;
-  background: rgba(0, 229, 255, 0.05);
-  border-radius: 4px;
+  margin-top: var(--aeos-space-2);
+  height: var(--aeos-space-8);
+  background: var(--aeos-primary-tint);
+  border-radius: var(--aeos-r-sm);
   display: flex;
   align-items: flex-end;
-  gap: 2px;
-  padding: 4px;
+  gap: var(--aeos-space-0-5);
+  padding: var(--aeos-space-1);
 }
 
 .aeos-sparkline-bar {
@@ -98,11 +98,11 @@
 .aeos-stat-card {
   padding: var(--aeos-pad-card);
   background: var(--aeos-bg-elevated);
-  border: 1px solid rgba(0, 229, 255, 0.08);
+  border: 1px solid var(--aeos-primary-tint);
   border-radius: var(--aeos-card-radius);
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 16px;
+  gap: var(--aeos-gap-card);
   align-items: start;
 }
 
@@ -110,9 +110,9 @@
 .aeos-stat-icon {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
-  background: rgba(0, 229, 255, 0.10);
-  border: 1px solid rgba(0, 229, 255, 0.22);
+  border-radius: var(--aeos-r-lg);
+  background: var(--aeos-primary-bg);
+  border: 1px solid var(--aeos-primary-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,8 +122,8 @@
 
 /* Amber icon tile (payroll/finance) */
 .aeos-stat-icon-amber {
-  background: rgba(255, 179, 71, 0.10);
-  border: 1px solid rgba(255, 179, 71, 0.22);
+  background: var(--aeos-warning-bg);
+  border: 1px solid var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }
 
@@ -136,14 +136,14 @@
 
 /* Success icon tile */
 .aeos-stat-icon-success {
-  background: rgba(34, 197, 94, 0.10);
-  border: 1px solid rgba(34, 197, 94, 0.22);
+  background: var(--aeos-success-bg);
+  border: 1px solid var(--aeos-success-border);
   color: var(--aeos-success);
 }
 
 /* Body content */
 .aeos-stat-body h3 {
-  margin: 0 0 4px;
+  margin: 0 0 var(--aeos-space-1);
   font-family: var(--aeos-font-body);
   font-size: 0.95rem;
   font-weight: 600;
@@ -152,9 +152,9 @@
 
 .aeos-stat-body p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--aeos-text-sm);
   color: var(--aeos-text-secondary);
-  line-height: 1.5;
+  line-height: var(--aeos-leading-normal);
 }
 
 /* Right meta column */
@@ -162,13 +162,13 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: var(--aeos-space-1);
 }
 
 .aeos-stat-number {
   font-family: var(--aeos-font-mono);
   font-feature-settings: "tnum";
-  font-size: 1.5rem;
+  font-size: var(--aeos-text-2xl);
   font-weight: 600;
   color: var(--aeos-primary);
   line-height: 1;
@@ -176,7 +176,7 @@
 
 .aeos-stat-unit {
   font-family: var(--aeos-font-mono);
-  font-size: 0.70rem;
+  font-size: var(--aeos-text-2xs);
   letter-spacing: 0.08em;
   color: var(--aeos-text-secondary);
 }
@@ -185,7 +185,7 @@
 .aeos-progress {
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--aeos-bg-hover);
   border-radius: var(--aeos-r-full);
   overflow: hidden;
 }
@@ -209,7 +209,7 @@
 .aeos-progress-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--aeos-space-1-5);
 }
 
 .aeos-progress-header {
@@ -219,7 +219,7 @@
 }
 
 .aeos-progress-label {
-  font-size: 0.82rem;
+  font-size: var(--aeos-text-sm);
   color: var(--aeos-text-secondary);
   font-family: var(--aeos-font-body);
 }
@@ -227,7 +227,7 @@
 .aeos-progress-value {
   font-family: var(--aeos-font-mono);
   font-feature-settings: "tnum";
-  font-size: 0.78rem;
+  font-size: var(--aeos-text-xs);
   font-weight: 600;
   color: var(--aeos-primary);
 }
@@ -237,23 +237,23 @@
   width: 100%;
   border-collapse: collapse;
   font-family: var(--aeos-font-body);
-  font-size: 0.875rem;
+  font-size: var(--aeos-text-sm);
 }
 
 .aeos-table th {
   font-family: var(--aeos-font-mono);
-  font-size: 0.60rem;
+  font-size: var(--aeos-text-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--aeos-text-secondary);
   text-align: left;
-  padding: 10px 12px;
+  padding: var(--aeos-pad-cell);
   border-bottom: 1px solid var(--aeos-divider);
   font-weight: 500;
 }
 
 .aeos-table td {
-  padding: 12px;
+  padding: var(--aeos-pad-cell);
   border-bottom: 1px solid var(--aeos-divider);
   color: var(--aeos-text-primary);
   vertical-align: middle;
@@ -262,7 +262,7 @@
 .aeos-table td.mono {
   font-family: var(--aeos-font-mono);
   font-feature-settings: "tnum";
-  font-size: 0.875rem;
+  font-size: var(--aeos-text-sm);
 }
 
 .aeos-table tr:last-child td {
@@ -270,27 +270,27 @@
 }
 
 .aeos-table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--aeos-bg-subtle);
 }
 
 /* ── Mini Metric Chip ────────────────────────────────────────── */
 .aeos-metric-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: rgba(0, 229, 255, 0.06);
-  border: 1px solid rgba(0, 229, 255, 0.14);
+  gap: var(--aeos-space-1-5);
+  padding: var(--aeos-pad-badge-y) var(--aeos-pad-badge-x);
+  background: var(--aeos-primary-tint);
+  border: 1px solid var(--aeos-primary-border);
   border-radius: var(--aeos-r-sm);
   font-family: var(--aeos-font-mono);
   font-feature-settings: "tnum";
-  font-size: 0.78rem;
+  font-size: var(--aeos-text-xs);
   font-weight: 600;
   color: var(--aeos-primary);
 }
 
 .aeos-metric-chip-amber {
-  background: rgba(255, 179, 71, 0.06);
-  border-color: rgba(255, 179, 71, 0.14);
+  background: var(--aeos-warning-tint);
+  border-color: var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }

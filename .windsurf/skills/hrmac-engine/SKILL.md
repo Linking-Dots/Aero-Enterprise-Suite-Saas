@@ -1,6 +1,6 @@
 ---
 name: hrmac-engine
-description: "Implement and audit HRMAC (Hierarchical Role Module Access Control) for AEOS365. Covers config/module.php definitions, route middleware syntax, 4-level hierarchy, access inheritance, caching, and frontend permission checks."
+description: "Implement and audit HRMAC (Hierarchical Role Module Access Control) for aeos365. Covers config/module.php definitions, route middleware syntax, 4-level hierarchy, access inheritance, caching, and frontend permission checks."
 ---
 
 # HRMAC Engineering Skill

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { router, Head, Link } from '@inertiajs/react';
-import App from '../App.jsx';
+import App from '../../App.jsx';
 import {
   Card, CardHeader, CardBody,
   Input,
@@ -187,6 +187,7 @@ function mapResultIcon(icon, type) {
     User: 'user',
     'Audit Log': 'document',
     Role: 'lockClosed',
+    Tag: 'tag',
   };
   return fallback[type] || 'document';
 }

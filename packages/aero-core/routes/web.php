@@ -5,6 +5,7 @@ use Aero\Core\Http\Controllers\Admin\CoreUserController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
 use Aero\Core\Http\Controllers\Admin\ModuleController;
 use Aero\Core\Http\Controllers\Admin\RoleController;
+use Aero\Core\Http\Controllers\Admin\TagController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
@@ -382,6 +383,46 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/activity/export', [AuditLogController::class, 'exportActivityLogs'])->name('activity.export');
         Route::post('/security/export', [AuditLogController::class, 'exportSecurityLogs'])->name('security.export');
     });
+
+    // ========================================================================
+    // TAGS & LABELS
+    // ========================================================================
+    Route::prefix('tags')->name('core.tags.')
+        ->middleware('hrmac:core.tags_labels.tag_management.view')
+        ->group(function () {
+            Route::get('/', [TagController::class, 'index'])->name('index');
+            Route::post('/', [TagController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:core.tags_labels.tag_management.create');
+            Route::put('/{tag}', [TagController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:core.tags_labels.tag_management.update');
+            Route::delete('/{tag}', [TagController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('hrmac:core.tags_labels.tag_management.delete');
+            Route::get('/trashed', [TagController::class, 'trashed'])
+                ->name('trashed')
+                ->middleware('hrmac:core.tags_labels.tag_management.view');
+            Route::post('/{id}/restore', [TagController::class, 'restore'])
+                ->name('restore')
+                ->middleware('hrmac:core.tags_labels.tag_management.update');
+            Route::delete('/{id}/force', [TagController::class, 'forceDelete'])
+                ->name('force-delete')
+                ->middleware('hrmac:core.tags_labels.tag_management.delete');
+            Route::post('/merge', [TagController::class, 'merge'])
+                ->name('merge')
+                ->middleware('hrmac:core.tags_labels.tag_management.update');
+            Route::post('/bulk', [TagController::class, 'bulk'])
+                ->name('bulk')
+                ->middleware('hrmac:core.tags_labels.tag_management.update');
+            Route::get('/export', [TagController::class, 'export'])
+                ->name('export')
+                ->middleware('hrmac:core.tags_labels.tag_management.view');
+            Route::post('/import', [TagController::class, 'import'])
+                ->name('import')
+                ->middleware('hrmac:core.tags_labels.tag_management.create');
+            Route::get('/counts', [TagController::class, 'taggableCounts'])->name('counts');
+        });
 
     // ========================================================================
     // NOTIFICATIONS MANAGEMENT

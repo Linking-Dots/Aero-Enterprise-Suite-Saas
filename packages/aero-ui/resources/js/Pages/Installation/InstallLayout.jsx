@@ -18,7 +18,7 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
 
   return (
     <>
-      <Head title={`${title} · AEOS365 Setup`} />
+      <Head title={`${title} · aeos365 Setup`} />
 
       {/* Root — full viewport, centred column */}
       <Box
@@ -36,7 +36,7 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
 
         {/* Brand header — identical to AuthLayout registration pages */}
         <header className="il-brand">
-          <Link href="/" className="il-brand-link" aria-label="AEOS365 home">
+          <Link href="/" className="il-brand-link" aria-label="aeos365 home">
             <span className="il-logo-mark">
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
                 <rect width="30" height="30" rx="8" fill="url(#il-grad)" />

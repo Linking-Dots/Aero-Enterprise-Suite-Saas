@@ -31,6 +31,7 @@ export {
   Box, Stack, HStack, VStack, Spacer, Flex1, Divider,
   Heading, Text, Label, Mono, Eyebrow,
   Card, CardHeader, CardBody, CardFooter,
+  CardBody as CardContent,
 }                                           from './components/Primitives.jsx';
 
 // ── Display ───────────────────────────────────────────────────────
@@ -95,6 +96,9 @@ export {
 
 // ── Global Search ───────────────────────────────────────────
 export { default as SearchOverlay }         from './components/SearchOverlay.jsx';
+
+// ── Tags & Labels ───────────────────────────────────────────
+export { default as TagPicker }             from './components/TagPicker.jsx';
 
 // ── Public (Marketing) Components ────────────────────────────────
 export {

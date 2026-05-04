@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Button Styles (Phase 2)
+   aeos365 — Button Styles (Phase 2)
    Base + Primary, Ghost, Soft, Amber variants
    Sizes: default, sm, lg, icon
    Rules: radius ≤ 8px (--aeos-r-md). No pill-shaped buttons above sm.
@@ -10,15 +10,16 @@
 .aeos-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--aeos-gap-items);
   font-family: var(--aeos-font-body);
   font-weight: 600;
   border: none;
   cursor: pointer;
   border-radius: var(--aeos-r-md);
-  padding: 0.75rem 1.75rem;
-  font-size: 0.925rem;
-  line-height: 1;
+  padding: var(--aeos-pad-btn-y) var(--aeos-pad-btn-x);
+  font-size: var(--aeos-text-sm);
+  line-height: var(--aeos-leading-none);
+  height: var(--aeos-h-btn);
   text-decoration: none;
   user-select: none;
   white-space: nowrap;
@@ -59,36 +60,36 @@
 .aeos-btn-ghost {
   background: transparent;
   color: var(--aeos-text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--aeos-border-strong);
   font-weight: 500;
-  padding: calc(0.75rem - 1px) calc(1.75rem - 1px);
+  padding: calc(var(--aeos-pad-btn-y) - 1px) calc(var(--aeos-pad-btn-x) - 1px);
 }
 
 .aeos-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(0, 229, 255, 0.30);
+  background: var(--aeos-bg-hover);
+  border-color: var(--aeos-primary-border);
 }
 
 .aeos-btn-ghost:active {
-  background: rgba(255, 255, 255, 0.09);
+  background: var(--aeos-bg-active);
 }
 
 /* ── Soft (cyan tint fill + cyan border) ────────────────────── */
 .aeos-btn-soft {
-  background: rgba(0, 229, 255, 0.08);
-  border: 1px solid rgba(0, 229, 255, 0.20);
+  background: var(--aeos-primary-tint);
+  border: 1px solid var(--aeos-primary-border);
   color: var(--aeos-primary);
   font-weight: 500;
-  padding: calc(0.75rem - 1px) calc(1.75rem - 1px);
+  padding: calc(var(--aeos-pad-btn-y) - 1px) calc(var(--aeos-pad-btn-x) - 1px);
 }
 
 .aeos-btn-soft:hover {
-  background: rgba(0, 229, 255, 0.14);
+  background: var(--aeos-primary-hover);
   border-color: rgba(0, 229, 255, 0.32);
 }
 
 .aeos-btn-soft:active {
-  background: rgba(0, 229, 255, 0.18);
+  background: var(--aeos-primary-bg);
 }
 
 /* ── Amber (payroll, finance, secondary CTA) ────────────────── */
@@ -110,15 +111,15 @@
 
 /* ── Destructive (danger actions) ───────────────────────────── */
 .aeos-btn-danger {
-  background: rgba(255, 107, 107, 0.12);
-  border: 1px solid rgba(255, 107, 107, 0.30);
+  background: var(--aeos-danger-bg);
+  border: 1px solid var(--aeos-danger-border);
   color: var(--aeos-destructive);
   font-weight: 500;
-  padding: calc(0.75rem - 1px) calc(1.75rem - 1px);
+  padding: calc(var(--aeos-pad-btn-y) - 1px) calc(var(--aeos-pad-btn-x) - 1px);
 }
 
 .aeos-btn-danger:hover {
-  background: rgba(255, 107, 107, 0.20);
+  background: var(--aeos-danger-hover);
   border-color: rgba(255, 107, 107, 0.50);
 }
 
@@ -126,20 +127,22 @@
 
 /* Small — radius can be r-sm (6px) */
 .aeos-btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
+  padding: var(--aeos-space-2) var(--aeos-space-4);
+  font-size: var(--aeos-text-xs);
   border-radius: var(--aeos-r-sm);
+  height: auto;
 }
 
 /* Large */
 .aeos-btn-lg {
-  padding: 1rem 2.5rem;
-  font-size: 1rem;
+  padding: var(--aeos-space-4) var(--aeos-space-10);
+  font-size: var(--aeos-text-base);
+  height: calc(var(--aeos-h-btn) * 1.2);
 }
 
 /* Icon-only square */
 .aeos-btn-icon {
-  padding: 0.625rem;
+  padding: var(--aeos-pad-btn-y);
   aspect-ratio: 1;
   justify-content: center;
 }
@@ -147,5 +150,5 @@
 /* ── Focus Ring (accessibility) ─────────────────────────────── */
 .aeos-btn:focus-visible {
   outline: 2px solid var(--aeos-primary);
-  outline-offset: 3px;
+  outline-offset: var(--aeos-space-0-5);
 }

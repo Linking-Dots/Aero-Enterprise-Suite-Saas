@@ -93,10 +93,12 @@
   --aeos-shadow-mockup: 0 0 0 1px rgba(0, 229, 255, 0.15),
                         0 32px 80px rgba(0, 0, 0, 0.80),
                         0 0 60px rgba(0, 229, 255, 0.08);
-  --aeos-shadow-sm:  0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --aeos-shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --aeos-shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --aeos-shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --aeos-shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.06);
+  --aeos-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.10), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --aeos-shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.10);
+  --aeos-shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10);
+  --aeos-shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10);
+  --aeos-shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.40);
 
   /* Typography */
   --aeos-font-display: 'Syne', system-ui, sans-serif;
@@ -116,7 +118,8 @@
   --aeos-fs-label:        0.72rem;
   --aeos-fs-micro:        0.6rem;
 
-  --aeos-text-xs:   0.72rem;
+  --aeos-text-2xs:  0.625rem;
+  --aeos-text-xs:   0.75rem;
   --aeos-text-sm:   0.875rem;
   --aeos-text-base: 1rem;
   --aeos-text-lg:   1.125rem;
@@ -124,6 +127,15 @@
   --aeos-text-2xl:  1.5rem;
   --aeos-text-3xl:  1.875rem;
   --aeos-text-4xl:  2.25rem;
+  --aeos-text-5xl:  3rem;
+
+  /* Line-height */
+  --aeos-leading-none:    1;
+  --aeos-leading-tight:   1.15;
+  --aeos-leading-snug:    1.3;
+  --aeos-leading-normal:  1.5;
+  --aeos-leading-relaxed: 1.6;
+  --aeos-leading-loose:   1.8;
 
   /* Radii */
   --aeos-r-sm:   6px;
@@ -134,23 +146,100 @@
   --aeos-r-full: 9999px;
   --aeos-card-radius: var(--aeos-r-xl);
 
-  /* Spacing */
-  --aeos-space-1:  4px;
-  --aeos-space-2:  8px;
-  --aeos-space-3:  12px;
-  --aeos-space-4:  16px;
-  --aeos-space-6:  24px;
-  --aeos-space-8:  32px;
-  --aeos-space-12: 48px;
-  --aeos-space-16: 64px;
-  --aeos-space-24: 96px;
+  /* Spacing (4px grid) */
+  --aeos-space-0:    0px;
+  --aeos-space-px:   1px;
+  --aeos-space-0-5:  2px;
+  --aeos-space-1:    4px;
+  --aeos-space-1-5:  6px;
+  --aeos-space-2:    8px;
+  --aeos-space-3:    12px;
+  --aeos-space-4:    16px;
+  --aeos-space-5:    20px;
+  --aeos-space-6:    24px;
+  --aeos-space-8:    32px;
+  --aeos-space-10:   40px;
+  --aeos-space-12:   48px;
+  --aeos-space-16:   64px;
+  --aeos-space-20:   80px;
+  --aeos-space-24:   96px;
 
-  /* Density */
+  /* Density — all interactive spacing responds to density-factor */
   --aeos-density-factor:  1;
-  --aeos-pad-card:        calc(1.5rem * var(--aeos-density-factor));
-  --aeos-stack-gap:       calc(20px * var(--aeos-density-factor));
+  --aeos-pad-card:        calc(24px * var(--aeos-density-factor));
+  --aeos-pad-cell:        calc(12px * var(--aeos-density-factor));
+  --aeos-pad-input-y:     calc(10px * var(--aeos-density-factor));
+  --aeos-pad-input-x:     calc(14px * var(--aeos-density-factor));
+  --aeos-pad-btn-y:       calc(12px * var(--aeos-density-factor));
+  --aeos-pad-btn-x:       calc(28px * var(--aeos-density-factor));
+  --aeos-pad-badge-y:     calc(4px  * var(--aeos-density-factor));
+  --aeos-pad-badge-x:     calc(10px * var(--aeos-density-factor));
+  --aeos-pad-nav-y:       calc(8px  * var(--aeos-density-factor));
+  --aeos-pad-nav-x:       calc(12px * var(--aeos-density-factor));
+  --aeos-pad-modal:       calc(24px * var(--aeos-density-factor));
+  --aeos-gap-card:        calc(16px * var(--aeos-density-factor));
+  --aeos-gap-items:       calc(8px  * var(--aeos-density-factor));
+  --aeos-gap-stack:       calc(20px * var(--aeos-density-factor));
+  --aeos-stack-gap:       var(--aeos-gap-stack);
+  --aeos-h-btn:           calc(40px * var(--aeos-density-factor));
+  --aeos-h-input:         calc(40px * var(--aeos-density-factor));
+  --aeos-h-topbar:        calc(48px * var(--aeos-density-factor));
+  --aeos-h-nav-item:      calc(36px * var(--aeos-density-factor));
   --aeos-pad-section:     clamp(4rem, 8vw, 8rem);
   --aeos-gap-section:     1.5rem;
+
+  /* Alpha / semantic surfaces (dark defaults — light themes override) */
+  --aeos-bg-subtle:       rgba(255, 255, 255, 0.03);
+  --aeos-bg-tint:         rgba(255, 255, 255, 0.04);
+  --aeos-bg-hover:        rgba(255, 255, 255, 0.06);
+  --aeos-bg-active:       rgba(255, 255, 255, 0.10);
+  --aeos-bg-wash:         rgba(255, 255, 255, 0.14);
+
+  /* Semantic borders */
+  --aeos-border-subtle:   rgba(255, 255, 255, 0.06);
+  --aeos-border-base:     rgba(255, 255, 255, 0.10);
+  --aeos-border-strong:   rgba(255, 255, 255, 0.16);
+
+  /* Primary (accent) semantic */
+  --aeos-primary-tint:    rgba(0, 229, 255, 0.08);
+  --aeos-primary-bg:      rgba(0, 229, 255, 0.12);
+  --aeos-primary-border:  rgba(0, 229, 255, 0.20);
+  --aeos-primary-hover:   rgba(0, 229, 255, 0.14);
+
+  /* Destructive semantic */
+  --aeos-danger-tint:     rgba(255, 107, 107, 0.10);
+  --aeos-danger-bg:       rgba(255, 107, 107, 0.14);
+  --aeos-danger-border:   rgba(255, 107, 107, 0.25);
+  --aeos-danger-hover:    rgba(255, 107, 107, 0.20);
+
+  /* Success semantic */
+  --aeos-success-tint:    rgba(34, 197, 94, 0.10);
+  --aeos-success-bg:      rgba(34, 197, 94, 0.14);
+  --aeos-success-border:  rgba(34, 197, 94, 0.25);
+
+  /* Warning semantic */
+  --aeos-warning-tint:    rgba(255, 179, 71, 0.08);
+  --aeos-warning-bg:      rgba(255, 179, 71, 0.12);
+  --aeos-warning-border:  rgba(255, 179, 71, 0.22);
+
+  /* Z-index layers */
+  --aeos-z-base:      0;
+  --aeos-z-sticky:    100;
+  --aeos-z-shell:     200;
+  --aeos-z-sidebar:   300;
+  --aeos-z-overlay:   500;
+  --aeos-z-modal:     600;
+  --aeos-z-popover:   700;
+  --aeos-z-tooltip:   800;
+  --aeos-z-toast:     900;
+  --aeos-z-max:       9999;
+
+  /* Icon sizes */
+  --aeos-icon-xs:   12px;
+  --aeos-icon-sm:   16px;
+  --aeos-icon-md:   20px;
+  --aeos-icon-lg:   24px;
+  --aeos-icon-xl:   32px;
 
   /* Shell dimensions */
   --aeos-shell-sidebar-w:     56px;
@@ -220,8 +309,8 @@ body[data-mode="light"] {
 }
 
 /* ── Density data attributes ───────────────────────────────────────────── */
-body[data-density="compact"]  { --aeos-pad-card: 16px; }
-body[data-density="spacious"] { --aeos-pad-card: 32px; }
+body[data-density="compact"]  { --aeos-density-factor: 0.85; }
+body[data-density="spacious"] { --aeos-density-factor: 1.15; }
 
 /* ── System reduce-motion preference ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

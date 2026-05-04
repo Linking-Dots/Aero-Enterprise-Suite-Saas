@@ -22,7 +22,7 @@ export default function AlreadyInstalled({ mode, appUrl, installedAt, version })
 
       <div>
         <h1 className="il-title">Already Installed</h1>
-        <Text tone="secondary">AEOS365 is already installed on this server. The setup wizard is no longer available.</Text>
+        <Text tone="secondary">aeos365 is already installed on this server. The setup wizard is no longer available.</Text>
       </div>
 
       <Box style={{

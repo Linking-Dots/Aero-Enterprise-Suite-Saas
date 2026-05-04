@@ -18,7 +18,7 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
 
       <div>
         <h1 className="il-title">Installation Complete!</h1>
-        <Text tone="secondary">AEOS365 has been successfully installed. Your platform is ready.</Text>
+        <Text tone="secondary">aeos365 has been successfully installed. Your platform is ready.</Text>
       </div>
 
       {/* Summary */}
@@ -75,7 +75,7 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
         className="aeos-btn aeos-btn-primary"
         style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: '1rem', padding: '0.875rem 2rem' }}
       >
-        Go to AEOS365
+        Go to aeos365
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
           <path d="M4.5 12h15m0 0l-6.75 6.75M19.5 12l-6.75-6.75"/>
         </svg>

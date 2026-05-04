@@ -4,11 +4,23 @@
   --aeos-secondary:     #6366F1;
   --aeos-tertiary:      #8B5CF6;
   --aeos-destructive:   #FF6B6B;
+  --aeos-bg-page:      #030811;
+  --aeos-bg-app:       #060D1A;
+  --aeos-bg-card:      #0D1525;
+  --aeos-bg-elevated:  #131E30;
+  --aeos-bg-modal:     #1A2640;
+  --aeos-glass-bg:        rgba(13,21,37,0.75);
+  --aeos-glass-bg-strong: rgba(6,13,26,0.88);
+  --aeos-glass-border:   rgba(99,102,241,.15);
+  --aeos-glass-border-h: rgba(99,102,241,.28);
+  --aeos-divider:        rgba(99,102,241,.06);
   --aeos-grad-cyan:  linear-gradient(135deg,#00E5FF 0%,#6366F1 100%);
   --aeos-grad-amber: linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
   --aeos-grad-full:  linear-gradient(135deg,#00E5FF 0%,#6366F1 50%,#8B5CF6 100%);
-  --aeos-glass-border:   rgba(99,102,241,.15);
-  --aeos-glass-border-h: rgba(99,102,241,.28);
+  --aeos-grad-mesh:
+    radial-gradient(ellipse 80% 60% at 50% 0%,  rgba(0,229,255,.10),transparent 65%),
+    radial-gradient(ellipse 50% 50% at 85% 55%, rgba(99,102,241,.07),transparent 55%),
+    radial-gradient(ellipse 40% 50% at 10% 70%, rgba(139,92,246,.06),transparent 55%);
   --aeos-glow-cyan:      0 0 24px rgba(99,102,241,.30);
   --aeos-glow-cyan-l:    0 0 40px rgba(99,102,241,.50);
 }

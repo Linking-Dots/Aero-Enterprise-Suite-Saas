@@ -18,19 +18,19 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: .4rem 0;
+  padding: var(--aeos-space-2) 0;
   text-decoration: none;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, .3));
+  filter: drop-shadow(0 0 10px var(--aeos-primary-tint));
   transition: filter var(--aeos-dur-base) var(--aeos-ease-out);
 }
 .aeos-app-brand:hover {
-  filter: drop-shadow(0 0 16px rgba(0, 229, 255, .55));
+  filter: drop-shadow(0 0 16px var(--aeos-primary-glow));
 }
 
 /* ── Topbar page title ───────────────────────────────────────── */
 .aeos-app-topbar-title {
   font-family: var(--aeos-font-display);
-  font-size: .975rem;
+  font-size: var(--aeos-text-base);
   font-weight: 600;
   letter-spacing: -.01em;
   color: var(--aeos-text-primary);
@@ -45,16 +45,16 @@
 /* ── User pill (avatar + name + logout) ──────────────────────── */
 .aeos-app-user-pill {
   border-radius: var(--aeos-r-lg);
-  padding: .2rem .5rem;
+  padding: var(--aeos-space-1) var(--aeos-space-2);
   transition: background var(--aeos-dur-fast) var(--aeos-ease-out);
 }
 .aeos-app-user-pill:hover {
-  background: rgba(255, 255, 255, .06);
+  background: var(--aeos-bg-hover);
 }
 
 /* ── User text (name + role) ─────────────────────────────────── */
 .aeos-app-user-info {
-  max-width: 130px;
+  max-width: var(--aeos-space-32);
 }
 .aeos-app-user-info span {
   display: block;

@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Badge Styles (Phase 2)
+   aeos365 — Badge Styles (Phase 2)
    Color variants: cyan, amber, indigo, success, danger
    Special: mono (uppercase JetBrains Mono labels)
    Dot pulse: .aeos-badge-dot (animated status indicator)
@@ -9,11 +9,11 @@
 .aeos-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
+  gap: var(--aeos-space-1);
+  padding: var(--aeos-pad-badge-y) var(--aeos-pad-badge-x);
   border-radius: var(--aeos-r-full);
   font-family: var(--aeos-font-body);
-  font-size: 0.72rem;
+  font-size: var(--aeos-text-xs);
   font-weight: 500;
   letter-spacing: 0.02em;
   border: 1px solid;
@@ -23,15 +23,15 @@
 
 /* ── Cyan (primary — links, highlights, active state) ────────── */
 .aeos-badge-cyan {
-  background: rgba(0, 229, 255, 0.08);
-  border-color: rgba(0, 229, 255, 0.20);
+  background: var(--aeos-primary-tint);
+  border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
 }
 
 /* ── Amber (money, payroll, finance, warnings) ───────────────── */
 .aeos-badge-amber {
-  background: rgba(255, 179, 71, 0.08);
-  border-color: rgba(255, 179, 71, 0.22);
+  background: var(--aeos-warning-tint);
+  border-color: var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }
 
@@ -44,47 +44,47 @@
 
 /* ── Success ─────────────────────────────────────────────────── */
 .aeos-badge-success {
-  background: rgba(34, 197, 94, 0.10);
-  border-color: rgba(34, 197, 94, 0.25);
+  background: var(--aeos-success-tint);
+  border-color: var(--aeos-success-border);
   color: var(--aeos-success);
 }
 
 /* ── Danger / Destructive ────────────────────────────────────── */
 .aeos-badge-danger {
-  background: rgba(255, 107, 107, 0.10);
-  border-color: rgba(255, 107, 107, 0.25);
+  background: var(--aeos-danger-tint);
+  border-color: var(--aeos-danger-border);
   color: var(--aeos-destructive);
 }
 
 /* ── Warning (amber alias — keeps semantic clarity) ──────────── */
 .aeos-badge-warning {
-  background: rgba(255, 179, 71, 0.08);
-  border-color: rgba(255, 179, 71, 0.22);
+  background: var(--aeos-warning-tint);
+  border-color: var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }
 
 /* ── Neutral / Muted (secondary labels) ─────────────────────── */
 .aeos-badge-neutral {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.10);
+  background: var(--aeos-bg-tint);
+  border-color: var(--aeos-border-base);
   color: var(--aeos-text-secondary);
 }
 
 /* ── Mono (uppercase label — use for system statuses, env tags) ─ */
 .aeos-badge-mono {
   font-family: var(--aeos-font-mono);
-  font-size: 0.65rem;
+  font-size: var(--aeos-text-2xs);
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  background: rgba(0, 229, 255, 0.08);
-  border-color: rgba(0, 229, 255, 0.20);
+  background: var(--aeos-primary-tint);
+  border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
 }
 
 /* Mono variant applied alongside a color variant */
 .aeos-badge-amber.aeos-badge-mono {
-  background: rgba(255, 179, 71, 0.08);
-  border-color: rgba(255, 179, 71, 0.22);
+  background: var(--aeos-warning-tint);
+  border-color: var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }
 
@@ -95,14 +95,14 @@
 }
 
 .aeos-badge-success.aeos-badge-mono {
-  background: rgba(34, 197, 94, 0.10);
-  border-color: rgba(34, 197, 94, 0.25);
+  background: var(--aeos-success-tint);
+  border-color: var(--aeos-success-border);
   color: var(--aeos-success);
 }
 
 .aeos-badge-danger.aeos-badge-mono {
-  background: rgba(255, 107, 107, 0.10);
-  border-color: rgba(255, 107, 107, 0.25);
+  background: var(--aeos-danger-tint);
+  border-color: var(--aeos-danger-border);
   color: var(--aeos-destructive);
 }
 
@@ -120,11 +120,11 @@
 
 /* ── Size Modifiers ─────────────────────────────────────────── */
 .aeos-badge-sm {
-  font-size: 0.62rem;
-  padding: 0.18rem 0.5rem;
+  font-size: var(--aeos-text-2xs);
+  padding: var(--aeos-space-0-5) var(--aeos-space-2);
 }
 
 .aeos-badge-lg {
-  font-size: 0.8rem;
-  padding: 0.35rem 0.85rem;
+  font-size: var(--aeos-text-xs);
+  padding: var(--aeos-space-1) var(--aeos-space-3);
 }

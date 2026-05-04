@@ -185,9 +185,8 @@ export function FloatingShell({
         })}
       </nav>
       <main className="aeos-shell-content">
-        {(brand || actions) && (
+        {actions && (
           <div className="aeos-shell-topbar">
-            {brand}
             <span style={{ flex: 1 }} />
             {actions}
           </div>

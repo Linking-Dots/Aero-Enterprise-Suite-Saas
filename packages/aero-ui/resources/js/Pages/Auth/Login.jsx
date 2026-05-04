@@ -88,7 +88,7 @@ export default function Login({ canResetPassword, status, canRegister, oauthProv
       {canRegister && (
         <div className="al-links">
           <Text tone="secondary">
-            New to AEOS365?{' '}
+            New to aeos365?{' '}
             <Link href={route('register')} className="al-link">Create an account</Link>
           </Text>
         </div>

@@ -1,18 +1,19 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Form Controls (Phase 2)
+   aeos365 — Form Controls (Phase 2)
    Input, Label, Checkbox/Radio, Toggle, Select
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Text Input / Textarea ───────────────────────────────────── */
 .aeos-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: var(--aeos-bg-tint);
+  border: 1px solid var(--aeos-border-base);
   color: var(--aeos-text-primary);
   border-radius: var(--aeos-r-md);
-  padding: 0.65rem 0.9rem;
+  padding: var(--aeos-pad-input-y) var(--aeos-pad-input-x);
   font-family: var(--aeos-font-body);
-  font-size: 0.925rem;
+  font-size: var(--aeos-text-sm);
+  height: var(--aeos-h-input);
   outline: none;
   transition:
     border-color  var(--aeos-dur-fast) var(--aeos-ease-out),
@@ -25,13 +26,13 @@
 }
 
 .aeos-input:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--aeos-border-strong);
 }
 
 .aeos-input:focus {
   border-color: rgba(0, 229, 255, 0.50);
-  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px var(--aeos-primary-bg);
+  background: var(--aeos-bg-hover);
 }
 
 .aeos-input:disabled {
@@ -41,13 +42,14 @@
 
 .aeos-input.error {
   border-color: rgba(255, 107, 107, 0.50);
-  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.10);
+  box-shadow: 0 0 0 3px var(--aeos-danger-tint);
 }
 
 textarea.aeos-input {
   resize: vertical;
   min-height: 100px;
-  line-height: 1.6;
+  line-height: var(--aeos-leading-relaxed);
+  height: auto;
 }
 
 /* ── Label ───────────────────────────────────────────────────── */
@@ -55,9 +57,9 @@ textarea.aeos-input {
   display: block;
   font-family: var(--aeos-font-body);
   font-weight: 500;
-  font-size: 0.8rem;
+  font-size: var(--aeos-text-xs);
   color: var(--aeos-text-secondary);
-  margin-bottom: 0.4rem;
+  margin-bottom: var(--aeos-space-1);
 }
 
 .aeos-label-required::after {
@@ -69,24 +71,24 @@ textarea.aeos-input {
 .aeos-field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--aeos-space-1);
 }
 
 .aeos-field-hint {
-  font-size: 0.75rem;
+  font-size: var(--aeos-text-xs);
   color: var(--aeos-text-tertiary);
 }
 
 .aeos-field-error {
-  font-size: 0.75rem;
+  font-size: var(--aeos-text-xs);
   color: var(--aeos-destructive);
 }
 
 /* ── Checkbox / Radio (native, accent-colored) ───────────────── */
 input[type="checkbox"],
 input[type="radio"] {
-  width: 18px;
-  height: 18px;
+  width: var(--aeos-icon-sm);
+  height: var(--aeos-icon-sm);
   cursor: pointer;
   accent-color: var(--aeos-primary);
   flex-shrink: 0;
@@ -96,9 +98,9 @@ input[type="radio"] {
 .aeos-check-label {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--aeos-gap-items);
   font-family: var(--aeos-font-body);
-  font-size: 0.9rem;
+  font-size: var(--aeos-text-sm);
   color: var(--aeos-text-primary);
   cursor: pointer;
   user-select: none;
@@ -127,8 +129,8 @@ input[type="radio"] {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: var(--aeos-bg-active);
+  border: 1px solid var(--aeos-border-base);
   transition:
     background-color var(--aeos-dur-fast) var(--aeos-ease-out),
     border-color     var(--aeos-dur-fast) var(--aeos-ease-out);
@@ -187,16 +189,16 @@ select.aeos-input {
 }
 
 .aeos-input-group .aeos-input {
-  padding-left: 2.5rem;
+  padding-left: var(--aeos-space-10);
 }
 
 .aeos-input-group-icon {
   position: absolute;
-  left: 0.75rem;
+  left: var(--aeos-space-3);
   color: var(--aeos-text-tertiary);
   pointer-events: none;
-  width: 16px;
-  height: 16px;
+  width: var(--aeos-icon-sm);
+  height: var(--aeos-icon-sm);
   flex-shrink: 0;
 }
 
@@ -207,11 +209,11 @@ select.aeos-input {
 }
 
 .aeos-input-addon-text {
-  padding: 0.65rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  padding: var(--aeos-pad-input-y) var(--aeos-pad-input-x);
+  background: var(--aeos-bg-tint);
+  border: 1px solid var(--aeos-border-base);
   color: var(--aeos-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--aeos-text-sm);
   white-space: nowrap;
 }
 
@@ -238,30 +240,30 @@ select.aeos-input {
 }
 
 /* ── OTP Input Grid ──────────────────────────────────────────── */
-.aeos-otp-grid { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.aeos-otp-grid { display:flex; gap:var(--aeos-space-3); justify-content:center; flex-wrap:wrap; }
 .aeos-otp-input {
   width:52px; height:56px; text-align:center;
-  font-size:1.5rem; font-family:var(--aeos-font-mono); font-weight:600;
-  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10);
+  font-size:var(--aeos-text-2xl); font-family:var(--aeos-font-mono); font-weight:600;
+  background:var(--aeos-bg-tint); border:1px solid var(--aeos-border-base);
   color:var(--aeos-text-primary); border-radius:var(--aeos-r-md); outline:none;
   transition:border-color var(--aeos-dur-fast), box-shadow var(--aeos-dur-fast);
 }
 .aeos-otp-input:focus {
-  border-color:rgba(0,229,255,.50); box-shadow:0 0 0 3px rgba(0,229,255,.12);
+  border-color:rgba(0,229,255,.50); box-shadow:0 0 0 3px var(--aeos-primary-bg);
 }
 .aeos-otp-input.error {
-  border-color:rgba(255,107,107,.50); box-shadow:0 0 0 3px rgba(255,107,107,.10);
+  border-color:rgba(255,107,107,.50); box-shadow:0 0 0 3px var(--aeos-danger-tint);
   animation:aeos-shake 240ms var(--aeos-ease-out);
 }
 
 /* ── Password Strength Meter ────────────────────────────────── */
-.aeos-strength-bars { display:flex; gap:4px; }
-.aeos-strength-bar { flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,.08); transition:background var(--aeos-dur-fast); }
+.aeos-strength-bars { display:flex; gap:var(--aeos-space-1); }
+.aeos-strength-bar { flex:1; height:4px; border-radius:2px; background:var(--aeos-bg-hover); transition:background var(--aeos-dur-fast); }
 .aeos-strength-bar.is-weak    { background:var(--aeos-destructive); }
 .aeos-strength-bar.is-fair    { background:var(--aeos-secondary); }
 .aeos-strength-bar.is-good    { background:var(--aeos-primary); }
 .aeos-strength-bar.is-strong  { background:var(--aeos-success); }
-.aeos-strength-label { font-size:0.72rem; font-family:var(--aeos-font-mono); color:var(--aeos-text-tertiary); margin-top:4px; }
+.aeos-strength-label { font-size:var(--aeos-text-xs); font-family:var(--aeos-font-mono); color:var(--aeos-text-tertiary); margin-top:var(--aeos-space-1); }
 
 /* ── Light mode overrides ────────────────────────────────────── */
 .aeos--light .aeos-otp-input { background:rgba(15,23,42,.03); border-color:rgba(15,23,42,.12); color:var(--aeos-text-primary); }

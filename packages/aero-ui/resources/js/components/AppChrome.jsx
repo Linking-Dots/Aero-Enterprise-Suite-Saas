@@ -16,7 +16,7 @@ import { Icon } from '../icons/icons.jsx';
 
 // ─── AeosLogo ─────────────────────────────────────────────────────────────────
 /**
- * The AEOS365 SVG logo mark — gradient tile with triangle glyph.
+ * The aeos365 SVG logo mark — gradient tile with triangle glyph.
  * Used across app shell, auth layout, install layout, and registration layout.
  *
  * @prop {number} size  Width/height in px (default 28)

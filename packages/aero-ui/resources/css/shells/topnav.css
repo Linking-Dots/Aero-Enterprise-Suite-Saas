@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   AEOS365 — Shell: Top Navigation (Phase 2)
+   aeos365 — Shell: Top Navigation (Phase 2)
    Full-width nav bar + scrollable content area.
    Usage: <div data-aeos-shell="topnav">
             <div class="aeos-shell-topbar">
@@ -26,14 +26,14 @@
   display: flex;
   align-items: center;
   height: var(--aeos-shell-topnav-h, 48px);
-  padding: 0 20px;
+  padding: 0 var(--aeos-space-5);
   background: var(--aeos-shell-topbar-bg);
   border-bottom: 1px solid var(--aeos-divider);
-  gap: 16px;
+  gap: var(--aeos-space-4);
   flex-shrink: 0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--aeos-z-sticky);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -42,20 +42,20 @@
 [data-aeos-shell="topnav"] .aeos-shell-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--aeos-space-3);
   flex-shrink: 0;
   text-decoration: none;
   color: var(--aeos-text-primary);
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: var(--aeos-text-base);
 }
 
 /* ── Nav Links ───────────────────────────────────────────────── */
 [data-aeos-shell="topnav"] .aeos-shell-nav {
   display: flex;
-  gap: 24px;
+  gap: var(--aeos-space-6);
   flex: 1;
-  padding-left: 16px;
+  padding-left: var(--aeos-space-4);
   height: 100%;
   align-items: stretch;
   overflow-x: auto;
@@ -70,7 +70,7 @@
   height: 100%;
   display: inline-flex;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: var(--aeos-text-sm);
   color: var(--aeos-text-secondary);
   cursor: pointer;
   position: relative;
@@ -108,7 +108,7 @@
 [data-aeos-shell="topnav"] .aeos-shell-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--aeos-space-2);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -118,12 +118,12 @@
   display: flex;
   align-items: center;
   height: 40px;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--aeos-divider);
+  padding: 0 var(--aeos-space-5);
+  gap: var(--aeos-space-3);
+  font-size: var(--aeos-text-xs);
   background: var(--aeos-shell-panel-bg);
-  gap: 12px;
+  border-bottom: 1px solid var(--aeos-divider);
   flex-shrink: 0;
-  font-size: 0.82rem;
   color: var(--aeos-text-secondary);
 }
 
@@ -131,7 +131,7 @@
 [data-aeos-shell="topnav"] .aeos-shell-content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: var(--aeos-space-5);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -141,15 +141,15 @@
   [data-aeos-shell="topnav"] .aeos-shell-topbar {
     flex-wrap: wrap;
     height: auto;
-    padding: 12px 16px;
+    padding: var(--aeos-space-3) var(--aeos-space-4);
   }
 
   [data-aeos-shell="topnav"] .aeos-shell-nav {
     padding-left: 0;
-    gap: 16px;
+    gap: var(--aeos-space-4);
     order: 3;
     width: 100%;
-    padding-bottom: 4px;
+    padding-bottom: var(--aeos-space-1);
   }
 
   [data-aeos-shell="topnav"] .aeos-shell-actions {

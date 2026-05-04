@@ -267,6 +267,7 @@ function mapResultIcon(icon, type) {
     User: 'user',
     'Audit Log': 'document',
     Role: 'lockClosed',
+    Tag: 'tag',
   };
   return fallback[type] || 'document';
 }

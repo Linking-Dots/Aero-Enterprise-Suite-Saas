@@ -171,7 +171,7 @@ export function Avatar({
   return (
     <span
       className={cx('aeos-avatar', toneClass, className)}
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
+      style={{ width: size, height: size, fontSize: Math.round((size || 32) * 0.38) }}
       title={name}
       aria-label={name}
       {...rest}

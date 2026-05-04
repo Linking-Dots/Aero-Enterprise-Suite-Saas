@@ -1,6 +1,6 @@
 ---
 name: monorepo-architect
-description: "Enforce AEOS365 monorepo package boundaries, service provider naming, host-app isolation, and cross-package contract patterns. Detect host-app leakage and circular dependencies."
+description: "Enforce aeos365 monorepo package boundaries, service provider naming, host-app isolation, and cross-package contract patterns. Detect host-app leakage and circular dependencies."
 ---
 
 # Monorepo Architect Skill

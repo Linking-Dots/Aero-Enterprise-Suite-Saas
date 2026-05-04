@@ -1,9 +1,9 @@
 /* ── Spinner ──────────────────────────────────────────────────── */
-.aeos-spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.2); border-top-color:currentColor; border-radius:50%; animation:aeos-spin .7s linear infinite; flex-shrink:0; }
+.aeos-spinner { display:inline-block; width:var(--aeos-icon-sm); height:var(--aeos-icon-sm); border:2px solid var(--aeos-border-base); border-top-color:currentColor; border-radius:50%; animation:aeos-spin .7s linear infinite; flex-shrink:0; }
 
 /* ── Icon button ─────────────────────────────────────────────── */
-.aeos-icon-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:var(--aeos-r-md); background:transparent; border:none; color:var(--aeos-text-secondary); cursor:pointer; transition:background var(--aeos-dur-fast) var(--aeos-ease-out),color var(--aeos-dur-fast) var(--aeos-ease-out); flex-shrink:0; }
-.aeos-icon-btn:hover { background:rgba(255,255,255,.06); color:var(--aeos-text-primary); }
+.aeos-icon-btn { display:inline-flex; align-items:center; justify-content:center; width:var(--aeos-space-8); height:var(--aeos-space-8); border-radius:var(--aeos-r-md); background:transparent; border:none; color:var(--aeos-text-secondary); cursor:pointer; transition:background var(--aeos-dur-fast) var(--aeos-ease-out),color var(--aeos-dur-fast) var(--aeos-ease-out); flex-shrink:0; }
+.aeos-icon-btn:hover { background:var(--aeos-bg-hover); color:var(--aeos-text-primary); }
 
 /* ── Button extras ───────────────────────────────────────────── */
 .aeos-btn-full { width:100%; justify-content:center; }
