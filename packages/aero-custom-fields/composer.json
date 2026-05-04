@@ -1,0 +1,21 @@
+{
+    "name": "aero/custom-fields",
+    "description": "Custom Fields System for aeos365 - cross-module custom field definitions, field types, and validation rules",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Aero\\CustomFields\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\CustomFields\\Providers\\CustomFieldsServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    }
+}

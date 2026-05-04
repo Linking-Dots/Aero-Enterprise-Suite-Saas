@@ -164,3 +164,7 @@ export function useReducedMotion() {
 /* ── HRMAC permissions ────────────────────────────────────────────── */
 
 export { useHRMAC, useHRMACMany } from './useHRMAC.js';
+
+/* ── Saved Views ─────────────────────────────────────────────────── */
+
+export { useSavedViews } from './useSavedViews.js';

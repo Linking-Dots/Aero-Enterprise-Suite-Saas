@@ -1,0 +1,21 @@
+{
+    "name": "aero/forms",
+    "description": "Dynamic Form Builder for aeos365 - cross-module form builder with templates, validations, and PDF generation",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Aero\\Forms\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\Forms\\Providers\\FormsServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    }
+}

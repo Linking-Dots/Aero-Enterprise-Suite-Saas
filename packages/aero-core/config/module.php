@@ -49,7 +49,7 @@ return [
         'comments_mentions'          => true,
         'activity_feed'              => true,
         'help_support'               => true,
-        'data_privacy'               => true,
+        // 'data_privacy' => true, // DEPRECATED: Use aero-compliance package for GDPR/CCPA/HIPAA features
         'data_export_import'         => true,
         'trash_recycle_bin'          => true,
         'email_engine'               => true,
@@ -156,24 +156,7 @@ return [
                         ['code' => 'delete', 'name' => 'Delete Announcement'],
                     ],
                 ],
-                [
-                    'code' => 'hrm-dashboard',
-                    'name' => 'HRM Dashboard',
-                    'type' => 'page',
-                    'route' => '/hrm/dashboard',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View HRM Dashboard'],
-                    ],
-                ],
-                [
-                    'code' => 'employee-dashboard',
-                    'name' => 'Employee Dashboard',
-                    'type' => 'page',
-                    'route' => '/hrm/employee/dashboard',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Employee Dashboard'],
-                    ],
-                ],
+               
             ],
         ],
 
@@ -892,7 +875,7 @@ return [
             'priority' => 11,
             'components' => [
                 [
-                    'code' => 'approval_workflows', 'name' => 'Approval Workflows', 'type' => 'page', 'route' => '/workflows/approvals',
+                    'code' => 'workflows', 'name' => 'Workflow Definitions', 'type' => 'page', 'route' => '/workflows',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Workflows'],
                         ['code' => 'create', 'name' => 'Create Workflow'],
@@ -903,19 +886,28 @@ return [
                     ],
                 ],
                 [
-                    'code' => 'automations', 'name' => 'Automation Rules', 'type' => 'page', 'route' => '/workflows/automations',
+                    'code' => 'approvals', 'name' => 'My Approvals', 'type' => 'page', 'route' => '/workflow-instances/approvals',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View Automations'],
-                        ['code' => 'create', 'name' => 'Create Automation'],
-                        ['code' => 'update', 'name' => 'Update Automation'],
-                        ['code' => 'delete', 'name' => 'Delete Automation'],
+                        ['code' => 'view', 'name' => 'View Approvals'],
+                        ['code' => 'approve', 'name' => 'Approve'],
+                        ['code' => 'reject', 'name' => 'Reject'],
+                        ['code' => 'escalate', 'name' => 'Escalate'],
                     ],
                 ],
                 [
-                    'code' => 'workflow_runs', 'name' => 'Workflow Run History', 'type' => 'page', 'route' => '/workflows/runs',
+                    'code' => 'templates', 'name' => 'Workflow Templates', 'type' => 'page', 'route' => '/workflow-templates',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View Runs'],
-                        ['code' => 'retry', 'name' => 'Retry Run'],
+                        ['code' => 'view', 'name' => 'View Templates'],
+                        ['code' => 'create', 'name' => 'Create Template'],
+                        ['code' => 'update', 'name' => 'Update Template'],
+                        ['code' => 'delete', 'name' => 'Delete Template'],
+                    ],
+                ],
+                [
+                    'code' => 'instances', 'name' => 'Workflow Instances', 'type' => 'page', 'route' => '/workflow-instances',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Instances'],
+                        ['code' => 'retry', 'name' => 'Retry Instance'],
                     ],
                 ],
             ],
@@ -975,6 +967,9 @@ return [
                         ['code' => 'update', 'name' => 'Update View'],
                         ['code' => 'delete', 'name' => 'Delete View'],
                         ['code' => 'share', 'name' => 'Share View'],
+                        ['code' => 'apply', 'name' => 'Apply View'],
+                        ['code' => 'set_default', 'name' => 'Set as Default'],
+                        ['code' => 'duplicate', 'name' => 'Duplicate View'],
                     ],
                 ],
             ],
@@ -1233,80 +1228,17 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 2.10 Data & Privacy (GDPR / CCPA)
+        | 2.10 Data & Privacy (DEPRECATED - Moved to aero-compliance)
         |--------------------------------------------------------------------------
+        |
+        | GDPR/CCPA/HIPAA compliance features have been moved to aero-compliance package.
+        | This submodule is removed to prevent duplication and ensure compliance features
+        | are centralized in the appropriate domain package.
+        |
+        | For data export, DSAR, consent management, retention policies, and compliance
+        * mode, use the aero-compliance package which is the single source of truth for
+        * all regulatory compliance features.
         */
-        [
-            'code' => 'data_privacy',
-            'name' => 'Data & Privacy',
-            'description' => 'Data export, import, retention, DSAR, consent, trash/recycle bin',
-            'icon' => 'ShieldCheckIcon',
-            'route' => '/data-privacy',
-            'priority' => 21,
-            'components' => [
-                [
-                    'code' => 'data_export', 'name' => 'Data Export', 'type' => 'page', 'route' => '/data-privacy/export',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Exports'],
-                        ['code' => 'request', 'name' => 'Request Export'],
-                        ['code' => 'download', 'name' => 'Download Export'],
-                    ],
-                ],
-                [
-                    'code' => 'data_import', 'name' => 'Data Import', 'type' => 'page', 'route' => '/data-privacy/import',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Imports'],
-                        ['code' => 'upload', 'name' => 'Upload Import File'],
-                        ['code' => 'process', 'name' => 'Process Import'],
-                    ],
-                ],
-                [
-                    'code' => 'retention_policies', 'name' => 'Retention Policies', 'type' => 'page', 'route' => '/data-privacy/retention',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Policies'],
-                        ['code' => 'manage', 'name' => 'Manage Retention'],
-                    ],
-                ],
-                [
-                    'code' => 'dsar', 'name' => 'Data Subject Requests (DSAR)', 'type' => 'page', 'route' => '/data-privacy/dsar',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View DSARs'],
-                        ['code' => 'create', 'name' => 'Log DSAR'],
-                        ['code' => 'fulfill', 'name' => 'Fulfill Request'],
-                        ['code' => 'erase', 'name' => 'Right-to-Erasure Workflow'],
-                    ],
-                ],
-                [
-                    'code' => 'consent_management', 'name' => 'Consent Management', 'type' => 'page', 'route' => '/data-privacy/consent',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Consents'],
-                        ['code' => 'manage', 'name' => 'Manage Consents'],
-                    ],
-                ],
-                [
-                    'code' => 'cookie_consent', 'name' => 'Cookie Consent', 'type' => 'page', 'route' => '/data-privacy/cookies',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Cookie Settings'],
-                        ['code' => 'configure', 'name' => 'Configure Cookies Banner'],
-                    ],
-                ],
-                [
-                    'code' => 'trash', 'name' => 'Trash / Recycle Bin', 'type' => 'page', 'route' => '/data-privacy/trash',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Trash'],
-                        ['code' => 'restore', 'name' => 'Restore Item'],
-                        ['code' => 'purge', 'name' => 'Permanently Delete'],
-                    ],
-                ],
-                [
-                    'code' => 'compliance_mode', 'name' => 'Compliance Mode', 'type' => 'page', 'route' => '/data-privacy/compliance-mode',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Compliance Mode'],
-                        ['code' => 'enable', 'name' => 'Enable HIPAA / GDPR / SOX Mode'],
-                    ],
-                ],
-            ],
-        ],
 
         /*
         |--------------------------------------------------------------------------

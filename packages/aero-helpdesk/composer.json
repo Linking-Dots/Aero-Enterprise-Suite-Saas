@@ -1,0 +1,21 @@
+{
+    "name": "aero/helpdesk",
+    "description": "IT Helpdesk and Support for aeos365 - ticket management, SLA, knowledge base, agent assignment, and customer portal",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Aero\\Helpdesk\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\Helpdesk\\Providers\\HelpdeskServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    }
+}

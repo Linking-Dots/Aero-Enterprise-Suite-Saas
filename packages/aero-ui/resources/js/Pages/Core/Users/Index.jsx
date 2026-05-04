@@ -13,6 +13,7 @@ import {
   useToast,
   Card, CardContent,
   useHRMAC,
+  SavedViewsDropdown,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
@@ -55,6 +56,29 @@ export default function UsersIndex({ users, roles, filters, stats }) {
       only: ['users', 'filters'],
     });
   };
+
+  const handleApplySavedView = (config) => {
+    if (config.filters) {
+      setSearch(config.filters.search || '');
+      setStatus(config.filters.status || '');
+      setRole(config.filters.role || '');
+      router.get(route('core.users.index'), {
+        search: config.filters.search || '',
+        status: config.filters.status || '',
+        role: config.filters.role || '',
+      }, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['users', 'filters'],
+      });
+    }
+  };
+
+  const getCurrentFilters = () => ({
+    filters: { search, status, role },
+    sort: null,
+    columns: null,
+  });
 
   const toggleUserStatus = async (id, activate) => {
     try {
@@ -313,6 +337,12 @@ export default function UsersIndex({ users, roles, filters, stats }) {
           />
           <Button variant="secondary" onClick={applyFilters}>Filter</Button>
           <Button variant="ghost" onClick={resetFilters}>Reset</Button>
+          <SavedViewsDropdown
+            moduleCode="core"
+            route={route('core.users.index')}
+            currentFilters={getCurrentFilters()}
+            onApply={handleApplySavedView}
+          />
         </HStack>
 
         {/* Bulk actions */}

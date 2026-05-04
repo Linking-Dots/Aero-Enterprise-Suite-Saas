@@ -9,9 +9,15 @@ import {
   useToast,
 } from '@aero/ui';
 import App from '../../App.jsx';
+import { useHRMAC } from '../../../hooks/useHRMAC';
 
 export default function UsersShow({ user }) {
   const toast = useToast();
+  const canActivate = useHRMAC('core.user_management.users.activate');
+  const canDeactivate = useHRMAC('core.user_management.users.deactivate');
+  const canDelete = useHRMAC('core.user_management.users.delete');
+  const canEdit = useHRMAC('core.user_management.users.edit');
+  const canImpersonate = useHRMAC('core.user_management.users.impersonate');
 
   const toggleStatus = async () => {
     const activate = !!user.deleted_at || !user.active;
@@ -85,18 +91,26 @@ export default function UsersShow({ user }) {
       description="User profile and account details."
       actions={
         <HStack gap={2}>
-          <Button variant="secondary" onClick={() => router.visit(route('core.users.edit', user.id))}>
-            Edit
-          </Button>
-          <Button variant={isActive ? 'warning' : 'success'} onClick={toggleStatus}>
-            {isActive ? 'Deactivate' : 'Activate'}
-          </Button>
-          <Button variant="danger" onClick={deleteUser}>
-            Delete
-          </Button>
-          <Button variant="ghost" onClick={impersonate}>
-            Impersonate
-          </Button>
+          {canEdit && (
+            <Button variant="secondary" onClick={() => router.visit(route('core.users.edit', user.id))}>
+              Edit
+            </Button>
+          )}
+          {(isActive ? canDeactivate : canActivate) && (
+            <Button variant={isActive ? 'warning' : 'success'} onClick={toggleStatus}>
+              {isActive ? 'Deactivate' : 'Activate'}
+            </Button>
+          )}
+          {canDelete && (
+            <Button variant="danger" onClick={deleteUser}>
+              Delete
+            </Button>
+          )}
+          {canImpersonate && (
+            <Button variant="ghost" onClick={impersonate}>
+              Impersonate
+            </Button>
+          )}
         </HStack>
       }
     >

@@ -64,6 +64,7 @@ class Leave extends Model
         'rejection_reason',
         'rejected_by',
         'submitted_at',
+        'workflow_instance_id',
     ];
 
     protected $casts = [
@@ -128,6 +129,11 @@ class Leave extends Model
     public function rejectedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function workflowInstance(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\Aero\Workflow\Models\WorkflowInstance::class, 'workflow_instance_id');
     }
 
     // Accessors

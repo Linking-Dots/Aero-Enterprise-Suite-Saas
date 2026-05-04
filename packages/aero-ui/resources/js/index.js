@@ -84,6 +84,7 @@ export { Toast, useToast }                  from './components/Feedback.jsx';
 export {
   useBreakpoint, useReducedMotion, useMediaQuery,
   useHRMAC, useHRMACMany,
+  useSavedViews,
 }                                           from './hooks/index.js';
 
 // ── Icons ─────────────────────────────────────────────────────────
@@ -99,6 +100,14 @@ export { default as SearchOverlay }         from './components/SearchOverlay.jsx
 
 // ── Tags & Labels ───────────────────────────────────────────
 export { default as TagPicker }             from './components/TagPicker.jsx';
+
+// ── Saved Views ────────────────────────────────────────────
+export {
+  SavedViewsDropdown,
+  SaveCurrentViewDialog,
+  SavedViewsList,
+  ShareViewDialog,
+}                                           from './components/SavedViews.jsx';
 
 // ── Public (Marketing) Components ────────────────────────────────
 export {

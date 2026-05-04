@@ -47,6 +47,7 @@ use Aero\HRM\Listeners\HrmEventSubscriber;
 use Aero\HRM\Listeners\Leave\NotifyEmployeeOfLeaveApproval;
 use Aero\HRM\Listeners\Leave\NotifyEmployeeOfLeaveRejection;
 use Aero\HRM\Listeners\Leave\NotifyOnLeaveCancellation;
+use Aero\HRM\Listeners\Leave\StartWorkflowOnLeaveRequest;
 use Aero\HRM\Listeners\Leave\UpdateBalanceOnLeaveApproval;
 use Aero\HRM\Listeners\Leave\UpdateBalanceOnLeaveCancellation;
 use Aero\HRM\Listeners\Leave\UpdateBalanceOnLeaveRejection;
@@ -191,6 +192,7 @@ class HrmEventServiceProvider extends ServiceProvider
         LeaveRequested::class => [
             UpdateBalanceOnLeaveRequest::class,
             NotifyManagerOfLeaveRequest::class,
+            StartWorkflowOnLeaveRequest::class,
         ],
 
         LeaveApproved::class => [

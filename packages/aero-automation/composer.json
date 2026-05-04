@@ -1,0 +1,21 @@
+{
+    "name": "aero/automation",
+    "description": "Business Process Automation for aeos365 - scheduled tasks, RPA, event triggers, webhooks, and API automation",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Aero\\Automation\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\Automation\\Providers\\AutomationServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    }
+}

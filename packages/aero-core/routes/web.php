@@ -5,7 +5,9 @@ use Aero\Core\Http\Controllers\Admin\CoreUserController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
 use Aero\Core\Http\Controllers\Admin\ModuleController;
 use Aero\Core\Http\Controllers\Admin\RoleController;
+use Aero\Core\Http\Controllers\Admin\SavedViewController;
 use Aero\Core\Http\Controllers\Admin\TagController;
+use Aero\Core\Http\Controllers\CustomFieldController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
@@ -423,6 +425,59 @@ Route::middleware('auth:web')->group(function () {
                 ->middleware('hrmac:core.tags_labels.tag_management.create');
             Route::get('/counts', [TagController::class, 'taggableCounts'])->name('counts');
         });
+
+    // ========================================================================
+    // CUSTOM FIELDS
+    // ========================================================================
+    Route::prefix('custom-fields')->name('core.custom-fields.')->middleware('hrmac:core.custom_fields.field_definitions.view')->group(function () {
+        Route::get('/', [CustomFieldController::class, 'index'])->name('index');
+        Route::post('/', [CustomFieldController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.custom_fields.field_definitions.create');
+        Route::get('/{id}', [CustomFieldController::class, 'show'])->name('show');
+        Route::put('/{id}', [CustomFieldController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.custom_fields.field_definitions.update');
+        Route::delete('/{id}', [CustomFieldController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.custom_fields.field_definitions.delete');
+        
+        // API endpoints for entity integration
+        Route::get('/api/fields', [CustomFieldController::class, 'getFieldsForEntity'])->name('api.fields');
+        Route::get('/api/values', [CustomFieldController::class, 'getValuesForEntity'])->name('api.values');
+        Route::post('/api/values', [CustomFieldController::class, 'saveValues'])->name('api.values.save');
+    });
+
+    // ========================================================================
+    // SAVED VIEWS & FILTERS
+    // ========================================================================
+    Route::prefix('saved-views')->name('core.saved-views.')->middleware('hrmac:core.saved_views.views.view')->group(function () {
+        Route::get('/', [SavedViewController::class, 'index'])->name('index');
+        Route::post('/', [SavedViewController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.saved_views.views.create');
+        Route::get('/{savedView}', [SavedViewController::class, 'show'])
+            ->name('show')
+            ->middleware('hrmac:core.saved_views.views.view');
+        Route::put('/{savedView}', [SavedViewController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.saved_views.views.update');
+        Route::delete('/{savedView}', [SavedViewController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.saved_views.views.delete');
+        Route::post('/{savedView}/apply', [SavedViewController::class, 'apply'])
+            ->name('apply')
+            ->middleware('hrmac:core.saved_views.views.view');
+        Route::post('/{savedView}/default', [SavedViewController::class, 'setAsDefault'])
+            ->name('set-default')
+            ->middleware('hrmac:core.saved_views.views.update');
+        Route::post('/{savedView}/share', [SavedViewController::class, 'share'])
+            ->name('share')
+            ->middleware('hrmac:core.saved_views.views.share');
+        Route::post('/{savedView}/duplicate', [SavedViewController::class, 'duplicate'])
+            ->name('duplicate')
+            ->middleware('hrmac:core.saved_views.views.create');
+    });
 
     // ========================================================================
     // NOTIFICATIONS MANAGEMENT

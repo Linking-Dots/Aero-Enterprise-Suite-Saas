@@ -17,6 +17,7 @@ import {
   useToast,
 } from '@aero/ui';
 import App from '../../App.jsx';
+import { useHRMAC } from '../../../hooks/useHRMAC';
 
 const TAB_ALL = 'all';
 const TAB_UNREAD = 'unread';
@@ -24,6 +25,8 @@ const TAB_READ = 'read';
 
 export default function NotificationsIndex() {
   const toast = useToast();
+  const canMarkRead = useHRMAC('core.self_service.my-notifications.mark_read');
+  const canDelete = useHRMAC('core.self_service.my-notifications.view');
 
   const [activeTab, setActiveTab] = useState(TAB_ALL);
   const [notifications, setNotifications] = useState([]);
@@ -171,14 +174,16 @@ export default function NotificationsIndex() {
       align: 'right',
       render: (row) => (
         <HStack gap={2} justify="end">
-          {!row.read_at && (
+          {!row.read_at && canMarkRead && (
             <Button variant="secondary" size="sm" onClick={() => markAsRead(row.id)}>
               Mark Read
             </Button>
           )}
-          <Button variant="danger" size="sm" onClick={() => deleteNotification(row.id)}>
-            Delete
-          </Button>
+          {canDelete && (
+            <Button variant="danger" size="sm" onClick={() => deleteNotification(row.id)}>
+              Delete
+            </Button>
+          )}
         </HStack>
       ),
     },
@@ -199,7 +204,7 @@ export default function NotificationsIndex() {
       ]}
       description="View and manage your notifications."
       actions={
-        unreadCount > 0 && (
+        unreadCount > 0 && canMarkRead && (
           <Button variant="primary" onClick={markAllAsRead}>
             Mark All as Read ({unreadCount})
           </Button>

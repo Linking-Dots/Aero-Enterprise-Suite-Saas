@@ -13,17 +13,18 @@ return [
     |
     | Hierarchy: Module → SubModule → Component → Action
     |
-    | Scope: 'platform' - Platform admin module (landlord scope)
+    | Scope: 'infrastructure' - Infrastructure layer, not a marketplace module
+    | CMS is a platform feature for marketing/help center, not a tenant module.
     |
     */
 
     'code' => 'cms',
-    'scope' => 'platform',
-    'name' => 'Content Management',
-    'description' => 'Visual page builder with HeroUI blocks for public pages',
+    'scope' => 'infrastructure',
+    'name' => 'Content Management Infrastructure',
+    'description' => 'Visual page builder with HeroUI blocks for public pages, marketing, and help center. Platform infrastructure, not a tenant-purchasable module.',
     'icon' => 'DocumentTextIcon',
     'route_prefix' => '/admin/cms',
-    'category' => 'platform',
+    'category' => 'infrastructure',
     'priority' => 50,
     'is_core' => false,
     'is_active' => true,
@@ -33,6 +34,7 @@ return [
     'dependencies' => ['platform'],
     'release_date' => '2026-01-16',
     'enabled' => true,
+    'marketplace_visible' => false,
 
     'features' => [
         'dashboard'           => true,

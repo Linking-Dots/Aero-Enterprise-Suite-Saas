@@ -1,0 +1,21 @@
+{
+    "name": "aero/workflow",
+    "description": "Workflow Engine for aeos365 - approval workflows, business rules, automation triggers",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Aero\\Workflow\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\Workflow\\Providers\\WorkflowServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    }
+}
