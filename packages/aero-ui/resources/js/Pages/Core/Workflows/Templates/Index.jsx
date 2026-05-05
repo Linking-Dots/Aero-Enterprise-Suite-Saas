@@ -15,8 +15,8 @@ import App from '../../../App.jsx';
 import { useHRMAC } from '../../../../hooks/useHRMAC';
 
 export default function WorkflowTemplatesIndex({ templates, filters }) {
-  const canCreate = useHRMAC('core.workflow_engine.templates.create');
-  const canDelete = useHRMAC('core.workflow_engine.templates.delete');
+  const canCreate = useHRMAC('workflow.workflows.templates.create');
+  const canDelete = useHRMAC('workflow.workflows.templates.delete');
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const form = useForm({

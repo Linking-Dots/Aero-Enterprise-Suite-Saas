@@ -15,10 +15,10 @@ import App from '../../App.jsx';
 import { useHRMAC } from '../../../hooks/useHRMAC';
 
 export default function WorkflowsIndex({ workflows, templates, filters }) {
-  const canCreate = useHRMAC('core.workflow_engine.workflows.create');
-  const canActivate = useHRMAC('core.workflow_engine.workflows.activate');
-  const canDeactivate = useHRMAC('core.workflow_engine.workflows.deactivate');
-  const canDelete = useHRMAC('core.workflow_engine.workflows.delete');
+  const canCreate = useHRMAC('workflow.workflows.definitions.create');
+  const canActivate = useHRMAC('workflow.workflows.definitions.activate');
+  const canDeactivate = useHRMAC('workflow.workflows.definitions.deactivate');
+  const canDelete = useHRMAC('workflow.workflows.definitions.delete');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Aero\Core\Services;
+namespace Aero\CustomFields\Services;
 
-use Aero\Core\Models\CustomField;
-use Aero\Core\Models\CustomFieldValue;
+use Aero\CustomFields\Models\CustomField;
+use Aero\CustomFields\Models\CustomFieldValue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

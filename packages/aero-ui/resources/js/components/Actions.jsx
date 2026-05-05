@@ -9,7 +9,6 @@
  */
 
 import { forwardRef } from 'react';
-import { Icon } from '../icons/icons.jsx';
 import { cx } from './Primitives.jsx';
 
 /* ── Intent → CSS class maps ──────────────────────────────────────────── */
@@ -42,8 +41,8 @@ const BUTTON_SIZE_CLASS = {
  * @param {object}   props
  * @param {'primary'|'ghost'|'soft'|'amber'|'danger'} [props.intent='primary']
  * @param {'sm'|'md'|'lg'|'icon'} [props.size='md']
- * @param {string}   [props.leftIcon]   - Icon name rendered before text
- * @param {string}   [props.rightIcon]  - Icon name rendered after text
+ * @param {React.ReactNode} [props.leftIcon]   - Icon component rendered before text
+ * @param {React.ReactNode} [props.rightIcon]  - Icon component rendered after text
  * @param {boolean}  [props.loading]    - Shows spinner, disables interaction
  * @param {boolean}  [props.disabled]
  * @param {boolean}  [props.fullWidth]  - Stretches to container width
@@ -104,11 +103,15 @@ export const Button = forwardRef(function Button(
         <span className="aeos-spinner" aria-hidden="true" />
       )}
       {!loading && leftIcon && (
-        <Icon name={leftIcon} size={iconSize} className="aeos-btn-icon-left" />
+        <span className="aeos-btn-icon-left" style={{ fontSize: iconSize, lineHeight: 1 }}>
+          {leftIcon}
+        </span>
       )}
       {children && <span className="aeos-btn-label">{children}</span>}
       {!loading && rightIcon && (
-        <Icon name={rightIcon} size={iconSize} className="aeos-btn-icon-right" />
+        <span className="aeos-btn-icon-right" style={{ fontSize: iconSize, lineHeight: 1 }}>
+          {rightIcon}
+        </span>
       )}
     </Element>
   );
@@ -122,7 +125,7 @@ export const Button = forwardRef(function Button(
  * `IconButton` — square action button with a single centered icon.
  *
  * @param {object}   props
- * @param {string}   props.icon        - Icon name (required)
+ * @param {React.ReactNode} props.icon        - Icon component (required)
  * @param {string}   props.label       - aria-label (required for accessibility)
  * @param {'ghost'|'soft'|'primary'} [props.intent='ghost']
  * @param {'sm'|'md'} [props.size='md']
@@ -161,7 +164,9 @@ export const IconButton = forwardRef(function IconButton(
       )}
       {...rest}
     >
-      <Icon name={icon} size={iconSize} />
+      <span style={{ fontSize: iconSize, lineHeight: 1 }}>
+        {icon}
+      </span>
     </button>
   );
 });
@@ -214,8 +219,8 @@ const LINK_UNDERLINE_CLASS = {
  * @param {object}   props
  * @param {string}   props.href
  * @param {boolean}  [props.external]             - Adds target="_blank" rel="noopener noreferrer" and external icon
- * @param {string}   [props.leftIcon]
- * @param {string}   [props.rightIcon]
+ * @param {React.ReactNode} [props.leftIcon]
+ * @param {React.ReactNode} [props.rightIcon]
  * @param {'primary'|'muted'} [props.intent='primary']
  * @param {'hover'|'always'|'none'} [props.underline='hover']
  * @param {string}   [props.className]
@@ -248,12 +253,16 @@ export const Link = forwardRef(function Link(
       })}
       {...rest}
     >
-      {leftIcon && <Icon name={leftIcon} size={14} className="aeos-link-icon" />}
+      {leftIcon && <span className="aeos-link-icon" style={{ fontSize: 14, lineHeight: 1 }}>{leftIcon}</span>}
       {children}
       {external && !rightIcon && (
-        <Icon name="external" size={12} className="aeos-link-icon aeos-link-icon-external" />
+        <span className="aeos-link-icon aeos-link-icon-external" style={{ fontSize: 12, lineHeight: 1 }}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="1em" height="1em">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </span>
       )}
-      {rightIcon && <Icon name={rightIcon} size={14} className="aeos-link-icon" />}
+      {rightIcon && <span className="aeos-link-icon" style={{ fontSize: 14, lineHeight: 1 }}>{rightIcon}</span>}
     </a>
   );
 });

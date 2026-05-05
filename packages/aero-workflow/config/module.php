@@ -53,6 +53,63 @@ return [
     ],
 
     'submodules' => [
-        // Workflow designer, templates, instances, monitoring
+        [
+            'code' => 'workflows',
+            'name' => 'Workflow Designer',
+            'description' => 'Create and manage workflow definitions',
+            'icon' => 'ArrowPathRoundedSquareIcon',
+            'route' => '/workflows',
+            'components' => [
+                [
+                    'code' => 'definitions',
+                    'name' => 'Workflow Definitions',
+                    'type' => 'page',
+                    'route' => '/workflows',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Workflows'],
+                        ['code' => 'create', 'name' => 'Create Workflow'],
+                        ['code' => 'update', 'name' => 'Update Workflow'],
+                        ['code' => 'delete', 'name' => 'Delete Workflow'],
+                        ['code' => 'activate', 'name' => 'Activate Workflow'],
+                        ['code' => 'deactivate', 'name' => 'Deactivate Workflow'],
+                    ],
+                ],
+                [
+                    'code' => 'templates',
+                    'name' => 'Workflow Templates',
+                    'type' => 'page',
+                    'route' => '/workflow-templates',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Templates'],
+                        ['code' => 'create', 'name' => 'Create Template'],
+                        ['code' => 'update', 'name' => 'Update Template'],
+                        ['code' => 'delete', 'name' => 'Delete Template'],
+                    ],
+                ],
+                [
+                    'code' => 'instances',
+                    'name' => 'Workflow Instances',
+                    'type' => 'page',
+                    'route' => '/workflow-instances',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Instances'],
+                        ['code' => 'retry', 'name' => 'Retry Instance'],
+                        ['code' => 'cancel', 'name' => 'Cancel Instance'],
+                    ],
+                ],
+                [
+                    'code' => 'approvals',
+                    'name' => 'My Approvals',
+                    'type' => 'page',
+                    'route' => '/workflow-instances/approvals',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Approvals'],
+                        ['code' => 'approve', 'name' => 'Approve'],
+                        ['code' => 'reject', 'name' => 'Reject'],
+                        ['code' => 'escalate', 'name' => 'Escalate'],
+                    ],
+                ],
+            ],
+        ],
     ],
 ];

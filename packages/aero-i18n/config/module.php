@@ -49,6 +49,42 @@ return [
         'pluralization'           => true,
     ],
 
+    'submodules' => [
+        [
+            'code' => 'translations',
+            'name' => 'Translation Management',
+            'description' => 'Language management and translation editor',
+            'icon' => 'LanguageIcon',
+            'route' => '/i18n/translations',
+            'components' => [
+                [
+                    'code' => 'languages',
+                    'name' => 'Languages',
+                    'type' => 'page',
+                    'route' => '/i18n/languages',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Languages'],
+                        ['code' => 'enable', 'name' => 'Enable Language'],
+                        ['code' => 'disable', 'name' => 'Disable Language'],
+                    ],
+                ],
+                [
+                    'code' => 'translation_editor',
+                    'name' => 'Translation Editor',
+                    'type' => 'page',
+                    'route' => '/i18n/translations',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Translations'],
+                        ['code' => 'update', 'name' => 'Update Translation'],
+                        ['code' => 'auto_translate', 'name' => 'Auto-Translate (AI)'],
+                        ['code' => 'import', 'name' => 'Import Translations'],
+                        ['code' => 'export', 'name' => 'Export Translations'],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'tenancy' => [
         'tenant_aware'      => true,
         'uses_tenant_db'    => true,

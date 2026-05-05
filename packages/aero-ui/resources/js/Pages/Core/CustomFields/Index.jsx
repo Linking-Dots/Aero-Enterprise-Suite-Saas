@@ -2,16 +2,25 @@ import { Link } from '@inertiajs/react';
 import { useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import App from '../../App';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Label } from '../../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
-import { Textarea } from '../../../components/ui/textarea';
-import { Switch } from '../../../components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog';
-import { Icon } from '../../../components/ui/icon';
-import { useToast } from '../../../components/ui/toast';
-import { useHRMAC } from '../../../hooks/useHRMAC';
+import {
+  Button,
+  Field,
+  Input,
+  Label,
+  Select,
+  Textarea,
+  Toggle,
+  Modal,
+  useToast,
+  useHRMAC,
+} from '@aero/ui';
+import {
+  PlusIcon,
+  CheckIcon,
+  XIcon,
+  PencilIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text' },
@@ -37,9 +46,9 @@ const ENTITY_TYPES = [
 
 export default function CustomFieldsIndex({ fields, filters }) {
   const { toast } = useToast();
-  const canCreate = useHRMAC('core.custom_fields.field_definitions.create');
-  const canUpdate = useHRMAC('core.custom_fields.field_definitions.update');
-  const canDelete = useHRMAC('core.custom_fields.field_definitions.delete');
+  const canCreate = useHRMAC('custom_fields.definitions.create');
+  const canUpdate = useHRMAC('custom_fields.definitions.update');
+  const canDelete = useHRMAC('custom_fields.definitions.delete');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingField, setEditingField] = useState(null);
@@ -168,7 +177,7 @@ export default function CustomFieldsIndex({ fields, filters }) {
           </div>
           {canCreate && (
             <Button onClick={() => setIsCreateModalOpen(true)}>
-              <Icon name="PlusIcon" className="mr-2 h-4 w-4" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Add Field
             </Button>
           )}
@@ -222,16 +231,16 @@ export default function CustomFieldsIndex({ fields, filters }) {
                     <td className="p-4 align-middle">{field.field_type_label}</td>
                     <td className="p-4 align-middle">
                       {field.is_required ? (
-                        <Icon name="CheckIcon" className="h-4 w-4 text-green-500" />
+                        <CheckIcon className="h-4 w-4 text-green-500" />
                       ) : (
-                        <Icon name="XIcon" className="h-4 w-4 text-gray-400" />
+                        <XIcon className="h-4 w-4 text-gray-400" />
                       )}
                     </td>
                     <td className="p-4 align-middle">
                       {field.is_active ? (
-                        <Icon name="CheckIcon" className="h-4 w-4 text-green-500" />
+                        <CheckIcon className="h-4 w-4 text-green-500" />
                       ) : (
-                        <Icon name="XIcon" className="h-4 w-4 text-gray-400" />
+                        <XIcon className="h-4 w-4 text-gray-400" />
                       )}
                     </td>
                     <td className="p-4 align-middle text-right">
@@ -242,7 +251,7 @@ export default function CustomFieldsIndex({ fields, filters }) {
                             size="sm"
                             onClick={() => openEditModal(field)}
                           >
-                            <Icon name="PencilIcon" className="h-4 w-4" />
+                            <PencilIcon className="h-4 w-4" />
                           </Button>
                         )}
                         {canDelete && (
@@ -251,7 +260,7 @@ export default function CustomFieldsIndex({ fields, filters }) {
                             size="sm"
                             onClick={() => handleDelete(field.id)}
                           >
-                            <Icon name="TrashIcon" className="h-4 w-4 text-red-500" />
+                            <TrashIcon className="h-4 w-4 text-red-500" />
                           </Button>
                         )}
                       </div>

@@ -88,7 +88,8 @@ export {
 }                                           from './hooks/index.js';
 
 // ── Icons ─────────────────────────────────────────────────────────
-export { Icon, icons }                      from './icons/icons.jsx';
+// Icon component removed - use @heroicons/react directly
+// export { Icon, icons } from './icons/icons.jsx';
 
 // ── App Chrome ───────────────────────────────────────────────
 export {

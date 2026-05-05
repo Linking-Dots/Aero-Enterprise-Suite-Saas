@@ -1,10 +1,11 @@
 <?php
 
-namespace Aero\Core\Models;
+namespace Aero\CustomFields\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Aero\Core\Models\User;
 
 class CustomFieldValue extends Model
 {

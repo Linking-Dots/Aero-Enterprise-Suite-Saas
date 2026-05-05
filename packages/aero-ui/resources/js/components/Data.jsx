@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Icon } from '../icons/icons.jsx';
+import { ArrowUpIcon, ArrowDownIcon, TrendingUpIcon, InboxIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 import { Skeleton } from './Display.jsx';
 
@@ -33,10 +33,13 @@ export function KPI({ label, value, delta, deltaTrend, sparkline, loading }) {
       <div className="aeos-kpi-value">{value}</div>
       {delta && (
         <div className={cx('aeos-kpi-delta', deltaTrend ?? 'neutral')}>
-          <Icon
-            name={deltaTrend === 'up' ? 'arrowUp' : deltaTrend === 'down' ? 'arrowDown' : 'trending'}
-            size={12}
-          />
+          {deltaTrend === 'up' ? (
+            <ArrowUpIcon className="w-3 h-3" />
+          ) : deltaTrend === 'down' ? (
+            <ArrowDownIcon className="w-3 h-3" />
+          ) : (
+            <TrendingUpIcon className="w-3 h-3" />
+          )}
           {delta}
         </div>
       )}
@@ -73,7 +76,8 @@ export const Stat = forwardRef(function Stat(
   return (
     <div ref={ref} className={cx('aeos-stat-card', className)} {...rest}>
       <div className={cx('aeos-stat-icon', STAT_ICON_CLASS[iconTone])}>
-        {icon && <Icon name={icon} size={20} />}
+        {/* TODO: Update Stat component to accept React icon component instead of icon name */}
+        {/* {icon && <Icon name={icon} size={20} />} */}
       </div>
       <div className="aeos-stat-body">
         <h3>{title}</h3>
@@ -91,7 +95,8 @@ export const Stat = forwardRef(function Stat(
 export function MetricChip({ icon, intent = 'primary', children, className }) {
   return (
     <span className={cx('aeos-metric-chip', intent === 'amber' && 'aeos-metric-chip-amber', className)}>
-      {icon && <Icon name={icon} size={12} />}
+      {/* TODO: Update MetricChip component to accept React icon component instead of icon name */}
+      {/* {icon && <Icon name={icon} size={12} />} */}
       {children}
     </span>
   );
@@ -191,11 +196,15 @@ export function DataTable({
 }
 
 /** EmptyState — centred placeholder for empty content areas. */
-export function EmptyState({ icon = 'inbox', title, description, action, className }) {
+export function EmptyState({ icon = <InboxIcon className="w-7 h-7" />, title, description, action, className }) {
   return (
     <div className={cx('aeos-empty-state', className)}>
       <div className="aeos-empty-icon">
-        <Icon name={icon} size={28} />
+        {typeof icon === 'string' ? (
+          <span style={{ fontSize: 28, lineHeight: 1 }}>{icon}</span>
+        ) : (
+          icon
+        )}
       </div>
       {title && <h3 className="aeos-empty-title">{title}</h3>}
       {description && <p className="aeos-empty-desc">{description}</p>}

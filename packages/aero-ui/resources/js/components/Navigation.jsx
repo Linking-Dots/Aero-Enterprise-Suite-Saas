@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import { Icon } from '../icons/icons.jsx';
+import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 import { Badge } from './Display.jsx';
 
@@ -21,7 +21,8 @@ export function Tabs({ tabs = [], value, defaultValue, onChange, className, chil
             className={cx('aeos-tab', active === t.value && 'is-active')}
             onClick={() => setActive(t.value)}
           >
-            {t.icon && <Icon name={t.icon} size={14} />}
+            {/* TODO: Update tabs to pass React icon components instead of icon names */}
+            {/* {t.icon && <Icon name={t.icon} size={14} />} */}
             {t.label}
             {t.count != null && <span className="aeos-tab-count">{t.count}</span>}
           </button>
@@ -40,7 +41,7 @@ export function Breadcrumb({ items = [], className }) {
         <span key={i} style={{ display: 'contents' }}>
           {i > 0 && (
             <span className="aeos-breadcrumb-sep" aria-hidden="true">
-              <Icon name="chevronRight" size={12} />
+              <ChevronRightIcon className="w-3 h-3" />
             </span>
           )}
           {it.href
@@ -69,7 +70,8 @@ export const NavItem = forwardRef(function NavItem(
       aria-current={active ? 'page' : undefined}
       {...rest}
     >
-      {icon && <Icon name={icon} size={16} />}
+      {/* TODO: Update nav items to pass React icon components instead of icon names */}
+      {/* {icon && <Icon name={icon} size={16} />} */}
       <span className="aeos-nav-item-label">{label}</span>
       {count != null && <span className="aeos-nav-item-count">{count}</span>}
       {badge && <Badge intent={badge.intent ?? 'cyan'} size="sm" mono>{badge.label}</Badge>}
@@ -137,7 +139,7 @@ export function Pagination({ page = 1, total = 1, onChange, className }) {
         disabled={page <= 1}
         aria-label="Previous page"
       >
-        <Icon name="chevronLeft" size={14} />
+        <ChevronLeftIcon className="w-3.5 h-3.5" />
         Prev
       </button>
       <span className="aeos-pagination-status aeos-text-mono">
@@ -151,7 +153,7 @@ export function Pagination({ page = 1, total = 1, onChange, className }) {
         aria-label="Next page"
       >
         Next
-        <Icon name="chevronRight" size={14} />
+        <ChevronRightIcon className="w-3.5 h-3.5" />
       </button>
     </nav>
   );

@@ -693,7 +693,48 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 2.1 SSO & Identity Federation
+        | 2.1 Translations / i18n (Delegated to aero-i18n)
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'translations_i18n',
+            'name' => 'Translations / i18n',
+            'description' => 'Language management and translation editor (delegated to aero-i18n package)',
+            'icon' => 'LanguageIcon',
+            'route' => '/i18n/translations',
+            'priority' => 10,
+            'delegated_to' => 'aero-i18n',
+            'components' => [
+                [
+                    'code' => 'languages',
+                    'name' => 'Languages',
+                    'type' => 'page',
+                    'route' => '/i18n/languages',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Languages'],
+                        ['code' => 'enable', 'name' => 'Enable Language'],
+                        ['code' => 'disable', 'name' => 'Disable Language'],
+                    ],
+                ],
+                [
+                    'code' => 'translation_editor',
+                    'name' => 'Translation Editor',
+                    'type' => 'page',
+                    'route' => '/i18n/translations',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Translations'],
+                        ['code' => 'update', 'name' => 'Update Translation'],
+                        ['code' => 'auto_translate', 'name' => 'Auto-Translate (AI)'],
+                        ['code' => 'import', 'name' => 'Import Translations'],
+                        ['code' => 'export', 'name' => 'Export Translations'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2.2 SSO & Identity Federation
         |--------------------------------------------------------------------------
         */
         [
@@ -702,7 +743,7 @@ return [
             'description' => 'SAML, OIDC, OAuth, SCIM provisioning, social login, passkeys, magic links',
             'icon' => 'KeyIcon',
             'route' => '/identity',
-            'priority' => 9,
+            'priority' => 11,
             'components' => [
                 [
                     'code' => 'sso_saml', 'name' => 'SAML 2.0', 'type' => 'page', 'route' => '/identity/saml',
@@ -863,19 +904,20 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 2.3 Workflow Engine, Custom Fields, Tags, Saved Views
+        | 2.3 Workflow Engine (Delegated to aero-workflow)
         |--------------------------------------------------------------------------
         */
         [
             'code' => 'workflow_engine',
             'name' => 'Workflows & Automations',
-            'description' => 'Approval workflows, automation rules, triggers, conditions',
+            'description' => 'Approval workflows, automation rules, triggers, conditions (delegated to aero-workflow package)',
             'icon' => 'ArrowPathRoundedSquareIcon',
             'route' => '/workflows',
             'priority' => 11,
+            'delegated_to' => 'aero-workflow',
             'components' => [
                 [
-                    'code' => 'workflows', 'name' => 'Workflow Definitions', 'type' => 'page', 'route' => '/workflows',
+                    'code' => 'definitions', 'name' => 'Workflow Definitions', 'type' => 'page', 'route' => '/workflows',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Workflows'],
                         ['code' => 'create', 'name' => 'Create Workflow'],
@@ -883,15 +925,6 @@ return [
                         ['code' => 'delete', 'name' => 'Delete Workflow'],
                         ['code' => 'activate', 'name' => 'Activate Workflow'],
                         ['code' => 'deactivate', 'name' => 'Deactivate Workflow'],
-                    ],
-                ],
-                [
-                    'code' => 'approvals', 'name' => 'My Approvals', 'type' => 'page', 'route' => '/workflow-instances/approvals',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Approvals'],
-                        ['code' => 'approve', 'name' => 'Approve'],
-                        ['code' => 'reject', 'name' => 'Reject'],
-                        ['code' => 'escalate', 'name' => 'Escalate'],
                     ],
                 ],
                 [
@@ -910,15 +943,25 @@ return [
                         ['code' => 'retry', 'name' => 'Retry Instance'],
                     ],
                 ],
+                [
+                    'code' => 'approvals', 'name' => 'My Approvals', 'type' => 'page', 'route' => '/workflow-instances/approvals',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Approvals'],
+                        ['code' => 'approve', 'name' => 'Approve'],
+                        ['code' => 'reject', 'name' => 'Reject'],
+                        ['code' => 'escalate', 'name' => 'Escalate'],
+                    ],
+                ],
             ],
         ],
         [
             'code' => 'custom_fields',
             'name' => 'Custom Fields',
-            'description' => 'Per-entity custom fields, field types, validation',
+            'description' => 'Per-entity custom fields, field types, validation (delegated to aero-custom-fields package)',
             'icon' => 'AdjustmentsHorizontalIcon',
             'route' => '/custom-fields',
             'priority' => 12,
+            'delegated_to' => 'aero-custom-fields',
             'components' => [
                 [
                     'code' => 'field_definitions', 'name' => 'Field Definitions', 'type' => 'page', 'route' => '/custom-fields',
@@ -960,16 +1003,14 @@ return [
             'priority' => 14,
             'components' => [
                 [
-                    'code' => 'views', 'name' => 'Saved Views', 'type' => 'page', 'route' => '/saved-views',
+                    'code' => 'saved_views', 'name' => 'Saved Views', 'type' => 'page', 'route' => '/saved-views',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View'],
                         ['code' => 'create', 'name' => 'Create View'],
                         ['code' => 'update', 'name' => 'Update View'],
                         ['code' => 'delete', 'name' => 'Delete View'],
                         ['code' => 'share', 'name' => 'Share View'],
-                        ['code' => 'apply', 'name' => 'Apply View'],
                         ['code' => 'set_default', 'name' => 'Set as Default'],
-                        ['code' => 'duplicate', 'name' => 'Duplicate View'],
                     ],
                 ],
             ],
@@ -977,16 +1018,84 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 2.4 Form Builder
+        | 2.4 System Health
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'system_health',
+            'name' => 'System Health',
+            'description' => 'System monitoring, performance metrics, and diagnostic tools',
+            'icon' => 'HeartIcon',
+            'route' => '/system-health',
+            'priority' => 15,
+            'components' => [
+                [
+                    'code' => 'overview', 'name' => 'System Overview', 'type' => 'page', 'route' => '/system-health',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Overview'],
+                    ],
+                ],
+                [
+                    'code' => 'database', 'name' => 'Database Health', 'type' => 'feature', 'route' => '/system-health',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Database Health'],
+                    ],
+                ],
+                [
+                    'code' => 'queue', 'name' => 'Queue Health', 'type' => 'feature', 'route' => '/system-health',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Queue Health'],
+                    ],
+                ],
+                [
+                    'code' => 'cache', 'name' => 'Cache Health', 'type' => 'feature', 'route' => '/system-health',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Cache Health'],
+                    ],
+                ],
+                [
+                    'code' => 'services', 'name' => 'External Services', 'type' => 'feature', 'route' => '/system-health',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Services Status'],
+                    ],
+                ],
+                [
+                    'code' => 'metrics', 'name' => 'Performance Metrics', 'type' => 'feature', 'route' => '/system-health',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Metrics'],
+                    ],
+                ],
+                [
+                    'code' => 'logs', 'name' => 'Health Logs', 'type' => 'page', 'route' => '/system-health/logs',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Logs'],
+                        ['code' => 'export', 'name' => 'Export Logs'],
+                        ['code' => 'delete', 'name' => 'Delete Logs'],
+                    ],
+                ],
+                [
+                    'code' => 'alerts', 'name' => 'Health Alerts', 'type' => 'feature', 'route' => '/system-health/alerts',
+                    'actions' => [
+                        ['code' => 'configure', 'name' => 'Configure Alerts'],
+                        ['code' => 'test', 'name' => 'Test Alert'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2.5 Form Builder
         |--------------------------------------------------------------------------
         */
         [
             'code' => 'form_builder',
             'name' => 'Form Builder',
-            'description' => 'Drag-drop form builder with conditional logic, validation, and submissions',
+            'description' => 'Drag-drop form builder with conditional logic, validation, and submissions (delegated to aero-forms package)',
             'icon' => 'ClipboardDocumentListIcon',
             'route' => '/forms',
             'priority' => 15,
+            'delegated_to' => 'aero-forms',
             'components' => [
                 [
                     'code' => 'forms', 'name' => 'Forms', 'type' => 'page', 'route' => '/forms',

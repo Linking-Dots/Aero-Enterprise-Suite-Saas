@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from './ThemeProvider.jsx';
-import { Icon } from '../icons/icons.jsx';
+import { SparklesIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { cx } from '../components/Primitives.jsx';
 
 /* ── Data ─────────────────────────────────────────────────────── */
@@ -83,7 +83,8 @@ function PillGroup({ items, active, onSelect, cols = 2 }) {
           className={cx('aeos-theme-chip', active === item.value && 'is-active')}
           onClick={() => onSelect(item.value)}
         >
-          {item.icon && <Icon name={item.icon} size={13} />}
+          {/* TODO: Update theme options to pass React icon components instead of icon names */}
+          {/* {item.icon && <Icon name={item.icon} size={13} />} */}
           {item.label}
         </button>
       ))}
@@ -115,7 +116,7 @@ export default function ThemeDrawer() {
         aria-label="Open Theme Studio"
         aria-expanded={open}
       >
-        <Icon name="sparkles" size={18} />
+        <SparklesIcon className="w-4.5 h-4.5" />
       </button>
 
       {/* Drawer overlay */}
@@ -133,7 +134,7 @@ export default function ThemeDrawer() {
                 onClick={() => setOpen(false)}
                 aria-label="Close"
               >
-                <Icon name="x" size={16} />
+                <XMarkIcon className="w-4 h-4" />
               </button>
             </header>
 
@@ -229,7 +230,7 @@ export default function ThemeDrawer() {
                   className="aeos-btn aeos-btn-ghost aeos-btn-sm"
                   onClick={theme.reset}
                 >
-                  <Icon name="arrowPath" size={14} />
+                  <ArrowPathIcon className="w-3.5 h-3.5" />
                   Reset to Defaults
                 </button>
               </section>

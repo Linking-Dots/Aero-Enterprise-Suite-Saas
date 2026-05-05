@@ -50,6 +50,52 @@ return [
     ],
 
     'submodules' => [
-        // Form builder, templates, submissions, analytics
+        [
+            'code' => 'forms',
+            'name' => 'Form Builder',
+            'description' => 'Create and manage dynamic forms',
+            'icon' => 'DocumentTextIcon',
+            'route' => '/forms',
+            'components' => [
+                [
+                    'code' => 'forms',
+                    'name' => 'Forms',
+                    'type' => 'page',
+                    'route' => '/forms',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Forms'],
+                        ['code' => 'create', 'name' => 'Create Form'],
+                        ['code' => 'update', 'name' => 'Update Form'],
+                        ['code' => 'delete', 'name' => 'Delete Form'],
+                        ['code' => 'publish', 'name' => 'Publish Form'],
+                        ['code' => 'unpublish', 'name' => 'Unpublish Form'],
+                    ],
+                ],
+                [
+                    'code' => 'submissions',
+                    'name' => 'Form Submissions',
+                    'type' => 'page',
+                    'route' => '/forms/submissions',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Submissions'],
+                        ['code' => 'update', 'name' => 'Update Status'],
+                        ['code' => 'delete', 'name' => 'Delete Submission'],
+                        ['code' => 'export', 'name' => 'Export Submissions'],
+                    ],
+                ],
+                [
+                    'code' => 'templates',
+                    'name' => 'Form Templates',
+                    'type' => 'page',
+                    'route' => '/form-templates',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Templates'],
+                        ['code' => 'create', 'name' => 'Create Template'],
+                        ['code' => 'update', 'name' => 'Update Template'],
+                        ['code' => 'delete', 'name' => 'Delete Template'],
+                    ],
+                ],
+            ],
+        ],
     ],
 ];

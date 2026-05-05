@@ -1,9 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
-import { Icon } from '../icons/icons.jsx';
-import { cx, Text, Flex1 } from './Primitives.jsx';
-import { useHRMAC } from '../hooks/useHRMAC.js';
+import {
+  Modal,
+  Input,
+  Text,
+  Badge,
+  useHRMAC,
+} from '@aero/ui';
+import {
+  UserIcon,
+  DocumentIcon,
+  LockClosedIcon,
+  TagIcon,
+} from '@heroicons/react/24/outline';
 
 /**
  * SearchOverlay — Global command-palette search (Cmd+K / Ctrl+K)
@@ -118,142 +128,99 @@ export default function SearchOverlay() {
   if (!canSearch) return null;
 
   return createPortal(
-    <>
-      {open && (
-        <div className="aeos-modal-root" role="dialog" aria-modal="true" aria-label="Global search">
-          <div className="aeos-modal-backdrop aeos-anim-fade-in" onClick={closeOverlay} />
-          <div
-            className={cx(
-              'aeos-glass-strong aeos-anim-pop-in'
-            )}
-            style={{
-              position: 'fixed',
-              top: '12vh',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '100%',
-              maxWidth: '640px',
-              zIndex: 9999,
-              borderRadius: 'var(--aeos-radius-lg, 12px)',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.25)',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Search input */}
-            <div className="aeos-input-group" style={{ position: 'relative', padding: '12px 16px', borderBottom: '1px solid var(--aeos-border)' }}>
-              <span className="aeos-input-group-icon" aria-hidden="true">
-                <Icon name="search" size={18} />
-              </span>
-              <input
-                ref={inputRef}
-                type="search"
-                className="aeos-input"
-                style={{ fontSize: '1.125rem', paddingLeft: '2.5rem' }}
-                placeholder="Search users, roles, audit logs…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                autoComplete="off"
-              />
-              {loading && (
-                <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
-                  <Icon name="refresh" size={16} className="aeos-spin" />
-                </span>
-              )}
-              {!loading && query && (
-                <button
-                  type="button"
-                  className="aeos-icon-btn"
-                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                >
-                  <Icon name="x" size={14} />
-                </button>
-              )}
-            </div>
+    <Modal
+      open={open}
+      onClose={closeOverlay}
+      size="lg"
+    >
+      <Modal.Content>
+        {/* Search input */}
+        <Input
+          ref={inputRef}
+          type="search"
+          placeholder="Search users, roles, audit logs…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          leftIcon="search"
+          autoComplete="off"
+          autoFocus
+        />
 
-            {/* Results */}
-            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-              {results.length === 0 && !loading && query.trim() && (
-                <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-                  <Text tone="muted">No results for "{query}"</Text>
-                </div>
-              )}
-              {results.length === 0 && !query.trim() && (
-                <div style={{ padding: '16px' }}>
-                  <Text size="sm" tone="muted">
-                    Type to search across users, roles, and audit logs.
-                    Press <kbd className="aeos-kbd">Enter</kbd> to view all results.
-                  </Text>
-                </div>
-              )}
+        {/* Results */}
+        <div style={{ maxHeight: '60vh', overflowY: 'auto', marginTop: 16 }}>
+          {results.length === 0 && !loading && query.trim() && (
+            <Text tone="muted" style={{ padding: '24px 16px', textAlign: 'center' }}>
+              No results for "{query}"
+            </Text>
+          )}
+          {results.length === 0 && !query.trim() && (
+            <Text size="sm" tone="muted" style={{ padding: '16px' }}>
+              Type to search across users, roles, and audit logs.
+              Press <kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>Enter</kbd> to view all results.
+            </Text>
+          )}
 
-              {results.map((result, i) => (
-                <div
-                  key={`${result.type}-${result.id}-${i}`}
-                  className={cx(
-                    'aeos-menu-item',
-                    i === selectedIndex && 'is-active'
-                  )}
-                  style={{
-                    padding: '10px 16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    borderBottom: i < results.length - 1 ? '1px solid var(--aeos-border-subtle)' : undefined,
-                  }}
-                  onMouseEnter={() => setSelectedIndex(i)}
-                  onClick={() => {
-                    if (result.url) {
-                      closeOverlay();
-                      router.visit(result.url);
-                    } else {
-                      closeOverlay();
-                      router.get(route('core.search.index'), { q: query });
-                    }
-                  }}
-                  role="option"
-                  aria-selected={i === selectedIndex}
-                >
-                  <Icon name={mapResultIcon(result.icon, result.type)} size={18} />
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontWeight: 500, fontSize: '0.9375rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {result.title}
-                    </div>
-                    {result.subtitle && (
-                      <Text size="sm" tone="muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {result.subtitle}
-                      </Text>
-                    )}
-                  </div>
-                  <Pill size="sm" tone="secondary">{result.type}</Pill>
-                </div>
-              ))}
-            </div>
-
-            {/* Footer hints */}
+          {results.map((result, i) => (
             <div
+              key={`${result.type}-${result.id}-${i}`}
+              onClick={() => {
+                if (result.url) {
+                  closeOverlay();
+                  router.visit(result.url);
+                } else {
+                  closeOverlay();
+                  router.get(route('core.search.index'), { q: query });
+                }
+              }}
+              role="option"
+              aria-selected={i === selectedIndex}
               style={{
-                padding: '8px 16px',
-                borderTop: '1px solid var(--aeos-border)',
+                padding: '12px 16px',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                fontSize: '0.75rem',
-                color: 'var(--aeos-text-muted)',
+                gap: 12,
+                borderBottom: i < results.length - 1 ? '1px solid var(--aeos-border-subtle)' : undefined,
+                background: i === selectedIndex ? 'var(--aeos-surface-raised)' : undefined,
               }}
+              onMouseEnter={() => setSelectedIndex(i)}
             >
-              <span><kbd className="aeos-kbd">↑↓</kbd> to navigate</span>
-              <span><kbd className="aeos-kbd">↵</kbd> to select</span>
-              <span><kbd className="aeos-kbd">esc</kbd> to close</span>
-              <Flex1 />
-              <Text size="xs" tone="muted">Global Search</Text>
+              {mapResultIcon(result.icon, result.type)}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <Text style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {result.title}
+                </Text>
+                {result.subtitle && (
+                  <Text size="sm" tone="muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {result.subtitle}
+                  </Text>
+                )}
+              </div>
+              <Badge intent="neutral" size="sm">{result.type}</Badge>
             </div>
-          </div>
+          ))}
         </div>
-      )}
-    </>,
+
+        {/* Footer hints */}
+        <div
+          style={{
+            padding: '8px 16px',
+            borderTop: '1px solid var(--aeos-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            fontSize: '0.75rem',
+            color: 'var(--aeos-text-muted)',
+          }}
+        >
+          <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>↑↓</kbd> to navigate</span>
+          <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>↵</kbd> to select</span>
+          <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>esc</kbd> to close</span>
+          <div style={{ flex: 1 }} />
+          <Text size="xs" tone="muted">Global Search</Text>
+        </div>
+      </Modal.Content>
+    </Modal>,
     document.body
   );
 }
@@ -262,38 +229,14 @@ export default function SearchOverlay() {
  * Map search result icons to engine icon names.
  */
 function mapResultIcon(icon, type) {
-  if (icon) return icon;
+  // If icon is already a React component, return it
+  if (icon && typeof icon !== 'string') return icon;
+  
   const fallback = {
-    User: 'user',
-    'Audit Log': 'document',
-    Role: 'lockClosed',
-    Tag: 'tag',
+    User: <UserIcon className="w-4.5 h-4.5" />,
+    'Audit Log': <DocumentIcon className="w-4.5 h-4.5" />,
+    Role: <LockClosedIcon className="w-4.5 h-4.5" />,
+    Tag: <TagIcon className="w-4.5 h-4.5" />,
   };
-  return fallback[type] || 'document';
-}
-
-/**
- * Inline Pill for result type badges (minimal, no external dependency).
- */
-function Pill({ size = 'sm', tone = 'secondary', children }) {
-  const sizeClass = size === 'sm' ? { fontSize: '0.6875rem', padding: '2px 8px' } : { fontSize: '0.75rem', padding: '4px 10px' };
-  const toneStyle =
-    tone === 'secondary'
-      ? { background: 'var(--aeos-surface-raised)', color: 'var(--aeos-text-secondary)' }
-      : { background: 'var(--aeos-surface)', color: 'var(--aeos-text-muted)' };
-
-  return (
-    <span
-      style={{
-        borderRadius: '999px',
-        fontWeight: 500,
-        lineHeight: 1,
-        whiteSpace: 'nowrap',
-        ...sizeClass,
-        ...toneStyle,
-      }}
-    >
-      {children}
-    </span>
-  );
+  return fallback[type] || <DocumentIcon className="w-4.5 h-4.5" />;
 }

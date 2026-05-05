@@ -1,9 +1,10 @@
 <?php
 
-namespace Aero\Core\Http\Controllers;
+namespace Aero\CustomFields\Http\Controllers;
 
-use Aero\Core\Models\CustomField;
-use Aero\Core\Services\CustomFieldService;
+use Aero\CustomFields\Models\CustomField;
+use Aero\CustomFields\Services\CustomFieldService;
+use Aero\Core\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;

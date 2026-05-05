@@ -1,8 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Icon } from '../icons/icons.jsx';
+import {
+  PlusIcon,
+  BookmarkIcon,
+  StarIcon,
+  TrashIcon,
+  UserGroupIcon,
+  ShareIcon,
+  DocumentDuplicateIcon,
+  UserIcon,
+  ViewColumnsIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
 import { Modal, Popover } from './Overlays.jsx';
 import { Button, Input, Label, Textarea, Checkbox } from './Forms.jsx';
 import { cx } from './Primitives.jsx';
+import { useHRMAC } from '../hooks/useHRMAC.js';
 
 /* ── SavedViewsDropdown ───────────────────────────────────────────── */
 export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply }) {
@@ -11,6 +23,10 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
   const [sharedViews, setSharedViews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+
+  const canCreate = useHRMAC('core.saved_views.views.create');
+  const canDelete = useHRMAC('core.saved_views.views.delete');
+  const canSetDefault = useHRMAC('core.saved_views.views.set_default');
 
   useEffect(() => {
     if (open) {
@@ -111,7 +127,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
       <Popover
         trigger={
           <Button variant="ghost" size="sm">
-            <Icon name="view-columns" size={16} />
+            <ViewColumnsIcon className="w-4 h-4" />
             Saved Views
           </Button>
         }
@@ -121,14 +137,16 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
         <div className="aeos-saved-views-dropdown" style={{ width: 320 }}>
           <div className="aeos-saved-views-header">
             <h4 className="aeos-text-sm font-medium">Saved Views</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSaveDialog(true)}
-            >
-              <Icon name="plus" size={14} />
-              Save Current
-            </Button>
+            {canCreate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSaveDialog(true)}
+              >
+                <PlusIcon className="w-3.5 h-3.5" />
+                Save Current
+              </Button>
+            )}
           </div>
 
           {loading ? (
@@ -137,7 +155,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
             <div className="aeos-saved-views-list">
               {views.length === 0 && sharedViews.length === 0 && (
                 <div className="aeos-saved-views-empty">
-                  <Icon name="view-columns" size={24} />
+                  <ViewColumnsIcon className="w-6 h-6" />
                   <p className="aeos-text-sm">No saved views yet</p>
                 </div>
               )}
@@ -155,29 +173,31 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                       onClick={() => handleApply(view)}
                     >
                       <div className="aeos-saved-views-item-main">
-                        <Icon name="bookmark" size={14} />
+                        <BookmarkIcon className="w-3.5 h-3.5" />
                         <span className="aeos-saved-views-item-name">{view.name}</span>
                         {view.is_default && (
                           <span className="aeos-saved-views-item-badge">Default</span>
                         )}
                       </div>
                       <div className="aeos-saved-views-item-actions">
-                        {!view.is_default && (
+                        {canSetDefault && !view.is_default && (
                           <button
                             className="aeos-saved-views-action"
                             onClick={(e) => handleSetDefault(view, e)}
                             title="Set as default"
                           >
-                            <Icon name="star" size={14} />
+                            <StarIcon className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <button
-                          className="aeos-saved-views-action"
-                          onClick={(e) => handleDelete(view, e)}
-                          title="Delete"
-                        >
-                          <Icon name="trash" size={14} />
-                        </button>
+                        {canDelete && (
+                          <button
+                            className="aeos-saved-views-action"
+                            onClick={(e) => handleDelete(view, e)}
+                            title="Delete"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -194,7 +214,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                       onClick={() => handleApply(view)}
                     >
                       <div className="aeos-saved-views-item-main">
-                        <Icon name="users" size={14} />
+                        <UserGroupIcon className="w-3.5 h-3.5" />
                         <span className="aeos-saved-views-item-name">{view.name}</span>
                         <span className="aeos-saved-views-item-badge">Shared</span>
                       </div>
@@ -337,6 +357,11 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
   const [showShareDialog, setShowShareDialog] = useState(null);
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(null);
 
+  const canDelete = useHRMAC('core.saved_views.views.delete');
+  const canSetDefault = useHRMAC('core.saved_views.views.set_default');
+  const canShare = useHRMAC('core.saved_views.views.share');
+  const canDuplicate = useHRMAC('core.saved_views.views.duplicate');
+
   useEffect(() => {
     if (initialViews.length === 0 && initialSharedViews.length === 0) {
       loadViews();
@@ -434,51 +459,57 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                   )}
                   <div className="aeos-saved-views-card-meta">
                     <span className="aeos-saved-views-card-meta-item">
-                      <Icon name="route" size={12} />
+                      <ArrowPathIcon className="w-3 h-3" />
                       {view.route}
                     </span>
                     {view.is_shared && (
                       <span className="aeos-saved-views-card-meta-item">
-                        <Icon name="users" size={12} />
+                        <UserGroupIcon className="w-3 h-3" />
                         Shared
                       </span>
                     )}
                   </div>
                   <div className="aeos-saved-views-card-actions">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowShareDialog(view)}
-                    >
-                      <Icon name="share" size={14} />
-                      Share
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowDuplicateDialog(view)}
-                    >
-                      <Icon name="copy" size={14} />
-                      Duplicate
-                    </Button>
-                    {!view.is_default && (
+                    {canShare && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowShareDialog(view)}
+                      >
+                        <ShareIcon className="w-3.5 h-3.5" />
+                        Share
+                      </Button>
+                    )}
+                    {canDuplicate && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowDuplicateDialog(view)}
+                      >
+                        <DocumentDuplicateIcon className="w-3.5 h-3.5" />
+                        Duplicate
+                      </Button>
+                    )}
+                    {canSetDefault && !view.is_default && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleSetDefault(view)}
                       >
-                        <Icon name="star" size={14} />
+                        <StarIcon className="w-3.5 h-3.5" />
                         Set Default
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(view)}
-                    >
-                      <Icon name="trash" size={14} />
-                      Delete
-                    </Button>
+                    {canDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(view)}
+                      >
+                        <TrashIcon className="w-3.5 h-3.5" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -501,7 +532,7 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                   )}
                   <div className="aeos-saved-views-card-meta">
                     <span className="aeos-saved-views-card-meta-item">
-                      <Icon name="user" size={12} />
+                      <UserIcon className="w-3 h-3" />
                       {view.user?.name || 'Unknown'}
                     </span>
                   </div>

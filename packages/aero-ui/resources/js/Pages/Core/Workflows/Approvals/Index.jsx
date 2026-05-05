@@ -16,9 +16,9 @@ import App from '../../../App.jsx';
 import { useHRMAC } from '../../../../hooks/useHRMAC';
 
 export default function WorkflowApprovalsIndex({ approvals, filters }) {
-  const canApprove = useHRMAC('core.workflow_engine.approvals.approve');
-  const canReject = useHRMAC('core.workflow_engine.approvals.reject');
-  const canEscalate = useHRMAC('core.workflow_engine.approvals.escalate');
+  const canApprove = useHRMAC('workflow.workflows.approvals.approve');
+  const canReject = useHRMAC('workflow.workflows.approvals.reject');
+  const canEscalate = useHRMAC('workflow.workflows.approvals.escalate');
   const [showApproveDialog, setShowApproveDialog] = useState(null);
   const [showRejectDialog, setShowRejectDialog] = useState(null);
 

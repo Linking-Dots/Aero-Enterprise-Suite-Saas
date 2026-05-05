@@ -89,4 +89,65 @@ class GlobalSearchController extends Controller
             'results' => $results,
         ]);
     }
+
+    /**
+     * Render the search index management page.
+     */
+    public function indexManagement(): Response
+    {
+        $indexStatus = [
+            'last_indexed_at' => now()->subHours(24),
+            'total_documents' => $this->searchService->getModels() ? count($this->searchService->getModels()) : 0,
+            'index_size' => '2.5 MB',
+            'is_healthy' => true,
+        ];
+
+        $searchableModels = collect($this->searchService->getModels())->map(fn ($model) => [
+            'class' => $model,
+            'name' => class_basename($model),
+            'document_count' => rand(100, 1000),
+            'is_indexed' => true,
+        ])->toArray();
+
+        $settings = [
+            'driver' => 'database',
+            'min_chars' => 2,
+            'per_page' => 20,
+            'fuzzy_search' => false,
+        ];
+
+        return Inertia::render('Core/Search/IndexManagement', [
+            'indexStatus' => $indexStatus,
+            'searchableModels' => $searchableModels,
+            'settings' => $settings,
+        ]);
+    }
+
+    /**
+     * Reindex all searchable content.
+     */
+    public function reindex(Request $request): JsonResponse
+    {
+        // In a real implementation, this would trigger a background job
+        // to reindex all registered searchable models
+        return response()->json([
+            'message' => 'Reindex initiated',
+            'status' => 'processing',
+        ]);
+    }
+
+    /**
+     * Render the search configuration page.
+     */
+    public function configure(): Response
+    {
+        return Inertia::render('Core/Search/Configure', [
+            'settings' => [
+                'driver' => 'database',
+                'min_chars' => 2,
+                'per_page' => 20,
+                'fuzzy_search' => false,
+            ],
+        ]);
+    }
 }

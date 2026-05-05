@@ -49,6 +49,62 @@ return [
     ],
 
     'submodules' => [
-        // Field definitions, field groups, field types, analytics
+        [
+            'code' => 'custom_fields',
+            'name' => 'Custom Fields',
+            'description' => 'Create and manage custom field definitions',
+            'icon' => 'TagIcon',
+            'route' => '/custom-fields',
+            'components' => [
+                [
+                    'code' => 'definitions',
+                    'name' => 'Field Definitions',
+                    'type' => 'page',
+                    'route' => '/custom-fields',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Fields'],
+                        ['code' => 'create', 'name' => 'Create Field'],
+                        ['code' => 'update', 'name' => 'Update Field'],
+                        ['code' => 'delete', 'name' => 'Delete Field'],
+                    ],
+                ],
+                [
+                    'code' => 'field_types',
+                    'name' => 'Field Types',
+                    'type' => 'page',
+                    'route' => '/custom-fields/types',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Field Types'],
+                        ['code' => 'create', 'name' => 'Create Field Type'],
+                        ['code' => 'update', 'name' => 'Update Field Type'],
+                        ['code' => 'delete', 'name' => 'Delete Field Type'],
+                    ],
+                ],
+                [
+                    'code' => 'field_groups',
+                    'name' => 'Field Groups',
+                    'type' => 'page',
+                    'route' => '/custom-fields/groups',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Field Groups'],
+                        ['code' => 'create', 'name' => 'Create Field Group'],
+                        ['code' => 'update', 'name' => 'Update Field Group'],
+                        ['code' => 'delete', 'name' => 'Delete Field Group'],
+                    ],
+                ],
+                [
+                    'code' => 'validation_rules',
+                    'name' => 'Validation Rules',
+                    'type' => 'page',
+                    'route' => '/custom-fields/validation',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Validation Rules'],
+                        ['code' => 'create', 'name' => 'Create Validation Rule'],
+                        ['code' => 'update', 'name' => 'Update Validation Rule'],
+                        ['code' => 'delete', 'name' => 'Delete Validation Rule'],
+                    ],
+                ],
+            ],
+        ],
     ],
 ];

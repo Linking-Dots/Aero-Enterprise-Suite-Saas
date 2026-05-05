@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Icon } from '../icons/icons.jsx';
+import { XMarkIcon, SparklesIcon, ExclamationTriangleIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 
 /* ── Modal ────────────────────────────────────────────────────── */
@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, description, footer, size = 'md', 
             </div>
             {onClose && (
               <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Close modal">
-                <Icon name="x" size={16} />
+                <XMarkIcon className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -66,7 +66,7 @@ export function Drawer({ open, onClose, side = 'right', width = 420, title, chil
           <header className="aeos-drawer-header">
             <h3 className="aeos-drawer-title">{title}</h3>
             <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Close drawer">
-              <Icon name="x" size={16} />
+              <XMarkIcon className="w-4 h-4" />
             </button>
           </header>
         )}
@@ -136,7 +136,8 @@ export function Menu({ trigger, items = [] }) {
                   tabIndex={0}
                   onKeyDown={e => { if (e.key === 'Enter') { it.onClick?.(); close(); } }}
                 >
-                  {it.icon && <Icon name={it.icon} size={14} />}
+                  {/* TODO: Update menu items to pass React icon components instead of icon names */}
+                  {/* {it.icon && <Icon name={it.icon} size={14} />} */}
                   <span>{it.label}</span>
                   {it.shortcut && <kbd className="aeos-kbd">{it.shortcut}</kbd>}
                 </li>
@@ -149,16 +150,27 @@ export function Menu({ trigger, items = [] }) {
 }
 
 /* ── Banner ───────────────────────────────────────────────────── */
-const BANNER_ICON = { info: 'sparkles', success: 'checkCircle', warning: 'alertTriangle', danger: 'alertCircle' };
+const BANNER_ICON = {
+  info: <SparklesIcon className="w-4.5 h-4.5" />,
+  success: <CheckCircleIcon className="w-4.5 h-4.5" />,
+  warning: <ExclamationTriangleIcon className="w-4.5 h-4.5" />,
+  danger: <ExclamationCircleIcon className="w-4.5 h-4.5" />,
+};
 
 export function Banner({ intent = 'info', icon, title, children, actions, onClose, className }) {
+  const iconComponent = icon ?? BANNER_ICON[intent] ?? BANNER_ICON.info;
+  
   return (
     <div
       className={cx('aeos-banner', `aeos-banner-${intent}`, className)}
       role={intent === 'danger' ? 'alert' : 'status'}
     >
       <div className="aeos-banner-icon">
-        <Icon name={icon ?? BANNER_ICON[intent] ?? 'sparkles'} size={18} />
+        {typeof iconComponent === 'string' ? (
+          <span style={{ fontSize: 18, lineHeight: 1 }}>{iconComponent}</span>
+        ) : (
+          iconComponent
+        )}
       </div>
       <div className="aeos-banner-body">
         {title && <strong className="aeos-banner-title">{title}</strong>}
@@ -167,7 +179,7 @@ export function Banner({ intent = 'info', icon, title, children, actions, onClos
       {actions && <div className="aeos-banner-actions">{actions}</div>}
       {onClose && (
         <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Dismiss">
-          <Icon name="x" size={14} />
+          <XMarkIcon className="w-3.5 h-3.5" />
         </button>
       )}
     </div>
@@ -200,7 +212,7 @@ export function ConfirmDialog({
       <div className="aeos-modal aeos-glass-strong aeos-anim-pop-in aeos-modal-confirm">
         <div className="aeos-confirm-dialog">
           <div className="aeos-confirm-icon">
-            <Icon name={intent === 'danger' ? 'alertTriangle' : 'sparkles'} size={28} />
+            {intent === 'danger' ? <ExclamationTriangleIcon className="w-7 h-7" /> : <SparklesIcon className="w-7 h-7" />}
           </div>
           <div className="aeos-confirm-body">
             <h3 id="aeos-confirm-title" className="aeos-confirm-title">{title}</h3>

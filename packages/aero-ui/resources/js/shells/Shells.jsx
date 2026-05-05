@@ -1,6 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { useTheme } from '../theme/ThemeProvider.jsx';
-import { Icon } from '../icons/icons.jsx';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import { cx } from '../components/Primitives.jsx';
 
 /* ── AppShell — auto-routes to the correct shell variant ────────── */
@@ -53,7 +53,8 @@ export function SidebarShell({
               aria-label={item.label}
               aria-current={item.active ? 'page' : undefined}
             >
-              {item.icon && <Icon name={item.icon} size={18} />}
+              {/* TODO: Update navigation items to pass React icon components instead of icon names */}
+      {/* {item.icon && <Icon name={item.icon} size={18} />} */}
               <span className="aeos-shell-sidebar-label">{item.label}</span>
             </Tag>
           );
@@ -77,7 +78,7 @@ export function SidebarShell({
               }}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              <Icon name="menu" size={16} />
+              <Bars3Icon className="w-4 h-4" />
             </button>
             {topbar}
             <span style={{ flex: 1 }} />
@@ -159,7 +160,7 @@ export function FloatingShell({
               onClick={toggle}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              <Icon name="menu" size={16} />
+              <Bars3Icon className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -178,7 +179,8 @@ export function FloatingShell({
               aria-label={item.label}
               aria-current={item.active ? 'page' : undefined}
             >
-              {item.icon && <Icon name={item.icon} size={18} />}
+              {/* TODO: Update navigation items to pass React icon components instead of icon names */}
+      {/* {item.icon && <Icon name={item.icon} size={18} />} */}
               <span className="aeos-shell-sidebar-label">{item.label}</span>
             </Tag>
           );
@@ -231,7 +233,8 @@ export function CommandShell({
                   className={cx('aeos-shell-nav-item', item.active && 'active')}
                   aria-current={item.active ? 'page' : undefined}
                 >
-                  {item.icon && <Icon name={item.icon} size={15} />}
+                  {/* TODO: Update navigation items to pass React icon components instead of icon names */}
+      {/* {item.icon && <Icon name={item.icon} size={15} />} */}
                   <span>{item.label}</span>
                   {item.count != null && (
                     <span className="aeos-shell-cmd-nav-count">{item.count}</span>

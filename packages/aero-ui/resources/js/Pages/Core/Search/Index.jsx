@@ -10,6 +10,7 @@ import {
   EmptyState,
   useHRMAC,
   Button,
+  Box,
 } from '@aero/ui';
 
 /**
@@ -138,7 +139,7 @@ function SearchResultCard({ result }) {
     <Card interactive>
       <CardBody>
         <HStack gap={4} align="start">
-          <div
+          <Box
             style={{
               width: 40,
               height: 40,
@@ -151,7 +152,7 @@ function SearchResultCard({ result }) {
             }}
           >
             <Icon name={mapResultIcon(result.icon, result.type)} size={20} />
-          </div>
+          </Box>
           <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
             <HStack gap={2} align="center">
               <Heading level={5} style={{ margin: 0 }}>

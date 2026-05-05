@@ -1,5 +1,5 @@
 import { forwardRef, useState, useId } from 'react';
-import { Icon } from '../icons/icons.jsx';
+import { MagnifyingGlassIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 
 /** Field — label + hint + error wrapper. */
@@ -41,14 +41,14 @@ export const Input = forwardRef(function Input(
   return (
     <div className="aeos-input-group">
       {leftIcon && (
-        <span className="aeos-input-group-icon" aria-hidden="true">
-          <Icon name={leftIcon} size={16} />
+        <span className="aeos-input-group-icon" aria-hidden="true" style={{ fontSize: 16, lineHeight: 1 }}>
+          {leftIcon}
         </span>
       )}
       {inputEl}
       {rightIcon && (
-        <span className="aeos-input-group-icon" style={{ left: 'auto', right: '0.75rem' }} aria-hidden="true">
-          <Icon name={rightIcon} size={16} />
+        <span className="aeos-input-group-icon" style={{ left: 'auto', right: '0.75rem', fontSize: 16, lineHeight: 1 }} aria-hidden="true">
+          {rightIcon}
         </span>
       )}
     </div>
@@ -166,7 +166,7 @@ export const SearchInput = forwardRef(function SearchInput(
   return (
     <div className="aeos-input-group" style={{ position: 'relative' }}>
       <span className="aeos-input-group-icon" aria-hidden="true">
-        <Icon name="search" size={16} />
+        <MagnifyingGlassIcon className="w-4 h-4" />
       </span>
       <input
         ref={ref}
@@ -205,7 +205,7 @@ export function FileInput({ accept, multiple, onChange, label = 'Choose file', c
         }}
       />
       <span className="aeos-btn aeos-btn-soft aeos-btn-sm">
-        <Icon name="document" size={14} />
+        <DocumentIcon className="w-3.5 h-3.5" />
         {label}
       </span>
       {name && (

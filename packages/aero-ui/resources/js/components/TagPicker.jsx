@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon } from '../icons/icons.jsx';
+import { XMarkIcon, CheckIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { cx, Text } from './Primitives.jsx';
 
 /**
@@ -171,7 +171,7 @@ export default function TagPicker({
                 }}
                 aria-label={`Remove ${name}`}
               >
-                <Icon name="x" size={12} />
+                <XMarkIcon className="w-3 h-3" />
               </button>
             </span>
           );
@@ -250,7 +250,7 @@ export default function TagPicker({
                   }}
                 />
                 <Text size="sm" style={{ flex: 1 }}>{opt.name}</Text>
-                {isSelected && <Icon name="check" size={14} />}
+                {isSelected && <CheckIcon className="w-3.5 h-3.5" />}
               </div>
             );
           })}
@@ -269,7 +269,7 @@ export default function TagPicker({
               onMouseEnter={() => setActiveIndex(filtered.length)}
               onClick={handleCreate}
             >
-              <Icon name="plus" size={14} />
+              <PlusIcon className="w-3.5 h-3.5" />
               <Text size="sm">Create "{query.trim()}"</Text>
             </div>
           )}

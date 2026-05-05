@@ -10,7 +10,14 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Icon } from '../icons/icons.jsx';
+import {
+  XMarkIcon,
+  InformationCircleIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 
 /* ── Intent → CSS class maps ──────────────────────────────────────────── */
@@ -46,7 +53,7 @@ const BADGE_SIZE_CLASS = {
  * @param {'sm'|'md'|'lg'} [props.size='md']
  * @param {boolean}  [props.dot]       - Show pulsing status dot
  * @param {boolean}  [props.mono]      - Force monospace font style
- * @param {string}   [props.leftIcon]  - Icon name to render before text
+ * @param {React.ReactNode} [props.leftIcon]  - Icon component to render before text
  * @param {string}   [props.className]
  */
 export function Badge({
@@ -75,7 +82,9 @@ export function Badge({
     >
       {dot && <span className="aeos-badge-dot" aria-hidden="true" />}
       {leftIcon && (
-        <Icon name={leftIcon} size={12} className="aeos-badge-icon" />
+        <span className="aeos-badge-icon" style={{ fontSize: 12, lineHeight: 1 }}>
+          {leftIcon}
+        </span>
       )}
       {children}
     </span>
@@ -309,7 +318,7 @@ export function Tag({
           onClick={onRemove}
           aria-label="Remove"
         >
-          <Icon name="x" size={10} />
+          <XMarkIcon className="w-2.5 h-2.5" />
         </button>
       )}
     </span>
@@ -430,13 +439,21 @@ const ALERT_DEFAULT_ICON = {
   danger:  'alertCircle',
 };
 
+const ALERT_ICON_MAP = {
+  sparkles: <SparklesIcon className="w-4 h-4" />,
+  info: <InformationCircleIcon className="w-4 h-4" />,
+  checkCircle: <CheckCircleIcon className="w-4 h-4" />,
+  alertTriangle: <ExclamationTriangleIcon className="w-4 h-4" />,
+  alertCircle: <ExclamationCircleIcon className="w-4 h-4" />,
+};
+
 /**
  * `Alert` — contextual message with intent-driven styling.
  *
  * @param {object}   props
  * @param {'info'|'success'|'warning'|'danger'} [props.intent='info']
  * @param {string}   [props.title]    - Bold heading text
- * @param {string}   [props.icon]     - Override icon name
+ * @param {React.ReactNode} [props.icon]     - Override icon component
  * @param {Function} [props.onClose]  - If provided, shows a close button
  * @param {string}   [props.className]
  */
@@ -450,7 +467,7 @@ export function Alert({
   ...rest
 }) {
   const intentClass = ALERT_INTENT_CLASS[intent] ?? 'aeos-alert-info';
-  const iconName    = icon ?? ALERT_DEFAULT_ICON[intent] ?? 'info';
+  const iconComponent = icon ?? ALERT_ICON_MAP[ALERT_DEFAULT_ICON[intent]] ?? ALERT_ICON_MAP.info;
 
   return (
     <div
@@ -459,7 +476,7 @@ export function Alert({
       {...rest}
     >
       <span className="aeos-alert-icon" aria-hidden="true">
-        <Icon name={iconName} size={16} />
+        {iconComponent}
       </span>
       <div className="aeos-alert-body">
         {title && <p className="aeos-alert-title">{title}</p>}
@@ -472,7 +489,7 @@ export function Alert({
           onClick={onClose}
           aria-label="Dismiss alert"
         >
-          <Icon name="x" size={14} />
+          <XMarkIcon className="w-3.5 h-3.5" />
         </button>
       )}
     </div>

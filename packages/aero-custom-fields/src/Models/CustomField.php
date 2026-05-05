@@ -1,12 +1,13 @@
 <?php
 
-namespace Aero\Core\Models;
+namespace Aero\CustomFields\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Aero\Core\Models\User;
 
 class CustomField extends Model
 {

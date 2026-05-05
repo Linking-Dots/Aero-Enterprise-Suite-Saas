@@ -3,10 +3,14 @@
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
 use Aero\Core\Http\Controllers\Admin\CoreUserController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
+use Aero\Core\Http\Controllers\Admin\FormController;
+use Aero\Core\Http\Controllers\Admin\FormSubmissionController;
 use Aero\Core\Http\Controllers\Admin\ModuleController;
 use Aero\Core\Http\Controllers\Admin\RoleController;
 use Aero\Core\Http\Controllers\Admin\SavedViewController;
+use Aero\Core\Http\Controllers\Admin\SystemHealthController;
 use Aero\Core\Http\Controllers\Admin\TagController;
+use Aero\Core\Http\Controllers\Admin\UserPreferenceController;
 use Aero\Core\Http\Controllers\CustomFieldController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
@@ -238,11 +242,26 @@ Route::middleware('auth:web')->group(function () {
     // ====================================================================
     // GLOBAL SEARCH
     // ====================================================================
-    Route::prefix('search')->name('core.search.')->middleware('hrmac:core.global_search.search_ui.use')->group(function () {
-        Route::get('/', [GlobalSearchController::class, 'index'])->name('index');
-        Route::get('/api', [GlobalSearchController::class, 'search'])->name('api');
-        Route::get('/suggestions', [GlobalSearchController::class, 'suggestions'])->name('suggestions');
+    Route::prefix('search')->name('core.search.')->group(function () {
+        // Search UI routes (search_ui.use permission)
+        Route::middleware('hrmac:core.global_search.search_ui.use')->group(function () {
+            Route::get('/', [GlobalSearchController::class, 'index'])->name('index');
+            Route::get('/api', [GlobalSearchController::class, 'search'])->name('api');
+            Route::get('/suggestions', [GlobalSearchController::class, 'suggestions'])->name('suggestions');
+        });
+
+        // Search Index Management routes (search_index permissions)
+        Route::middleware('hrmac:core.global_search.search_index.view')->group(function () {
+            Route::get('/management', [GlobalSearchController::class, 'indexManagement'])->name('index.management');
+            Route::post('/management/reindex', [GlobalSearchController::class, 'reindex'])
+                ->middleware('hrmac:core.global_search.search_index.reindex')
+                ->name('index.reindex');
+            Route::get('/management/configure', [GlobalSearchController::class, 'configure'])
+                ->middleware('hrmac:core.global_search.search_index.configure')
+                ->name('index.configure');
+        });
     });
+
 
     // Dashboard Routes
     // All dashboard routes use 'core.dashboard.*' prefix for consistency
@@ -480,6 +499,87 @@ Route::middleware('auth:web')->group(function () {
     });
 
     // ========================================================================
+    // SYSTEM HEALTH
+    // ========================================================================
+    Route::prefix('system-health')->name('core.system-health.')->middleware('hrmac:core.system_health.overview.view')->group(function () {
+        // Dashboard
+        Route::get('/', [SystemHealthController::class, 'index'])->name('index');
+        
+        // API endpoints for real-time data
+        Route::prefix('api')->group(function () {
+            Route::get('/overview', [SystemHealthController::class, 'apiOverview'])
+                ->middleware('hrmac:core.system_health.overview.view')
+                ->name('api.overview');
+            Route::get('/database', [SystemHealthController::class, 'apiDatabase'])
+                ->middleware('hrmac:core.system_health.database.view')
+                ->name('api.database');
+            Route::get('/queue', [SystemHealthController::class, 'apiQueue'])
+                ->middleware('hrmac:core.system_health.queue.view')
+                ->name('api.queue');
+            Route::get('/cache', [SystemHealthController::class, 'apiCache'])
+                ->middleware('hrmac:core.system_health.cache.view')
+                ->name('api.cache');
+            Route::get('/services', [SystemHealthController::class, 'apiServices'])
+                ->middleware('hrmac:core.system_health.services.view')
+                ->name('api.services');
+            Route::get('/metrics', [SystemHealthController::class, 'apiMetrics'])
+                ->middleware('hrmac:core.system_health.metrics.view')
+                ->name('api.metrics');
+        });
+        
+        // Refresh all health data
+        Route::post('/refresh', [SystemHealthController::class, 'refresh'])
+            ->middleware('hrmac:core.system_health.overview.view')
+            ->name('refresh');
+    });
+
+
+    // ========================================================================
+    // FORM BUILDER
+    // ========================================================================
+    Route::prefix('forms')->name('core.forms.')->middleware('hrmac:core.form_builder.forms.view')->group(function () {
+        Route::get('/', [FormController::class, 'index'])->name('index');
+        Route::get('/create', [FormController::class, 'create'])
+            ->name('create')
+            ->middleware('hrmac:core.form_builder.forms.create');
+        Route::post('/', [FormController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.form_builder.forms.create');
+        Route::get('/{form}', [FormController::class, 'edit'])
+            ->name('edit')
+            ->middleware('hrmac:core.form_builder.forms.update');
+        Route::put('/{form}', [FormController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.form_builder.forms.update');
+        Route::delete('/{form}', [FormController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.form_builder.forms.delete');
+        Route::post('/{form}/publish', [FormController::class, 'publish'])
+            ->name('publish')
+            ->middleware('hrmac:core.form_builder.forms.publish');
+        Route::post('/{form}/unpublish', [FormController::class, 'unpublish'])
+            ->name('unpublish')
+            ->middleware('hrmac:core.form_builder.forms.publish');
+
+        // Submissions
+        Route::get('/{form}/submissions', [FormSubmissionController::class, 'index'])
+            ->name('submissions.index')
+            ->middleware('hrmac:core.form_builder.submissions.view');
+        Route::get('/{form}/submissions/{submission}', [FormSubmissionController::class, 'show'])
+            ->name('submissions.show')
+            ->middleware('hrmac:core.form_builder.submissions.view');
+        Route::put('/{form}/submissions/{submission}', [FormSubmissionController::class, 'update'])
+            ->name('submissions.update')
+            ->middleware('hrmac:core.form_builder.submissions.view');
+        Route::delete('/{form}/submissions/{submission}', [FormSubmissionController::class, 'destroy'])
+            ->name('submissions.destroy')
+            ->middleware('hrmac:core.form_builder.submissions.delete');
+        Route::get('/{form}/submissions/export', [FormSubmissionController::class, 'export'])
+            ->name('submissions.export')
+            ->middleware('hrmac:core.form_builder.submissions.export');
+    });
+
+    // ========================================================================
     // NOTIFICATIONS MANAGEMENT
     // ========================================================================
     Route::prefix('notifications')->name('core.notifications.')->group(function () {
@@ -636,6 +736,44 @@ Route::middleware('auth:web')->group(function () {
             Route::get('/{user}', [UserProfileImageController::class, 'show'])->name('show');
             Route::post('/upload', [UserProfileImageController::class, 'upload'])->name('upload');
             Route::delete('/remove', [UserProfileImageController::class, 'remove'])->name('remove');
+        });
+    });
+
+    // ========================================================================
+    // USER PREFERENCES
+    // ========================================================================
+    Route::prefix('preferences')->name('core.user-preferences.')->group(function () {
+        // Main preferences page
+        Route::get('/', [UserPreferenceController::class, 'index'])->name('index');
+        
+        // Update preferences
+        Route::post('/', [UserPreferenceController::class, 'update'])
+            ->name('update');
+        
+        // API endpoints for notification preferences
+        Route::prefix('api')->group(function () {
+            Route::get('/notifications', [UserPreferenceController::class, 'getNotificationPreferences'])
+                ->name('api.notifications');
+            Route::post('/notifications', [UserPreferenceController::class, 'updateNotificationPreferences'])
+                ->name('api.notifications.update');
+            
+            // API endpoints for theme preferences
+            Route::get('/theme', [UserPreferenceController::class, 'getThemePreferences'])
+                ->name('api.theme');
+            Route::post('/theme', [UserPreferenceController::class, 'updateThemePreferences'])
+                ->name('api.theme.update');
+            
+            // API endpoints for locale preferences
+            Route::get('/locale', [UserPreferenceController::class, 'getLocalePreferences'])
+                ->name('api.locale');
+            Route::post('/locale', [UserPreferenceController::class, 'updateLocalePreferences'])
+                ->name('api.locale.update');
+            
+            // API endpoints for accessibility preferences
+            Route::get('/accessibility', [UserPreferenceController::class, 'getAccessibilityPreferences'])
+                ->name('api.accessibility');
+            Route::post('/accessibility', [UserPreferenceController::class, 'updateAccessibilityPreferences'])
+                ->name('api.accessibility.update');
         });
     });
 

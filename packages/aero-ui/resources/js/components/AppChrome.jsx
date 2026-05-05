@@ -12,7 +12,7 @@ import { cx } from './Primitives.jsx';
 import { Avatar } from './Display.jsx';
 import { Text, Mono, HStack, VStack } from './Primitives.jsx';
 import { Button } from './Actions.jsx';
-import { Icon } from '../icons/icons.jsx';
+import { BellIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
 // ─── AeosLogo ─────────────────────────────────────────────────────────────────
 /**
@@ -107,7 +107,7 @@ export function AppUserMenu({ user, logoutRoute = 'logout', className }) {
         title="Notifications"
         onClick={() => {}}
       >
-        <Icon name="bell" size={16} />
+        <BellIcon className="w-4 h-4" />
       </Button>
 
       {/* User pill */}
@@ -126,7 +126,7 @@ export function AppUserMenu({ user, logoutRoute = 'logout', className }) {
           aria-label="Sign out"
           title="Sign out"
         >
-          <Icon name="arrowRight" size={14} />
+          <ArrowRightIcon className="w-3.5 h-3.5" />
         </Button>
       </HStack>
     </HStack>

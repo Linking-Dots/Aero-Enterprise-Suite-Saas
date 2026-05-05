@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Icon } from '../icons/icons.jsx';
+import { XMarkIcon, SparklesIcon, CheckCircleIcon, ExclamationTriangleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 
 /* ── Event bus ────────────────────────────────────────────────── */
@@ -16,11 +16,15 @@ export function useToast() {
 
 /* ── Toast component ──────────────────────────────────────────── */
 const TOAST_ICON = {
-  info: 'sparkles', success: 'checkCircle',
-  warning: 'alertTriangle', danger: 'alertCircle',
+  info: <SparklesIcon className="w-4 h-4" />,
+  success: <CheckCircleIcon className="w-4 h-4" />,
+  warning: <ExclamationTriangleIcon className="w-4 h-4" />,
+  danger: <ExclamationCircleIcon className="w-4 h-4" />,
 };
 
 export function Toast({ intent = 'info', title, icon, onClose, children, className }) {
+  const iconComponent = icon ?? TOAST_ICON[intent] ?? TOAST_ICON.info;
+  
   return (
     <div
       className={cx('aeos-toast', `aeos-toast-${intent}`, 'aeos-anim-slide-in-right', className)}
@@ -28,7 +32,12 @@ export function Toast({ intent = 'info', title, icon, onClose, children, classNa
       aria-live="polite"
     >
       <div className="aeos-toast-icon">
-        <Icon name={icon ?? TOAST_ICON[intent] ?? 'sparkles'} size={16} />
+        {typeof iconComponent === 'string' ? (
+          // Fallback for string icons during migration
+          <span style={{ fontSize: 16, lineHeight: 1 }}>{iconComponent}</span>
+        ) : (
+          iconComponent
+        )}
       </div>
       <div className="aeos-toast-body">
         {title && <strong className="aeos-toast-title">{title}</strong>}
@@ -36,7 +45,7 @@ export function Toast({ intent = 'info', title, icon, onClose, children, classNa
       </div>
       {onClose && (
         <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Dismiss">
-          <Icon name="x" size={12} />
+          <XMarkIcon className="w-3 h-3" />
         </button>
       )}
     </div>
