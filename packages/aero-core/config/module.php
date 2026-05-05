@@ -634,6 +634,20 @@ return [
                         ['code' => 'geo_block', 'name' => 'Manage Geo Blocking'],
                     ],
                 ],
+                [
+                    'code' => 'email_templates',
+                    'name' => 'Email Templates',
+                    'type' => 'page',
+                    'route' => '/settings/email-templates',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Email Templates'],
+                        ['code' => 'create', 'name' => 'Create Email Template'],
+                        ['code' => 'edit', 'name' => 'Edit Email Template'],
+                        ['code' => 'delete', 'name' => 'Delete Email Template'],
+                        ['code' => 'preview', 'name' => 'Preview Email Template'],
+                        ['code' => 'test_send', 'name' => 'Test Send Email'],
+                    ],
+                ],
             ],
         ],
 
@@ -1184,7 +1198,91 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 2.7 User Preferences
+        | 2.8 Data Export/Import
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'data_export_import',
+            'name' => 'Data Export/Import',
+            'description' => 'Export and import data across entities with support for multiple formats, export history, and scheduling',
+            'icon' => 'ArrowPathIcon',
+            'route' => '/export-import',
+            'priority' => 19,
+            'components' => [
+                [
+                    'code' => 'exports', 'name' => 'Exports', 'type' => 'page', 'route' => '/export-import/exports',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Exports'],
+                        ['code' => 'create', 'name' => 'Create Export'],
+                        ['code' => 'download', 'name' => 'Download Export'],
+                        ['code' => 'delete', 'name' => 'Delete Export'],
+                    ],
+                ],
+                [
+                    'code' => 'imports', 'name' => 'Imports', 'type' => 'page', 'route' => '/export-import/imports',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Imports'],
+                        ['code' => 'create', 'name' => 'Import Data'],
+                        ['code' => 'download_template', 'name' => 'Download Template'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2.10 Retention Policies
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'retention_policies',
+            'name' => 'Retention Policies',
+            'description' => 'Automated data retention and cleanup policies for audit logs, activities, and exports',
+            'icon' => 'TrashIcon',
+            'route' => '/retention-policies',
+            'priority' => 20,
+            'components' => [
+                [
+                    'code' => 'policies', 'name' => 'Policies', 'type' => 'page', 'route' => '/retention-policies',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Policies'],
+                        ['code' => 'create', 'name' => 'Create Policy'],
+                        ['code' => 'update', 'name' => 'Update Policy'],
+                        ['code' => 'delete', 'name' => 'Delete Policy'],
+                        ['code' => 'execute', 'name' => 'Execute Policy'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2.12 Trash & Recycle Bin
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'trash',
+            'name' => 'Trash & Recycle Bin',
+            'description' => 'System-wide trash bin with restore and permanent delete functionality',
+            'icon' => 'TrashIcon',
+            'route' => '/trash',
+            'priority' => 19,
+            'components' => [
+                [
+                    'code' => 'view', 'name' => 'View Trash', 'type' => 'page', 'route' => '/trash',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Trashed Items'],
+                        ['code' => 'restore', 'name' => 'Restore Items'],
+                        ['code' => 'force_delete', 'name' => 'Permanently Delete'],
+                        ['code' => 'empty', 'name' => 'Empty Trash'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2.13 Comments & Mentions
         |--------------------------------------------------------------------------
         */
         [
@@ -1265,6 +1363,7 @@ return [
                     'code' => 'activity_feed', 'name' => 'Activity Feed', 'type' => 'page', 'route' => '/activity',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Activity Feed'],
+                        ['code' => 'export', 'name' => 'Export Activities'],
                     ],
                 ],
             ],

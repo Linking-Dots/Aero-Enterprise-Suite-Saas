@@ -1,17 +1,24 @@
 <?php
 
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
+use Aero\Core\Http\Controllers\Admin\BackupConfigController;
+use Aero\Core\Http\Controllers\Admin\BackupController;
+use Aero\Core\Http\Controllers\Admin\CommentController;
 use Aero\Core\Http\Controllers\Admin\CoreUserController;
+use Aero\Core\Http\Controllers\Admin\ActivityController;
+use Aero\Core\Http\Controllers\Admin\EmailTemplateController;
+use Aero\Core\Http\Controllers\Admin\ExportImportController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
-use Aero\Core\Http\Controllers\Admin\FormController;
-use Aero\Core\Http\Controllers\Admin\FormSubmissionController;
+use Aero\Core\Http\Controllers\Admin\RetentionPolicyController;
+use Aero\Core\Http\Controllers\Admin\TrashController;
+use Aero\Core\Http\Controllers\Admin\MentionsController;
 use Aero\Core\Http\Controllers\Admin\ModuleController;
+use Aero\Core\Http\Controllers\Admin\RestoreController;
 use Aero\Core\Http\Controllers\Admin\RoleController;
 use Aero\Core\Http\Controllers\Admin\SavedViewController;
 use Aero\Core\Http\Controllers\Admin\SystemHealthController;
 use Aero\Core\Http\Controllers\Admin\TagController;
 use Aero\Core\Http\Controllers\Admin\UserPreferenceController;
-use Aero\Core\Http\Controllers\CustomFieldController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
@@ -445,27 +452,6 @@ Route::middleware('auth:web')->group(function () {
             Route::get('/counts', [TagController::class, 'taggableCounts'])->name('counts');
         });
 
-    // ========================================================================
-    // CUSTOM FIELDS
-    // ========================================================================
-    Route::prefix('custom-fields')->name('core.custom-fields.')->middleware('hrmac:core.custom_fields.field_definitions.view')->group(function () {
-        Route::get('/', [CustomFieldController::class, 'index'])->name('index');
-        Route::post('/', [CustomFieldController::class, 'store'])
-            ->name('store')
-            ->middleware('hrmac:core.custom_fields.field_definitions.create');
-        Route::get('/{id}', [CustomFieldController::class, 'show'])->name('show');
-        Route::put('/{id}', [CustomFieldController::class, 'update'])
-            ->name('update')
-            ->middleware('hrmac:core.custom_fields.field_definitions.update');
-        Route::delete('/{id}', [CustomFieldController::class, 'destroy'])
-            ->name('destroy')
-            ->middleware('hrmac:core.custom_fields.field_definitions.delete');
-        
-        // API endpoints for entity integration
-        Route::get('/api/fields', [CustomFieldController::class, 'getFieldsForEntity'])->name('api.fields');
-        Route::get('/api/values', [CustomFieldController::class, 'getValuesForEntity'])->name('api.values');
-        Route::post('/api/values', [CustomFieldController::class, 'saveValues'])->name('api.values.save');
-    });
 
     // ========================================================================
     // SAVED VIEWS & FILTERS
@@ -534,50 +520,6 @@ Route::middleware('auth:web')->group(function () {
     });
 
 
-    // ========================================================================
-    // FORM BUILDER
-    // ========================================================================
-    Route::prefix('forms')->name('core.forms.')->middleware('hrmac:core.form_builder.forms.view')->group(function () {
-        Route::get('/', [FormController::class, 'index'])->name('index');
-        Route::get('/create', [FormController::class, 'create'])
-            ->name('create')
-            ->middleware('hrmac:core.form_builder.forms.create');
-        Route::post('/', [FormController::class, 'store'])
-            ->name('store')
-            ->middleware('hrmac:core.form_builder.forms.create');
-        Route::get('/{form}', [FormController::class, 'edit'])
-            ->name('edit')
-            ->middleware('hrmac:core.form_builder.forms.update');
-        Route::put('/{form}', [FormController::class, 'update'])
-            ->name('update')
-            ->middleware('hrmac:core.form_builder.forms.update');
-        Route::delete('/{form}', [FormController::class, 'destroy'])
-            ->name('destroy')
-            ->middleware('hrmac:core.form_builder.forms.delete');
-        Route::post('/{form}/publish', [FormController::class, 'publish'])
-            ->name('publish')
-            ->middleware('hrmac:core.form_builder.forms.publish');
-        Route::post('/{form}/unpublish', [FormController::class, 'unpublish'])
-            ->name('unpublish')
-            ->middleware('hrmac:core.form_builder.forms.publish');
-
-        // Submissions
-        Route::get('/{form}/submissions', [FormSubmissionController::class, 'index'])
-            ->name('submissions.index')
-            ->middleware('hrmac:core.form_builder.submissions.view');
-        Route::get('/{form}/submissions/{submission}', [FormSubmissionController::class, 'show'])
-            ->name('submissions.show')
-            ->middleware('hrmac:core.form_builder.submissions.view');
-        Route::put('/{form}/submissions/{submission}', [FormSubmissionController::class, 'update'])
-            ->name('submissions.update')
-            ->middleware('hrmac:core.form_builder.submissions.view');
-        Route::delete('/{form}/submissions/{submission}', [FormSubmissionController::class, 'destroy'])
-            ->name('submissions.destroy')
-            ->middleware('hrmac:core.form_builder.submissions.delete');
-        Route::get('/{form}/submissions/export', [FormSubmissionController::class, 'export'])
-            ->name('submissions.export')
-            ->middleware('hrmac:core.form_builder.submissions.export');
-    });
 
     // ========================================================================
     // NOTIFICATIONS MANAGEMENT
@@ -588,6 +530,53 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
         Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+    });
+
+    // ========================================================================
+    // COMMENTS & MENTIONS
+    // ========================================================================
+    // Comments API routes
+    Route::prefix('comments')->name('core.comments.')->group(function () {
+        Route::get('/', [CommentController::class, 'index'])
+            ->middleware('hrmac:core.comments_mentions.comments.view')
+            ->name('index');
+        Route::post('/', [CommentController::class, 'store'])
+            ->middleware('hrmac:core.comments_mentions.comments.create')
+            ->name('store');
+        Route::get('/{comment}', [CommentController::class, 'show'])
+            ->middleware('hrmac:core.comments_mentions.comments.view')
+            ->name('show');
+        Route::put('/{comment}', [CommentController::class, 'update'])
+            ->middleware('hrmac:core.comments_mentions.comments.update')
+            ->name('update');
+        Route::delete('/{comment}', [CommentController::class, 'destroy'])
+            ->middleware('hrmac:core.comments_mentions.comments.delete')
+            ->name('destroy');
+        Route::post('/{comment}/reaction', [CommentController::class, 'addReaction'])
+            ->middleware('hrmac:core.comments_mentions.comments.react')
+            ->name('add-reaction');
+        Route::delete('/{comment}/reaction', [CommentController::class, 'removeReaction'])
+            ->middleware('hrmac:core.comments_mentions.comments.react')
+            ->name('remove-reaction');
+    });
+
+    // Mentions routes
+    Route::prefix('mentions')->name('core.mentions.')->group(function () {
+        Route::get('/', [MentionsController::class, 'index'])
+            ->middleware('hrmac:core.comments_mentions.mentions_inbox.view')
+            ->name('index');
+        Route::get('/list', [MentionsController::class, 'getMentions'])
+            ->middleware('hrmac:core.comments_mentions.mentions_inbox.view')
+            ->name('list');
+        Route::post('/{mention}/read', [MentionsController::class, 'markAsRead'])
+            ->middleware('hrmac:core.comments_mentions.mentions_inbox.mark_read')
+            ->name('mark-read');
+        Route::post('/read-all', [MentionsController::class, 'markAllAsRead'])
+            ->middleware('hrmac:core.comments_mentions.mentions_inbox.mark_read')
+            ->name('mark-all-read');
+        Route::get('/unread-count', [MentionsController::class, 'unreadCount'])
+            ->middleware('hrmac:core.comments_mentions.mentions_inbox.view')
+            ->name('unread-count');
     });
 
     // ========================================================================
@@ -629,14 +618,6 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/system/test-email', [SystemSettingController::class, 'sendTestEmail'])->name('system.test-email');
         Route::post('/system/test-sms', [SystemSettingController::class, 'sendTestSms'])->name('system.test-sms');
 
-        // Notification Settings
-        Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/', [NotificationSettingController::class, 'index'])->name('index');
-            Route::get('/stats', [NotificationSettingController::class, 'stats'])->name('stats');
-            Route::post('/', [NotificationSettingController::class, 'update'])->name('update');
-            Route::post('/retry', [NotificationSettingController::class, 'updateRetry'])->name('update-retry');
-            Route::post('/test-channel', [NotificationSettingController::class, 'testChannel'])->name('test-channel');
-        });
 
         // Password Policy Settings
         Route::prefix('password-policy')->name('password-policy.')->group(function () {
@@ -836,6 +817,148 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/upload', [ExtensionsController::class, 'upload'])->name('upload');
         Route::get('/check-updates', [ExtensionsController::class, 'checkUpdates'])->name('checkUpdates');
         Route::get('/{moduleCode}/settings', [ExtensionsController::class, 'settings'])->name('settings');
+    });
+
+    // ========================================================================
+    // BACKUP & RESTORE
+    // ========================================================================
+    // Backup routes
+    Route::prefix('backup')->name('core.backup.')->group(function () {
+        Route::get('/', [BackupController::class, 'index'])
+            ->middleware('hrmac:core.backup_restore.backup_dashboard.view')
+            ->name('index');
+        Route::post('/', [BackupController::class, 'store'])
+            ->middleware('hrmac:core.backup_restore.manual_backup.create')
+            ->name('store');
+        Route::get('/{id}', [BackupController::class, 'show'])
+            ->middleware('hrmac:core.backup_restore.backup_dashboard.view')
+            ->name('show');
+        Route::delete('/{id}', [BackupController::class, 'destroy'])
+            ->middleware('hrmac:core.backup_restore.backup_dashboard.view')
+            ->name('destroy');
+        Route::get('/{id}/download', [BackupController::class, 'download'])
+            ->middleware('hrmac:core.backup_restore.manual_backup.download')
+            ->name('download');
+        Route::get('/stats', [BackupController::class, 'stats'])
+            ->middleware('hrmac:core.backup_restore.backup_dashboard.view')
+            ->name('stats');
+    });
+
+    // Backup Configuration routes
+    Route::prefix('backup/config')->name('core.backup.config.')->group(function () {
+        Route::get('/', [BackupConfigController::class, 'index'])
+            ->middleware('hrmac:core.backup_restore.backup_config.view')
+            ->name('index');
+        Route::put('/', [BackupConfigController::class, 'update'])
+            ->middleware('hrmac:core.backup_restore.backup_config.configure')
+            ->name('update');
+        Route::post('/test', [BackupConfigController::class, 'test'])
+            ->middleware('hrmac:core.backup_restore.backup_config.view')
+            ->name('test');
+    });
+
+    // Restore routes
+    Route::prefix('backup/restore')->name('core.restore.')->group(function () {
+        Route::get('/', [RestoreController::class, 'index'])
+            ->middleware('hrmac:core.backup_restore.restore_points.view')
+            ->name('index');
+        Route::get('/{id}', [RestoreController::class, 'show'])
+            ->middleware('hrmac:core.backup_restore.restore_points.view')
+            ->name('show');
+        Route::post('/{id}/validate', [RestoreController::class, 'validate'])
+            ->middleware('hrmac:core.backup_restore.restore_points.view')
+            ->name('validate');
+        Route::post('/{id}/restore', [RestoreController::class, 'restore'])
+            ->middleware('hrmac:core.backup_restore.restore_points.restore')
+            ->name('restore');
+    });
+
+    // Activity Feed routes
+    Route::prefix('activity')->name('core.activity.')->group(function () {
+        Route::get('/', [ActivityController::class, 'index'])
+            ->middleware('hrmac:core.activity_feed.view')
+            ->name('index');
+        Route::get('/{id}', [ActivityController::class, 'show'])
+            ->middleware('hrmac:core.activity_feed.view')
+            ->name('show');
+        Route::get('/stats', [ActivityController::class, 'stats'])
+            ->middleware('hrmac:core.activity_feed.view')
+            ->name('stats');
+        Route::get('/export', [ActivityController::class, 'export'])
+            ->middleware('hrmac:core.activity_feed.export')
+            ->name('export');
+    });
+
+    // Data Export/Import routes
+    Route::prefix('export-import')->name('core.export-import.')->group(function () {
+        // Exports
+        Route::prefix('exports')->name('exports.')->middleware('hrmac:core.data_export_import.exports.view')->group(function () {
+            Route::get('/', [ExportImportController::class, 'exportsIndex'])->name('index');
+            Route::post('/', [ExportImportController::class, 'createExport'])
+                ->middleware('hrmac:core.data_export_import.exports.create')
+                ->name('create');
+            Route::get('/{id}/download', [ExportImportController::class, 'downloadExport'])
+                ->middleware('hrmac:core.data_export_import.exports.download')
+                ->name('download');
+            Route::delete('/{id}', [ExportImportController::class, 'deleteExport'])
+                ->middleware('hrmac:core.data_export_import.exports.delete')
+                ->name('delete');
+        });
+
+        // Imports
+        Route::prefix('imports')->name('imports.')->middleware('hrmac:core.data_export_import.imports.view')->group(function () {
+            Route::get('/', [ExportImportController::class, 'importsIndex'])->name('index');
+            Route::post('/', [ExportImportController::class, 'import'])
+                ->middleware('hrmac:core.data_export_import.imports.create')
+                ->name('create');
+            Route::get('/template/{entity}', [ExportImportController::class, 'downloadTemplate'])
+                ->middleware('hrmac:core.data_export_import.imports.download_template')
+                ->name('template');
+        });
+    });
+
+    // Retention Policies routes
+    Route::prefix('retention-policies')->name('core.retention-policies.')->group(function () {
+        Route::get('/', [RetentionPolicyController::class, 'index'])
+            ->middleware('hrmac:core.retention_policies.policies.view')
+            ->name('index');
+        Route::post('/', [RetentionPolicyController::class, 'store'])
+            ->middleware('hrmac:core.retention_policies.policies.create')
+            ->name('store');
+        Route::put('/{id}', [RetentionPolicyController::class, 'update'])
+            ->middleware('hrmac:core.retention_policies.policies.update')
+            ->name('update');
+        Route::delete('/{id}', [RetentionPolicyController::class, 'destroy'])
+            ->middleware('hrmac:core.retention_policies.policies.delete')
+            ->name('destroy');
+        Route::post('/{id}/execute', [RetentionPolicyController::class, 'execute'])
+            ->middleware('hrmac:core.retention_policies.policies.execute')
+            ->name('execute');
+    });
+
+    // Trash routes
+    Route::prefix('trash')->name('core.trash.')->group(function () {
+        Route::get('/', [TrashController::class, 'index'])
+            ->middleware('hrmac:core.trash.view')
+            ->name('index');
+        Route::post('/{entity}/restore/{id}', [TrashController::class, 'restore'])
+            ->middleware('hrmac:core.trash.restore')
+            ->name('restore');
+        Route::post('/{entity}/bulk-restore', [TrashController::class, 'bulkRestore'])
+            ->middleware('hrmac:core.trash.restore')
+            ->name('bulk-restore');
+        Route::delete('/{entity}/force-delete/{id}', [TrashController::class, 'forceDelete'])
+            ->middleware('hrmac:core.trash.force_delete')
+            ->name('force-delete');
+        Route::delete('/{entity}/bulk-force-delete', [TrashController::class, 'bulkForceDelete'])
+            ->middleware('hrmac:core.trash.force_delete')
+            ->name('bulk-force-delete');
+        Route::delete('/{entity}/empty', [TrashController::class, 'emptyTrash'])
+            ->middleware('hrmac:core.trash.empty')
+            ->name('empty');
+        Route::delete('/empty-all', [TrashController::class, 'emptyAllTrash'])
+            ->middleware('hrmac:core.trash.empty')
+            ->name('empty-all');
     });
 
     // FCM Token Update

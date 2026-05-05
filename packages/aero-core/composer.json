@@ -26,6 +26,7 @@
         "laravel/framework": "^11.0|^12.0",
         "spatie/laravel-permission": "^6.20",
         "spatie/laravel-medialibrary": "^11.0",
+        "spatie/laravel-backup": "^8.0",
         "inertiajs/inertia-laravel": "^2.0",
         "tightenco/ziggy": "^2.0",
         "jenssegers/agent": "^2.6|^3.0"
