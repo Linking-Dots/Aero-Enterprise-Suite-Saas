@@ -5,30 +5,82 @@
   --aeos-tertiary:      #660066;
   --aeos-destructive:   #CC0000;
   --aeos-success:       #006600;
+
+  /* Backgrounds — clearly distinct surfaces, no alpha wash */
   --aeos-bg-page:      #FFFFFF;
   --aeos-bg-app:       #F4F4F4;
   --aeos-bg-card:      #FFFFFF;
   --aeos-bg-elevated:  #F4F4F4;
   --aeos-bg-modal:     #FFFFFF;
+  --aeos-bg-subtle:    #EEEEEE;
+  --aeos-bg-tint:      #E8E8E8;
+  --aeos-bg-hover:     #D8D8D8;
+  --aeos-bg-active:    #C8C8C8;
+  --aeos-bg-wash:      #BBBBBB;
+  --aeos-bg-input:     #FFFFFF;
+
+  /* Shell: no mesh gradient in high-contrast mode */
+  --aeos-shell-bg: #FFFFFF;
+
+  /* Text — fully opaque, no rgba */
   --aeos-text-primary:   #000000;
   --aeos-text-secondary: #333333;
   --aeos-text-tertiary:  #555555;
   --aeos-ink:       #000000;
   --aeos-ink-muted: #333333;
   --aeos-ink-faint: #555555;
-  --aeos-glass-bg:      rgba(255,255,255,.98);
-  --aeos-glass-border:  #000000;
-  --aeos-divider:       rgba(0,0,0,.30);
+
+  /* Borders — solid, high-visibility */
+  --aeos-border-subtle: #767676;
+  --aeos-border-base:   #4A4A4A;
+  --aeos-border-strong: #000000;
+  --aeos-glass-bg:        #FFFFFF;
+  --aeos-glass-border:    #000000;
+  --aeos-glass-border-h:  #000000;
+  --aeos-divider:         #767676;
+
+  /* Intent tints — solid, clearly distinguishable */
+  --aeos-primary-tint:   #E8E8FF;
+  --aeos-primary-bg:     #D0D0FF;
+  --aeos-primary-border: #0000CC;
+  --aeos-primary-hover:  #C0C0FF;
+
+  --aeos-danger-tint:    #FFE8E8;
+  --aeos-danger-bg:      #FFD0D0;
+  --aeos-danger-border:  #CC0000;
+  --aeos-danger-hover:   #FFC0C0;
+
+  --aeos-success-tint:   #E8FFE8;
+  --aeos-success-bg:     #D0FFD0;
+  --aeos-success-border: #006600;
+
+  --aeos-warning-tint:   #FFF8E8;
+  --aeos-warning-bg:     #FFEFD0;
+  --aeos-warning-border: #804000;
+
+  /* Gradients — flat solid colors (no decorative gradients) */
   --aeos-grad-cyan:  #0000CC;
   --aeos-grad-amber: #006600;
   --aeos-grad-full:  #0000CC;
   --aeos-grad-text:  #000000;
   --aeos-grad-mesh:  none;
+
+  /* Glows — disabled */
   --aeos-glow-cyan:   none;
   --aeos-glow-cyan-l: none;
   --aeos-glow-amber:  none;
-  --aeos-shadow-card: 0 0 0 2px #000000;
-  --aeos-shadow-lift: 0 0 0 3px #000000;
+
+  /* Shadows — solid outline rings instead of blur */
+  --aeos-shadow-card:     0 0 0 2px #000000;
+  --aeos-shadow-lift:     0 0 0 3px #000000;
+  --aeos-shadow-elevated: 0 0 0 2px #000000;
+  --aeos-shadow-sm:       0 0 0 1px #4A4A4A;
+  --aeos-shadow-md:       0 0 0 2px #000000;
+
+  /* Overlay — near-opaque for legibility */
+  --aeos-overlay-backdrop: rgba(0,0,0,.90);
+
+  /* Radius — reduce decorative rounding */
   --aeos-r-sm: 0px; --aeos-r-md: 4px; --aeos-r-lg: 4px; --aeos-r-xl: 4px; --aeos-r-2xl: 4px;
 }
 .aeos--high-contrast .aeos-glass,
@@ -37,3 +89,8 @@
 .aeos--high-contrast .aeos-card-elevated,
 .aeos--high-contrast .aeos-card-auto { background:#FFFFFF; border:2px solid #000000; }
 .aeos--high-contrast .aeos-text-grad { background:none; -webkit-text-fill-color:#000000; color:#000000; }
+/* Focus rings — 3px solid black outline, no color glow */
+.aeos--high-contrast .aeos-btn:focus-visible { outline:3px solid #000000; outline-offset:2px; box-shadow:none; }
+.aeos--high-contrast .aeos-input:focus { border-color:#000000; box-shadow:0 0 0 3px #767676; }
+.aeos--high-contrast .aeos-toggle input:focus-visible + .aeos-toggle-slider { outline:3px solid #000000; outline-offset:2px; }
+.aeos--high-contrast .aeos-otp-input:focus { border-color:#000000; box-shadow:0 0 0 3px #767676; }
