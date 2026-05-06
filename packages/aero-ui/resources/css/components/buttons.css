@@ -60,9 +60,9 @@
 .aeos-btn-ghost {
   background: transparent;
   color: var(--aeos-text-primary);
-  border: 1px solid var(--aeos-border-strong);
+  border: var(--aeos-border-width) solid var(--aeos-border-strong);
   font-weight: 500;
-  padding: calc(var(--aeos-pad-btn-y) - 1px) calc(var(--aeos-pad-btn-x) - 1px);
+  padding: calc(var(--aeos-pad-btn-y) - var(--aeos-border-width)) calc(var(--aeos-pad-btn-x) - var(--aeos-border-width));
 }
 
 .aeos-btn-ghost:hover {
@@ -77,15 +77,15 @@
 /* ── Soft (cyan tint fill + cyan border) ────────────────────── */
 .aeos-btn-soft {
   background: var(--aeos-primary-tint);
-  border: 1px solid var(--aeos-primary-border);
+  border: var(--aeos-border-width) solid var(--aeos-primary-border);
   color: var(--aeos-primary);
   font-weight: 500;
-  padding: calc(var(--aeos-pad-btn-y) - 1px) calc(var(--aeos-pad-btn-x) - 1px);
+  padding: calc(var(--aeos-pad-btn-y) - var(--aeos-border-width)) calc(var(--aeos-pad-btn-x) - var(--aeos-border-width));
 }
 
 .aeos-btn-soft:hover {
   background: var(--aeos-primary-hover);
-  border-color: rgba(0, 229, 255, 0.32);
+  border-color: var(--aeos-primary-border);
 }
 
 .aeos-btn-soft:active {
@@ -112,15 +112,15 @@
 /* ── Destructive (danger actions) ───────────────────────────── */
 .aeos-btn-danger {
   background: var(--aeos-danger-bg);
-  border: 1px solid var(--aeos-danger-border);
+  border: var(--aeos-border-width) solid var(--aeos-danger-border);
   color: var(--aeos-destructive);
   font-weight: 500;
-  padding: calc(var(--aeos-pad-btn-y) - 1px) calc(var(--aeos-pad-btn-x) - 1px);
+  padding: calc(var(--aeos-pad-btn-y) - var(--aeos-border-width)) calc(var(--aeos-pad-btn-x) - var(--aeos-border-width));
 }
 
 .aeos-btn-danger:hover {
   background: var(--aeos-danger-hover);
-  border-color: rgba(255, 107, 107, 0.50);
+  border-color: var(--aeos-danger-border);
 }
 
 /* ── Size Modifiers ─────────────────────────────────────────── */
