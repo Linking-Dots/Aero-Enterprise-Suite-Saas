@@ -16,7 +16,7 @@
   font-size: var(--aeos-text-xs);
   font-weight: 500;
   letter-spacing: 0.02em;
-  border: 1px solid;
+  border: var(--aeos-border-width) solid;
   white-space: nowrap;
   line-height: 1.4;
 }
@@ -37,8 +37,8 @@
 
 /* ── Indigo (analytics, depth, chart series 2) ───────────────── */
 .aeos-badge-indigo {
-  background: rgba(99, 102, 241, 0.10);
-  border-color: rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.10); /* tertiary — no semantic token yet */
+  border-color: rgba(99, 102, 241, 0.25); /* tertiary — no semantic token yet */
   color: var(--aeos-tertiary);
 }
 
@@ -89,8 +89,8 @@
 }
 
 .aeos-badge-indigo.aeos-badge-mono {
-  background: rgba(99, 102, 241, 0.10);
-  border-color: rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.10); /* tertiary — no semantic token yet */
+  border-color: rgba(99, 102, 241, 0.25); /* tertiary — no semantic token yet */
   color: var(--aeos-tertiary);
 }
 
@@ -109,11 +109,11 @@
 /* ── Dot (pulsing live-status indicator) ─────────────────────── */
 .aeos-badge-dot::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: var(--aeos-space-1-5);
+  height: var(--aeos-space-1-5);
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 6px currentColor;
+  box-shadow: 0 0 var(--aeos-space-1-5) currentColor;
   flex-shrink: 0;
   animation: aeos-pulse 2s ease-in-out infinite;
 }
