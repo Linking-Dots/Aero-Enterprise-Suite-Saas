@@ -60,7 +60,7 @@
   inset: 0;
   background: radial-gradient(
     circle at var(--mx, 50%) var(--my, 50%),
-    rgba(0, 229, 255, 0.08) 0%,
+    var(--aeos-primary-tint) 0%,
     transparent 60%
   );
   opacity: 0;
@@ -69,9 +69,9 @@
 }
 
 .aeos-bento:hover {
-  border-color: rgba(0, 229, 255, 0.20);
-  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.60),
-              inset 0 1px 0 rgba(0, 229, 255, 0.10);
+  border-color: var(--aeos-primary-border);
+  box-shadow: var(--aeos-shadow-lift),
+              inset 0 1px 0 var(--aeos-primary-tint);
 }
 
 .aeos-bento:hover::before {
@@ -82,18 +82,18 @@
 .aeos-cta-glass {
   background: linear-gradient(
     135deg,
-    rgba(0, 229, 255, 0.08)   0%,
-    rgba(99, 102, 241, 0.06)  50%,
-    rgba(255, 179, 71, 0.06)  100%
+    var(--aeos-primary-tint)              0%,
+    rgba(99, 102, 241, 0.06)              50%,  /* tertiary tint — no semantic token yet */
+    var(--aeos-warning-tint)              100%
   );
   border: var(--aeos-border-width) solid var(--aeos-primary-border);
   border-radius: var(--aeos-card-radius);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow:
-    0 0 0 1px rgba(0, 229, 255, 0.08),
-    0 32px 80px rgba(0, 0, 0, 0.60),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 0 0 1px var(--aeos-primary-tint),
+    var(--aeos-shadow-lift),
+    inset 0 1px 0 var(--aeos-border);
   padding: var(--aeos-pad-card);
 }
 
@@ -106,7 +106,7 @@
   box-shadow:
     0 0 0 1px var(--aeos-primary),
     var(--aeos-glow-cyan),
-    inset 0 1px 0 rgba(0, 229, 255, 0.08);
+    inset 0 1px 0 var(--aeos-primary-tint);
 }
 
 /* ── Gradient Border (CSS mask technique) ───────────────────── */
@@ -197,7 +197,7 @@ body[data-card-style="glow"] .aeos-card-auto {
   box-shadow:
     0 0 0 1px var(--aeos-primary),
     var(--aeos-glow-cyan),
-    inset 0 1px 0 rgba(0, 229, 255, 0.08);
+    inset 0 1px 0 var(--aeos-primary-tint);
 }
 
 body[data-card-style="gradient-border"] .aeos-card-auto {
