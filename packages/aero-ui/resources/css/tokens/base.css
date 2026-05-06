@@ -143,7 +143,7 @@
   --aeos-r-md:   calc(8px  * var(--aeos-radius-factor));
   --aeos-r-lg:   calc(12px * var(--aeos-radius-factor));
   --aeos-r-xl:   calc(16px * var(--aeos-radius-factor));
-  --aeos-r-2xl:  24px;
+  --aeos-r-2xl:  calc(24px * var(--aeos-radius-factor));
   --aeos-r-full: 9999px;
   --aeos-card-radius: var(--aeos-r-xl);
 
@@ -282,16 +282,6 @@
   --aeos-amber-300: #fbbf24; --aeos-amber-400: #f59e0b; --aeos-amber-500: #d97706; --aeos-amber-600: #b45309;
 }
 
-/* ── Radius scale data attributes ─────────────────────────────────────── */
-body[data-radius="sharp"]    { --aeos-radius-factor: 0.5; }
-body[data-radius="balanced"] { --aeos-radius-factor: 1;   }
-body[data-radius="soft"]     { --aeos-radius-factor: 1.5; }
-
-/* ── Border weight data attributes ────────────────────────────────────── */
-body[data-borders="hairline"] { --aeos-border-width: 0.5px; }
-body[data-borders="standard"] { --aeos-border-width: 1px;   }
-body[data-borders="bold"]     { --aeos-border-width: 2px;   }
-
 /* ── Light theme shell background overrides ───────────────────────────── */
 body.aeos--light,
 body[data-mode="light"] {
@@ -331,6 +321,14 @@ body[data-mode="light"] {
 /* ── Density data attributes ───────────────────────────────────────────── */
 body[data-density="compact"]  { --aeos-density-factor: 0.85; }
 body[data-density="spacious"] { --aeos-density-factor: 1.15; }
+
+/* ── Radius scale data attributes ─────────────────────────────────────── */
+body[data-radius="sharp"] { --aeos-radius-factor: 0.5; }
+body[data-radius="soft"]  { --aeos-radius-factor: 1.5; }
+
+/* ── Border weight data attributes ────────────────────────────────────── */
+body[data-borders="hairline"] { --aeos-border-width: 0.5px; }
+body[data-borders="bold"]     { --aeos-border-width: 2px;   }
 
 /* ── System reduce-motion preference ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
