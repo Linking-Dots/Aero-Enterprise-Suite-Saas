@@ -16,8 +16,7 @@ class ValidateManifests extends Command
 
     public function handle(): int
     {
-        $packagesPath = base_path('packages');
-        $manifests = glob("{$packagesPath}/*/config/module.php");
+        $manifests = $this->resolveManifests();
 
         if (empty($manifests)) {
             $this->warn('No module.php manifests found in packages/*/config/');
@@ -93,16 +92,65 @@ class ValidateManifests extends Command
 
     private function checkDelegations(string $pkg, array $submodules): void
     {
+        $packagesPath = $this->resolvePackagesPath();
+
         foreach ($submodules as $sub) {
             if (! empty($sub['delegated_to'])) {
                 $delegated = $sub['delegated_to'];
-                $packagesPath = base_path('packages');
 
                 if (! is_dir("{$packagesPath}/{$delegated}")) {
                     $this->warnings[] = "[{$pkg}] Submodule [{$sub['code']}] delegated to [{$delegated}] but that package directory does not exist";
                 }
             }
         }
+    }
+
+    /**
+     * Resolve the packages directory using a three-tier fallback strategy:
+     *   1. base_path('packages')          — standard standalone install
+     *   2. dirname(base_path()).'/packages' — monorepo layout (app is a subdirectory)
+     *   3. base_path('vendor/aero')        — SaaS host app where packages are in vendor
+     */
+    private function resolvePackagesPath(): string
+    {
+        $candidate = base_path('packages');
+        if (is_dir($candidate)) {
+            return $candidate;
+        }
+
+        $candidate = dirname(base_path()).'/packages';
+        if (is_dir($candidate)) {
+            return $candidate;
+        }
+
+        // Fall back to vendor/aero (SaaS host app)
+        return base_path('vendor/aero');
+    }
+
+    /**
+     * Resolve all module manifests, checking packages/ first and vendor/aero as fallback.
+     *
+     * @return string[]
+     */
+    private function resolveManifests(): array
+    {
+        $packagesPath = base_path('packages');
+        if (is_dir($packagesPath)) {
+            return (array) glob("{$packagesPath}/*/config/module.php");
+        }
+
+        $monoPath = dirname(base_path()).'/packages';
+        if (is_dir($monoPath)) {
+            return (array) glob("{$monoPath}/*/config/module.php");
+        }
+
+        // SaaS host app: packages resolved via vendor/aero
+        $vendorPath = base_path('vendor/aero');
+        if (is_dir($vendorPath)) {
+            return (array) glob("{$vendorPath}/*/config/module.php");
+        }
+
+        return [];
     }
 
     private function checkScope(string $pkg, array $config): void
