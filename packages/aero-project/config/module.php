@@ -20,40 +20,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => '/project',
 
-    'features' => [
-        'dashboard' => true,
-        'projects' => true,
-        'tasks' => true,
-        'kanban_scrum_waterfall' => true,
-        'milestones' => true,
-        'sprints' => true,
-        'issues_bugs' => true,
-        'collaboration' => true,
-        'files_documents' => true,
-        'timesheets' => true,
-        'resource_management' => true,
-        'budgets_costs' => true,
-        'evm' => true,
-        'scheduling' => true,
-        'critical_path' => true,
-        'linear_scheduling' => true,
-        'boq_measurements' => true,
-        'bim_engineering' => true,
-        'rfi' => true,
-        'change_orders' => true,
-        'site_operations' => true,
-        'iot_telemetry' => true,
-        'risk_intelligence' => true,
-        'portfolio_management' => true,
-        'capex_projects' => true, // EAM
-        'turnaround_shutdown' => true, // EAM
-        'maintenance_projects' => true, // EAM
-        'hse_compliance' => true,
-        'reports' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Self-Service Navigation Items

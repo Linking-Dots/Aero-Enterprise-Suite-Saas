@@ -34,23 +34,6 @@ return [
     'dependencies' => ['core', 'workflow'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'scheduled_tasks' => true,
-        'rpa' => true,
-        'event_triggers' => true,
-        'webhooks' => true,
-        'api_automation' => true,
-        'cron_jobs' => true,
-        'workflow_automation' => true,
-        'retry_logic' => true,
-        'error_handling' => true,
-        'automation_logs' => true,
-        'automation_analytics' => true,
-        'bulk_operations' => true,
-        'conditional_automation' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         // Scheduled tasks, triggers, webhooks, logs
     ],

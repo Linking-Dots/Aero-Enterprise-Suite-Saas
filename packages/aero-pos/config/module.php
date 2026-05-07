@@ -28,39 +28,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => '/pos',
 
-    'features' => [
-        'dashboard' => true,
-        'register_terminal' => true,
-        'sales' => true,
-        'returns_refunds' => true,
-        'exchanges' => true,
-        'quotations' => true,
-        'layaway_holds' => true,
-        'customers_loyalty' => true,
-        'gift_cards' => true,
-        'discounts_promotions' => true,
-        'tax_management' => true,
-        'cash_management' => true,
-        'shifts_tills' => true,
-        'payments' => true,
-        'split_payments' => true,
-        'offline_mode' => true,
-        'receipt_printing' => true,
-        'kitchen_display' => true,
-        'table_management' => true, // restaurant
-        'menu_management' => true,
-        'inventory_integration' => true,
-        'stock_counts' => true,
-        'multi_store' => true,
-        'staff_management' => true,
-        'hardware_devices' => true, // EAM
-        'device_health' => true, // EAM
-        'reports' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         /* 1 DASHBOARD */

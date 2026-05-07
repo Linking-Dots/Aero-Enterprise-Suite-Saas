@@ -29,38 +29,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => '/compliance',
 
-    'features' => [
-        'dashboard' => true,
-        'hse_management' => true,
-        'permit_to_work' => true, // EAM
-        'incident_management' => true,
-        'toolbox_talks' => true,
-        'environmental' => true, // EAM
-        'emissions_tracking' => true,
-        'waste_management' => true,
-        'workforce_certifications' => true,
-        'contractor_compliance' => true, // EAM
-        'regulatory_register' => true,
-        'permits_licenses' => true, // EAM asset permits
-        'audits' => true,
-        'policies_procedures' => true,
-        'risk_management' => true,
-        'risk_register' => true,
-        'controls_library' => true,
-        'soc_compliance' => true,
-        'iso_compliance' => true,
-        'gdpr_privacy' => true,
-        'whistleblower' => true,
-        'ethics_hotline' => true,
-        'esg_sustainability' => true,
-        'asset_compliance' => true, // EAM
-        'training_awareness' => true,
-        'reporting' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== 0. DASHBOARD ====================

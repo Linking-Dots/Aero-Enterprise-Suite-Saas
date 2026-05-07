@@ -34,23 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'ticket_management' => true,
-        'sla_monitoring' => true,
-        'knowledge_base' => true,
-        'agent_assignment' => true,
-        'customer_portal' => true,
-        'ticket_categories' => true,
-        'ticket_priorities' => true,
-        'email_integration' => true,
-        'chat_support' => true,
-        'ticket_analytics' => true,
-        'customer_satisfaction' => true,
-        'escalation_rules' => true,
-        'macros_templates' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         // Tickets, knowledge base, analytics, settings
     ],

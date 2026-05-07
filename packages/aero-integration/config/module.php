@@ -38,21 +38,6 @@ return [
     'release_date' => '2024-01-01',
     'marketplace_visible' => false,
 
-    'features' => [
-        'api_connectors' => true,
-        'webhooks' => true,
-        'oauth' => true,
-        'api_keys' => true,
-        'data_pipelines' => true,
-        'sync_jobs' => true,
-        'integration_logs' => true,
-        'rate_limiting' => true,
-        'retry_logic' => true,
-        'error_handling' => true,
-        'webhook_signing' => true,
-        'bulk_import_export' => true,
-    ],
-
     'tenancy' => [
         'tenant_aware' => true,
         'uses_tenant_db' => true,

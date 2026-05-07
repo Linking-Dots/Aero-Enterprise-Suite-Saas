@@ -34,25 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'workflow_designer' => true,
-        'approval_workflows' => true,
-        'business_rules' => true,
-        'automation_triggers' => true,
-        'sla_monitoring' => true,
-        'process_orchestration' => true,
-        'workflow_templates' => true,
-        'conditional_logic' => true,
-        'parallel_branches' => true,
-        'workflow_history' => true,
-        'workflow_analytics' => true,
-        'cross_module_hooks' => true,
-        'webhook_triggers' => true,
-        'scheduled_workflows' => true,
-        'workflow_permissions' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         [
             'code' => 'workflows',

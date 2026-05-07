@@ -34,33 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'dashboard' => true,
-        'production_planning' => true,
-        'bom_management' => true,
-        'routing' => true,
-        'mes' => true,
-        'shop_floor' => true,
-        'work_centers' => true,
-        'production_orders' => true,
-        'scheduling' => true,
-        'capacity_planning' => true,
-        'material_requirements' => true,
-        'quality_control' => true,
-        'inspection' => true,
-        'maintenance_integration' => true,
-        'oee' => true,
-        'traceability' => true,
-        'batch_serial' => true,
-        'labor_tracking' => true,
-        'machine_monitoring' => true,
-        'scrap_rework' => true,
-        'costing' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         // Submodule structure to be defined
     ],

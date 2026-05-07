@@ -34,21 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'booking_calendar' => true,
-        'resource_scheduling' => true,
-        'availability' => true,
-        'payments' => true,
-        'reminders' => true,
-        'cancellation_policies' => true,
-        'booking_analytics' => true,
-        'multi_resource' => true,
-        'recurring_bookings' => true,
-        'waitlist' => true,
-        'booking_templates' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         // Calendar, bookings, resources, analytics
     ],

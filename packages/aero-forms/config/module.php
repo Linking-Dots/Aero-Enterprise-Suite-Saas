@@ -34,22 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'form_builder' => true,
-        'form_templates' => true,
-        'field_types' => true,
-        'validations' => true,
-        'conditional_logic' => true,
-        'form_submissions' => true,
-        'pdf_generation' => true,
-        'form_permissions' => true,
-        'form_analytics' => true,
-        'cross_module_forms' => true,
-        'form_versioning' => true,
-        'form_cloning' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         [
             'code' => 'forms',

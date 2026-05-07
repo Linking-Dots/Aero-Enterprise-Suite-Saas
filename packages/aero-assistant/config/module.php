@@ -29,35 +29,6 @@ return [
         'core',
     ],
 
-    'features' => [
-        'chat' => true,
-        'conversations' => true,
-        'rag' => true,
-        'knowledge_base' => true,
-        'tools_actions' => true,
-        'agents' => true,
-        'workflows' => true,
-        'prompt_library' => true,
-        'prompt_templates' => true,
-        'multi_model' => true,
-        'model_routing' => true,
-        'vision' => true,
-        'voice' => true,
-        'documents_analysis' => true,
-        'code_interpreter' => true,
-        'embeddings' => true,
-        'vector_search' => true,
-        'guardrails' => true,
-        'pii_redaction' => true,
-        'observability' => true,
-        'usage_tracking' => true,
-        'cost_analytics' => true,
-        'feedback_evaluation' => true,
-        'eam_assistant' => true, // EAM-aware AI (work orders, asset Q&A)
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Module Hierarchy

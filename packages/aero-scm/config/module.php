@@ -29,32 +29,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'dashboard' => true,
-        'procurement' => true,
-        'sourcing' => true,
-        'vendor_management' => true,
-        'contract_management' => true,
-        'mro_procurement' => true, // EAM
-        'service_procurement' => true, // EAM contractor services
-        'requisitions' => true,
-        'purchase_orders' => true,
-        'goods_receipt' => true,
-        'supplier_portal' => true,
-        'logistics' => true,
-        'shipment_tracking' => true,
-        'customs_trade' => true,
-        'warehousing' => true,
-        'production_planning' => true,
-        'mrp' => true,
-        'demand_forecasting' => true,
-        'supplier_performance' => true,
-        'spend_analytics' => true,
-        'risk_compliance' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         /* 1 DASHBOARD */

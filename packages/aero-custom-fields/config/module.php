@@ -34,21 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'field_definitions' => true,
-        'field_types' => true,
-        'field_groups' => true,
-        'validation_rules' => true,
-        'cross_module_fields' => true,
-        'field_permissions' => true,
-        'field_analytics' => true,
-        'bulk_import_export' => true,
-        'field_cloning' => true,
-        'field_dependencies' => true,
-        'conditional_visibility' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         [
             'code' => 'custom_fields',

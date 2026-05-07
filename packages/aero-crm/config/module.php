@@ -30,38 +30,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => 'crm',
 
-    'features' => [
-        'dashboard' => true,
-        'contacts' => true,
-        'accounts' => true,
-        'customers' => true,
-        'leads' => true,
-        'deals' => true,
-        'pipelines' => true,
-        'opportunities' => true,
-        'activities' => true,
-        'calls_meetings' => true,
-        'quotes_proposals' => true,
-        'orders' => true,
-        'contracts' => true,
-        'service_contracts' => true, // EAM: customer asset service contracts
-        'customer_assets' => true, // EAM: customer-owned assets under service
-        'support_helpdesk' => true,
-        'marketing_campaigns' => true,
-        'marketing_automation' => true,
-        'email_templates' => true,
-        'segmentation' => true,
-        'forecasting' => true,
-        'commission' => true,
-        'territory_management' => true,
-        'loyalty_program' => true,
-        'customer_portal' => true,
-        'surveys_nps' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== CRM DASHBOARD ====================

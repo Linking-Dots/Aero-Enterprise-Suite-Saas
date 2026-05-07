@@ -26,39 +26,6 @@ return [
     'enabled' => true,
     'minimum_plan' => null,
 
-    'features' => [
-        'dashboard' => true,
-        'self_service' => true,
-        'subscription_billing_view' => true, // SaaS only
-        'organization_profile' => true,
-        'user_management' => true,
-        'authentication' => true,
-        'sso_identity' => true,
-        'roles_permissions' => true,
-        'audit_logs' => true,
-        'notifications' => true,
-        'user_preferences' => true,
-        'file_manager' => true,
-        'api_webhooks' => true,
-        'workflow_engine' => true,
-        'custom_fields' => true,
-        'form_builder' => true,
-        'tags_labels' => true,
-        'saved_views' => true,
-        'global_search' => true,
-        'translations_i18n' => true,
-        'comments_mentions' => true,
-        'activity_feed' => true,
-        'help_support' => true,
-        // 'data_privacy' => true, // DEPRECATED: Use aero-compliance package for GDPR/CCPA/HIPAA features
-        'data_export_import' => true,
-        'trash_recycle_bin' => true,
-        'email_engine' => true,
-        'system_health' => true,
-        'mobile_pwa' => true,
-        'settings' => true,
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Self-Service Navigation Items

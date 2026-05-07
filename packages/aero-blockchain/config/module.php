@@ -30,31 +30,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => 'blockchain',
 
-    'features' => [
-        'dashboard' => true,
-        'networks' => true,
-        'wallets' => true,
-        'transactions' => true,
-        'smart_contracts' => true,
-        'tokens' => true,
-        'nfts' => true,
-        'defi' => true,
-        'consensus' => true,
-        'block_explorer' => true,
-        'analytics' => true,
-        'asset_provenance' => true, // EAM
-        'supply_chain_trace' => true, // EAM
-        'audit_chain' => true, // EAM / compliance
-        'did_identity' => true,
-        'oracles' => true,
-        'bridges' => true,
-        'gas_fee_management' => true,
-        'custody' => true,
-        'compliance_kyc' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== BLOCKCHAIN DASHBOARD ====================

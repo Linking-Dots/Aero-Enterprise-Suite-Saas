@@ -38,21 +38,6 @@ return [
     'release_date' => '2024-01-01',
     'marketplace_visible' => false,
 
-    'features' => [
-        'email_notifications' => true,
-        'sms_notifications' => true,
-        'push_notifications' => true,
-        'in_app_notifications' => true,
-        'webhook_notifications' => true,
-        'email_templates' => true,
-        'notification_preferences' => true,
-        'queue_processing' => true,
-        'digest_notifications' => true,
-        'notification_logs' => true,
-        'suppression_list' => true,
-        'bounce_handling' => true,
-    ],
-
     'tenancy' => [
         'tenant_aware' => true,
         'uses_tenant_db' => true,

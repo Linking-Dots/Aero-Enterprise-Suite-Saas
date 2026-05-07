@@ -29,39 +29,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'dashboard' => true,
-        'chart_of_accounts' => true,
-        'general_ledger' => true,
-        'journal_entries' => true,
-        'accounts_payable' => true,
-        'accounts_receivable' => true,
-        'cash_bank' => true,
-        'fixed_assets' => true, // EAM core
-        'depreciation' => true, // EAM core
-        'capex_opex' => true, // EAM core
-        'budgeting_planning' => true,
-        'cost_accounting' => true,
-        'taxation' => true,
-        'treasury' => true,
-        'expense_management' => true,
-        'multi_currency' => true,
-        'multi_entity' => true,
-        'intercompany' => true,
-        'consolidation' => true,
-        'financial_reporting' => true,
-        'statutory_reporting' => true,
-        'audit_trail' => true,
-        'period_close' => true,
-        'reconciliations' => true,
-        'invoicing' => true,
-        'collections' => true,
-        'credit_management' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'self_service' => [
         ['code' => 'my-invoices',  'name' => 'My Invoices',  'icon' => 'DocumentTextIcon', 'route' => '/finance/my-invoices',  'priority' => 1],
         ['code' => 'my-payments',  'name' => 'My Payments',  'icon' => 'BanknotesIcon',    'route' => '/finance/my-payments',  'priority' => 2],

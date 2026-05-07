@@ -34,22 +34,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'time_entries' => true,
-        'timesheets' => true,
-        'approval' => true,
-        'project_tracking' => true,
-        'billing_integration' => true,
-        'reporting' => true,
-        'cross_module_tracking' => true,
-        'timer' => true,
-        'manual_entry' => true,
-        'overtime_tracking' => true,
-        'time_analytics' => true,
-        'export' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         // Time entries, timesheets, approval, analytics
     ],

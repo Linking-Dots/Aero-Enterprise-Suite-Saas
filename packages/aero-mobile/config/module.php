@@ -35,20 +35,6 @@ return [
     'release_date' => '2024-01-01',
     'marketplace_visible' => false,
 
-    'features' => [
-        'pwa_configuration' => true,
-        'push_notifications' => true,
-        'offline_sync' => true,
-        'mobile_app_builder' => true,
-        'native_wrappers' => true,
-        'device_management' => true,
-        'app_updates' => true,
-        'biometric_auth' => true,
-        'location_tracking' => true,
-        'camera_scanner' => true,
-        'mobile_analytics' => true,
-    ],
-
     'tenancy' => [
         'tenant_aware' => true,
         'uses_tenant_db' => true,

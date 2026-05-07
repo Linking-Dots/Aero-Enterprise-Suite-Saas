@@ -49,29 +49,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => '/rfi',
 
-    'features' => [
-        'dashboard' => true,
-        'daily_reporting' => true,
-        'site_diary' => true,
-        'rfi_inspection' => true, // Request For Inspection (construction)
-        'rfi_information' => true, // Request For Information (procurement/engineering)
-        'rfq' => true, // Request For Quote
-        'rfp' => true, // Request For Proposal
-        'geo_fencing' => true,
-        'linear_continuity' => true,
-        'digital_twin_map' => true,
-        'objections_disputes' => true,
-        'contractor_rfi' => true, // EAM contractor RFI
-        'eam_work_request' => true, // EAM: tenants/operators raise work requests
-        'submittals' => true,
-        'transmittals' => true,
-        'punch_list' => true,
-        'ai_risk_sampling' => true,
-        'reports_analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Self-Service Navigation Items

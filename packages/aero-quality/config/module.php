@@ -30,29 +30,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => '/quality',
 
-    'features' => [
-        'dashboard' => true,
-        'inspections_itp' => true,
-        'material_lab_lims' => true,
-        'ncr_management' => true,
-        'capa' => true, // Corrective & Preventive Actions
-        'spc_control_charts' => true,
-        'calibration' => true, // EAM
-        'supplier_quality' => true,
-        'quality_audits' => true,
-        'iso_compliance' => true,
-        'deviations' => true,
-        'change_control' => true,
-        'training_records' => true,
-        'customer_complaints' => true,
-        'risk_fmea' => true,
-        'asset_quality_checks' => true, // EAM
-        'quality_costs' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== 0. DASHBOARD ====================

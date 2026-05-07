@@ -30,32 +30,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => 'iot',
 
-    'features' => [
-        'dashboard' => true,
-        'devices' => true,
-        'sensors' => true,
-        'telemetry' => true,
-        'alerts' => true,
-        'gateways' => true,
-        'networks' => true,
-        'device_types' => true,
-        'condition_monitoring' => true, // EAM
-        'predictive_maintenance' => true, // EAM
-        'digital_twin' => true, // EAM
-        'asset_binding' => true, // EAM
-        'firmware_ota' => true,
-        'device_security' => true,
-        'edge_compute' => true,
-        'data_pipelines' => true,
-        'data_retention' => true,
-        'geofencing' => true,
-        'commands' => true,
-        'reports' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== IOT DASHBOARD ====================

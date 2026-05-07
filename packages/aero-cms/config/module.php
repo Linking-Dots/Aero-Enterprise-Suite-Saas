@@ -37,34 +37,6 @@ return [
     'enabled' => true,
     'marketplace_visible' => false,
 
-    'features' => [
-        'dashboard' => true,
-        'page_builder' => true,
-        'block_library' => true,
-        'media_library' => true,
-        'page_templates' => true,
-        'seo_settings' => true,
-        'page_versioning' => true,
-        'blog_posts' => true,
-        'custom_post_types' => true,
-        'taxonomy_categories' => true,
-        'navigation_menus' => true,
-        'forms_builder' => true,
-        'redirects' => true,
-        'ab_testing' => true,
-        'multi_language' => true,
-        'comments_reviews' => true,
-        'scheduled_publish' => true,
-        'approval_workflows' => true,
-        'cdn_optimization' => true,
-        'sitemap' => true,
-        'robots_txt' => true,
-        'headless_api' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
         /*
         |--------------------------------------------------------------------------

@@ -42,29 +42,6 @@ return [
     'dependencies' => ['core', 'crm'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'product_catalog' => true,  // products, variants, attributes, media
-        'pricing_rules' => true,  // tiered, customer-group, volume pricing
-        'shopping_cart' => true,
-        'checkout_flow' => true,  // single-page checkout
-        'order_management' => true,  // OMS: fulfillment, returns, refunds
-        'payment_gateway' => true,  // Stripe, PayPal, Razorpay, per-tenant config
-        'multi_currency' => true,
-        'tax_calculation' => true,  // rule-based + Avalara/TaxJar integration
-        'shipping_management' => true,  // carriers, rates, labels
-        'coupon_vouchers' => true,
-        'loyalty_points' => true,
-        'storefront_builder' => true,  // page/theme builder for public store
-        'multi_vendor' => true,  // marketplace: vendor onboarding, commissions
-        'vendor_portal' => true,  // vendor self-service sub-portal
-        'digital_products' => true,  // downloads, licenses
-        'subscription_products' => true,  // recurring billing for products (≠ SaaS plans)
-        'b2b_portal' => true,  // bulk orders, credit terms, RFQ
-        'abandoned_cart_recovery' => true,
-        'product_reviews' => true,
-        'analytics_storefront' => true,  // delegates to aero-analytics
-    ],
-
     'submodules' => [
 
         [

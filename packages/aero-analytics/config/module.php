@@ -32,24 +32,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'executive_dashboard' => true,  // CEO/CFO/COO cross-module KPI view
-        'kpi_scorecards' => true,  // configurable KPI targets & tracking
-        'custom_dashboards' => true,  // drag-and-drop widget builder (tenant)
-        'ad_hoc_reporting' => true,  // visual query builder, no SQL
-        'scheduled_reports' => true,  // email/export on schedule
-        'data_export' => true,  // CSV, Excel, PDF exports
-        'embedded_charts' => true,  // chart components shared with modules
-        'cohort_analysis' => true,  // retention, churn cohorts
-        'predictive_analytics' => true,  // ML-backed forecasting (plan-gated)
-        'data_warehouse_connector' => true,  // read-only Snowflake/BigQuery/Redshift
-        'audit_trail_reports' => true,  // compliance-grade audit exports
-        'revenue_analytics' => true,  // cross-finance/CRM revenue view
-        'workforce_analytics' => true,  // cross-HRM headcount, attrition
-        'asset_analytics' => true,  // cross-EAM MTBF, OEE, downtime
-        'supply_chain_analytics' => true,  // cross-SCM fill rate, lead times
-    ],
-
     'submodules' => [
 
         [

@@ -30,36 +30,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => 'real-estate',
 
-    'features' => [
-        'dashboard' => true,
-        'properties' => true,
-        'portfolios' => true,
-        'units' => true,
-        'listings' => true,
-        'agents_brokers' => true,
-        'leads_inquiries' => true,
-        'leases' => true,
-        'tenants' => true,
-        'lease_accounting' => true, // IFRS 16 / ASC 842
-        'rent_rolls' => true,
-        'cam_charges' => true,
-        'maintenance_requests' => true, // EAM bridge
-        'facility_management' => true, // EAM
-        'space_planning' => true, // EAM
-        'occupancy' => true,
-        'utilities_meter' => true, // EAM
-        'vendor_management' => true,
-        'move_management' => true,
-        'inspections' => true,
-        'property_accounting' => true,
-        'investor_reporting' => true,
-        'marketing' => true,
-        'documents' => true,
-        'reports_analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== REAL ESTATE DASHBOARD ====================

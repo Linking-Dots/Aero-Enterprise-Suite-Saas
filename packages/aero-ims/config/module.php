@@ -28,38 +28,6 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
-    'features' => [
-        'dashboard' => true,
-        'item_master' => true,
-        'stock_management' => true,
-        'multi_warehouse' => true,
-        'warehouse_locations' => true,
-        'stock_movements' => true,
-        'transfers' => true,
-        'adjustments' => true,
-        'cycle_count' => true,
-        'physical_inventory' => true,
-        'serial_tracking' => true,
-        'lot_batch_tracking' => true,
-        'expiry_management' => true,
-        'valuation_methods' => true,
-        'landed_cost' => true,
-        'reorder_planning' => true,
-        'abc_xyz_analysis' => true,
-        'mro_spare_parts' => true, // EAM
-        'kitting_bom' => true,
-        'consignment_vmi' => true,
-        'rental_assets' => true,
-        'barcode_rfid' => true,
-        'wms_operations' => true,
-        'returns_rma' => true,
-        'reservations' => true,
-        'ai_demand' => true,
-        'analytics' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         /* 1 DASHBOARD */

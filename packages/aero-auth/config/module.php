@@ -38,33 +38,6 @@ return [
     'release_date' => '2024-01-01',
     'marketplace_visible' => false,       // never shown in module marketplace
 
-    'features' => [
-        // Tenant-side
-        'tenant_login' => true,  // standard email+password, subdomain-scoped
-        'tenant_registration' => true,  // public registration (if platform enabled)
-        'tenant_password_reset' => true,  // tokens stored in tenant DB
-        'tenant_email_verification' => true,
-        'tenant_remember_me' => true,
-        'tenant_mfa_totp' => true,  // TOTP via authenticator app
-        'tenant_mfa_sms' => true,
-        'tenant_sso_saml' => true,  // SAML 2.0 IdP per tenant
-        'tenant_sso_oidc' => true,  // OpenID Connect per tenant
-        'tenant_social_login' => true,  // Google, Microsoft, GitHub (per tenant config)
-        'tenant_api_token_auth' => true,  // Sanctum tokens in tenant DB
-
-        // Platform-side (landlord)
-        'landlord_login' => true,  // separate guard, central DB
-        'landlord_mfa' => true,
-        'landlord_api_token' => true,
-
-        // Shared infrastructure
-        'impersonation' => true,  // platform admins impersonate tenant users
-        'session_isolation' => true,  // cookie scoped to tenant subdomain
-        'rate_limiting' => true,  // per-IP + per-tenant brute-force protection
-        'device_trust' => true,  // known device cookies
-        'audit_auth_events' => true,  // login/logout/failed → audit log
-    ],
-
     'guards' => [
         'tenant' => 'web',       // default Laravel web guard for tenant users
         'landlord' => 'landlord',  // custom guard for platform admins (central DB)

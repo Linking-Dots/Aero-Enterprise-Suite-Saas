@@ -30,35 +30,6 @@ return [
     'release_date' => '2024-01-01',
     'route_prefix' => '/dms',
 
-    'features' => [
-        'dashboard' => true,
-        'repository' => true,
-        'folders_taxonomy' => true,
-        'version_control' => true,
-        'check_in_out' => true,
-        'approvals_workflow' => true,
-        'sharing' => true,
-        'external_sharing' => true,
-        'e_signature' => true,
-        'ocr_search' => true,
-        'full_text_search' => true,
-        'tagging_metadata' => true,
-        'retention_policies' => true,
-        'records_management' => true,
-        'controlled_documents' => true, // SOPs, ISO
-        'asset_manuals' => true, // EAM: asset docs/manuals/drawings
-        'cad_drawing_viewer' => true, // EAM: drawings for assets
-        'templates' => true,
-        'categories' => true,
-        'collaboration' => true,
-        'annotations_redaction' => true,
-        'watermarking' => true,
-        'rights_management' => true,
-        'audit_trail' => true,
-        'integrations' => true,
-        'settings' => true,
-    ],
-
     'submodules' => [
 
         // ==================== 0. DASHBOARD ====================

@@ -37,19 +37,6 @@ return [
     'release_date' => '2024-01-01',
     'marketplace_visible' => false,
 
-    'features' => [
-        'translations' => true,
-        'locale_management' => true,
-        'rtl_support' => true,
-        'currency_formatting' => true,
-        'date_time_formatting' => true,
-        'number_formatting' => true,
-        'language_detection' => true,
-        'translation_import_export' => true,
-        'missing_translation_detection' => true,
-        'pluralization' => true,
-    ],
-
     'submodules' => [
         [
             'code' => 'translations',
