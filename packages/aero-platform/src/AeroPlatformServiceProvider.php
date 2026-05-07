@@ -824,6 +824,17 @@ class AeroPlatformServiceProvider extends ServiceProvider
             $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
         });
 
+        // License API + marketplace catalog — central domain, no CSRF, no auth
+        // Called by standalone installations for activation, validation, and catalog browsing
+        if (! $this->app->routesAreCached()) {
+            Route::group([
+                'middleware' => ['api'],
+                'domain' => $platformDomain,
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/../routes/license-api.php');
+            });
+        }
+
     }
 
     /**
