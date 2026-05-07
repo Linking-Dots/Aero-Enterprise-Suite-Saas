@@ -211,6 +211,9 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(ErrorLogService::class);
         $this->app->singleton(SslCommerzService::class);
 
+        $this->app->singleton(\Aero\Platform\Services\ProductAccessService::class);
+        $this->app->singleton(\Aero\Platform\Services\ProductSubscriptionService::class);
+
         // Register tenant lifecycle services
         $this->app->singleton(TenantRetentionService::class);
         $this->app->singleton(TenantPurgeService::class);
