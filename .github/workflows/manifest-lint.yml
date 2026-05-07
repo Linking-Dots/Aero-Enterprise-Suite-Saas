@@ -1,0 +1,28 @@
+name: Manifest Lint
+
+on:
+  push:
+    paths:
+      - 'packages/*/config/module.php'
+  pull_request:
+    paths:
+      - 'packages/*/config/module.php'
+
+jobs:
+  validate-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install dependencies
+        working-directory: aeos365
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Validate module manifests
+        working-directory: aeos365
+        run: php artisan aero:validate-manifests --strict

@@ -2,9 +2,11 @@
 
 namespace Aero\Core\Services;
 
+use Aero\Core\Models\InstalledAddon;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * RuntimeLoader
@@ -115,6 +117,25 @@ class RuntimeLoader
     protected function loadModule(array $moduleConfig): bool
     {
         $moduleName = $moduleConfig['name'];
+
+        // Guard: only load if recorded as active in installed_addons.
+        // The module code is stored in module.json under the 'code' key; fall back to directory name.
+        // Skip this check if the table does not exist yet (pre-migration context).
+        $detectedModuleCode = $moduleConfig['code'] ?? $moduleName;
+        try {
+            if (Schema::hasTable('installed_addons')) {
+                $isActive = InstalledAddon::where('module_code', $detectedModuleCode)
+                    ->where('status', 'active')
+                    ->exists();
+                if (! $isActive) {
+                    Log::debug("RuntimeLoader: Skipping '{$moduleName}' — not recorded as active in installed_addons");
+
+                    return false;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::debug("RuntimeLoader: installed_addons guard skipped (table unavailable)", ['error' => $e->getMessage()]);
+        }
 
         // Check if module is already loaded via Composer
         if ($this->isLoadedViaComposer($moduleConfig['namespace'])) {

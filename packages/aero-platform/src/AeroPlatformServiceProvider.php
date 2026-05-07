@@ -9,6 +9,8 @@ use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
 use Aero\I18n\Http\Middleware\SetLocale;
+use Aero\Notifications\Contracts\MailContextResolver;
+use Aero\Notifications\Contracts\SmsContextResolver;
 use Aero\Platform\Auth\LandlordAuthContext;
 use Aero\Platform\Bootstrappers\CachePrefixTenancyBootstrapper;
 use Aero\Platform\Console\Commands\CleanupFailedInstallation;
@@ -50,25 +52,27 @@ use Aero\Platform\Http\Middleware\TrustHosts;
 use Aero\Platform\Listeners\TenantCreatedListener;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Plan;
-use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\Tenant;
 use Aero\Platform\Observers\PlanAuditObserver;
 use Aero\Platform\Observers\SubscriptionObserver;
 use Aero\Platform\Policies\PlanPolicy;
 use Aero\Platform\Policies\TenantPolicy;
 use Aero\Platform\Providers\TenancyBootstrapServiceProvider;
 use Aero\Platform\Services\Billing\SslCommerzService;
+use Aero\Platform\Services\DownloadService;
+use Aero\Platform\Services\LicenseIssuer;
 use Aero\Platform\Services\Module\ModuleAccessService;
 use Aero\Platform\Services\Module\NullRoleModuleAccessService;
 use Aero\Platform\Services\Module\RoleModuleAccessService;
 use Aero\Platform\Services\Monitoring\Tenant\ErrorLogService;
-use Aero\Platform\Services\PlatformSettingService;
-use Aero\Platform\Services\PlatformWidgetRegistry;
-use Aero\Platform\Services\SaaSTenantScope;
-use Aero\Notifications\Contracts\MailContextResolver;
-use Aero\Notifications\Contracts\SmsContextResolver;
 use Aero\Platform\Services\Notifications\PlatformMailContextResolver;
 use Aero\Platform\Services\Notifications\PlatformSmsContextResolver;
+use Aero\Platform\Services\PlatformSettingService;
+use Aero\Platform\Services\PlatformWidgetRegistry;
+use Aero\Platform\Services\ProductAccessService;
+use Aero\Platform\Services\ProductSubscriptionService;
+use Aero\Platform\Services\SaaSTenantScope;
 use Aero\Platform\Services\Tenant\TenantPurgeService;
 use Aero\Platform\Services\Tenant\TenantRetentionService;
 use Aero\Platform\Widgets\BillingOverviewWidget;
@@ -211,6 +215,11 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(ErrorLogService::class);
         $this->app->singleton(SslCommerzService::class);
 
+        $this->app->singleton(ProductAccessService::class);
+        $this->app->singleton(ProductSubscriptionService::class);
+        $this->app->singleton(LicenseIssuer::class);
+        $this->app->singleton(DownloadService::class);
+
         // Register tenant lifecycle services
         $this->app->singleton(TenantRetentionService::class);
         $this->app->singleton(TenantPurgeService::class);
@@ -267,8 +276,8 @@ class AeroPlatformServiceProvider extends ServiceProvider
 
         // Configure Cashier to use our unified Subscription model as the single source of truth
         // This eliminates drift between Cashier-managed Stripe data and lifecycle-managed fields.
-        Cashier::useSubscriptionModel(\Aero\Platform\Models\Subscription::class);
-        Cashier::useCustomerModel(\Aero\Platform\Models\Tenant::class);
+        Cashier::useSubscriptionModel(Subscription::class);
+        Cashier::useCustomerModel(Tenant::class);
 
         // Override tenancy bootstrappers after all providers registered
         // FilesystemTenancyBootstrapper disabled - causes "Undefined array key 'local'" error
@@ -819,6 +828,26 @@ class AeroPlatformServiceProvider extends ServiceProvider
         ], function () {
             $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
         });
+
+        // License API + marketplace catalog — central domain, no CSRF, no auth
+        // Called by standalone installations for activation, validation, and catalog browsing
+        if (! $this->app->routesAreCached()) {
+            Route::group([
+                'middleware' => ['api'],
+                'domain' => $platformDomain,
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/../routes/license-api.php');
+            });
+        }
+
+        // Public marketplace (domain.com/marketplace) — Inertia web pages + Stripe webhook
+        if (! $this->app->routesAreCached()) {
+            Route::group([
+                'domain' => $platformDomain,
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/../routes/marketplace.php');
+            });
+        }
 
     }
 

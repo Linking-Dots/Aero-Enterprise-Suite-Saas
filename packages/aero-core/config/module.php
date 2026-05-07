@@ -221,7 +221,7 @@ return [
             'description' => 'User accounts, authentication, and invitations',
             'icon' => 'UserGroupIcon',
             'route' => '/users',
-            'priority' => 2,
+            'priority' => 3,
 
             'components' => [
                 [
@@ -285,7 +285,7 @@ return [
             'description' => 'Authentication and security settings',
             'icon' => 'KeyIcon',
             'route' => '/security', // Filled route
-            'priority' => 3,
+            'priority' => 4,
 
             'components' => [
                 [
@@ -364,7 +364,7 @@ return [
             'description' => 'Role-based access control and module permissions',
             'icon' => 'ShieldCheckIcon',
             'route' => '/roles',
-            'priority' => 4,
+            'priority' => 5,
 
             'components' => [
                 [
@@ -406,7 +406,7 @@ return [
             'description' => 'View system activity, user actions, and security events',
             'icon' => 'ClipboardDocumentListIcon',
             'route' => '/audit-logs',
-            'priority' => 5,
+            'priority' => 6,
 
             'components' => [
                 [
@@ -458,7 +458,7 @@ return [
             'description' => 'Manage notification channels, templates, and broadcasts',
             'icon' => 'BellIcon',
             'route' => '/notifications',
-            'priority' => 6,
+            'priority' => 7,
 
             'components' => [
                 [
@@ -499,7 +499,7 @@ return [
             'description' => 'Manage file storage and media library',
             'icon' => 'FolderOpenIcon',
             'route' => '/files',
-            'priority' => 7,
+            'priority' => 8,
 
             'components' => [
                 [
@@ -664,7 +664,7 @@ return [
             'description' => 'Organization profile, identity, fiscal year, addresses, contacts',
             'icon' => 'BuildingOffice2Icon',
             'route' => '/organization',
-            'priority' => 8,
+            'priority' => 9,
             'components' => [
                 [
                     'code' => 'org_profile', 'name' => 'Organization Profile', 'type' => 'page', 'route' => '/organization/profile',
@@ -862,7 +862,7 @@ return [
             'description' => 'API keys, personal access tokens, OAuth apps, outbound webhooks, rate limits',
             'icon' => 'CommandLineIcon',
             'route' => '/api',
-            'priority' => 10,
+            'priority' => 17,
             'components' => [
                 [
                     'code' => 'api_keys', 'name' => 'API Keys', 'type' => 'page', 'route' => '/api/keys',
@@ -927,7 +927,7 @@ return [
             'description' => 'Approval workflows, automation rules, triggers, conditions (delegated to aero-workflow package)',
             'icon' => 'ArrowPathRoundedSquareIcon',
             'route' => '/workflows',
-            'priority' => 11,
+            'priority' => 21,
             'delegated_to' => 'aero-workflow',
             'components' => [
                 [
@@ -1032,73 +1032,6 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 2.4 System Health
-        |--------------------------------------------------------------------------
-        */
-        [
-            'code' => 'system_health',
-            'name' => 'System Health',
-            'description' => 'System monitoring, performance metrics, and diagnostic tools',
-            'icon' => 'HeartIcon',
-            'route' => '/system-health',
-            'priority' => 15,
-            'components' => [
-                [
-                    'code' => 'overview', 'name' => 'System Overview', 'type' => 'page', 'route' => '/system-health',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Overview'],
-                    ],
-                ],
-                [
-                    'code' => 'database', 'name' => 'Database Health', 'type' => 'feature', 'route' => '/system-health',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Database Health'],
-                    ],
-                ],
-                [
-                    'code' => 'queue', 'name' => 'Queue Health', 'type' => 'feature', 'route' => '/system-health',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Queue Health'],
-                    ],
-                ],
-                [
-                    'code' => 'cache', 'name' => 'Cache Health', 'type' => 'feature', 'route' => '/system-health',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Cache Health'],
-                    ],
-                ],
-                [
-                    'code' => 'services', 'name' => 'External Services', 'type' => 'feature', 'route' => '/system-health',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Services Status'],
-                    ],
-                ],
-                [
-                    'code' => 'metrics', 'name' => 'Performance Metrics', 'type' => 'feature', 'route' => '/system-health',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Metrics'],
-                    ],
-                ],
-                [
-                    'code' => 'logs', 'name' => 'Health Logs', 'type' => 'page', 'route' => '/system-health/logs',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Logs'],
-                        ['code' => 'export', 'name' => 'Export Logs'],
-                        ['code' => 'delete', 'name' => 'Delete Logs'],
-                    ],
-                ],
-                [
-                    'code' => 'alerts', 'name' => 'Health Alerts', 'type' => 'feature', 'route' => '/system-health/alerts',
-                    'actions' => [
-                        ['code' => 'configure', 'name' => 'Configure Alerts'],
-                        ['code' => 'test', 'name' => 'Test Alert'],
-                    ],
-                ],
-            ],
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
         | 2.5 Form Builder
         |--------------------------------------------------------------------------
         */
@@ -1157,40 +1090,6 @@ return [
                         ['code' => 'view', 'name' => 'View Index'],
                         ['code' => 'reindex', 'name' => 'Reindex Content'],
                         ['code' => 'configure', 'name' => 'Configure Search'],
-                    ],
-                ],
-            ],
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | 2.6 Translations / i18n Editor
-        |--------------------------------------------------------------------------
-        */
-        [
-            'code' => 'translations',
-            'name' => 'Translations / i18n',
-            'description' => 'Multi-language support, translation editor, custom translations',
-            'icon' => 'LanguageIcon',
-            'route' => '/translations',
-            'priority' => 17,
-            'components' => [
-                [
-                    'code' => 'languages', 'name' => 'Languages', 'type' => 'page', 'route' => '/translations/languages',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Languages'],
-                        ['code' => 'enable', 'name' => 'Enable Language'],
-                        ['code' => 'disable', 'name' => 'Disable Language'],
-                    ],
-                ],
-                [
-                    'code' => 'translation_editor', 'name' => 'Translation Editor', 'type' => 'page', 'route' => '/translations/editor',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Translations'],
-                        ['code' => 'update', 'name' => 'Update Translation'],
-                        ['code' => 'auto_translate', 'name' => 'Auto-Translate (AI)'],
-                        ['code' => 'import', 'name' => 'Import Translations'],
-                        ['code' => 'export', 'name' => 'Export Translations'],
                     ],
                 ],
             ],
@@ -1266,7 +1165,7 @@ return [
             'description' => 'System-wide trash bin with restore and permanent delete functionality',
             'icon' => 'TrashIcon',
             'route' => '/trash',
-            'priority' => 19,
+            'priority' => 31,
             'components' => [
                 [
                     'code' => 'view', 'name' => 'View Trash', 'type' => 'page', 'route' => '/trash',
@@ -1338,7 +1237,7 @@ return [
             'description' => 'Cross-module comment system with @mentions and reactions',
             'icon' => 'ChatBubbleLeftRightIcon',
             'route' => '/comments',
-            'priority' => 19,
+            'priority' => 32,
             'show_in_nav' => false,
             'components' => [
                 [
@@ -1380,7 +1279,7 @@ return [
             'description' => 'In-tenant help center, knowledge base, support tickets, onboarding tours',
             'icon' => 'LifebuoyIcon',
             'route' => '/help',
-            'priority' => 20,
+            'priority' => 33,
             'components' => [
                 [
                     'code' => 'help_center', 'name' => 'Help Center', 'type' => 'page', 'route' => '/help',
@@ -1830,27 +1729,4 @@ return [
         'cache_tags' => ['module-access', 'role-access'],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | EAM Integration Map
-    |--------------------------------------------------------------------------
-    | Core provides foundational capabilities to all EAM flows (auth, users,
-    | audit, notifications, file storage). It does not own EAM-specific data.
-    */
-    'eam_integration' => [
-        'provides' => [
-            'core.users'              => 'user_management.users',
-            'core.roles'               => 'roles_permissions.roles',
-            'core.module_access'        => 'roles_permissions.module_access',
-            'core.audit_logs'          => 'audit_logs.activity_logs',
-            'core.security_logs'       => 'audit_logs.security_logs',
-            'core.notifications'       => 'notifications.channels',
-            'core.notification_templates' => 'notifications.templates',
-            'core.file_storage'        => 'file_manager.storage',
-            'core.media_library'       => 'file_manager.media_library',
-            'core.settings'            => 'settings.general',
-            'core.api_integrations'    => 'settings.integrations',
-        ],
-        'consumes' => [],
-    ],
 ];

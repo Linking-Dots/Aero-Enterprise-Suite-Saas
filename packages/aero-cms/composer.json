@@ -20,7 +20,6 @@
     "require": {
         "php": "^8.2",
         "aero/core": "*",
-        "aero/hrmac": "*",
         "laravel/framework": "^11.0|^12.0",
         "inertiajs/inertia-laravel": "^2.0",
         "spatie/laravel-medialibrary": "^11.0"

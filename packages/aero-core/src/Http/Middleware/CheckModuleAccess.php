@@ -95,6 +95,32 @@ class CheckModuleAccess
         $componentCode = ($componentCode === '' || $componentCode === null) ? null : $componentCode;
         $actionCode = ($actionCode === '' || $actionCode === null) ? null : $actionCode;
 
+        // ── SaaS product subscription gate ─────────────────────────────────────────
+        // In SaaS mode, verify tenant has an active product subscription for the module.
+        // Plan tier does NOT gate product access — plans govern limits only.
+        if (! $isStandalone && class_exists(\Aero\Platform\Services\ProductAccessService::class)) {
+            try {
+                $tenantKey = tenant()?->getTenantKey();
+                if ($tenantKey) {
+                    /** @var \Aero\Platform\Services\ProductAccessService $productAccess */
+                    $productAccess = app(\Aero\Platform\Services\ProductAccessService::class);
+
+                    if (! $productAccess->tenantCanAccessModule((string) $tenantKey, $moduleCode)) {
+                        return $this->denyAccess(
+                            $request,
+                            'no_product_subscription',
+                            'Your account does not have an active subscription for this module. Subscribe from Settings > Products.',
+                            402,
+                            ['module' => $moduleCode]
+                        );
+                    }
+                }
+            } catch (\Throwable) {
+                // ProductAccessService unavailable — skip gate (fail open)
+            }
+        }
+        // ────────────────────────────────────────────────────────────────────────────
+
         // Determine the level of access to check
         $accessCheck = null;
 

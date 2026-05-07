@@ -963,4 +963,12 @@ Route::middleware('auth:web')->group(function () {
 
     // FCM Token Update
     Route::post('/update-fcm-token', [CoreUserController::class, 'updateFcmToken'])->name('core.updateFcmToken');
+
+    // ========================================================================
+    // ADD-ON MANAGEMENT — standalone mode only
+    // ========================================================================
+    Route::prefix('addons')->name('addons.')->group(function () {
+        Route::get('/',        [\Aero\Core\Http\Controllers\Admin\AddonController::class, 'index'])->name('index');
+        Route::post('/install', [\Aero\Core\Http\Controllers\Admin\AddonController::class, 'install'])->name('install');
+    });
 });
