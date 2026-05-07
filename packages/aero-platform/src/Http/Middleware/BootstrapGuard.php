@@ -2,6 +2,7 @@
 
 namespace Aero\Platform\Http\Middleware;
 
+use Aero\Core\Services\InstallationState;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -78,7 +79,7 @@ class BootstrapGuard
      */
     protected function installed(): bool
     {
-        return file_exists(storage_path(self::INSTALLED_FLAG));
+        return InstallationState::isInstalled();
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Aero\Platform\Console\Commands;
 
+use Aero\Core\Services\InstallationState;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,7 @@ class CleanupFailedInstallation extends Command
         $this->line('=====================================');
 
         // Check if actually installed
-        if (File::exists(storage_path('app/aeos.installed'))) {
+        if (InstallationState::isInstalled()) {
             $this->warn('⚠️  Platform appears to be successfully installed.');
 
             if (! $this->option('force') && ! $this->confirm('Are you sure you want to cleanup? This may break the installation.', false)) {
@@ -243,6 +244,7 @@ class CleanupFailedInstallation extends Command
         if (File::exists($installedFile)) {
             if ($this->option('force') || $this->confirm('Remove installation marker?', true)) {
                 File::delete($installedFile);
+                InstallationState::clear();
 
                 return true;
             }

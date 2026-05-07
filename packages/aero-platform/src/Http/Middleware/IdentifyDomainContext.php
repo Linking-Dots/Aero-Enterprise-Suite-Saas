@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Http\Middleware;
 
 use Aero\Core\Contracts\DomainContextContract;
+use Aero\Core\Services\InstallationState;
 use Aero\Core\Traits\ParsesHostDomain;
 use Closure;
 use Illuminate\Http\Request;
@@ -75,12 +76,12 @@ class IdentifyDomainContext
      */
     protected function isApplicationInstalled(): bool
     {
-        // Check lock file
-        if (! File::exists(storage_path('app/aeos.installed'))) {
+        // Check via InstallationState (file-based cache + DB schema fallback)
+        if (! InstallationState::isInstalled()) {
             return false;
         }
 
-        // Check Database
+        // Check Database connectivity and tenants table
         try {
             DB::connection()->getPdo();
             // Assuming 'tenants' table is in the default/landlord connection

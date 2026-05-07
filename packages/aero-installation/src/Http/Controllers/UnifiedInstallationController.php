@@ -2,6 +2,13 @@
 
 namespace Aero\Installation\Http\Controllers;
 
+use Aero\Core\Models\Module;
+use Aero\Core\Models\ModuleComponent;
+use Aero\Core\Models\ModuleComponentAction;
+use Aero\Core\Models\SubModule;
+use Aero\Core\Services\InstallationState;
+use Aero\Core\Services\LicenseValidationService;
+use Aero\Core\Services\Module\ModuleDiscoveryService;
 use Aero\Installation\Installation\InstallationOrchestrator;
 use Aero\Installation\Installation\Steps\AdminUserStep;
 use Aero\Installation\Installation\Steps\CacheStep;
@@ -11,17 +18,10 @@ use Aero\Installation\Installation\Steps\FinalizeStep;
 use Aero\Installation\Installation\Steps\LicenseStep;
 use Aero\Installation\Installation\Steps\MigrationStep;
 use Aero\Installation\Installation\Steps\ModuleDiscoveryStep;
-use Aero\Installation\Installation\Steps\PlatformConfigurationStep;
 use Aero\Installation\Installation\Steps\PlanSeedingStep;
+use Aero\Installation\Installation\Steps\PlatformConfigurationStep;
 use Aero\Installation\Installation\Steps\SeedingStep;
 use Aero\Installation\Installation\Steps\SettingsStep;
-use Aero\Installation\Installation\Steps\TenantModuleSetupStep;
-use Aero\Core\Models\Module;
-use Aero\Core\Models\ModuleComponent;
-use Aero\Core\Models\ModuleComponentAction;
-use Aero\Core\Models\SubModule;
-use Aero\Core\Services\LicenseValidationService;
-use Aero\Core\Services\Module\ModuleDiscoveryService;
 use Dotenv\Dotenv;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Http\Request;
@@ -132,7 +132,7 @@ class UnifiedInstallationController extends Controller
      */
     protected function isInstalled(): bool
     {
-        return File::exists(storage_path(self::LOCK_FILE));
+        return InstallationState::isInstalled();
     }
 
     /**
@@ -777,7 +777,8 @@ class UnifiedInstallationController extends Controller
 
             return redirect('/install/processing');
         } catch (\Exception $e) {
-            Log::error("Installation execute failed", ['error' => $e->getMessage()]);
+            Log::error('Installation execute failed', ['error' => $e->getMessage()]);
+
             return back()->with('error', 'Failed to start installation: '.$e->getMessage());
         }
     }
@@ -787,11 +788,11 @@ class UnifiedInstallationController extends Controller
      */
     public function progress()
     {
-        Log::info("[Installation] progress() called");
+        Log::info('[Installation] progress() called');
 
         $progressData = $this->getProgressData();
 
-        Log::info("[Installation] Progress data returned", [
+        Log::info('[Installation] Progress data returned', [
             'percentage' => $progressData['percentage'] ?? 0,
             'current_step' => $progressData['currentStep'] ?? 'unknown',
             'status' => $progressData['status'] ?? 'unknown',
@@ -812,7 +813,8 @@ class UnifiedInstallationController extends Controller
 
         // First check if orchestrator exists in cache (installation in progress)
         if (Cache::has($orchestratorKey)) {
-            Log::info("[Installation] Orchestrator found in cache, continuing installation");
+            Log::info('[Installation] Orchestrator found in cache, continuing installation');
+
             return $this->runInstallation();
         }
 
@@ -873,7 +875,8 @@ class UnifiedInstallationController extends Controller
         }
 
         // No progress found and no orchestrator in cache, start installation
-        Log::info("[Installation] No progress found, starting installation");
+        Log::info('[Installation] No progress found, starting installation');
+
         return $this->runInstallation();
     }
 
@@ -883,6 +886,7 @@ class UnifiedInstallationController extends Controller
     protected function calculateCompletedSteps(int $percentage): int
     {
         $totalSteps = 12;
+
         return (int) round(($percentage / 100) * $totalSteps);
     }
 
@@ -904,7 +908,7 @@ class UnifiedInstallationController extends Controller
         try {
             // Get or create orchestrator in session
             $orchestratorKey = 'installation_orchestrator_'.session()->getId();
-            
+
             Log::info("[Installation::{$mode}] Retrieving/creating orchestrator", [
                 'orchestrator_key' => $orchestratorKey,
                 'exists_in_cache' => Cache::has($orchestratorKey),
@@ -934,7 +938,7 @@ class UnifiedInstallationController extends Controller
 
                     Log::info("[Installation::{$mode}] Registering steps", [
                         'count' => count($stepsToRegister),
-                        'steps' => array_map(fn($s) => get_class($s), $stepsToRegister),
+                        'steps' => array_map(fn ($s) => get_class($s), $stepsToRegister),
                     ]);
 
                     $orch->registerSteps($stepsToRegister);
@@ -1277,7 +1281,7 @@ class UnifiedInstallationController extends Controller
         // SaaS mode: sync platform-scoped modules for central database
         // Standalone mode: sync all modules (scope='all')
         $scope = ($mode === 'saas') ? 'platform' : 'all';
-        
+
         // Sync modules directly using ModuleDiscoveryService
         $this->syncModuleHierarchy($scope);
     }

@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Console\Commands;
 
+use Aero\Core\Services\InstallationState;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -35,8 +36,7 @@ class VerifyInstallationCommand extends Command
         $checks = [];
 
         // 1. Check installation lock file
-        $lockFile = storage_path('app/aeos.installed');
-        $checks['Installation Lock'] = file_exists($lockFile) ? '✓ Complete' : '✗ Incomplete';
+        $checks['Installation Lock'] = InstallationState::isInstalled() ? '✓ Complete' : '✗ Incomplete';
         $this->line("  1. Installation Lock: {$checks['Installation Lock']}");
 
         // 2. Check database tables
