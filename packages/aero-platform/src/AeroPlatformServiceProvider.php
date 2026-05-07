@@ -835,6 +835,15 @@ class AeroPlatformServiceProvider extends ServiceProvider
             });
         }
 
+        // Public marketplace (domain.com/marketplace) — Inertia web pages + Stripe webhook
+        if (! $this->app->routesAreCached()) {
+            Route::group([
+                'domain' => $platformDomain,
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/../routes/marketplace.php');
+            });
+        }
+
     }
 
     /**
