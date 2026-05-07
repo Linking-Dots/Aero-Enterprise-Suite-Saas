@@ -13,7 +13,7 @@
   display: flex;
   min-height: 100vh;
   padding: var(--aeos-space-4);
-  background: var(--aeos-grad-mesh), var(--aeos-bg-page);
+  background: var(--aeos-shell-bg);
   gap: var(--aeos-gap-card);
   font-family: var(--aeos-font-body);
   box-sizing: border-box;
@@ -23,7 +23,7 @@
 [data-aeos-shell="floating"] .aeos-shell-sidebar {
   width: var(--aeos-space-14);
   background: var(--aeos-shell-floating-bg);
-  border: 1px solid var(--aeos-primary-tint);
+  border: var(--aeos-border-width) solid var(--aeos-primary-tint);
   border-radius: var(--aeos-r-xl);
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@
   height: var(--aeos-space-8);
   border-radius: var(--aeos-r-md);
   background: var(--aeos-bg-tint);
-  border: 1px solid transparent;
+  border: var(--aeos-border-width) solid transparent;
   cursor: pointer;
   transition:
     background      var(--aeos-dur-fast) var(--aeos-ease-out),
@@ -94,8 +94,9 @@
 /* ── Floating Content Panel ──────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-content {
   flex: 1;
+  min-height: 0;
   background: var(--aeos-shell-panel-bg);
-  border: 1px solid var(--aeos-border-subtle);
+  border: var(--aeos-border-width) solid var(--aeos-border-subtle);
   border-radius: var(--aeos-r-xl);
   padding: var(--aeos-space-5);
   overflow-y: auto;
@@ -109,7 +110,7 @@
   align-items: center;
   height: var(--aeos-h-topbar);
   padding: 0 4px var(--aeos-space-4);
-  border-bottom: 1px solid var(--aeos-divider);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   margin-bottom: var(--aeos-space-4);
   gap: var(--aeos-space-3);
 }
