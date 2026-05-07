@@ -636,6 +636,10 @@ class AeroCoreServiceProvider extends ServiceProvider
 
             // Register 'dashboard.redirect' middleware alias for role-based dashboard routing
             $router->aliasMiddleware('dashboard.redirect', DashboardRedirectMiddleware::class);
+
+            // Register request context resolution middleware aliases
+            $router->aliasMiddleware('resolve.platform.context', \Aero\Core\Http\Middleware\ResolvePlatformContext::class);
+            $router->aliasMiddleware('resolve.tenant.context', \Aero\Core\Http\Middleware\ResolveTenantContext::class);
         });
     }
 
