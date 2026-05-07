@@ -20,8 +20,8 @@ class LicenseController extends Controller
     {
         $request->validate([
             'license_key' => ['required', 'string'],
-            'product_id'  => ['required', 'string'],
-            'domain'      => ['required', 'string'],
+            'product_id' => ['required', 'string'],
+            'domain' => ['required', 'string'],
         ]);
 
         $license = StandaloneLicense::with('product')
@@ -41,7 +41,7 @@ class LicenseController extends Controller
         if ($license->isDomainBound() && ! $license->domainMatches($domainHash)) {
             if (! $license->canActivateOnNewDomain()) {
                 return response()->json([
-                    'status'  => 'invalid',
+                    'status' => 'invalid',
                     'message' => 'License is already activated on another domain. Contact support to transfer.',
                 ]);
             }
@@ -50,7 +50,7 @@ class LicenseController extends Controller
         if (! $license->isDomainBound()) {
             $license->update([
                 'bound_domain_hash' => $domainHash,
-                'activation_count'  => 1,
+                'activation_count' => 1,
                 'last_validated_at' => now(),
             ]);
         } else {
@@ -58,7 +58,7 @@ class LicenseController extends Controller
         }
 
         return response()->json([
-            'status'     => 'valid',
+            'status' => 'valid',
             'product_id' => $license->product->code,
             'expires_at' => $license->expires_at?->toIso8601String(),
         ]);
@@ -73,7 +73,7 @@ class LicenseController extends Controller
     {
         $request->validate([
             'license_key' => ['required', 'string'],
-            'product_id'  => ['required', 'string'],
+            'product_id' => ['required', 'string'],
             'domain_hash' => ['required', 'string'],
         ]);
 
@@ -95,9 +95,9 @@ class LicenseController extends Controller
 
         if ($license->expires_at !== null && $license->expires_at->isPast()) {
             return response()->json([
-                'status'     => 'expired',
+                'status' => 'expired',
                 'expired_at' => $license->expires_at->toIso8601String(),
-                'message'    => 'License expired. Renew at aerosuite.com/renew',
+                'message' => 'License expired. Renew at aerosuite.com/renew',
             ]);
         }
 
@@ -108,7 +108,7 @@ class LicenseController extends Controller
         $license->update(['last_validated_at' => now()]);
 
         return response()->json([
-            'status'     => 'valid',
+            'status' => 'valid',
             'product_id' => $license->product->code,
             'expires_at' => $license->expires_at?->toIso8601String(),
         ]);
@@ -127,9 +127,9 @@ class LicenseController extends Controller
                 'monthly_price', 'yearly_price', 'currency', 'version', 'metadata']);
 
         return response()->json([
-            'products'        => $products,
+            'products' => $products,
             'marketplace_url' => config('app.url').'/marketplace',
-            'cached_at'       => now()->toIso8601String(),
+            'cached_at' => now()->toIso8601String(),
         ]);
     }
 
@@ -142,7 +142,7 @@ class LicenseController extends Controller
     {
         $request->validate([
             'license_key' => ['required', 'string'],
-            'product_id'  => ['required', 'string'],
+            'product_id' => ['required', 'string'],
         ]);
 
         $license = StandaloneLicense::with('product')

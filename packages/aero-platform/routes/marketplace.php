@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Aero\Platform\Http\Controllers\Marketplace\CatalogController;
 use Aero\Platform\Http\Controllers\Marketplace\DownloadController;
 use Aero\Platform\Http\Controllers\Marketplace\PurchaseController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,7 +35,7 @@ Route::middleware(['web'])
 
         Route::post('/webhook/stripe', [PurchaseController::class, 'webhook'])
             ->name('webhook.stripe')
-            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+            ->withoutMiddleware([VerifyCsrfToken::class]);
 
         Route::get('/download/{license}/{product}', [DownloadController::class, 'download'])
             ->name('download')

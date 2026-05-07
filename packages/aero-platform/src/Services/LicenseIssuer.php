@@ -22,9 +22,9 @@ class LicenseIssuer
             $seg2 = strtoupper(Str::random(8));
             $seg3 = strtoupper(Str::random(8));
 
-            $salt     = config('license.checksum_salt', 'aero-license-salt');
+            $salt = config('license.checksum_salt', 'aero-license-salt');
             $checksum = strtoupper(substr(md5($seg1.$seg2.$seg3.$salt), 0, 2));
-            $seg4     = $checksum.strtoupper(Str::random(6));
+            $seg4 = $checksum.strtoupper(Str::random(6));
 
             $key = "{$seg1}-{$seg2}-{$seg3}-{$seg4}";
 
@@ -45,23 +45,23 @@ class LicenseIssuer
         ?string $customerName = null,
         int $maxActivations = 1,
     ): StandaloneLicense {
-        $product   = Product::active()->where('code', $productCode)->firstOrFail();
-        $key       = $this->generateKey($productCode);
+        $product = Product::active()->where('code', $productCode)->firstOrFail();
+        $key = $this->generateKey($productCode);
         $expiresAt = $billingType === 'annual' ? now()->addYear() : null;
 
         return StandaloneLicense::create([
-            'id'                => (string) Str::uuid(),
-            'product_id'        => $product->id,
-            'license_key'       => $key,
-            'customer_email'    => $customerEmail,
-            'customer_name'     => $customerName,
-            'status'            => 'active',
-            'billing_type'      => $billingType,
-            'purchase_source'   => $source,
+            'id' => (string) Str::uuid(),
+            'product_id' => $product->id,
+            'license_key' => $key,
+            'customer_email' => $customerEmail,
+            'customer_name' => $customerName,
+            'status' => 'active',
+            'billing_type' => $billingType,
+            'purchase_source' => $source,
             'external_order_id' => $orderId,
-            'max_activations'   => $maxActivations,
-            'activation_count'  => 0,
-            'expires_at'        => $expiresAt,
+            'max_activations' => $maxActivations,
+            'activation_count' => 0,
+            'expires_at' => $expiresAt,
         ]);
     }
 }

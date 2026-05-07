@@ -19,11 +19,11 @@ class StandaloneLicense extends Model
     ];
 
     protected $casts = [
-        'expires_at'        => 'datetime',
+        'expires_at' => 'datetime',
         'last_validated_at' => 'datetime',
-        'activation_count'  => 'integer',
-        'max_activations'   => 'integer',
-        'metadata'          => 'array',
+        'activation_count' => 'integer',
+        'max_activations' => 'integer',
+        'metadata' => 'array',
     ];
 
     public function product(): BelongsTo

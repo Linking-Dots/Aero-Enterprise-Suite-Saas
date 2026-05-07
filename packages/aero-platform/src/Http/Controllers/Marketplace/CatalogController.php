@@ -17,15 +17,15 @@ class CatalogController extends Controller
 
         return Inertia::render('Marketplace/Catalog', [
             'products' => $products->map(fn ($p) => [
-                'id'            => $p->id,
-                'code'          => $p->code,
-                'name'          => $p->name,
-                'description'   => $p->description,
-                'icon'          => $p->icon,
+                'id' => $p->id,
+                'code' => $p->code,
+                'name' => $p->name,
+                'description' => $p->description,
+                'icon' => $p->icon,
                 'monthly_price' => $p->monthly_price,
-                'yearly_price'  => $p->yearly_price,
-                'currency'      => $p->currency,
-                'metadata'      => $p->metadata,
+                'yearly_price' => $p->yearly_price,
+                'currency' => $p->currency,
+                'metadata' => $p->metadata,
             ]),
         ]);
     }

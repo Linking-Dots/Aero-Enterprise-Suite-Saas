@@ -11,6 +11,9 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Stripe\Exception\SignatureVerificationException;
+use Stripe\StripeClient;
+use Stripe\Webhook;
 
 class PurchaseController extends Controller
 {
@@ -18,59 +21,59 @@ class PurchaseController extends Controller
 
     public function checkout(Request $request, string $productCode): Response
     {
-        $product      = Product::active()->where('code', $productCode)->firstOrFail();
+        $product = Product::active()->where('code', $productCode)->firstOrFail();
         $billingCycle = $request->query('cycle', 'one_time');
 
         $price = match ($billingCycle) {
-            'annual'  => $product->yearly_price,
+            'annual' => $product->yearly_price,
             'monthly' => $product->monthly_price,
-            default   => $product->monthly_price,
+            default => $product->monthly_price,
         };
 
         return Inertia::render('Marketplace/Checkout', [
-            'product'      => $product,
+            'product' => $product,
             'billingCycle' => $billingCycle,
-            'price'        => $price,
-            'currency'     => $product->currency,
+            'price' => $price,
+            'currency' => $product->currency,
         ]);
     }
 
     public function createCheckoutSession(Request $request): RedirectResponse
     {
         $request->validate([
-            'product_code'  => ['required', 'string'],
+            'product_code' => ['required', 'string'],
             'billing_cycle' => ['required', 'in:one_time,annual'],
-            'email'         => ['required', 'email'],
-            'name'          => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'email'],
+            'name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $product = Product::active()->where('code', $request->product_code)->firstOrFail();
-        $amount  = $request->billing_cycle === 'annual'
+        $amount = $request->billing_cycle === 'annual'
             ? $product->yearly_price
             : $product->monthly_price;
 
         try {
-            $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+            $stripe = new StripeClient(config('cashier.secret'));
 
             $session = $stripe->checkout->sessions->create([
                 'payment_method_types' => ['card'],
-                'line_items'           => [[
+                'line_items' => [[
                     'price_data' => [
-                        'currency'     => strtolower($product->currency),
+                        'currency' => strtolower($product->currency),
                         'product_data' => ['name' => $product->name],
-                        'unit_amount'  => (int) ($amount * 100),
+                        'unit_amount' => (int) ($amount * 100),
                     ],
-                    'quantity'   => 1,
+                    'quantity' => 1,
                 ]],
-                'mode'           => 'payment',
+                'mode' => 'payment',
                 'customer_email' => $request->email,
-                'metadata'       => [
-                    'product_code'  => $product->code,
+                'metadata' => [
+                    'product_code' => $product->code,
                     'billing_cycle' => $request->billing_cycle,
                     'customer_name' => $request->name ?? '',
                 ],
                 'success_url' => route('marketplace.purchase.success').'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url'  => route('marketplace.product', $product->code),
+                'cancel_url' => route('marketplace.product', $product->code),
             ]);
 
             return redirect($session->url);
@@ -84,13 +87,13 @@ class PurchaseController extends Controller
 
     public function webhook(Request $request): HttpResponse
     {
-        $payload   = $request->getContent();
+        $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
-        $secret    = config('cashier.webhook.secret');
+        $secret = config('cashier.webhook.secret');
 
         try {
-            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $secret);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            $event = Webhook::constructEvent($payload, $sigHeader, $secret);
+        } catch (SignatureVerificationException $e) {
             return response('Invalid signature', 400);
         }
 
@@ -114,7 +117,7 @@ class PurchaseController extends Controller
     private function handleSuccessfulPurchase(object $session): void
     {
         try {
-            $metadata    = (array) $session->metadata;
+            $metadata = (array) $session->metadata;
             $productCode = $metadata['product_code'];
             $billingType = $metadata['billing_cycle'] === 'annual' ? 'annual' : 'one_time';
 
@@ -128,14 +131,14 @@ class PurchaseController extends Controller
             );
 
             Log::info('License issued after purchase', [
-                'license_key'    => $license->license_key,
+                'license_key' => $license->license_key,
                 'customer_email' => $session->customer_email,
-                'product_code'   => $productCode,
+                'product_code' => $productCode,
             ]);
 
         } catch (\Throwable $e) {
             Log::error('Failed to issue license after purchase', [
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
                 'session' => $session->id,
             ]);
         }
