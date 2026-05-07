@@ -119,6 +119,9 @@ class AeroCoreServiceProvider extends ServiceProvider
 
             $this->app->singleton(ProductManifestLoader::class);
 
+            $this->app->singleton(\Aero\Core\Services\AddonCatalogService::class);
+            $this->app->singleton(\Aero\Core\Services\AddonInstaller::class);
+
             // Configure auth to use Core's User model
             config(['auth.providers.users.model' => User::class]);
 
