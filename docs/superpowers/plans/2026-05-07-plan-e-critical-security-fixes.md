@@ -4,9 +4,9 @@
 
 **Goal:** Close the three critical security gaps identified in the architectural audit: platform permission bypass (all landlords are super-admins), guard context bleeding (landlord session leaks into tenant routes), and ModuleRegistry cross-tenant enablement state.
 
-**Architecture:** Three independent fixes applied to `packages/aero-core` and `packages/aero-platform`. E1 seeds real platform permissions and enforces them in `handlePlatformAccess()`. E2 introduces two tiny context middlewares (`ResolvePlatformContext`, `ResolveTenantContext`) injected by route groups so `detectGuard()` reads intent from the route stack — not the hostname. E3 adds per-tenant enablement caching to `ModuleRegistry` without breaking its existing API.
+**Architecture:** Three independent fixes applied to `packages/aero-core` and `packages/aero-platform`. E1 syncs platform module hierarchy into HRMAC (the same `module → sub_module → component → action` system used on the tenant side) and seeds platform roles via HRMAC's `syncRoleAccess()`. E2 replaces the TODO bypass in `handlePlatformAccess()` with a HRMAC hierarchy check — `userCanAccessModule()` / `userCanAccessSubModule()` / `userCanAccessAction()` by code, with cascade built in. E3+E4+E5 introduce two context middlewares (`ResolvePlatformContext`, `ResolveTenantContext`) so `detectGuard()` reads intent from the route stack, not the hostname. E6 adds per-tenant enablement caching to `ModuleRegistry`. E7 fixes `TenantCache` to use `TenantScopeInterface`.
 
-**Tech Stack:** Laravel 11, spatie/laravel-permission (already installed), PHP 8.2 readonly properties.
+**Tech Stack:** Laravel 11, HRMAC (`aero/hrmac` — `RoleModuleAccessInterface`), PHP 8.2 readonly properties. **No spatie/laravel-permission used for platform access** — HRMAC owns all role-module access on both sides.
 
 **Prerequisite:** `main` branch after Plans A–D. Run `php artisan config:clear` after each task.
 
@@ -15,7 +15,7 @@
 ## File Map
 
 ### New Files
-- `packages/aero-platform/database/seeders/PlatformPermissionSeeder.php`
+- `packages/aero-platform/database/seeders/PlatformHrmacSeeder.php`
 - `packages/aero-core/src/Http/Middleware/ResolvePlatformContext.php`
 - `packages/aero-core/src/Http/Middleware/ResolveTenantContext.php`
 - `packages/aero-core/src/ValueObjects/RequestContext.php`
@@ -28,93 +28,180 @@
 
 ---
 
-## Task E1: Platform Permission Seeder
+## Task E1: Sync Platform Module Hierarchy into HRMAC
 
 **Files:**
-- Create: `packages/aero-platform/database/seeders/PlatformPermissionSeeder.php`
+- Create: `packages/aero-platform/database/seeders/PlatformHrmacSeeder.php`
 
-Reads `aero-platform/config/module.php` and creates spatie permissions in the format `platform.{submodule}.{component}.{action}` plus a `super-platform-admin` role that gets all of them.
+**Context — how HRMAC works on both sides:**
 
-- [ ] **Step E1.1: Write the seeder**
+HRMAC (`aero/hrmac`) is the single access-control system for both tenant and platform. It uses four DB tables: `modules`, `sub_modules`, `components`, `actions`, and a join table `role_module_access`. The hierarchy cascades downward — granting module access implies sub_module+component+action access. The `modules.scope` column distinguishes `'tenant'` from `'platform'` modules.
+
+The `aero:sync-module` command (from `aero-core`) reads every package's `config/module.php` and inserts/updates the HRMAC hierarchy tables. It auto-detects scope from `module.php`'s `'scope'` key. For `aero-platform` (scope: `'platform'`), this populates the central DB with the platform module tree.
+
+This seeder runs AFTER `aero:sync-module` and creates two platform roles with HRMAC access:
+1. `Super Platform Admin` — full access to all platform modules (via HRMAC module-level grant)
+2. `Platform Admin` — read-only access (view actions only)
+
+- [ ] **Step E1.1: First verify aero:sync-module includes platform modules**
+
+```bash
+cd c:/laragon/www/aeos365
+php artisan aero:sync-module 2>&1 | tail -10
+```
+
+Then confirm the platform module is synced:
+```bash
+php artisan tinker --execute="
+use Aero\HRMAC\Models\Module;
+echo Module::where('scope', 'platform')->count() . ' platform modules synced';
+echo PHP_EOL;
+Module::where('scope', 'platform')->pluck('code')->each(fn(\$c) => print(\$c . PHP_EOL));
+"
+```
+
+Expected: the platform module and its submodules are present. If count is 0, run:
+```bash
+php artisan aero:sync-module --force 2>&1 | tail -5
+```
+
+- [ ] **Step E1.2: Write PlatformHrmacSeeder**
 
 ```php
 <?php
-// packages/aero-platform/database/seeders/PlatformPermissionSeeder.php
+// packages/aero-platform/database/seeders/PlatformHrmacSeeder.php
 
 namespace Aero\Platform\Database\Seeders;
 
+use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\HRMAC\Models\Module as HrmacModule;
+use Aero\HRMAC\Models\Role as HrmacRole;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
-class PlatformPermissionSeeder extends Seeder
+class PlatformHrmacSeeder extends Seeder
 {
     public function run(): void
     {
-        // Use the 'landlord' guard so permissions are scoped correctly
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        /** @var RoleModuleAccessInterface $hrmac */
+        $hrmac = app(RoleModuleAccessInterface::class);
 
-        $config     = require __DIR__ . '/../../config/module.php';
-        $submodules = $config['submodules'] ?? [];
+        // 1. Ensure platform module hierarchy is synced
+        \Illuminate\Support\Facades\Artisan::call('aero:sync-module');
 
-        $allPermissions = [];
+        // 2. Create Super Platform Admin role (if not exists)
+        $superAdmin = HrmacRole::firstOrCreate(
+            ['name' => 'Super Platform Admin'],
+            ['guard_name' => 'landlord', 'is_system' => true]
+        );
 
-        foreach ($submodules as $submodule) {
-            $subCode = $submodule['code'];
-            foreach ($submodule['components'] ?? [] as $component) {
-                $compCode = $component['code'];
-                foreach ($component['actions'] ?? [] as $action) {
-                    $name = "platform.{$subCode}.{$compCode}.{$action['code']}";
-                    Permission::firstOrCreate(['name' => $name, 'guard_name' => 'landlord']);
-                    $allPermissions[] = $name;
-                }
-            }
+        // 3. Grant Super Platform Admin full access to the platform module
+        //    HRMAC cascade: module-level grant covers all submodules, components, actions
+        $platformModule = HrmacModule::where('code', 'platform')
+            ->where('scope', 'platform')
+            ->first();
+
+        if ($platformModule) {
+            $hrmac->syncRoleAccess($superAdmin, [
+                'modules' => [$platformModule->id],  // full module access = all children granted
+                'sub_modules' => [],
+                'components' => [],
+                'actions' => [],
+            ]);
+            $this->command->info("Super Platform Admin granted full access to platform module (id: {$platformModule->id})");
+        } else {
+            $this->command->error('Platform module not found in HRMAC — run: php artisan aero:sync-module first');
         }
 
-        // Super platform admin role gets everything
-        $superRole = Role::firstOrCreate(['name' => 'super-platform-admin', 'guard_name' => 'landlord']);
-        $superRole->syncPermissions($allPermissions);
+        // 4. Create Platform Admin role (read-only — view actions only)
+        $platformAdmin = HrmacRole::firstOrCreate(
+            ['name' => 'Platform Admin'],
+            ['guard_name' => 'landlord', 'is_system' => true]
+        );
 
-        // Platform admin role gets read-only on most modules
-        $adminRole = Role::firstOrCreate(['name' => 'platform-admin', 'guard_name' => 'landlord']);
+        // Grant view-only actions across all platform submodules
+        if ($platformModule) {
+            $viewActions = \Aero\HRMAC\Models\Action::whereHas('component.subModule', function ($q) use ($platformModule) {
+                $q->where('module_id', $platformModule->id);
+            })->where('code', 'view')->pluck('id')->toArray();
 
-        $this->command->info('Platform permissions seeded: ' . count($allPermissions));
+            $hrmac->syncRoleAccess($platformAdmin, [
+                'modules'     => [],
+                'sub_modules' => [],
+                'components'  => [],
+                'actions'     => $viewActions,  // only view actions
+            ]);
+            $this->command->info("Platform Admin granted " . count($viewActions) . " view-only actions");
+        }
+
+        $hrmac->clearRoleCache($superAdmin);
+        $hrmac->clearRoleCache($platformAdmin);
+
+        $this->command->info('Platform HRMAC roles seeded successfully');
     }
 }
 ```
 
-- [ ] **Step E1.2: Run seeder to verify it works**
+- [ ] **Step E1.3: Run seeder**
 
 ```bash
 cd c:/laragon/www/aeos365
-php artisan db:seed --class="Aero\Platform\Database\Seeders\PlatformPermissionSeeder" 2>&1 | tail -5
+php artisan db:seed --class="Aero\Platform\Database\Seeders\PlatformHrmacSeeder" 2>&1 | tail -8
 ```
 
-Expected: `Platform permissions seeded: N` (where N > 0)
+Expected:
+```
+Super Platform Admin granted full access to platform module (id: N)
+Platform Admin granted N view-only actions
+Platform HRMAC roles seeded successfully
+```
 
-- [ ] **Step E1.3: Commit**
+- [ ] **Step E1.4: Commit**
 
 ```bash
-git add packages/aero-platform/database/seeders/PlatformPermissionSeeder.php
-git commit -m "feat(aero-platform): add PlatformPermissionSeeder — seeds platform.* permissions for landlord guard"
+git add packages/aero-platform/database/seeders/PlatformHrmacSeeder.php
+git commit -m "feat(aero-platform): add PlatformHrmacSeeder — seeds Super Platform Admin + Platform Admin roles via HRMAC hierarchy"
 ```
 
 ---
 
-## Task E2: Fix handlePlatformAccess — Enforce Real Permissions
+## Task E2: Fix handlePlatformAccess — Use HRMAC Hierarchy Check
 
 **Files:**
-- Modify: `packages/aero-core/src/Http/Middleware/CheckModuleAccess.php` (lines ~225–260)
+- Modify: `packages/aero-core/src/Http/Middleware/CheckModuleAccess.php`
+
+**How HRMAC hierarchy check works:**
+
+`RoleModuleAccessInterface` exposes three code-based user checks that respect the cascade:
+- `userCanAccessModule($user, 'platform')` — true if user's role has module-level grant (= full access)
+- `userCanAccessSubModule($user, 'platform', 'tenant_management')` — true if granted module OR sub_module
+- `userCanAccessAction($user, 'platform', 'tenant_management', 'view')` — true if granted anywhere in the chain
+
+HRMAC internally calls `isSuperAdmin($user)` at the start of each check — so super admins bypass everything automatically without special-casing here.
+
+The `$componentCode` parameter maps to the component level in HRMAC. Since HRMAC does not expose a code-based `userCanAccessComponent()` method, we treat component-level requests as sub_module-level (the cascade covers it — if you have sub_module access, all components within it are accessible).
 
 - [ ] **Step E2.1: Read the current handlePlatformAccess method**
 
-Open `packages/aero-core/src/Http/Middleware/CheckModuleAccess.php` and locate `handlePlatformAccess()`. It currently ends with an unconditional `return $next($request)`.
+Open `packages/aero-core/src/Http/Middleware/CheckModuleAccess.php`. Locate `handlePlatformAccess()` — it currently has `// TODO` and returns `$next($request)` unconditionally.
 
-- [ ] **Step E2.2: Replace the method body**
+- [ ] **Step E2.2: Add the HRMAC import to the class**
 
-Replace the entire `handlePlatformAccess()` method with:
+At the top of `CheckModuleAccess.php`, add this use statement alongside the existing ones:
 
 ```php
+use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+```
+
+- [ ] **Step E2.3: Replace the entire handlePlatformAccess() method**
+
+```php
+/**
+ * Handle access control for platform/landlord context using HRMAC.
+ *
+ * Uses the same hierarchy as the tenant side: module → sub_module → component → action.
+ * RoleModuleAccessInterface handles super-admin bypass and cascade internally.
+ * No spatie permissions involved — HRMAC owns all access control on both sides.
+ */
 protected function handlePlatformAccess(
     Request $request,
     Closure $next,
@@ -124,22 +211,46 @@ protected function handlePlatformAccess(
     ?string $componentCode = null,
     ?string $actionCode    = null
 ): Response {
-    // Super platform admins bypass all checks
-    if ($user->hasRole('super-platform-admin', 'landlord')) {
-        return $next($request);
+    try {
+        /** @var RoleModuleAccessInterface $hrmac */
+        $hrmac = app(RoleModuleAccessInterface::class);
+
+        $allowed = match (true) {
+            // Action-level check (most granular) — requires subModuleCode
+            $actionCode !== null && $subModuleCode !== null =>
+                $hrmac->userCanAccessAction($user, $moduleCode, $subModuleCode, $actionCode),
+
+            // SubModule-level check — also covers component-level (cascade)
+            $subModuleCode !== null =>
+                $hrmac->userCanAccessSubModule($user, $moduleCode, $subModuleCode),
+
+            // Module-level check (broadest)
+            default =>
+                $hrmac->userCanAccessModule($user, $moduleCode),
+        };
+
+    } catch (\Throwable $e) {
+        // HRMAC not available (e.g. tables not migrated yet) — deny access safely
+        \Illuminate\Support\Facades\Log::warning('HRMAC unavailable for platform access check', [
+            'error'  => $e->getMessage(),
+            'module' => $moduleCode,
+            'user'   => $user->id ?? null,
+        ]);
+        $allowed = false;
     }
 
-    // Build the permission name from the access path
-    $parts      = array_filter([$moduleCode, $subModuleCode, $componentCode, $actionCode]);
-    $permission = 'platform.' . implode('.', $parts);
-
-    if (! $user->hasPermissionTo($permission, 'landlord')) {
+    if (! $allowed) {
         return $this->denyAccess(
             $request,
             'insufficient_permissions',
-            "Missing platform permission: [{$permission}]",
+            "You do not have access to this platform feature.",
             403,
-            ['permission' => $permission]
+            [
+                'module'    => $moduleCode,
+                'submodule' => $subModuleCode,
+                'component' => $componentCode,
+                'action'    => $actionCode,
+            ]
         );
     }
 
@@ -147,7 +258,7 @@ protected function handlePlatformAccess(
 }
 ```
 
-- [ ] **Step E2.3: Verify syntax**
+- [ ] **Step E2.4: Verify syntax**
 
 ```bash
 php -l packages/aero-core/src/Http/Middleware/CheckModuleAccess.php
@@ -155,11 +266,28 @@ php -l packages/aero-core/src/Http/Middleware/CheckModuleAccess.php
 
 Expected: `No syntax errors detected`
 
-- [ ] **Step E2.4: Commit**
+- [ ] **Step E2.5: Verify HRMAC check works for a landlord user in tinker**
+
+```bash
+cd c:/laragon/www/aeos365
+php artisan tinker --execute="
+// Simulate the check that handlePlatformAccess will do
+\$hrmac = app(\Aero\HRMAC\Contracts\RoleModuleAccessInterface::class);
+\$user  = \Aero\Platform\Models\LandlordUser::first();
+if (\$user) {
+    echo 'User: ' . \$user->email . PHP_EOL;
+    echo 'Can access platform module: ' . (\$hrmac->userCanAccessModule(\$user, 'platform') ? 'YES' : 'NO') . PHP_EOL;
+} else {
+    echo 'No landlord users found — seed one first';
+}
+"
+```
+
+- [ ] **Step E2.6: Commit**
 
 ```bash
 git add packages/aero-core/src/Http/Middleware/CheckModuleAccess.php
-git commit -m "fix(aero-core): CheckModuleAccess enforces real platform permissions instead of allowing all landlord users"
+git commit -m "fix(aero-core): handlePlatformAccess uses HRMAC hierarchy (module→submodule→action) — same system as tenant side, no bypass"
 ```
 
 ---
@@ -516,10 +644,12 @@ git commit -m "fix(aero-core): TenantCache replaces tenancy() direct call with T
 ## Self-Review
 
 **Spec coverage:**
-- Platform bypass (CRITICAL) → E2 ✅
-- Platform permissions seeded → E1 ✅
+- Platform bypass (CRITICAL) → E2 ✅ — HRMAC `userCanAccessModule/SubModule/Action()` by code, cascade built in, super-admin auto-bypassed inside HRMAC
+- Platform HRMAC roles seeded → E1 ✅ — `Super Platform Admin` gets module-level grant (covers all children), `Platform Admin` gets view actions only
 - Context bleeding (CRITICAL) → E3+E4+E5 ✅
 - ModuleRegistry cross-tenant (MAJOR) → E6 ✅
 - TenantCache not tenant-scoped (MAJOR) → E7 ✅
+
+**Key design decision recorded:** HRMAC (`RoleModuleAccessInterface`) is the single access-control system for both tenant and platform sides. Spatie/laravel-permission is NOT used for module-level access checks. The platform side uses the same `modules → sub_modules → components → actions` hierarchy with the same cascade rules. Platform module hierarchy lives in the central DB (synced via `aero:sync-module` which respects `modules.scope = 'platform'`).
 
 **Deferred (separate plans):** Module::plans() cross-DB, TenantModel/CentralModel, InstallationState, aero-contracts.
