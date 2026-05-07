@@ -202,6 +202,52 @@ select.aeos-input {
   flex-shrink: 0;
 }
 
+/* Right-side icon in input group (e.g. right-icon on Input) */
+.aeos-input-group-icon-right {
+  position: absolute;
+  left: auto;
+  right: var(--aeos-space-3);
+  color: var(--aeos-text-tertiary);
+  pointer-events: none;
+  width: var(--aeos-icon-sm);
+  height: var(--aeos-icon-sm);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Toggle label row (inline-flex wrapper around toggle + label text) */
+.aeos-toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aeos-space-2-5, 10px);
+}
+
+.aeos-toggle-row:not([data-disabled]) {
+  cursor: pointer;
+}
+
+.aeos-toggle-row[data-disabled] {
+  cursor: not-allowed;
+}
+
+/* Search shortcut kbd (absolutely positioned inside search input group) */
+.aeos-search-shortcut {
+  position: absolute;
+  right: var(--aeos-space-2);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* File input — visually hidden native control */
+.aeos-file-input-control {
+  display: none;
+}
+
+/* File input filename label */
+.aeos-file-input-name {
+  margin-left: var(--aeos-space-2);
+}
+
 /* ── Input Addon (inline suffix/prefix) ──────────────────────── */
 .aeos-input-addon {
   display: flex;
