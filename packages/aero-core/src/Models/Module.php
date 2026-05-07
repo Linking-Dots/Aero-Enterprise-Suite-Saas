@@ -6,7 +6,6 @@ use Aero\Core\Contracts\TenantScopeInterface;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
@@ -113,17 +112,6 @@ class Module extends Model
         }
 
         return $relation;
-    }
-
-    /**
-     * Get all plans that include this module.
-     */
-    public function plans(): BelongsToMany
-    {
-        return $this->belongsToMany(Plan::class, 'plan_module')
-            ->withPivot('limits', 'is_enabled')
-            ->withTimestamps()
-            ->wherePivot('is_enabled', true);
     }
 
     /**

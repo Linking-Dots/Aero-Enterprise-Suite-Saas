@@ -68,6 +68,7 @@ use Aero\Platform\Services\Module\RoleModuleAccessService;
 use Aero\Platform\Services\Monitoring\Tenant\ErrorLogService;
 use Aero\Platform\Services\Notifications\PlatformMailContextResolver;
 use Aero\Platform\Services\Notifications\PlatformSmsContextResolver;
+use Aero\Platform\Services\PlatformPlanService;
 use Aero\Platform\Services\PlatformSettingService;
 use Aero\Platform\Services\PlatformWidgetRegistry;
 use Aero\Platform\Services\ProductAccessService;
@@ -219,6 +220,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(ProductSubscriptionService::class);
         $this->app->singleton(LicenseIssuer::class);
         $this->app->singleton(DownloadService::class);
+        $this->app->singleton(PlatformPlanService::class);
 
         // Register tenant lifecycle services
         $this->app->singleton(TenantRetentionService::class);
