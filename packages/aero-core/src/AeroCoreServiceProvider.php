@@ -10,6 +10,7 @@ use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
 use Aero\Core\Exceptions\Handler;
 use Aero\Core\Http\Middleware\CheckModuleAccess;
 use Aero\Core\Http\Middleware\DashboardRedirectMiddleware;
+use Aero\Core\Http\Middleware\EnforceLicense;
 use Aero\Core\Http\Middleware\EnsureTenantContext;
 use Aero\Core\Http\Middleware\HandleInertiaRequests;
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
@@ -619,6 +620,9 @@ class AeroCoreServiceProvider extends ServiceProvider
             if (is_saas_mode() && class_exists('\Aero\Platform\Http\Middleware\EnsureTenantIsActive')) {
                 $router->pushMiddlewareToGroup('web', EnsureTenantIsActive::class);
             }
+
+            // Enforce license validity on every web request (standalone mode only; SaaS is a no-op)
+            $router->pushMiddlewareToGroup('web', EnforceLicense::class);
 
             // Register middleware aliases
             $router->aliasMiddleware('module', CheckModuleAccess::class);
