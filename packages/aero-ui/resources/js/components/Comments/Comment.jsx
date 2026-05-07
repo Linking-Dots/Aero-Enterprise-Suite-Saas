@@ -101,7 +101,7 @@ export default function Comment({ comment, onEdit, onDelete, onReply, currentUse
                   variant="ghost"
                   onClick={() => setShowReactions(!showReactions)}
                 >
-                  <Icon name="face-smile" className="w-4 h-4" />
+                  <Icon name="face-smile" style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
                 </Button>
                 <Button
                   size="sm"
