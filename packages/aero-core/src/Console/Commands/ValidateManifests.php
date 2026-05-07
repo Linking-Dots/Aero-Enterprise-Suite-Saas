@@ -54,7 +54,7 @@ class ValidateManifests extends Command
             return;
         }
 
-        $this->checkRequired($packageName, $config, ['code', 'scope', 'name', 'version', 'priority']);
+        $this->checkRequired($packageName, $config, ['code', 'schema_version', 'scope', 'name', 'version', 'priority']);
         $this->checkSubmoduleDuplicates($packageName, $config['submodules'] ?? []);
         $this->checkPriorityDuplicates($packageName, $config['submodules'] ?? []);
         $this->checkDelegations($packageName, $config['submodules'] ?? []);

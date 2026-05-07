@@ -24,45 +24,23 @@ return [
     |   - aero-analytics → storefront KPIs, conversion, revenue dashboards
     */
 
-    'code'         => 'commerce',
-    'scope'        => 'tenant',
-    'name'         => 'Commerce & E-Commerce',
-    'description'  => 'Full e-commerce platform: product catalog, shopping cart, orders, multi-vendor marketplace, payment gateways, and storefront management.',
-    'icon'         => 'ShoppingBagIcon',
+    'code' => 'commerce',
+    'schema_version' => '2.0',
+    'scope' => 'tenant',
+    'name' => 'Commerce & E-Commerce',
+    'description' => 'Full e-commerce platform: product catalog, shopping cart, orders, multi-vendor marketplace, payment gateways, and storefront management.',
+    'icon' => 'ShoppingBagIcon',
     'route_prefix' => '/commerce',
-    'category'     => 'business',
-    'priority'     => 20,
-    'is_core'      => false,
-    'is_active'    => true,
-    'enabled'      => env('COMMERCE_MODULE_ENABLED', true),
-    'version'      => '1.0.0',
-    'min_plan'     => 'professional',
+    'category' => 'business',
+    'priority' => 20,
+    'is_core' => false,
+    'is_active' => true,
+    'enabled' => env('COMMERCE_MODULE_ENABLED', true),
+    'version' => '1.0.0',
+    'min_plan' => 'professional',
     'license_type' => 'standard',
     'dependencies' => ['core', 'crm'],
     'release_date' => '2024-01-01',
-
-    'features' => [
-        'product_catalog'            => true,  // products, variants, attributes, media
-        'pricing_rules'              => true,  // tiered, customer-group, volume pricing
-        'shopping_cart'              => true,
-        'checkout_flow'              => true,  // single-page checkout
-        'order_management'           => true,  // OMS: fulfillment, returns, refunds
-        'payment_gateway'            => true,  // Stripe, PayPal, Razorpay, per-tenant config
-        'multi_currency'             => true,
-        'tax_calculation'            => true,  // rule-based + Avalara/TaxJar integration
-        'shipping_management'        => true,  // carriers, rates, labels
-        'coupon_vouchers'            => true,
-        'loyalty_points'             => true,
-        'storefront_builder'         => true,  // page/theme builder for public store
-        'multi_vendor'               => true,  // marketplace: vendor onboarding, commissions
-        'vendor_portal'              => true,  // vendor self-service sub-portal
-        'digital_products'           => true,  // downloads, licenses
-        'subscription_products'      => true,  // recurring billing for products (≠ SaaS plans)
-        'b2b_portal'                 => true,  // bulk orders, credit terms, RFQ
-        'abandoned_cart_recovery'    => true,
-        'product_reviews'            => true,
-        'analytics_storefront'       => true,  // delegates to aero-analytics
-    ],
 
     'submodules' => [
 
@@ -74,7 +52,7 @@ return [
                 ['code' => 'categories',  'name' => 'Categories',  'route' => '/commerce/catalog/categories'],
                 ['code' => 'attributes',  'name' => 'Attributes',  'route' => '/commerce/catalog/attributes'],
                 ['code' => 'brands',      'name' => 'Brands',      'route' => '/commerce/catalog/brands'],
-                ['code' => 'pricing',     'name' => 'Pricing Rules','route'=> '/commerce/catalog/pricing'],
+                ['code' => 'pricing',     'name' => 'Pricing Rules', 'route' => '/commerce/catalog/pricing'],
             ],
         ],
 
@@ -84,7 +62,7 @@ return [
             'components' => [
                 ['code' => 'order-list',    'name' => 'All Orders',      'route' => '/commerce/orders/list'],
                 ['code' => 'fulfillment',   'name' => 'Fulfillment',     'route' => '/commerce/orders/fulfillment'],
-                ['code' => 'returns',       'name' => 'Returns & Refunds','route'=> '/commerce/orders/returns'],
+                ['code' => 'returns',       'name' => 'Returns & Refunds', 'route' => '/commerce/orders/returns'],
                 ['code' => 'invoices',      'name' => 'Invoices',        'route' => '/commerce/orders/invoices'],
             ],
         ],
@@ -124,24 +102,24 @@ return [
     ],
 
     'permissions' => [
-        'commerce.view'             => 'View commerce module',
-        'commerce.catalog.manage'   => 'Manage product catalog',
-        'commerce.orders.view'      => 'View orders',
-        'commerce.orders.manage'    => 'Process & fulfill orders',
-        'commerce.refunds.process'  => 'Process refunds',
+        'commerce.view' => 'View commerce module',
+        'commerce.catalog.manage' => 'Manage product catalog',
+        'commerce.orders.view' => 'View orders',
+        'commerce.orders.manage' => 'Process & fulfill orders',
+        'commerce.refunds.process' => 'Process refunds',
         'commerce.marketplace.manage' => 'Manage marketplace vendors',
-        'commerce.storefront.manage'  => 'Manage storefront & themes',
-        'commerce.settings.manage'    => 'Configure payment & tax settings',
-        'commerce.reports.view'       => 'View commerce analytics',
+        'commerce.storefront.manage' => 'Manage storefront & themes',
+        'commerce.settings.manage' => 'Configure payment & tax settings',
+        'commerce.reports.view' => 'View commerce analytics',
     ],
 
     'tenancy' => [
-        'tenant_aware'           => true,
-        'uses_tenant_db'         => true,
-        'central_tables'         => [],
-        'cached_per_tenant'      => true,
-        'payment_credentials'    => 'tenant_encrypted',  // per-tenant gateway keys
-        'vendor_scope'           => 'tenant',             // vendors are child of tenant
-        'storefront_domain'      => 'per_tenant',         // custom domain per tenant store
+        'tenant_aware' => true,
+        'uses_tenant_db' => true,
+        'central_tables' => [],
+        'cached_per_tenant' => true,
+        'payment_credentials' => 'tenant_encrypted',  // per-tenant gateway keys
+        'vendor_scope' => 'tenant',             // vendors are child of tenant
+        'storefront_domain' => 'per_tenant',         // custom domain per tenant store
     ],
 ];

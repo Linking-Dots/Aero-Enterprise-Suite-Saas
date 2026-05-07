@@ -9,56 +9,24 @@ return [
     | printers) as managed assets with maintenance + device health.
     */
 
-    'code'         => 'pos',
-    'scope'        => 'tenant',
-    'name'         => 'Point of Sale',
-    'description'  => 'Multi-terminal POS: sales, payments, cash management, offline-first, inventory integration, customer loyalty, and POS hardware asset management.',
-    'version'      => '2.0.0',
-    'category'     => 'business',
-    'icon'         => 'ShoppingCartIcon',
-    'priority'     => 14,
-    'is_core'      => false,
-    'is_active'    => true,
-    'enabled'      => env('POS_MODULE_ENABLED', true),
-    'min_plan'     => 'professional',
+    'code' => 'pos',
+    'schema_version' => '2.0',
+    'scope' => 'tenant',
+    'name' => 'Point of Sale',
+    'description' => 'Multi-terminal POS: sales, payments, cash management, offline-first, inventory integration, customer loyalty, and POS hardware asset management.',
+    'version' => '2.0.0',
+    'category' => 'business',
+    'icon' => 'ShoppingCartIcon',
+    'priority' => 14,
+    'is_core' => false,
+    'is_active' => true,
+    'enabled' => env('POS_MODULE_ENABLED', true),
+    'min_plan' => 'professional',
     'minimum_plan' => 'professional',
     'license_type' => 'standard',
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
     'route_prefix' => '/pos',
-
-    'features' => [
-        'dashboard'              => true,
-        'register_terminal'      => true,
-        'sales'                  => true,
-        'returns_refunds'        => true,
-        'exchanges'              => true,
-        'quotations'             => true,
-        'layaway_holds'          => true,
-        'customers_loyalty'      => true,
-        'gift_cards'             => true,
-        'discounts_promotions'   => true,
-        'tax_management'         => true,
-        'cash_management'        => true,
-        'shifts_tills'           => true,
-        'payments'               => true,
-        'split_payments'         => true,
-        'offline_mode'           => true,
-        'receipt_printing'       => true,
-        'kitchen_display'        => true,
-        'table_management'       => true, // restaurant
-        'menu_management'        => true,
-        'inventory_integration'  => true,
-        'stock_counts'           => true,
-        'multi_store'            => true,
-        'staff_management'       => true,
-        'hardware_devices'       => true, // EAM
-        'device_health'          => true, // EAM
-        'reports'                => true,
-        'analytics'              => true,
-        'integrations'           => true,
-        'settings'               => true,
-    ],
 
     'submodules' => [
 
@@ -404,18 +372,18 @@ return [
     */
     'eam_integration' => [
         'provides' => [
-            'pos.hardware_register'    => 'hardware-devices.device-register',
-            'pos.device_health'        => 'hardware-devices.device-health',
-            'pos.device_maintenance'   => 'hardware-devices.device-maintenance',
-            'pos.stores'               => 'stores.store-list',
+            'pos.hardware_register' => 'hardware-devices.device-register',
+            'pos.device_health' => 'hardware-devices.device-health',
+            'pos.device_maintenance' => 'hardware-devices.device-maintenance',
+            'pos.stores' => 'stores.store-list',
         ],
         'consumes' => [
-            'eam.asset_registry'       => 'aero-eam',
+            'eam.asset_registry' => 'aero-eam',
             'eam.maintenance_schedule' => 'aero-eam',
-            'ims.stock_availability'   => 'aero-ims',
-            'finance.gl_posting'       => 'aero-finance',
-            'crm.customers'            => 'aero-crm',
-            'iot.device_telemetry'     => 'aero-iot',
+            'ims.stock_availability' => 'aero-ims',
+            'finance.gl_posting' => 'aero-finance',
+            'crm.customers' => 'aero-crm',
+            'iot.device_telemetry' => 'aero-iot',
         ],
     ],
 
@@ -425,27 +393,27 @@ return [
     |--------------------------------------------------------------------------
     */
     'sales' => [
-        'default_tax_rate'   => env('POS_DEFAULT_TAX_RATE', 0),
-        'allow_discounts'    => env('POS_ALLOW_DISCOUNTS', true),
-        'require_customer'   => env('POS_REQUIRE_CUSTOMER', false),
+        'default_tax_rate' => env('POS_DEFAULT_TAX_RATE', 0),
+        'allow_discounts' => env('POS_ALLOW_DISCOUNTS', true),
+        'require_customer' => env('POS_REQUIRE_CUSTOMER', false),
         'auto_print_receipt' => env('POS_AUTO_PRINT_RECEIPT', false),
     ],
 
     'payment' => [
-        'accepted_methods'     => ['cash', 'card', 'mobile', 'bank_transfer'],
+        'accepted_methods' => ['cash', 'card', 'mobile', 'bank_transfer'],
         'enable_split_payment' => env('POS_SPLIT_PAYMENT', true),
     ],
 
     'receipt' => [
-        'paper_size'  => env('POS_RECEIPT_PAPER_SIZE', '80mm'),
-        'show_logo'   => env('POS_RECEIPT_SHOW_LOGO', true),
+        'paper_size' => env('POS_RECEIPT_PAPER_SIZE', '80mm'),
+        'show_logo' => env('POS_RECEIPT_SHOW_LOGO', true),
         'footer_text' => env('POS_RECEIPT_FOOTER', 'Thank you for your business!'),
     ],
 
     'access_control' => [
-        'super_admin_role'=> 'super-admin',
-        'pos_admin_role'  => 'pos-admin',
-        'cache_ttl'       => 3600,
-        'cache_tags'      => ['module-access', 'role-access', 'pos-access'],
+        'super_admin_role' => 'super-admin',
+        'pos_admin_role' => 'pos-admin',
+        'cache_ttl' => 3600,
+        'cache_tags' => ['module-access', 'role-access', 'pos-access'],
     ],
 ];

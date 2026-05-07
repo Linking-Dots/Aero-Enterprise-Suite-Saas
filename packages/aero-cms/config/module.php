@@ -19,6 +19,7 @@ return [
     */
 
     'code' => 'cms',
+    'schema_version' => '2.0',
     'scope' => 'infrastructure',
     'name' => 'Content Management Infrastructure',
     'description' => 'Visual page builder with HeroUI blocks for public pages, marketing, and help center. Platform infrastructure, not a tenant-purchasable module.',
@@ -35,34 +36,6 @@ return [
     'release_date' => '2026-01-16',
     'enabled' => true,
     'marketplace_visible' => false,
-
-    'features' => [
-        'dashboard'           => true,
-        'page_builder'        => true,
-        'block_library'       => true,
-        'media_library'       => true,
-        'page_templates'      => true,
-        'seo_settings'        => true,
-        'page_versioning'     => true,
-        'blog_posts'          => true,
-        'custom_post_types'   => true,
-        'taxonomy_categories' => true,
-        'navigation_menus'    => true,
-        'forms_builder'       => true,
-        'redirects'           => true,
-        'ab_testing'          => true,
-        'multi_language'      => true,
-        'comments_reviews'    => true,
-        'scheduled_publish'   => true,
-        'approval_workflows'  => true,
-        'cdn_optimization'    => true,
-        'sitemap'             => true,
-        'robots_txt'          => true,
-        'headless_api'        => true,
-        'analytics'           => true,
-        'integrations'        => true,
-        'settings'            => true,
-    ],
 
     'submodules' => [
         /*
@@ -529,8 +502,8 @@ return [
 
     'access_control' => [
         'super_admin_role' => 'platform-super-admin',
-        'cms_admin_role'   => 'cms-admin',
-        'cache_ttl'        => 3600,
-        'cache_tags'       => ['platform-module-access', 'platform-role-access', 'cms-access'],
+        'cms_admin_role' => 'cms-admin',
+        'cache_ttl' => 3600,
+        'cache_tags' => ['platform-module-access', 'platform-role-access', 'cms-access'],
     ],
 ];

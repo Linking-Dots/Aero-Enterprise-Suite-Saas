@@ -2,6 +2,7 @@
 
 return [
     'code' => 'hrm',
+    'schema_version' => '2.0',
     'scope' => 'tenant',
     'name' => 'Human Resources',
     'description' => 'Complete HR management including employees, attendance, leave, payroll, recruitment, performance, training, and analytics',
