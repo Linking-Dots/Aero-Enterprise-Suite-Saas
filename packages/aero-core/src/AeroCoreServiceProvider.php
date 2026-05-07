@@ -30,6 +30,7 @@ use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Services\Notifications\CoreMailContextResolver;
 use Aero\Core\Services\Notifications\CoreSmsContextResolver;
 use Aero\Core\Services\PlatformErrorReporter;
+use Aero\Core\Services\ProductManifestLoader;
 use Aero\Core\Services\RuntimeLoader;
 use Aero\Core\Services\StandaloneTenantScope;
 use Aero\Core\Services\UserRelationshipRegistry;
@@ -114,6 +115,8 @@ class AeroCoreServiceProvider extends ServiceProvider
                     new LicenseCache,
                 );
             });
+
+            $this->app->singleton(ProductManifestLoader::class);
 
             // Configure auth to use Core's User model
             config(['auth.providers.users.model' => User::class]);
@@ -743,6 +746,8 @@ class AeroCoreServiceProvider extends ServiceProvider
             Console\Commands\SyncModuleMigrations::class,
             Console\Commands\SeedCommand::class,
             Console\Commands\CleanupExpiredSessions::class,
+            Console\Commands\ValidateManifests::class,
+            Console\Commands\PackageProduct::class,
         ]);
     }
 
