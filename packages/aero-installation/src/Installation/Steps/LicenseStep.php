@@ -2,13 +2,17 @@
 
 namespace Aero\Installation\Installation\Steps;
 
-use Illuminate\Support\Facades\DB;
+use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Core\Exceptions\LicenseException;
 
 /**
- * License Step
+ * LicenseStep
  *
- * Validates and activates license (Standalone mode only)
- * Skipped in SaaS mode
+ * Activates the product license during installation.
+ * - In SaaS mode: skipped unconditionally.
+ * - In Standalone mode: validates and activates the license key if provided.
+ *   If the license server is unreachable, installation continues in grace mode.
+ *   If no license key is provided, installation continues in not_activated state.
  */
 class LicenseStep extends BaseInstallationStep
 {
@@ -19,7 +23,7 @@ class LicenseStep extends BaseInstallationStep
 
     public function description(): string
     {
-        return 'Validate and activate product license (Standalone only)';
+        return 'Activate product license';
     }
 
     public function order(): int
@@ -32,115 +36,73 @@ class LicenseStep extends BaseInstallationStep
         return ['config', 'database'];
     }
 
-    public function execute(): array
-    {
-        $mode = env('INSTALLATION_MODE', 'standalone');
-
-        // Skip in SaaS mode
-        if ($mode === 'saas') {
-            $this->log('License validation skipped (SaaS mode)');
-
-            return [
-                'license_status' => 'skipped',
-                'reason' => 'SaaS mode detected',
-            ];
-        }
-
-        $licenseKey = env('LICENSE_KEY');
-
-        if (empty($licenseKey)) {
-            $this->log('No license key provided - continuing without validation');
-
-            return [
-                'license_status' => 'not_provided',
-                'reason' => 'LICENSE_KEY environment variable not set',
-            ];
-        }
-
-        // Validate license format
-        if (! $this->validateLicenseFormat($licenseKey)) {
-            throw new \Exception('Invalid license key format');
-        }
-
-        // Store license information
-        try {
-            $this->storeLicenseInfo($licenseKey);
-
-            return [
-                'license_status' => 'validated',
-                'license_key' => substr($licenseKey, 0, 10).'...',
-            ];
-
-        } catch (\Exception $e) {
-            throw new \Exception('Failed to store license information: '.$e->getMessage());
-        }
-    }
-
-    public function validate(): bool
-    {
-        $mode = env('INSTALLATION_MODE', 'standalone');
-
-        // Always valid in SaaS mode
-        if ($mode === 'saas') {
-            return true;
-        }
-
-        // In standalone, check if license is stored
-        try {
-            $stored = DB::table('settings')
-                ->where('key', 'license.key')
-                ->exists();
-
-            return $stored;
-
-        } catch (\Exception) {
-            return false;
-        }
-    }
-
-    /**
-     * Validate license key format
-     */
-    protected function validateLicenseFormat(string $licenseKey): bool
-    {
-        // Basic format check (adjust based on actual license format)
-        $pattern = '/^[A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8}$/';
-
-        return preg_match($pattern, $licenseKey) === 1;
-    }
-
-    /**
-     * Store license information
-     */
-    protected function storeLicenseInfo(string $licenseKey): void
-    {
-        try {
-            if (! DB::table('settings')->exists()) {
-                return;
-            }
-
-            DB::table('settings')->updateOrInsert(
-                ['key' => 'license.key'],
-                ['value' => $licenseKey]
-            );
-
-            DB::table('settings')->updateOrInsert(
-                ['key' => 'license.activated_at'],
-                ['value' => now()]
-            );
-
-        } catch (\Exception) {
-            // Settings table doesn't exist
-        }
-    }
-
     public function canSkip(): bool
     {
-        return true; // Can skip if no license key
+        return false;
     }
 
     public function isRetriable(): bool
     {
         return true;
+    }
+
+    public function execute(): array
+    {
+        if (is_saas_mode()) {
+            $this->log('License step skipped — SaaS mode');
+
+            return ['license_status' => 'saas', 'reason' => 'SaaS mode'];
+        }
+
+        $licenseKey = $this->getLicenseKey();
+        $productId = config('product.id', 'aero-suite');
+
+        if (empty($licenseKey)) {
+            $this->log('No license key provided — installation will continue in trial/grace mode');
+
+            return [
+                'license_status' => 'not_activated',
+                'message' => 'Activate your license from Settings > License Management after installation.',
+            ];
+        }
+
+        try {
+            /** @var LicenseServiceInterface $licenseService */
+            $licenseService = app(LicenseServiceInterface::class);
+            $licenseService->activate($licenseKey, $productId);
+
+            $this->log('License activated successfully', ['product_id' => $productId]);
+
+            return [
+                'license_status' => 'activated',
+                'product_id' => $productId,
+            ];
+
+        } catch (LicenseException $e) {
+            throw new \Exception($e->getMessage());
+        } catch (\Throwable $e) {
+            $this->log('License activation encountered an unexpected error: '.$e->getMessage());
+
+            return [
+                'license_status' => 'activation_error',
+                'message' => 'License will be in grace mode. Check Settings > License after installation.',
+            ];
+        }
+    }
+
+    public function validate(): bool
+    {
+        if (is_saas_mode()) {
+            return true;
+        }
+
+        $licenseFile = storage_path('app/aeos.license');
+
+        return file_exists($licenseFile) || empty($this->getLicenseKey());
+    }
+
+    private function getLicenseKey(): string
+    {
+        return request()->input('license_key') ?? env('LICENSE_KEY', '');
     }
 }
