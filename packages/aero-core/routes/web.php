@@ -1,32 +1,31 @@
 <?php
 
+use Aero\Core\Http\Controllers\Admin\ActivityController;
+use Aero\Core\Http\Controllers\Admin\AddonController;
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
 use Aero\Core\Http\Controllers\Admin\BackupConfigController;
 use Aero\Core\Http\Controllers\Admin\BackupController;
 use Aero\Core\Http\Controllers\Admin\CommentController;
 use Aero\Core\Http\Controllers\Admin\CoreUserController;
-use Aero\Core\Http\Controllers\Admin\ActivityController;
-use Aero\Core\Http\Controllers\Admin\EmailTemplateController;
 use Aero\Core\Http\Controllers\Admin\ExportImportController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
-use Aero\Core\Http\Controllers\Admin\RetentionPolicyController;
-use Aero\Core\Http\Controllers\Admin\TrashController;
 use Aero\Core\Http\Controllers\Admin\MentionsController;
 use Aero\Core\Http\Controllers\Admin\ModuleController;
 use Aero\Core\Http\Controllers\Admin\RestoreController;
+use Aero\Core\Http\Controllers\Admin\RetentionPolicyController;
 use Aero\Core\Http\Controllers\Admin\RoleController;
 use Aero\Core\Http\Controllers\Admin\SavedViewController;
 use Aero\Core\Http\Controllers\Admin\SystemHealthController;
 use Aero\Core\Http\Controllers\Admin\TagController;
+use Aero\Core\Http\Controllers\Admin\TrashController;
 use Aero\Core\Http\Controllers\Admin\UserPreferenceController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
-use Aero\Core\Http\Controllers\Search\GlobalSearchController;
 use Aero\Core\Http\Controllers\Notification\NotificationController;
 use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
+use Aero\Core\Http\Controllers\Search\GlobalSearchController;
 use Aero\Core\Http\Controllers\Settings\BrandingSettingsController;
-use Aero\Core\Http\Controllers\Settings\InvoiceBrandingController;
 use Aero\Core\Http\Controllers\Settings\LocalizationSettingsController;
 use Aero\Core\Http\Controllers\Settings\MailSettingsController;
 use Aero\Core\Http\Controllers\Settings\OrganizationProfileController;
@@ -195,14 +194,14 @@ Route::get('/', function () {
 
     // Fallback for standalone mode or when HRMAC isn't loaded
     return redirect()->route('core.dashboard');
-})->middleware([EnsureTenantContext::class, 'auth:web']);
+})->middleware([EnsureTenantContext::class, 'auth:web', 'resolve.tenant.context']);
 
 // ============================================================================
 // HOME ROUTE - Alias for root route, redirects to dashboard
 // ============================================================================
 Route::get('/home', function () {
     return redirect()->route('core.dashboard');
-})->middleware([EnsureTenantContext::class, 'auth:web'])->name('core.home');
+})->middleware([EnsureTenantContext::class, 'auth:web', 'resolve.tenant.context'])->name('core.home');
 
 // Auth routes (login, password reset, 2FA, devices, sessions, SAML, social, admin-setup,
 // impersonation) are registered by AeroAuthServiceProvider via packages/aero-auth/routes/tenant.php.
@@ -213,7 +212,7 @@ Route::get('/home', function () {
 // Only register these routes if the platform package is installed (SaaS mode)
 if (class_exists('Aero\Platform\Http\Controllers\TenantOnboardingController')) {
     $tenantOnboardingController = 'Aero\Platform\Http\Controllers\TenantOnboardingController';
-    Route::middleware(['auth:web'])->prefix('onboarding')->name('onboarding.')->group(function () use ($tenantOnboardingController) {
+    Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('onboarding')->name('onboarding.')->group(function () use ($tenantOnboardingController) {
         Route::get('/', [$tenantOnboardingController, 'index'])->name('index');
         Route::post('/company', [$tenantOnboardingController, 'saveCompany'])->name('company.save');
         Route::post('/branding', [$tenantOnboardingController, 'saveBranding'])->name('branding.save');
@@ -230,7 +229,7 @@ if (class_exists('Aero\Platform\Http\Controllers\TenantOnboardingController')) {
 // ============================================================================
 if (class_exists('Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionController')) {
     $subscriptionController = 'Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionController';
-    Route::middleware(['auth:web'])->prefix('subscription')->name('tenant.subscription.')->group(function () use ($subscriptionController) {
+    Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('subscription')->name('tenant.subscription.')->group(function () use ($subscriptionController) {
         Route::get('/', [$subscriptionController, 'index'])->name('index')->middleware('hrmac:core.subscription.plans.view');
         Route::get('/plans', [$subscriptionController, 'plans'])->name('plans')->middleware('hrmac:core.subscription.plans.view');
         Route::post('/change-plan', [$subscriptionController, 'changePlan'])->name('change-plan')->middleware('hrmac:core.subscription.plans.upgrade');
@@ -268,7 +267,6 @@ Route::middleware('auth:web')->group(function () {
                 ->name('index.configure');
         });
     });
-
 
     // Dashboard Routes
     // All dashboard routes use 'core.dashboard.*' prefix for consistency
@@ -452,7 +450,6 @@ Route::middleware('auth:web')->group(function () {
             Route::get('/counts', [TagController::class, 'taggableCounts'])->name('counts');
         });
 
-
     // ========================================================================
     // SAVED VIEWS & FILTERS
     // ========================================================================
@@ -490,7 +487,7 @@ Route::middleware('auth:web')->group(function () {
     Route::prefix('system-health')->name('core.system-health.')->middleware('hrmac:core.system_health.overview.view')->group(function () {
         // Dashboard
         Route::get('/', [SystemHealthController::class, 'index'])->name('index');
-        
+
         // API endpoints for real-time data
         Route::prefix('api')->group(function () {
             Route::get('/overview', [SystemHealthController::class, 'apiOverview'])
@@ -512,14 +509,12 @@ Route::middleware('auth:web')->group(function () {
                 ->middleware('hrmac:core.system_health.metrics.view')
                 ->name('api.metrics');
         });
-        
+
         // Refresh all health data
         Route::post('/refresh', [SystemHealthController::class, 'refresh'])
             ->middleware('hrmac:core.system_health.overview.view')
             ->name('refresh');
     });
-
-
 
     // ========================================================================
     // NOTIFICATIONS MANAGEMENT
@@ -617,7 +612,6 @@ Route::middleware('auth:web')->group(function () {
         Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update')->middleware('hrmac:core.settings.general.edit');
         Route::post('/system/test-email', [SystemSettingController::class, 'sendTestEmail'])->name('system.test-email');
         Route::post('/system/test-sms', [SystemSettingController::class, 'sendTestSms'])->name('system.test-sms');
-
 
         // Password Policy Settings
         Route::prefix('password-policy')->name('password-policy.')->group(function () {
@@ -726,30 +720,30 @@ Route::middleware('auth:web')->group(function () {
     Route::prefix('preferences')->name('core.user-preferences.')->group(function () {
         // Main preferences page
         Route::get('/', [UserPreferenceController::class, 'index'])->name('index');
-        
+
         // Update preferences
         Route::post('/', [UserPreferenceController::class, 'update'])
             ->name('update');
-        
+
         // API endpoints for notification preferences
         Route::prefix('api')->group(function () {
             Route::get('/notifications', [UserPreferenceController::class, 'getNotificationPreferences'])
                 ->name('api.notifications');
             Route::post('/notifications', [UserPreferenceController::class, 'updateNotificationPreferences'])
                 ->name('api.notifications.update');
-            
+
             // API endpoints for theme preferences
             Route::get('/theme', [UserPreferenceController::class, 'getThemePreferences'])
                 ->name('api.theme');
             Route::post('/theme', [UserPreferenceController::class, 'updateThemePreferences'])
                 ->name('api.theme.update');
-            
+
             // API endpoints for locale preferences
             Route::get('/locale', [UserPreferenceController::class, 'getLocalePreferences'])
                 ->name('api.locale');
             Route::post('/locale', [UserPreferenceController::class, 'updateLocalePreferences'])
                 ->name('api.locale.update');
-            
+
             // API endpoints for accessibility preferences
             Route::get('/accessibility', [UserPreferenceController::class, 'getAccessibilityPreferences'])
                 ->name('api.accessibility');
@@ -968,7 +962,7 @@ Route::middleware('auth:web')->group(function () {
     // ADD-ON MANAGEMENT — standalone mode only
     // ========================================================================
     Route::prefix('addons')->name('addons.')->group(function () {
-        Route::get('/',        [\Aero\Core\Http\Controllers\Admin\AddonController::class, 'index'])->name('index');
-        Route::post('/install', [\Aero\Core\Http\Controllers\Admin\AddonController::class, 'install'])->name('install');
+        Route::get('/', [AddonController::class, 'index'])->name('index');
+        Route::post('/install', [AddonController::class, 'install'])->name('install');
     });
 });

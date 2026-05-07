@@ -22,6 +22,13 @@ class ModuleRegistry
     protected Collection $modules;
 
     /**
+     * Per-tenant enablement cache.
+     * Key: "{tenantId}:{moduleCode}" → bool
+     * Populated lazily, flushed when tenant changes module state.
+     */
+    private array $tenantEnablementCache = [];
+
+    /**
      * Cache key for module metadata.
      */
     protected const CACHE_KEY = 'aero.modules.registry';
@@ -343,5 +350,37 @@ class ModuleRegistry
     public function countEnabled(): int
     {
         return $this->enabled()->count();
+    }
+
+    /**
+     * Check if a module is enabled for a specific tenant.
+     * Uses an in-process cache keyed by tenant ID to survive Octane reuse.
+     * Call flushTenant() after a tenant enables/disables a module.
+     */
+    public function isEnabledForTenant(string $moduleCode, int|string $tenantId): bool
+    {
+        $cacheKey = "{$tenantId}:{$moduleCode}";
+
+        if (! isset($this->tenantEnablementCache[$cacheKey])) {
+            $provider = $this->get($moduleCode);
+            $this->tenantEnablementCache[$cacheKey] = $provider ? $provider->isEnabled() : false;
+        }
+
+        return $this->tenantEnablementCache[$cacheKey];
+    }
+
+    /**
+     * Flush the in-process enablement cache for a specific tenant.
+     * Call this whenever a tenant enables or disables a module.
+     */
+    public function flushTenant(int|string $tenantId): void
+    {
+        foreach (array_keys($this->tenantEnablementCache) as $key) {
+            if (str_starts_with($key, "{$tenantId}:")) {
+                unset($this->tenantEnablementCache[$key]);
+            }
+        }
+
+        $this->clearCache();
     }
 }

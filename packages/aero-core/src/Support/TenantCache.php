@@ -16,8 +16,16 @@ class TenantCache
 {
     public static function key(string $key): string
     {
-        if (is_saas_mode() && tenancy()->initialized) {
-            return 'tenant:'.tenant()->id.":{$key}";
+        if (is_saas_mode()) {
+            try {
+                $scope = app(\Aero\Core\Contracts\TenantScopeInterface::class);
+                if ($scope->inTenantContext()) {
+                    $tenantId = $scope->getCurrentTenantId();
+                    return "tenant:{$tenantId}:{$key}";
+                }
+            } catch (\Throwable) {
+                // TenantScopeInterface not bound during early boot
+            }
         }
 
         return "global:{$key}";

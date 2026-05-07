@@ -3,7 +3,9 @@
 namespace Aero\Core\Http\Middleware;
 
 use Aero\Core\Services\ModuleAccessService;
-use Aero\Core\Support\TenantCache;
+use Aero\Core\ValueObjects\RequestContext;
+use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Platform\Services\ProductAccessService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -98,12 +100,12 @@ class CheckModuleAccess
         // ── SaaS product subscription gate ─────────────────────────────────────────
         // In SaaS mode, verify tenant has an active product subscription for the module.
         // Plan tier does NOT gate product access — plans govern limits only.
-        if (! $isStandalone && class_exists(\Aero\Platform\Services\ProductAccessService::class)) {
+        if (! $isStandalone && class_exists(ProductAccessService::class)) {
             try {
                 $tenantKey = tenant()?->getTenantKey();
                 if ($tenantKey) {
-                    /** @var \Aero\Platform\Services\ProductAccessService $productAccess */
-                    $productAccess = app(\Aero\Platform\Services\ProductAccessService::class);
+                    /** @var ProductAccessService $productAccess */
+                    $productAccess = app(ProductAccessService::class);
 
                     if (! $productAccess->tenantCanAccessModule((string) $tenantKey, $moduleCode)) {
                         return $this->denyAccess(
@@ -183,47 +185,34 @@ class CheckModuleAccess
     }
 
     /**
-     * Detect which authentication guard to use based on the request context.
+     * Detect which authentication guard to use based on the injected RequestContext.
+     *
+     * RequestContext is set by ResolvePlatformContext or ResolveTenantContext middleware
+     * on route groups. This eliminates hostname sniffing and active-session bleeding.
+     *
+     * Falls back to 'web' if no context is bound (e.g. during testing or pre-install).
      */
     protected function detectGuard(Request $request): string
     {
-        // In standalone mode, always use 'web' guard
         if (is_standalone_mode()) {
             return 'web';
         }
 
-        // Check if landlord guard is defined in auth config
-        $guards = array_keys(config('auth.guards', []));
-        $landlordExists = in_array('landlord', $guards);
+        try {
+            $context = app(RequestContext::class);
 
-        // Check if we're on an admin subdomain or route
-        $host = $request->getHost();
-
-        // Check for admin subdomain pattern
-        if ($landlordExists && (str_starts_with($host, 'admin.') || str_contains($host, 'admin'))) {
-            return 'landlord';
+            return $context->guard;
+        } catch (\Throwable) {
+            return 'web';
         }
-
-        // Check route middleware for landlord guard
-        $route = $request->route();
-        if ($landlordExists && $route) {
-            $middleware = $route->middleware();
-            if (in_array('auth:landlord', $middleware)) {
-                return 'landlord';
-            }
-        }
-
-        // Check if landlord guard is already authenticated (only if guard exists)
-        if ($landlordExists && Auth::guard('landlord')->check()) {
-            return 'landlord';
-        }
-
-        return 'web';
     }
 
     /**
-     * Handle access control for platform/landlord context.
-     * Platform users have role-based access without subscription checks.
+     * Handle access control for platform/landlord context using HRMAC.
+     *
+     * Uses the same hierarchy as the tenant side: module → sub_module → component → action.
+     * RoleModuleAccessInterface handles super-admin bypass and cascade internally.
+     * No spatie permissions involved — HRMAC owns all access control on both sides.
      */
     protected function handlePlatformAccess(
         Request $request,
@@ -234,41 +223,45 @@ class CheckModuleAccess
         ?string $componentCode = null,
         ?string $actionCode = null
     ): Response {
-        // Super Administrators bypass all checks
-        if ($user->is_super_admin || $user->hasRole('Super Administrator')) {
-            return $next($request);
+        try {
+            /** @var RoleModuleAccessInterface $hrmac */
+            $hrmac = app(RoleModuleAccessInterface::class);
+
+            $allowed = match (true) {
+                // Action-level check (most granular) — requires subModuleCode
+                $actionCode !== null && $subModuleCode !== null => $hrmac->userCanAccessAction($user, $moduleCode, $subModuleCode, $actionCode),
+
+                // SubModule-level check — also covers component-level (cascade)
+                $subModuleCode !== null => $hrmac->userCanAccessSubModule($user, $moduleCode, $subModuleCode),
+
+                // Module-level check (broadest)
+                default => $hrmac->userCanAccessModule($user, $moduleCode),
+            };
+
+        } catch (\Throwable $e) {
+            // HRMAC not available (e.g. tables not migrated yet) — deny access safely
+            Log::warning('HRMAC unavailable for platform access check', [
+                'error' => $e->getMessage(),
+                'module' => $moduleCode,
+                'user' => $user->id ?? null,
+            ]);
+            $allowed = false;
         }
 
-        // Build the access path for platform modules
-        $accessPath = $moduleCode;
-        if ($subModuleCode) {
-            $accessPath .= '.'.$subModuleCode;
+        if (! $allowed) {
+            return $this->denyAccess(
+                $request,
+                'insufficient_permissions',
+                'You do not have access to this platform feature.',
+                403,
+                [
+                    'module' => $moduleCode,
+                    'submodule' => $subModuleCode,
+                    'component' => $componentCode,
+                    'action' => $actionCode,
+                ]
+            );
         }
-        if ($componentCode) {
-            $accessPath .= '.'.$componentCode;
-        }
-        if ($actionCode) {
-            $accessPath .= '.'.$actionCode;
-        }
-
-        // Check if the user has the required platform permission
-        // Platform permissions follow pattern: platform.{module}.{submodule}.{component}.{action}
-        $permissionName = 'platform.'.str_replace(',', '.', $accessPath);
-
-        // For now, allow all authenticated landlord users to access platform modules
-        // TODO: Implement granular platform permission checking when needed
-        // This is a temporary bypass to prevent redirect loops
-
-        // Log platform access for debugging
-        Log::debug('Platform module access', [
-            'user_id' => $user->id,
-            'user_email' => $user->email,
-            'module' => $moduleCode,
-            'submodule' => $subModuleCode,
-            'component' => $componentCode,
-            'action' => $actionCode,
-            'access_path' => $accessPath,
-        ]);
 
         return $next($request);
     }
