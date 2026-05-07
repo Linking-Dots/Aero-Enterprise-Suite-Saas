@@ -865,7 +865,7 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/{id}', [RestoreController::class, 'show'])
             ->middleware('hrmac:core.backup_restore.restore_points.view')
             ->name('show');
-        Route::post('/{id}/validate', [RestoreController::class, 'validate'])
+        Route::post('/{id}/validate', [RestoreController::class, 'validateBackup'])
             ->middleware('hrmac:core.backup_restore.restore_points.view')
             ->name('validate');
         Route::post('/{id}/restore', [RestoreController::class, 'restore'])

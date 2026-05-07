@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Services\ExportImportService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

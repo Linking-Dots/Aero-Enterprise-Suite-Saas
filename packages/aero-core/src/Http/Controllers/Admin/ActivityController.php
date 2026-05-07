@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Services\ActivityService;
 use Inertia\Inertia;
 use Illuminate\Http\Request;

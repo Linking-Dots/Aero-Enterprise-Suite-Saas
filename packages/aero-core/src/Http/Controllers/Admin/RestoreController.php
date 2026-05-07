@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Services\RestoreService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -48,7 +49,7 @@ class RestoreController extends Controller
     /**
      * Validate a backup.
      */
-    public function validate($id)
+    public function validateBackup($id)
     {
         $validation = $this->restoreService->validateBackup($id);
         return response()->json($validation);

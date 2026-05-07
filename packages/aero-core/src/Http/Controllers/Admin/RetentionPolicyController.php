@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Services\RetentionPolicyService;
 use Aero\Core\Models\RetentionPolicy;
 use Illuminate\Http\Request;
