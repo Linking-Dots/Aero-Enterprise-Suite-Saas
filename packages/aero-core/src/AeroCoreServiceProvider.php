@@ -3,6 +3,7 @@
 namespace Aero\Core;
 
 use Aero\Core\Contracts\EmployeeServiceContract;
+use Aero\Core\Contracts\LicenseServiceInterface;
 use Aero\Core\Contracts\NotificationRoutingContract;
 use Aero\Core\Contracts\TenantScopeInterface;
 use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
@@ -18,6 +19,10 @@ use Aero\Core\Providers\ModuleRouteServiceProvider;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Core\Services\HrmacNotificationRoutingService;
+use Aero\Core\Services\License\DomainBinding;
+use Aero\Core\Services\License\LicenseCache;
+use Aero\Core\Services\License\LicenseService;
+use Aero\Core\Services\License\LicenseValidator;
 use Aero\Core\Services\ModuleAccessService;
 use Aero\Core\Services\ModuleManager;
 use Aero\Core\Services\ModuleRegistry;
@@ -100,6 +105,15 @@ class AeroCoreServiceProvider extends ServiceProvider
             // Module definitions are in config/module.php and loaded by ModuleDiscoveryService
             $this->mergeConfigFrom(__DIR__.'/../config/core.php', 'aero.core');
             $this->mergeConfigFrom(__DIR__.'/../config/permission.php', 'permission');
+            $this->mergeConfigFrom(__DIR__.'/../config/license.php', 'license');
+
+            $this->app->singleton(LicenseServiceInterface::class, function ($app) {
+                return new LicenseService(
+                    new LicenseValidator,
+                    new DomainBinding,
+                    new LicenseCache,
+                );
+            });
 
             // Configure auth to use Core's User model
             config(['auth.providers.users.model' => User::class]);

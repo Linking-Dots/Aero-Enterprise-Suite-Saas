@@ -1,6 +1,23 @@
 <?php
 
+// packages/aero-core/config/license.php
+
 return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | License Server (LicenseService)
+    |--------------------------------------------------------------------------
+    |
+    | Settings used by LicenseService for online activation and validation.
+    |
+    */
+
+    'server_url'           => env('LICENSE_SERVER_URL', 'https://licenses.aerosuite.com'),
+    'check_ttl_seconds'    => env('LICENSE_CHECK_TTL', 86400),
+    'grace_period_seconds' => env('LICENSE_GRACE_PERIOD', 259200),
+    'checksum_salt'        => env('LICENSE_CHECKSUM_SALT', 'aero-license-salt'),
+    'bypass'               => env('LICENSE_BYPASS', false),
 
     /*
     |--------------------------------------------------------------------------
