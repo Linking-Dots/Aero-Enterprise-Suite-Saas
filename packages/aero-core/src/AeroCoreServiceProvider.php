@@ -30,15 +30,14 @@ use Aero\Core\Services\StandaloneTenantScope;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRM\Services\EmployeeService;
-use Aero\Notifications\Contracts\MailContextResolver;
-use Aero\Notifications\Contracts\SmsContextResolver;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Services\RoleModuleAccessService;
+use Aero\Notifications\Contracts\MailContextResolver;
+use Aero\Notifications\Contracts\SmsContextResolver;
 use Aero\Platform\AeroPlatformServiceProvider;
 use Aero\Platform\Http\Middleware\EnsureTenantIsActive;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
@@ -123,9 +122,29 @@ class AeroCoreServiceProvider extends ServiceProvider
                 if (! file_exists(storage_path('app/aeos.installed'))) {
                     return new class
                     {
-                        public function __call($method, $args)
+                        private function deny(string $reason): array
                         {
-                            return [];
+                            return ['allowed' => false, 'reason' => $reason, 'message' => 'System not yet installed.'];
+                        }
+
+                        public function canAccessModule($user, string $moduleCode): array
+                        {
+                            return $this->deny('not_installed');
+                        }
+
+                        public function canAccessSubModule($user, string $moduleCode, string $subModuleCode): array
+                        {
+                            return $this->deny('not_installed');
+                        }
+
+                        public function canAccessComponent($user, string $m, string $sm, string $c): array
+                        {
+                            return $this->deny('not_installed');
+                        }
+
+                        public function canPerformAction($user, string $m, string $sm, string $c, string $a): array
+                        {
+                            return $this->deny('not_installed');
                         }
                     };
                 }
@@ -135,9 +154,29 @@ class AeroCoreServiceProvider extends ServiceProvider
                 } catch (\Throwable $e) {
                     return new class
                     {
-                        public function __call($method, $args)
+                        private function deny(string $reason): array
                         {
-                            return [];
+                            return ['allowed' => false, 'reason' => $reason, 'message' => 'System not yet installed.'];
+                        }
+
+                        public function canAccessModule($user, string $moduleCode): array
+                        {
+                            return $this->deny('not_installed');
+                        }
+
+                        public function canAccessSubModule($user, string $moduleCode, string $subModuleCode): array
+                        {
+                            return $this->deny('not_installed');
+                        }
+
+                        public function canAccessComponent($user, string $m, string $sm, string $c): array
+                        {
+                            return $this->deny('not_installed');
+                        }
+
+                        public function canPerformAction($user, string $m, string $sm, string $c, string $a): array
+                        {
+                            return $this->deny('not_installed');
                         }
                     };
                 }
@@ -146,20 +185,26 @@ class AeroCoreServiceProvider extends ServiceProvider
             $this->app->singleton(RoleModuleAccessService::class, function ($app) {
                 // Only instantiate if installed to avoid DB queries pre-install
                 if (! file_exists(storage_path('app/aeos.installed'))) {
-                    // Return a stub that uses __call for method handling
                     return new class
                     {
-                        public function __call($method, $args)
+                        public function canUserAccessModule(int $userId, string $moduleCode): bool
                         {
-                            // Return appropriate defaults based on method signature
-                            if (str_starts_with($method, 'can') || str_starts_with($method, 'user')) {
-                                return false;
-                            }
-                            if (str_starts_with($method, 'get')) {
-                                return $method === 'getFirstAccessibleRoute' ? null : [];
-                            }
+                            return false;
+                        }
 
+                        public function getUserAccessibleModules(int $userId): array
+                        {
+                            return [];
+                        }
+
+                        public function getFirstAccessibleRoute(int $userId): ?string
+                        {
                             return null;
+                        }
+
+                        public function __call(string $method, array $args): mixed
+                        {
+                            return str_starts_with($method, 'get') ? ($method === 'getFirstAccessibleRoute' ? null : []) : false;
                         }
                     };
                 }
@@ -169,16 +214,24 @@ class AeroCoreServiceProvider extends ServiceProvider
                 } catch (\Throwable $e) {
                     return new class
                     {
-                        public function __call($method, $args)
+                        public function canUserAccessModule(int $userId, string $moduleCode): bool
                         {
-                            if (str_starts_with($method, 'can') || str_starts_with($method, 'user')) {
-                                return false;
-                            }
-                            if (str_starts_with($method, 'get')) {
-                                return $method === 'getFirstAccessibleRoute' ? null : [];
-                            }
+                            return false;
+                        }
 
+                        public function getUserAccessibleModules(int $userId): array
+                        {
+                            return [];
+                        }
+
+                        public function getFirstAccessibleRoute(int $userId): ?string
+                        {
                             return null;
+                        }
+
+                        public function __call(string $method, array $args): mixed
+                        {
+                            return str_starts_with($method, 'get') ? ($method === 'getFirstAccessibleRoute' ? null : []) : false;
                         }
                     };
                 }
