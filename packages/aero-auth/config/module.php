@@ -19,19 +19,20 @@ return [
     |   - Password reset tokens: tenant users → tenant DB, landlords → central DB
     */
 
-    'code'         => 'auth',
-    'scope'        => 'infrastructure',   // not a marketplace module
-    'name'         => 'Authentication Infrastructure',
-    'description'  => 'Shared auth layer: guards, providers, SSO adapters, MFA, impersonation, and session isolation for both tenant and platform contexts.',
-    'icon'         => 'LockClosedIcon',
+    'code' => 'auth',
+    'schema_version' => '2.0',
+    'scope' => 'infrastructure',   // not a marketplace module
+    'name' => 'Authentication Infrastructure',
+    'description' => 'Shared auth layer: guards, providers, SSO adapters, MFA, impersonation, and session isolation for both tenant and platform contexts.',
+    'icon' => 'LockClosedIcon',
     'route_prefix' => null,               // routes registered by core & platform
-    'category'     => 'infrastructure',
-    'priority'     => 0,
-    'is_core'      => true,
-    'is_active'    => true,
-    'enabled'      => true,
-    'version'      => '1.0.0',
-    'min_plan'     => null,
+    'category' => 'infrastructure',
+    'priority' => 0,
+    'is_core' => true,
+    'is_active' => true,
+    'enabled' => true,
+    'version' => '1.0.0',
+    'min_plan' => null,
     'license_type' => 'platform',
     'dependencies' => [],
     'release_date' => '2024-01-01',
@@ -39,44 +40,44 @@ return [
 
     'features' => [
         // Tenant-side
-        'tenant_login'               => true,  // standard email+password, subdomain-scoped
-        'tenant_registration'        => true,  // public registration (if platform enabled)
-        'tenant_password_reset'      => true,  // tokens stored in tenant DB
-        'tenant_email_verification'  => true,
-        'tenant_remember_me'         => true,
-        'tenant_mfa_totp'            => true,  // TOTP via authenticator app
-        'tenant_mfa_sms'             => true,
-        'tenant_sso_saml'            => true,  // SAML 2.0 IdP per tenant
-        'tenant_sso_oidc'            => true,  // OpenID Connect per tenant
-        'tenant_social_login'        => true,  // Google, Microsoft, GitHub (per tenant config)
-        'tenant_api_token_auth'      => true,  // Sanctum tokens in tenant DB
+        'tenant_login' => true,  // standard email+password, subdomain-scoped
+        'tenant_registration' => true,  // public registration (if platform enabled)
+        'tenant_password_reset' => true,  // tokens stored in tenant DB
+        'tenant_email_verification' => true,
+        'tenant_remember_me' => true,
+        'tenant_mfa_totp' => true,  // TOTP via authenticator app
+        'tenant_mfa_sms' => true,
+        'tenant_sso_saml' => true,  // SAML 2.0 IdP per tenant
+        'tenant_sso_oidc' => true,  // OpenID Connect per tenant
+        'tenant_social_login' => true,  // Google, Microsoft, GitHub (per tenant config)
+        'tenant_api_token_auth' => true,  // Sanctum tokens in tenant DB
 
         // Platform-side (landlord)
-        'landlord_login'             => true,  // separate guard, central DB
-        'landlord_mfa'               => true,
-        'landlord_api_token'         => true,
+        'landlord_login' => true,  // separate guard, central DB
+        'landlord_mfa' => true,
+        'landlord_api_token' => true,
 
         // Shared infrastructure
-        'impersonation'              => true,  // platform admins impersonate tenant users
-        'session_isolation'          => true,  // cookie scoped to tenant subdomain
-        'rate_limiting'              => true,  // per-IP + per-tenant brute-force protection
-        'device_trust'               => true,  // known device cookies
-        'audit_auth_events'          => true,  // login/logout/failed → audit log
+        'impersonation' => true,  // platform admins impersonate tenant users
+        'session_isolation' => true,  // cookie scoped to tenant subdomain
+        'rate_limiting' => true,  // per-IP + per-tenant brute-force protection
+        'device_trust' => true,  // known device cookies
+        'audit_auth_events' => true,  // login/logout/failed → audit log
     ],
 
     'guards' => [
-        'tenant'   => 'web',       // default Laravel web guard for tenant users
+        'tenant' => 'web',       // default Laravel web guard for tenant users
         'landlord' => 'landlord',  // custom guard for platform admins (central DB)
     ],
 
     'tenancy' => [
-        'tenant_aware'      => true,
-        'uses_tenant_db'    => true,   // tenant auth data in tenant_{id} DB
-        'central_tables'    => [       // platform admins only in central DB
+        'tenant_aware' => true,
+        'uses_tenant_db' => true,   // tenant auth data in tenant_{id} DB
+        'central_tables' => [       // platform admins only in central DB
             'landlord_users',
             'landlord_password_reset_tokens',
         ],
         'session_cookie_domain' => 'subdomain',  // e.g. acme.aerosuite.com
-        'impersonation_scope'   => 'platform',   // only landlord guard can impersonate
+        'impersonation_scope' => 'platform',   // only landlord guard can impersonate
     ],
 ];

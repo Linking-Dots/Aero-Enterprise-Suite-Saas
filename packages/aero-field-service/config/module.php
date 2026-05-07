@@ -25,41 +25,42 @@ return [
     | Mobile app authenticates via tenant subdomain SSO token.
     */
 
-    'code'         => 'field-service',
-    'scope'        => 'tenant',
-    'name'         => 'Field Service Management',
-    'description'  => 'End-to-end FSM: work order dispatch, technician scheduling, mobile field app, service agreements, SLA tracking, and customer sign-off.',
-    'icon'         => 'WrenchScrewdriverIcon',
+    'code' => 'field-service',
+    'schema_version' => '2.0',
+    'scope' => 'tenant',
+    'name' => 'Field Service Management',
+    'description' => 'End-to-end FSM: work order dispatch, technician scheduling, mobile field app, service agreements, SLA tracking, and customer sign-off.',
+    'icon' => 'WrenchScrewdriverIcon',
     'route_prefix' => '/field-service',
-    'category'     => 'operations',
-    'priority'     => 25,
-    'is_core'      => false,
-    'is_active'    => true,
-    'enabled'      => env('FIELD_SERVICE_MODULE_ENABLED', true),
-    'version'      => '1.0.0',
-    'min_plan'     => 'professional',
+    'category' => 'operations',
+    'priority' => 25,
+    'is_core' => false,
+    'is_active' => true,
+    'enabled' => env('FIELD_SERVICE_MODULE_ENABLED', true),
+    'version' => '1.0.0',
+    'min_plan' => 'professional',
     'license_type' => 'standard',
     'dependencies' => ['core', 'crm'],
     'release_date' => '2024-01-01',
 
     'features' => [
-        'work_order_management'      => true,  // create, assign, track field jobs
-        'dispatch_board'             => true,  // drag-and-drop calendar scheduler
-        'technician_management'      => true,  // profiles, skills, certifications, availability
-        'route_optimization'         => true,  // GPS-based daily route planning
-        'mobile_app'                 => true,  // PWA/native app for field technicians
-        'offline_mode'               => true,  // offline job forms, sync on reconnect
-        'service_agreements'         => true,  // SLA-backed customer contracts
-        'sla_tracking'               => true,  // response, resolution time SLAs
-        'parts_and_materials'        => true,  // field parts usage, van stock (→ aero-ims)
-        'customer_portal'            => true,  // customer self-service: job status, history
-        'digital_signature'          => true,  // job completion sign-off
-        'photo_documentation'        => true,  // field photos attached to job
-        'checklists_forms'           => true,  // configurable job checklists
-        'invoicing'                  => true,  // trigger invoice generation (→ aero-finance)
-        'timesheet_integration'      => true,  // technician hours → aero-hrm payroll
-        'iot_triggered_dispatch'     => true,  // IoT alert → auto field dispatch (→ aero-iot)
-        'reporting_analytics'        => true,  // FSM KPIs → aero-analytics
+        'work_order_management' => true,  // create, assign, track field jobs
+        'dispatch_board' => true,  // drag-and-drop calendar scheduler
+        'technician_management' => true,  // profiles, skills, certifications, availability
+        'route_optimization' => true,  // GPS-based daily route planning
+        'mobile_app' => true,  // PWA/native app for field technicians
+        'offline_mode' => true,  // offline job forms, sync on reconnect
+        'service_agreements' => true,  // SLA-backed customer contracts
+        'sla_tracking' => true,  // response, resolution time SLAs
+        'parts_and_materials' => true,  // field parts usage, van stock (→ aero-ims)
+        'customer_portal' => true,  // customer self-service: job status, history
+        'digital_signature' => true,  // job completion sign-off
+        'photo_documentation' => true,  // field photos attached to job
+        'checklists_forms' => true,  // configurable job checklists
+        'invoicing' => true,  // trigger invoice generation (→ aero-finance)
+        'timesheet_integration' => true,  // technician hours → aero-hrm payroll
+        'iot_triggered_dispatch' => true,  // IoT alert → auto field dispatch (→ aero-iot)
+        'reporting_analytics' => true,  // FSM KPIs → aero-analytics
     ],
 
     'submodules' => [
@@ -105,21 +106,21 @@ return [
     ],
 
     'permissions' => [
-        'field-service.view'              => 'View field service module',
-        'field-service.work-orders.create'=> 'Create work orders',
-        'field-service.work-orders.manage'=> 'Manage & dispatch work orders',
-        'field-service.technicians.manage'=> 'Manage technicians',
+        'field-service.view' => 'View field service module',
+        'field-service.work-orders.create' => 'Create work orders',
+        'field-service.work-orders.manage' => 'Manage & dispatch work orders',
+        'field-service.technicians.manage' => 'Manage technicians',
         'field-service.agreements.manage' => 'Manage service agreements',
-        'field-service.portal.manage'     => 'Manage customer portal',
-        'field-service.reports.view'      => 'View FSM analytics',
+        'field-service.portal.manage' => 'Manage customer portal',
+        'field-service.reports.view' => 'View FSM analytics',
     ],
 
     'tenancy' => [
-        'tenant_aware'       => true,
-        'uses_tenant_db'     => true,
-        'central_tables'     => [],
-        'cached_per_tenant'  => true,
-        'mobile_auth'        => 'tenant_sanctum_token',  // mobile app uses Sanctum per tenant
-        'customer_portal'    => 'tenant_subdomain',       // portal scoped to tenant subdomain
+        'tenant_aware' => true,
+        'uses_tenant_db' => true,
+        'central_tables' => [],
+        'cached_per_tenant' => true,
+        'mobile_auth' => 'tenant_sanctum_token',  // mobile app uses Sanctum per tenant
+        'customer_portal' => 'tenant_subdomain',       // portal scoped to tenant subdomain
     ],
 ];

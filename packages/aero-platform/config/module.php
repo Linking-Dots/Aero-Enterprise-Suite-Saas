@@ -21,6 +21,7 @@ return [
     */
 
     'code' => 'platform',
+    'schema_version' => '2.0',
     'scope' => 'platform',
     'name' => 'Platform Administration',
     'description' => 'Multi-tenant SaaS platform management including tenants, plans, billing, and system settings',
@@ -39,79 +40,79 @@ return [
 
     'features' => [
         // Foundation
-        'dashboard'                  => true,
-        'landlord_auth'              => true,
-        'platform_users'             => true,
-        'roles_permissions'          => true,
-        'impersonation'              => true,
-        'audit_logs'                 => true,
+        'dashboard' => true,
+        'landlord_auth' => true,
+        'platform_users' => true,
+        'roles_permissions' => true,
+        'impersonation' => true,
+        'audit_logs' => true,
 
         // Tenant lifecycle
-        'tenant_management'          => true,
-        'tenant_operations'          => true, // clone, migrate, export, freeze, archive
-        'tenant_backup_restore'      => true, // critical for SaaS
-        'multi_region'               => true, // data residency
-        'public_registration'        => true,
-        'onboarding'                 => true,
-        'tenant_communications'      => true, // broadcasts, in-app
-        'customer_success'           => true, // health score, churn
-        'help_center'                => true, // platform-side KB for tenants
-        'tenant_support_tickets'     => true,
+        'tenant_management' => true,
+        'tenant_operations' => true, // clone, migrate, export, freeze, archive
+        'tenant_backup_restore' => true, // critical for SaaS
+        'multi_region' => true, // data residency
+        'public_registration' => true,
+        'onboarding' => true,
+        'tenant_communications' => true, // broadcasts, in-app
+        'customer_success' => true, // health score, churn
+        'help_center' => true, // platform-side KB for tenants
+        'tenant_support_tickets' => true,
 
         // Commerce / Billing
-        'plan_management'            => true,
-        'subscription_billing'       => true,
-        'coupons_promotions'         => true,
-        'addons_metered_billing'     => true,
-        'refunds_credits'            => true,
-        'dunning_workflow'           => true,
-        'tax_engine'                 => true,
-        'multi_currency'             => true,
-        'reseller_partner'           => true, // channel partners (full)
-        'white_label_per_tenant'     => true, // custom domains, SSL, branding
-        'feature_flags'              => true, // rollouts per tenant
+        'plan_management' => true,
+        'subscription_billing' => true,
+        'coupons_promotions' => true,
+        'addons_metered_billing' => true,
+        'refunds_credits' => true,
+        'dunning_workflow' => true,
+        'tax_engine' => true,
+        'multi_currency' => true,
+        'reseller_partner' => true, // channel partners (full)
+        'white_label_per_tenant' => true, // custom domains, SSL, branding
+        'feature_flags' => true, // rollouts per tenant
 
         // Quotas & Resources
-        'quota_management'           => true,
-        'usage_metering'             => true,
-        'resource_provisioning'      => true,
-        'job_scheduler'              => true,
+        'quota_management' => true,
+        'usage_metering' => true,
+        'resource_provisioning' => true,
+        'job_scheduler' => true,
 
         // Modules / Marketplace
-        'module_management'          => true,
-        'modules_marketplace'        => true,
+        'module_management' => true,
+        'modules_marketplace' => true,
 
         // Status / Incident
-        'status_page'                => true,
-        'incident_management'        => true,
-        'maintenance_windows'        => true,
-        'sla_tracking'               => true,
+        'status_page' => true,
+        'incident_management' => true,
+        'maintenance_windows' => true,
+        'sla_tracking' => true,
 
         // Compliance & Security
-        'compliance_legal'           => true, // DPA, subprocessors, ToS versions, certifications
-        'security_center'            => true, // pentest reports, incidents, bug bounty
+        'compliance_legal' => true, // DPA, subprocessors, ToS versions, certifications
+        'security_center' => true, // pentest reports, incidents, bug bounty
 
         // System Ops
-        'error_monitoring'           => true,
-        'developer_tools'            => true,
-        'system_settings'            => true,
+        'error_monitoring' => true,
+        'developer_tools' => true,
+        'system_settings' => true,
 
         // Email / Communications
-        'email_deliverability'       => true, // DKIM, suppression, bounce
-        'api_gateway'                => true, // per-tenant rate limits, quotas
+        'email_deliverability' => true, // DKIM, suppression, bounce
+        'api_gateway' => true, // per-tenant rate limits, quotas
 
         // Analytics
-        'analytics'                  => true,
+        'analytics' => true,
 
         // Marketing
-        'seo_management'             => true,
-        'lead_management'            => true,
-        'newsletter_management'      => true,
-        'affiliate_program'          => true,
-        'social_auth'                => true,
+        'seo_management' => true,
+        'lead_management' => true,
+        'newsletter_management' => true,
+        'affiliate_program' => true,
+        'social_auth' => true,
 
         // Integrations
-        'integrations'               => true,
+        'integrations' => true,
     ],
 
     'submodules' => [
@@ -2804,13 +2805,13 @@ return [
     */
     'eam_integration' => [
         'provides' => [
-            'platform.tenants'           => 'tenant_management.tenant_list',
-            'platform.plans'             => 'plan_management.plan_list',
-            'platform.module_catalog'    => 'module_management.module_list',
+            'platform.tenants' => 'tenant_management.tenant_list',
+            'platform.plans' => 'plan_management.plan_list',
+            'platform.module_catalog' => 'module_management.module_list',
             'platform.quota_enforcement' => 'quota_management.quota_dashboard',
-            'platform.billing'           => 'billing_management.billing_dashboard',
-            'platform.api_keys'          => 'integrations.api_keys',
-            'platform.webhooks'          => 'integrations.webhooks',
+            'platform.billing' => 'billing_management.billing_dashboard',
+            'platform.api_keys' => 'integrations.api_keys',
+            'platform.webhooks' => 'integrations.webhooks',
         ],
         'consumes' => [],
     ],

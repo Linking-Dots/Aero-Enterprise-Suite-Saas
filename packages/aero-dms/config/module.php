@@ -11,18 +11,19 @@ return [
     |
     */
 
-    'code'         => 'dms',
-    'scope'        => 'tenant',
-    'name'         => 'Document Management',
-    'description'  => 'Enterprise DMS: repository, versioning, approvals, e-sign, OCR, retention, controlled docs, asset manuals (EAM), and collaboration.',
-    'version'      => '2.0.0',
-    'category'     => 'business',
-    'icon'         => 'DocumentIcon',
-    'priority'     => 20,
-    'is_core'      => false,
-    'is_active'    => true,
-    'enabled'      => env('DMS_MODULE_ENABLED', true),
-    'min_plan'     => 'professional',
+    'code' => 'dms',
+    'schema_version' => '2.0',
+    'scope' => 'tenant',
+    'name' => 'Document Management',
+    'description' => 'Enterprise DMS: repository, versioning, approvals, e-sign, OCR, retention, controlled docs, asset manuals (EAM), and collaboration.',
+    'version' => '2.0.0',
+    'category' => 'business',
+    'icon' => 'DocumentIcon',
+    'priority' => 20,
+    'is_core' => false,
+    'is_active' => true,
+    'enabled' => env('DMS_MODULE_ENABLED', true),
+    'min_plan' => 'professional',
     'minimum_plan' => 'professional',
     'license_type' => 'standard',
     'dependencies' => ['core'],
@@ -30,32 +31,32 @@ return [
     'route_prefix' => '/dms',
 
     'features' => [
-        'dashboard'              => true,
-        'repository'             => true,
-        'folders_taxonomy'       => true,
-        'version_control'        => true,
-        'check_in_out'           => true,
-        'approvals_workflow'     => true,
-        'sharing'                => true,
-        'external_sharing'       => true,
-        'e_signature'            => true,
-        'ocr_search'             => true,
-        'full_text_search'       => true,
-        'tagging_metadata'       => true,
-        'retention_policies'     => true,
-        'records_management'     => true,
-        'controlled_documents'   => true, // SOPs, ISO
-        'asset_manuals'          => true, // EAM: asset docs/manuals/drawings
-        'cad_drawing_viewer'     => true, // EAM: drawings for assets
-        'templates'              => true,
-        'categories'             => true,
-        'collaboration'          => true,
-        'annotations_redaction'  => true,
-        'watermarking'           => true,
-        'rights_management'      => true,
-        'audit_trail'            => true,
-        'integrations'           => true,
-        'settings'               => true,
+        'dashboard' => true,
+        'repository' => true,
+        'folders_taxonomy' => true,
+        'version_control' => true,
+        'check_in_out' => true,
+        'approvals_workflow' => true,
+        'sharing' => true,
+        'external_sharing' => true,
+        'e_signature' => true,
+        'ocr_search' => true,
+        'full_text_search' => true,
+        'tagging_metadata' => true,
+        'retention_policies' => true,
+        'records_management' => true,
+        'controlled_documents' => true, // SOPs, ISO
+        'asset_manuals' => true, // EAM: asset docs/manuals/drawings
+        'cad_drawing_viewer' => true, // EAM: drawings for assets
+        'templates' => true,
+        'categories' => true,
+        'collaboration' => true,
+        'annotations_redaction' => true,
+        'watermarking' => true,
+        'rights_management' => true,
+        'audit_trail' => true,
+        'integrations' => true,
+        'settings' => true,
     ],
 
     'submodules' => [
@@ -71,7 +72,6 @@ return [
                     'actions' => [['code' => 'view', 'name' => 'View Dashboard']]],
             ],
         ],
-
 
         // ==================== 1. DOCUMENT REPOSITORY ====================
         [
@@ -443,27 +443,27 @@ return [
     */
     'eam_integration' => [
         'provides' => [
-            'dms.asset_manuals'        => 'asset-documents.asset-manuals',
-            'dms.drawings_cad'         => 'asset-documents.drawings-cad',
-            'dms.as_built'             => 'asset-documents.as-built',
-            'dms.asset_certificates'   => 'asset-documents.certificates',
-            'dms.om_docs'              => 'asset-documents.om-documents',
-            'dms.controlled_docs'      => 'controlled-docs.controlled-list',
-            'dms.e_signature'          => 'e-signature.signing-envelopes',
-            'dms.retention'            => 'retention-records.retention-schedule',
+            'dms.asset_manuals' => 'asset-documents.asset-manuals',
+            'dms.drawings_cad' => 'asset-documents.drawings-cad',
+            'dms.as_built' => 'asset-documents.as-built',
+            'dms.asset_certificates' => 'asset-documents.certificates',
+            'dms.om_docs' => 'asset-documents.om-documents',
+            'dms.controlled_docs' => 'controlled-docs.controlled-list',
+            'dms.e_signature' => 'e-signature.signing-envelopes',
+            'dms.retention' => 'retention-records.retention-schedule',
         ],
         'consumes' => [
-            'eam.asset_registry'       => 'aero-eam',
-            'eam.work_order_docs'      => 'aero-eam',
-            'quality.iso_documents'    => 'aero-quality',
-            'project.project_files'    => 'aero-project',
+            'eam.asset_registry' => 'aero-eam',
+            'eam.work_order_docs' => 'aero-eam',
+            'quality.iso_documents' => 'aero-quality',
+            'project.project_files' => 'aero-project',
         ],
     ],
 
     'access_control' => [
-        'super_admin_role'=> 'super-admin',
-        'dms_admin_role'  => 'dms-admin',
-        'cache_ttl'       => 3600,
-        'cache_tags'      => ['module-access', 'role-access', 'dms-access'],
+        'super_admin_role' => 'super-admin',
+        'dms_admin_role' => 'dms-admin',
+        'cache_ttl' => 3600,
+        'cache_tags' => ['module-access', 'role-access', 'dms-access'],
     ],
 ];

@@ -30,18 +30,19 @@ return [
     |
     */
 
-    'code'         => 'rfi',
-    'scope'        => 'tenant',
-    'name'         => 'RFI & Site Intelligence',
-    'description'  => 'Request For Inspection (construction) + Request For Information / Quote / Proposal + EAM contractor RFI/RFQ workflow, geo-fenced validation, and linear chainage mapping.',
-    'version'      => '3.0.0',
-    'category'     => 'engineering_ops',
-    'icon'         => 'MapIcon',
-    'priority'     => 15,
-    'is_core'      => false,
-    'is_active'    => true,
-    'enabled'      => env('RFI_MODULE_ENABLED', true),
-    'min_plan'     => 'professional',
+    'code' => 'rfi',
+    'schema_version' => '2.0',
+    'scope' => 'tenant',
+    'name' => 'RFI & Site Intelligence',
+    'description' => 'Request For Inspection (construction) + Request For Information / Quote / Proposal + EAM contractor RFI/RFQ workflow, geo-fenced validation, and linear chainage mapping.',
+    'version' => '3.0.0',
+    'category' => 'engineering_ops',
+    'icon' => 'MapIcon',
+    'priority' => 15,
+    'is_core' => false,
+    'is_active' => true,
+    'enabled' => env('RFI_MODULE_ENABLED', true),
+    'min_plan' => 'professional',
     'minimum_plan' => 'professional',
     'license_type' => 'standard',
     'dependencies' => ['core'],
@@ -49,26 +50,26 @@ return [
     'route_prefix' => '/rfi',
 
     'features' => [
-        'dashboard'                 => true,
-        'daily_reporting'           => true,
-        'site_diary'                => true,
-        'rfi_inspection'            => true, // Request For Inspection (construction)
-        'rfi_information'           => true, // Request For Information (procurement/engineering)
-        'rfq'                       => true, // Request For Quote
-        'rfp'                       => true, // Request For Proposal
-        'geo_fencing'               => true,
-        'linear_continuity'         => true,
-        'digital_twin_map'          => true,
-        'objections_disputes'       => true,
-        'contractor_rfi'            => true, // EAM contractor RFI
-        'eam_work_request'          => true, // EAM: tenants/operators raise work requests
-        'submittals'                => true,
-        'transmittals'              => true,
-        'punch_list'                => true,
-        'ai_risk_sampling'          => true,
-        'reports_analytics'         => true,
-        'integrations'              => true,
-        'settings'                  => true,
+        'dashboard' => true,
+        'daily_reporting' => true,
+        'site_diary' => true,
+        'rfi_inspection' => true, // Request For Inspection (construction)
+        'rfi_information' => true, // Request For Information (procurement/engineering)
+        'rfq' => true, // Request For Quote
+        'rfp' => true, // Request For Proposal
+        'geo_fencing' => true,
+        'linear_continuity' => true,
+        'digital_twin_map' => true,
+        'objections_disputes' => true,
+        'contractor_rfi' => true, // EAM contractor RFI
+        'eam_work_request' => true, // EAM: tenants/operators raise work requests
+        'submittals' => true,
+        'transmittals' => true,
+        'punch_list' => true,
+        'ai_risk_sampling' => true,
+        'reports_analytics' => true,
+        'integrations' => true,
+        'settings' => true,
     ],
 
     /*
@@ -456,35 +457,35 @@ return [
     */
     'eam_integration' => [
         'provides' => [
-            'rfi.inspection'            => 'inspection-management.rfi-tracker',
-            'rfi.information'           => 'rfi-information.rfi-list',
-            'rfi.contractor_work_request'=> 'contractor-rfi.contractor-work-request',
-            'rfi.contractor_rfi'        => 'contractor-rfi.contractor-rfi',
-            'rfi.rfq'                   => 'rfq.rfq-list',
-            'rfi.rfp'                   => 'rfp.rfp-list',
-            'rfi.submittals'            => 'submittals-transmittals.submittals',
-            'rfi.punch_list'            => 'punch-list.punch-items',
-            'rfi.digital_twin'          => 'linear-progress.digital-twin-map',
-            'rfi.continuity_validator'  => 'linear-progress.linear-continuity-validator',
-            'rfi.site_diary'            => 'daily-reporting.site-diary',
-            'rfi.objections'            => 'objections.objection-handler',
+            'rfi.inspection' => 'inspection-management.rfi-tracker',
+            'rfi.information' => 'rfi-information.rfi-list',
+            'rfi.contractor_work_request' => 'contractor-rfi.contractor-work-request',
+            'rfi.contractor_rfi' => 'contractor-rfi.contractor-rfi',
+            'rfi.rfq' => 'rfq.rfq-list',
+            'rfi.rfp' => 'rfp.rfp-list',
+            'rfi.submittals' => 'submittals-transmittals.submittals',
+            'rfi.punch_list' => 'punch-list.punch-items',
+            'rfi.digital_twin' => 'linear-progress.digital-twin-map',
+            'rfi.continuity_validator' => 'linear-progress.linear-continuity-validator',
+            'rfi.site_diary' => 'daily-reporting.site-diary',
+            'rfi.objections' => 'objections.objection-handler',
         ],
         'consumes' => [
-            'eam.work_orders'           => 'aero-eam',
-            'eam.asset_registry'        => 'aero-eam',
-            'quality.ncr'               => 'aero-quality',
-            'scm.vendors'               => 'aero-scm',
-            'scm.contractors'           => 'aero-scm',
-            'project.projects'          => 'aero-project',
-            'compliance.permits'        => 'aero-compliance',
-            'hrm.workforce'             => 'aero-hrm',
+            'eam.work_orders' => 'aero-eam',
+            'eam.asset_registry' => 'aero-eam',
+            'quality.ncr' => 'aero-quality',
+            'scm.vendors' => 'aero-scm',
+            'scm.contractors' => 'aero-scm',
+            'project.projects' => 'aero-project',
+            'compliance.permits' => 'aero-compliance',
+            'hrm.workforce' => 'aero-hrm',
         ],
     ],
 
     'access_control' => [
         'super_admin_role' => 'super-admin',
-        'rfi_admin_role'   => 'rfi-admin',
-        'cache_ttl'        => 3600,
-        'cache_tags'       => ['module-access', 'role-access', 'rfi-access'],
+        'rfi_admin_role' => 'rfi-admin',
+        'cache_ttl' => 3600,
+        'cache_tags' => ['module-access', 'role-access', 'rfi-access'],
     ],
 ];
