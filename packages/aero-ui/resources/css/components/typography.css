@@ -71,6 +71,8 @@
 .aeos-link-underline-hover:hover  { text-decoration:underline; text-underline-offset:3px; }
 .aeos-link-underline-always       { text-decoration:underline; text-underline-offset:3px; }
 .aeos-link-underline-none         { text-decoration:none; }
+.aeos-link-icon          { font-size:var(--aeos-icon-sm); line-height:1; display:inline-flex; align-items:center; }
+.aeos-link-icon-external { font-size:var(--aeos-icon-xs); }
 
 /* ── Display Headings (design system scale) ─────────────────────── */
 .aeos-display-hero {

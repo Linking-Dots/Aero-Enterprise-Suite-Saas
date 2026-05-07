@@ -624,17 +624,10 @@ export const CardHeader = forwardRef(function CardHeader(
     <div
       ref={ref}
       className={cx('aeos-card-header', className)}
-      style={{
-        display:        'flex',
-        alignItems:     action ? 'flex-start' : undefined,
-        justifyContent: action ? 'space-between' : undefined,
-        gap:            'var(--aeos-space-4)',
-        marginBottom:   'var(--aeos-space-4)',
-      }}
       {...rest}
     >
       {/* Left region */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--aeos-space-1)', minWidth: 0 }}>
+      <div className="aeos-card-header-text">
         {eyebrow && (
           <Eyebrow tone="primary">{eyebrow}</Eyebrow>
         )}
@@ -650,7 +643,7 @@ export const CardHeader = forwardRef(function CardHeader(
 
       {/* Right region */}
       {action && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--aeos-space-2)', flexShrink: 0 }}>
+        <div className="aeos-card-header-action">
           {action}
         </div>
       )}
@@ -690,24 +683,15 @@ export const CardFooter = forwardRef(function CardFooter(
   { align = 'left', className, children, style, ...rest },
   ref
 ) {
-  const justifyMap = {
-    left:    'flex-start',
-    right:   'flex-end',
-    between: 'space-between',
-  };
+  const alignClass = align === 'right' ? 'aeos-card-footer-right'
+    : align === 'between' ? 'aeos-card-footer-between'
+    : 'aeos-card-footer-left';
 
   return (
     <div
       ref={ref}
-      className={cx('aeos-card-footer', className)}
-      style={{
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: justifyMap[align] ?? 'flex-start',
-        gap:            'var(--aeos-space-2)',
-        marginTop:      'var(--aeos-space-4)',
-        ...style,
-      }}
+      className={cx('aeos-card-footer', alignClass, className)}
+      style={style}
       {...rest}
     >
       {children}

@@ -7,7 +7,7 @@
 .aeos-input {
   width: 100%;
   background: var(--aeos-bg-tint);
-  border: 1px solid var(--aeos-border-base);
+  border: var(--aeos-border-width) solid var(--aeos-border-base);
   color: var(--aeos-text-primary);
   border-radius: var(--aeos-r-md);
   padding: var(--aeos-pad-input-y) var(--aeos-pad-input-x);
@@ -30,7 +30,7 @@
 }
 
 .aeos-input:focus {
-  border-color: rgba(0, 229, 255, 0.50);
+  border-color: var(--aeos-primary-border);
   box-shadow: 0 0 0 3px var(--aeos-primary-bg);
   background: var(--aeos-bg-hover);
 }
@@ -41,7 +41,7 @@
 }
 
 .aeos-input.error {
-  border-color: rgba(255, 107, 107, 0.50);
+  border-color: var(--aeos-danger-border);
   box-shadow: 0 0 0 3px var(--aeos-danger-tint);
 }
 
@@ -130,7 +130,7 @@ input[type="radio"] {
   right: 0;
   bottom: 0;
   background-color: var(--aeos-bg-active);
-  border: 1px solid var(--aeos-border-base);
+  border: var(--aeos-border-width) solid var(--aeos-border-base);
   transition:
     background-color var(--aeos-dur-fast) var(--aeos-ease-out),
     border-color     var(--aeos-dur-fast) var(--aeos-ease-out);
@@ -144,7 +144,7 @@ input[type="radio"] {
   width: 18px;
   left: 2px;
   bottom: 2px;
-  background-color: rgba(255, 255, 255, 0.80);
+  background-color: var(--aeos-text-primary);
   transition: transform var(--aeos-dur-fast) var(--aeos-ease-out);
   border-radius: 50%;
 }
@@ -156,7 +156,7 @@ input[type="radio"] {
 
 .aeos-toggle input:checked + .aeos-toggle-slider::before {
   transform: translateX(20px);
-  background-color: #fff;
+  background-color: var(--aeos-bg-page);
 }
 
 .aeos-toggle input:focus-visible + .aeos-toggle-slider {
@@ -202,6 +202,52 @@ select.aeos-input {
   flex-shrink: 0;
 }
 
+/* Right-side icon in input group (e.g. right-icon on Input) */
+.aeos-input-group-icon-right {
+  position: absolute;
+  left: auto;
+  right: var(--aeos-space-3);
+  color: var(--aeos-text-tertiary);
+  pointer-events: none;
+  width: var(--aeos-icon-sm);
+  height: var(--aeos-icon-sm);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Toggle label row (inline-flex wrapper around toggle + label text) */
+.aeos-toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aeos-space-2-5, 10px);
+}
+
+.aeos-toggle-row:not([data-disabled]) {
+  cursor: pointer;
+}
+
+.aeos-toggle-row[data-disabled] {
+  cursor: not-allowed;
+}
+
+/* Search shortcut kbd (absolutely positioned inside search input group) */
+.aeos-search-shortcut {
+  position: absolute;
+  right: var(--aeos-space-2);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* File input — visually hidden native control */
+.aeos-file-input-control {
+  display: none;
+}
+
+/* File input filename label */
+.aeos-file-input-name {
+  margin-left: var(--aeos-space-2);
+}
+
 /* ── Input Addon (inline suffix/prefix) ──────────────────────── */
 .aeos-input-addon {
   display: flex;
@@ -211,7 +257,7 @@ select.aeos-input {
 .aeos-input-addon-text {
   padding: var(--aeos-pad-input-y) var(--aeos-pad-input-x);
   background: var(--aeos-bg-tint);
-  border: 1px solid var(--aeos-border-base);
+  border: var(--aeos-border-width) solid var(--aeos-border-base);
   color: var(--aeos-text-secondary);
   font-size: var(--aeos-text-sm);
   white-space: nowrap;
@@ -244,21 +290,21 @@ select.aeos-input {
 .aeos-otp-input {
   width:52px; height:56px; text-align:center;
   font-size:var(--aeos-text-2xl); font-family:var(--aeos-font-mono); font-weight:600;
-  background:var(--aeos-bg-tint); border:1px solid var(--aeos-border-base);
+  background:var(--aeos-bg-tint); border:var(--aeos-border-width) solid var(--aeos-border-base);
   color:var(--aeos-text-primary); border-radius:var(--aeos-r-md); outline:none;
-  transition:border-color var(--aeos-dur-fast), box-shadow var(--aeos-dur-fast);
+  transition:border-color var(--aeos-dur-fast) var(--aeos-ease-out), box-shadow var(--aeos-dur-fast) var(--aeos-ease-out);
 }
 .aeos-otp-input:focus {
-  border-color:rgba(0,229,255,.50); box-shadow:0 0 0 3px var(--aeos-primary-bg);
+  border-color:var(--aeos-primary-border); box-shadow:0 0 0 3px var(--aeos-primary-bg);
 }
 .aeos-otp-input.error {
-  border-color:rgba(255,107,107,.50); box-shadow:0 0 0 3px var(--aeos-danger-tint);
+  border-color:var(--aeos-danger-border); box-shadow:0 0 0 3px var(--aeos-danger-tint);
   animation:aeos-shake 240ms var(--aeos-ease-out);
 }
 
 /* ── Password Strength Meter ────────────────────────────────── */
 .aeos-strength-bars { display:flex; gap:var(--aeos-space-1); }
-.aeos-strength-bar { flex:1; height:4px; border-radius:2px; background:var(--aeos-bg-hover); transition:background var(--aeos-dur-fast); }
+.aeos-strength-bar { flex:1; height:4px; border-radius:2px; background:var(--aeos-bg-hover); transition:background var(--aeos-dur-fast) var(--aeos-ease-out); }
 .aeos-strength-bar.is-weak    { background:var(--aeos-destructive); }
 .aeos-strength-bar.is-fair    { background:var(--aeos-secondary); }
 .aeos-strength-bar.is-good    { background:var(--aeos-primary); }
@@ -266,7 +312,7 @@ select.aeos-input {
 .aeos-strength-label { font-size:var(--aeos-text-xs); font-family:var(--aeos-font-mono); color:var(--aeos-text-tertiary); margin-top:var(--aeos-space-1); }
 
 /* ── Light mode overrides ────────────────────────────────────── */
-.aeos--light .aeos-otp-input { background:rgba(15,23,42,.03); border-color:rgba(15,23,42,.12); color:var(--aeos-text-primary); }
-.aeos--light .aeos-otp-input:focus { border-color:rgba(0,163,184,.50); box-shadow:0 0 0 3px rgba(0,163,184,.12); }
-.aeos--light .aeos-strength-bar { background:rgba(15,23,42,.08); }
-.aeos--light .aeos-otp-input.error { border-color:rgba(220,38,38,.50); box-shadow:0 0 0 3px rgba(220,38,38,.10); }
+.aeos--light .aeos-otp-input { background:var(--aeos-bg-subtle); border-color:var(--aeos-border-strong); color:var(--aeos-text-primary); }
+.aeos--light .aeos-otp-input:focus { border-color:var(--aeos-primary-border); box-shadow:0 0 0 3px var(--aeos-primary-bg); }
+.aeos--light .aeos-strength-bar { background:var(--aeos-bg-hover); }
+.aeos--light .aeos-otp-input.error { border-color:var(--aeos-danger-border); box-shadow:0 0 0 3px var(--aeos-danger-tint); }

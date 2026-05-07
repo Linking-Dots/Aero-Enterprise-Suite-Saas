@@ -171,7 +171,7 @@ export default function TagPicker({
                 }}
                 aria-label={`Remove ${name}`}
               >
-                <XMarkIcon className="w-3 h-3" />
+                <XMarkIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
               </button>
             </span>
           );
@@ -250,7 +250,7 @@ export default function TagPicker({
                   }}
                 />
                 <Text size="sm" style={{ flex: 1 }}>{opt.name}</Text>
-                {isSelected && <CheckIcon className="w-3.5 h-3.5" />}
+                {isSelected && <CheckIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />}
               </div>
             );
           })}
@@ -269,7 +269,7 @@ export default function TagPicker({
               onMouseEnter={() => setActiveIndex(filtered.length)}
               onClick={handleCreate}
             >
-              <PlusIcon className="w-3.5 h-3.5" />
+              <PlusIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
               <Text size="sm">Create "{query.trim()}"</Text>
             </div>
           )}

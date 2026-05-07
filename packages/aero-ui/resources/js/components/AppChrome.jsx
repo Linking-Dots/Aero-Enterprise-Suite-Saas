@@ -107,7 +107,7 @@ export function AppUserMenu({ user, logoutRoute = 'logout', className }) {
         title="Notifications"
         onClick={() => {}}
       >
-        <BellIcon className="w-4 h-4" />
+        <BellIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
       </Button>
 
       {/* User pill */}
@@ -126,7 +126,7 @@ export function AppUserMenu({ user, logoutRoute = 'logout', className }) {
           aria-label="Sign out"
           title="Sign out"
         >
-          <ArrowRightIcon className="w-3.5 h-3.5" />
+          <ArrowRightIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
         </Button>
       </HStack>
     </HStack>

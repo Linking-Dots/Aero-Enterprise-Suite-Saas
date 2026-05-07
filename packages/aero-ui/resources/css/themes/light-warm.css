@@ -16,4 +16,6 @@
   --aeos-grad-cyan:  linear-gradient(135deg,#D97706 0%,#DC2626 100%);
   --aeos-grad-amber: linear-gradient(135deg,#EA580C 0%,#B91C1C 100%);
   --aeos-grad-full:  linear-gradient(135deg,#D97706 0%,#DC2626 50%,#EA580C 100%);
+  /* Shell: no mesh gradient in light mode — use flat page color */
+  --aeos-shell-bg: var(--aeos-bg-page);
 }

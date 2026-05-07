@@ -20,7 +20,7 @@ export default function HealthCard({ title, icon, data, status }) {
         <VStack gap={3}>
           <HStack gap={2} align="center" justify="space-between">
             <HStack gap={2} align="center">
-              <Icon name={icon} className="w-5 h-5" />
+              <Icon name={icon} style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />
               <Text as="h3">{title}</Text>
             </HStack>
             <Badge intent={getStatusColor(status)}>{status}</Badge>

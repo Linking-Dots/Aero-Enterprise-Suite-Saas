@@ -6,6 +6,8 @@
   --aeos-destructive:   #DC2626;
   --aeos-success:       #15803D;
   --aeos-bg-page:      #FAF6F0;
+  /* Shell: no mesh gradient in light mode — use flat page color */
+  --aeos-shell-bg: var(--aeos-bg-page);
   --aeos-bg-app:       #F5EFE6;
   --aeos-bg-card:      #FFFFFF;
   --aeos-bg-elevated:  #FAF6F0;

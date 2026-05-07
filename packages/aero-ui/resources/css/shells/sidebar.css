@@ -15,14 +15,14 @@
   display: grid;
   grid-template-columns: var(--aeos-shell-sidebar-w, 56px) 1fr;
   min-height: 100vh;
-  background: var(--aeos-grad-mesh), var(--aeos-bg-page);
+  background: var(--aeos-shell-bg);
   font-family: var(--aeos-font-body);
 }
 
 /* ── Sidebar Rail ────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar {
   background: var(--aeos-shell-sidebar-bg);
-  border-right: 1px solid var(--aeos-divider);
+  border-right: var(--aeos-border-width) solid var(--aeos-divider);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,7 +47,7 @@
   height: var(--aeos-space-8);
   border-radius: var(--aeos-r-md);
   background: var(--aeos-bg-tint);
-  border: 1px solid transparent;
+  border: var(--aeos-border-width) solid transparent;
   cursor: pointer;
   transition:
     background      var(--aeos-dur-fast) var(--aeos-ease-out),
@@ -89,7 +89,7 @@
 [data-aeos-shell="sidebar"] .aeos-shell-main {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 0;
   overflow: hidden;
   width: 100%;
 }
@@ -100,7 +100,7 @@
   align-items: center;
   height: var(--aeos-shell-topnav-h, 48px);
   padding: 0 var(--aeos-space-4);
-  border-bottom: 1px solid var(--aeos-divider);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   background: var(--aeos-shell-topbar-bg);
   gap: var(--aeos-space-3);
   flex-shrink: 0;
@@ -109,6 +109,7 @@
 /* ── Page Content Area ───────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: var(--aeos-space-5);
   background: var(--aeos-bg-page);
@@ -184,7 +185,7 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--aeos-overlay-backdrop);
     z-index: calc(var(--aeos-z-sidebar) - 1);
   }
 }
@@ -193,7 +194,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--aeos-overlay-backdrop);
   z-index: calc(var(--aeos-z-sidebar) - 1);
   grid-column: 1 / -1;
   grid-row: 1 / -1;

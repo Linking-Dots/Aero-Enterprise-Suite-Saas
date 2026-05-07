@@ -5,6 +5,7 @@
   --aeos-tertiary:      #8B5CF6;
   --aeos-destructive:   #FF6B6B;
   --aeos-bg-page:      #030811;
+  --aeos-shell-bg:     var(--aeos-grad-mesh), var(--aeos-bg-page);
   --aeos-bg-app:       #060D1A;
   --aeos-bg-card:      #0D1525;
   --aeos-bg-elevated:  #131E30;

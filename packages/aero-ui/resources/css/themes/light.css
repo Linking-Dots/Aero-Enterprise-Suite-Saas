@@ -15,6 +15,54 @@
   --aeos-glass-bg:      rgba(255,255,255,.80);
   --aeos-glass-border:  rgba(0,163,184,.18);
   --aeos-divider:       rgba(15,23,42,.08);
+
+  /* Semantic surfaces */
+  --aeos-bg-subtle:  rgba(0, 0, 0, 0.03);
+  --aeos-bg-tint:    rgba(0, 0, 0, 0.04);
+  --aeos-bg-hover:   rgba(0, 0, 0, 0.06);
+  --aeos-bg-active:  rgba(0, 0, 0, 0.10);
+  --aeos-bg-wash:    rgba(0, 0, 0, 0.14);
+  --aeos-bg-input:   rgba(0, 0, 0, 0.04);
+
+  /* Semantic borders */
+  --aeos-border-subtle: rgba(15, 23, 42, 0.06);
+  --aeos-border-base:   rgba(15, 23, 42, 0.10);
+  --aeos-border-strong: rgba(15, 23, 42, 0.18);
+
+  /* Primary tints (on white) */
+  --aeos-primary-tint:   rgba(0, 163, 184, 0.08);
+  --aeos-primary-bg:     rgba(0, 163, 184, 0.12);
+  --aeos-primary-border: rgba(0, 163, 184, 0.22);
+  --aeos-primary-hover:  rgba(0, 163, 184, 0.14);
+
+  /* Danger tints */
+  --aeos-danger-tint:    rgba(220, 38, 38, 0.07);
+  --aeos-danger-bg:      rgba(220, 38, 38, 0.10);
+  --aeos-danger-border:  rgba(220, 38, 38, 0.22);
+  --aeos-danger-hover:   rgba(220, 38, 38, 0.14);
+
+  /* Success tints */
+  --aeos-success-tint:   rgba(21, 128, 61, 0.07);
+  --aeos-success-bg:     rgba(21, 128, 61, 0.10);
+  --aeos-success-border: rgba(21, 128, 61, 0.22);
+
+  /* Warning tints */
+  --aeos-warning-tint:   rgba(180, 83, 9, 0.07);
+  --aeos-warning-bg:     rgba(180, 83, 9, 0.10);
+  --aeos-warning-border: rgba(180, 83, 9, 0.22);
+
+  /* Shadows (lighter for light mode) */
+  --aeos-shadow-card:     0 2px 8px rgba(15, 23, 42, 0.08);
+  --aeos-shadow-lift:     0 4px 16px rgba(15, 23, 42, 0.12);
+  --aeos-shadow-elevated: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --aeos-shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --aeos-shadow-md:  0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+
+  /* Shell background (no dark mesh in light mode) */
+  --aeos-shell-bg: var(--aeos-bg-page);
+
+  /* Overlay backdrop (slightly lighter in light mode) */
+  --aeos-overlay-backdrop: rgba(15, 23, 42, 0.60);
 }
 
 /* System-preference light mode (for .aeos--system) */
@@ -34,5 +82,53 @@
     --aeos-glass-bg:     rgba(255, 255, 255, 0.80);
     --aeos-glass-border: rgba(0, 163, 184, 0.18);
     --aeos-divider:      rgba(15, 23, 42, 0.08);
+
+    /* Semantic surfaces */
+    --aeos-bg-subtle:  rgba(0, 0, 0, 0.03);
+    --aeos-bg-tint:    rgba(0, 0, 0, 0.04);
+    --aeos-bg-hover:   rgba(0, 0, 0, 0.06);
+    --aeos-bg-active:  rgba(0, 0, 0, 0.10);
+    --aeos-bg-wash:    rgba(0, 0, 0, 0.14);
+    --aeos-bg-input:   rgba(0, 0, 0, 0.04);
+
+    /* Semantic borders */
+    --aeos-border-subtle: rgba(15, 23, 42, 0.06);
+    --aeos-border-base:   rgba(15, 23, 42, 0.10);
+    --aeos-border-strong: rgba(15, 23, 42, 0.18);
+
+    /* Primary tints (on white) */
+    --aeos-primary-tint:   rgba(0, 163, 184, 0.08);
+    --aeos-primary-bg:     rgba(0, 163, 184, 0.12);
+    --aeos-primary-border: rgba(0, 163, 184, 0.22);
+    --aeos-primary-hover:  rgba(0, 163, 184, 0.14);
+
+    /* Danger tints */
+    --aeos-danger-tint:    rgba(220, 38, 38, 0.07);
+    --aeos-danger-bg:      rgba(220, 38, 38, 0.10);
+    --aeos-danger-border:  rgba(220, 38, 38, 0.22);
+    --aeos-danger-hover:   rgba(220, 38, 38, 0.14);
+
+    /* Success tints */
+    --aeos-success-tint:   rgba(21, 128, 61, 0.07);
+    --aeos-success-bg:     rgba(21, 128, 61, 0.10);
+    --aeos-success-border: rgba(21, 128, 61, 0.22);
+
+    /* Warning tints */
+    --aeos-warning-tint:   rgba(180, 83, 9, 0.07);
+    --aeos-warning-bg:     rgba(180, 83, 9, 0.10);
+    --aeos-warning-border: rgba(180, 83, 9, 0.22);
+
+    /* Shadows (lighter for light mode) */
+    --aeos-shadow-card:     0 2px 8px rgba(15, 23, 42, 0.08);
+    --aeos-shadow-lift:     0 4px 16px rgba(15, 23, 42, 0.12);
+    --aeos-shadow-elevated: 0 2px 8px rgba(15, 23, 42, 0.08);
+    --aeos-shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+    --aeos-shadow-md:  0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+
+    /* Shell background (no dark mesh in light mode) */
+    --aeos-shell-bg: var(--aeos-bg-page);
+
+    /* Overlay backdrop (slightly lighter in light mode) */
+    --aeos-overlay-backdrop: rgba(15, 23, 42, 0.60);
   }
 }

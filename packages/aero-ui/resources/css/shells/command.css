@@ -16,14 +16,14 @@
   display: grid;
   grid-template-columns: 160px 1fr 240px;
   min-height: 100vh;
-  background: var(--aeos-grad-mesh), var(--aeos-bg-page);
+  background: var(--aeos-shell-bg);
   font-family: var(--aeos-font-body);
 }
 
 /* ── Left Nav Panel ──────────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-left {
   background: var(--aeos-shell-panel-bg);
-  border-right: 1px solid var(--aeos-divider);
+  border-right: var(--aeos-border-width) solid var(--aeos-divider);
   padding: var(--aeos-space-4);
   overflow-y: auto;
   display: flex;
@@ -55,7 +55,7 @@
     background      var(--aeos-dur-fast) var(--aeos-ease-out),
     color           var(--aeos-dur-fast) var(--aeos-ease-out),
     border-color    var(--aeos-dur-fast) var(--aeos-ease-out);
-  border: 1px solid transparent;
+  border: var(--aeos-border-width) solid transparent;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -91,6 +91,7 @@
 /* ── Center Main Panel ───────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-main {
   padding: var(--aeos-space-5);
+  min-height: 0;
   overflow-y: auto;
   background: var(--aeos-bg-page);
   display: flex;
@@ -103,7 +104,7 @@
   align-items: center;
   height: var(--aeos-shell-topnav-h, var(--aeos-h-topbar));
   padding: 0 var(--aeos-space-5);
-  border-bottom: 1px solid var(--aeos-divider);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   background: var(--aeos-shell-topbar-bg);
   gap: var(--aeos-space-3);
   flex-shrink: 0;
@@ -115,6 +116,7 @@
 /* Content scrollable area */
 [data-aeos-shell="command"] .aeos-shell-content {
   flex: 1;
+  min-height: 0;
   padding: var(--aeos-space-4);
   overflow-y: auto;
 }
@@ -122,7 +124,7 @@
 /* ── Right Context Panel ─────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-right {
   background: var(--aeos-shell-panel-bg);
-  border-left: 1px solid var(--aeos-divider);
+  border-left: var(--aeos-border-width) solid var(--aeos-divider);
   padding: var(--aeos-space-4);
   overflow-y: auto;
   display: flex;
@@ -136,7 +138,7 @@
 /* ── Right Panel Widgets ─────────────────────────────────────── */
 .aeos-shell-widget {
   background: var(--aeos-bg-subtle);
-  border: 1px solid var(--aeos-divider);
+  border: var(--aeos-border-width) solid var(--aeos-divider);
   border-radius: var(--aeos-r-lg);
   padding: var(--aeos-space-4);
 }

@@ -1,6 +1,6 @@
 import { forwardRef, useState, useId } from 'react';
 import { MagnifyingGlassIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { cx } from './Primitives.jsx';
+import { cx, Box } from './Primitives.jsx';
 
 /** Field — label + hint + error wrapper. */
 export const Field = forwardRef(function Field(
@@ -41,13 +41,13 @@ export const Input = forwardRef(function Input(
   return (
     <div className="aeos-input-group">
       {leftIcon && (
-        <span className="aeos-input-group-icon" aria-hidden="true" style={{ fontSize: 16, lineHeight: 1 }}>
+        <span className="aeos-input-group-icon" aria-hidden="true">
           {leftIcon}
         </span>
       )}
       {inputEl}
       {rightIcon && (
-        <span className="aeos-input-group-icon" style={{ left: 'auto', right: '0.75rem', fontSize: 16, lineHeight: 1 }} aria-hidden="true">
+        <span className="aeos-input-group-icon-right" aria-hidden="true">
           {rightIcon}
         </span>
       )}
@@ -105,9 +105,12 @@ export const Radio = forwardRef(function Radio({ label, className, ...rest }, re
 /** RadioGroup — managed group of Radio inputs. */
 export function RadioGroup({ name, value, onChange, options = [], dir = 'column' }) {
   return (
-    <div
+    <Box
+      as="div"
       role="radiogroup"
-      style={{ display: 'flex', flexDirection: dir, gap: dir === 'column' ? '8px' : '16px' }}
+      flex
+      dir={dir}
+      gap={dir === 'column' ? 2 : 4}
     >
       {options.map(o => (
         <Radio
@@ -119,7 +122,7 @@ export function RadioGroup({ name, value, onChange, options = [], dir = 'column'
           label={o.label}
         />
       ))}
-    </div>
+    </Box>
   );
 }
 
@@ -147,10 +150,7 @@ export function Toggle({ checked, onChange, disabled, label, id: idProp, ...rest
     <label
       htmlFor={id}
       className="aeos-toggle-row"
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: '10px',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-      }}
+      data-disabled={disabled || undefined}
     >
       {inner}
       <span className="aeos-text-sm aeos-text-primary">{label}</span>
@@ -164,9 +164,9 @@ export const SearchInput = forwardRef(function SearchInput(
   ref
 ) {
   return (
-    <div className="aeos-input-group" style={{ position: 'relative' }}>
+    <div className="aeos-input-group">
       <span className="aeos-input-group-icon" aria-hidden="true">
-        <MagnifyingGlassIcon className="w-4 h-4" />
+        <MagnifyingGlassIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
       </span>
       <input
         ref={ref}
@@ -178,10 +178,7 @@ export const SearchInput = forwardRef(function SearchInput(
         {...rest}
       />
       {shortcut && (
-        <kbd
-          className="aeos-kbd"
-          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }}
-        >
+        <kbd className="aeos-kbd aeos-search-shortcut">
           {shortcut}
         </kbd>
       )}
@@ -198,18 +195,18 @@ export function FileInput({ accept, multiple, onChange, label = 'Choose file', c
         type="file"
         accept={accept}
         multiple={multiple}
-        style={{ display: 'none' }}
+        className="aeos-file-input-control"
         onChange={e => {
           setName(Array.from(e.target.files ?? []).map(f => f.name).join(', '));
           onChange?.(e);
         }}
       />
       <span className="aeos-btn aeos-btn-soft aeos-btn-sm">
-        <DocumentIcon className="w-3.5 h-3.5" />
+        <DocumentIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
         {label}
       </span>
       {name && (
-        <span className="aeos-text-sm aeos-text-secondary" style={{ marginLeft: 8 }}>
+        <span className="aeos-text-sm aeos-text-secondary aeos-file-input-name">
           {name}
         </span>
       )}

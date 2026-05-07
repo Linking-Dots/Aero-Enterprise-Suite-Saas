@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useBreakpoint } from '../hooks/index.js';
 import { cx } from '../components/Primitives.jsx';
 import { Breadcrumb, PageHeader } from '../components/Navigation.jsx';
@@ -91,11 +90,6 @@ export function DashboardLayout({
     bp === 'md'  ? (cols.md  ?? cols.base ?? 2) :
                    (cols.lg  ?? cols.md ?? cols.base ?? 3);
 
-  const gapValue =
-    gap === 'sm' ? 'var(--aeos-space-4)' :
-    gap === 'lg' ? 'var(--aeos-space-8)' :
-                   'var(--aeos-space-6)';
-
   return (
     <div
       className="aeos-page-layout aeos-page-layout-dashboard"
@@ -107,8 +101,7 @@ export function DashboardLayout({
         actions={actions}
       />
       <div
-        className="aeos-dashboard-grid"
-        style={{ gridTemplateColumns: `repeat(${activeCols}, 1fr)`, gap: gapValue }}
+        className={cx('aeos-dashboard-grid', `cols-${activeCols}`, `gap-${gap}`)}
       >
         {children}
       </div>

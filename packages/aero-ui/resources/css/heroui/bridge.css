@@ -4,7 +4,7 @@
   --heroui-primary-50: var(--aeos-cyan-50); --heroui-primary-100: var(--aeos-cyan-100);
   --heroui-primary-200: var(--aeos-cyan-200); --heroui-primary-300: var(--aeos-cyan-300);
   --heroui-primary-400: var(--aeos-cyan-400); --heroui-primary-500: var(--aeos-cyan-500);
-  --heroui-primary-600: var(--aeos-cyan-600); --heroui-primary-foreground: var(--aeos-ink);
+  --heroui-primary-600: var(--aeos-cyan-600); --heroui-primary-foreground: var(--aeos-text-primary);
   --heroui-secondary: var(--aeos-amber);
   --heroui-secondary-50: var(--aeos-amber-50); --heroui-secondary-100: var(--aeos-amber-100);
   --heroui-secondary-200: var(--aeos-amber-200); --heroui-secondary-300: var(--aeos-amber-300);
@@ -27,12 +27,18 @@
   --heroui-danger-600: var(--aeos-danger-600);
   --heroui-background: var(--aeos-bg-card);
   --heroui-background-contrast: var(--aeos-bg-elevated);
-  --heroui-background-default: var(--aeos-obsidian);
-  --heroui-foreground: var(--aeos-ink);
-  --heroui-foreground-50: var(--aeos-ink-faint); --heroui-foreground-100: var(--aeos-ink-muted);
-  --heroui-foreground-200: var(--aeos-ink-muted); --heroui-foreground-300: var(--aeos-ink-muted);
-  --heroui-foreground-400: var(--aeos-ink); --heroui-foreground-500: var(--aeos-ink);
-  --heroui-foreground-600: var(--aeos-ink);
+  /* background-default = page canvas (darker); background = raised component surface (lighter) */
+  --heroui-background-default: var(--aeos-bg-page);
+  /* Content layers (dropdown panels, listbox, select options) */
+  --heroui-content1: var(--aeos-bg-card);
+  --heroui-content2: var(--aeos-bg-elevated);
+  --heroui-content3: var(--aeos-bg-modal);
+  --heroui-content4: var(--aeos-bg-elevated);
+  --heroui-foreground: var(--aeos-text-primary);
+  --heroui-foreground-50: var(--aeos-text-tertiary); --heroui-foreground-100: var(--aeos-text-secondary);
+  --heroui-foreground-200: var(--aeos-text-secondary); --heroui-foreground-300: var(--aeos-text-secondary);
+  --heroui-foreground-400: var(--aeos-text-primary); --heroui-foreground-500: var(--aeos-text-primary);
+  --heroui-foreground-600: var(--aeos-text-primary);
   --heroui-border: var(--aeos-border);
   --heroui-divider: var(--aeos-divider);
   --heroui-focus-ring: var(--aeos-primary);
@@ -46,22 +52,14 @@
   --heroui-font-sans: var(--aeos-font-body); --heroui-font-mono: var(--aeos-font-mono);
   --heroui-font-size-xs: var(--aeos-text-xs); --heroui-font-size-sm: var(--aeos-text-sm);
   --heroui-font-size-base: var(--aeos-text-base); --heroui-font-size-lg: var(--aeos-text-lg);
-  --heroui-line-height: 1.5; --heroui-letter-spacing: 0;
+  --heroui-line-height: var(--aeos-leading-normal); --heroui-letter-spacing: 0;
   --heroui-shadow-sm: var(--aeos-shadow-sm); --heroui-shadow-md: var(--aeos-shadow-md);
   --heroui-shadow-lg: var(--aeos-shadow-lg); --heroui-shadow-xl: var(--aeos-shadow-xl);
   --heroui-duration-fast: var(--aeos-dur-fast); --heroui-duration-base: var(--aeos-dur-base);
   --heroui-duration-slow: var(--aeos-dur-slow); --heroui-ease: var(--aeos-ease-out);
   --heroui-input-bg: var(--aeos-bg-input); --heroui-input-border: var(--aeos-border);
-  --heroui-input-fg: var(--aeos-ink); --heroui-input-placeholder: var(--aeos-ink-muted);
+  --heroui-input-fg: var(--aeos-text-primary); --heroui-input-placeholder: var(--aeos-text-secondary);
   --heroui-card-bg: var(--aeos-bg-card); --heroui-card-border: var(--aeos-border);
   --heroui-card-shadow: var(--aeos-shadow-card);
-  --heroui-modal-bg: var(--aeos-gunmetal); --heroui-modal-backdrop: rgba(0,0,0,.7);
-}
-.aeos--light {
-  --heroui-background: var(--aeos-paper-2); --heroui-background-contrast: var(--aeos-paper-3);
-  --heroui-foreground: var(--aeos-onyx-l);
-  --heroui-foreground-50: var(--aeos-ink-l-muted); --heroui-foreground-100: var(--aeos-graphite-l);
-  --heroui-foreground-200: var(--aeos-graphite-l); --heroui-foreground-300: var(--aeos-graphite-l);
-  --heroui-foreground-400: var(--aeos-onyx-l); --heroui-foreground-500: var(--aeos-onyx-l);
-  --heroui-foreground-600: var(--aeos-onyx-l);
+  --heroui-modal-bg: var(--aeos-bg-modal); --heroui-modal-backdrop: var(--aeos-overlay-backdrop);
 }

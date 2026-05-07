@@ -233,10 +233,10 @@ function mapResultIcon(icon, type) {
   if (icon && typeof icon !== 'string') return icon;
   
   const fallback = {
-    User: <UserIcon className="w-4.5 h-4.5" />,
-    'Audit Log': <DocumentIcon className="w-4.5 h-4.5" />,
-    Role: <LockClosedIcon className="w-4.5 h-4.5" />,
-    Tag: <TagIcon className="w-4.5 h-4.5" />,
+    User: <UserIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
+    'Audit Log': <DocumentIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
+    Role: <LockClosedIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
+    Tag: <TagIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
   };
-  return fallback[type] || <DocumentIcon className="w-4.5 h-4.5" />;
+  return fallback[type] || <DocumentIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />;
 }

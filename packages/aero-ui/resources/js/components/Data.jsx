@@ -21,8 +21,8 @@ export function KPI({ label, value, delta, deltaTrend, sparkline, loading }) {
   if (loading) {
     return (
       <div className="aeos-kpi-tile">
-        <Skeleton h={10} w="60%" style={{ marginBottom: 12 }} />
-        <Skeleton h={36} w="80%" style={{ marginBottom: 8 }} />
+        <Skeleton h={10} w="60%" className="aeos-skeleton-gap-sm" />
+        <Skeleton h={36} w="80%" className="aeos-skeleton-gap-xs" />
         <Skeleton h={12} w="50%" />
       </div>
     );
@@ -34,11 +34,11 @@ export function KPI({ label, value, delta, deltaTrend, sparkline, loading }) {
       {delta && (
         <div className={cx('aeos-kpi-delta', deltaTrend ?? 'neutral')}>
           {deltaTrend === 'up' ? (
-            <ArrowUpIcon className="w-3 h-3" />
+            <ArrowUpIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
           ) : deltaTrend === 'down' ? (
-            <ArrowDownIcon className="w-3 h-3" />
+            <ArrowDownIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
           ) : (
-            <TrendingUpIcon className="w-3 h-3" />
+            <TrendingUpIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
           )}
           {delta}
         </div>
@@ -196,12 +196,12 @@ export function DataTable({
 }
 
 /** EmptyState — centred placeholder for empty content areas. */
-export function EmptyState({ icon = <InboxIcon className="w-7 h-7" />, title, description, action, className }) {
+export function EmptyState({ icon = <InboxIcon style={{ width: 'var(--aeos-icon-xl)', height: 'var(--aeos-icon-xl)' }} />, title, description, action, className }) {
   return (
     <div className={cx('aeos-empty-state', className)}>
       <div className="aeos-empty-icon">
         {typeof icon === 'string' ? (
-          <span style={{ fontSize: 28, lineHeight: 1 }}>{icon}</span>
+          <span className="aeos-empty-icon-string">{icon}</span>
         ) : (
           icon
         )}

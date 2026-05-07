@@ -82,7 +82,7 @@ export function Badge({
     >
       {dot && <span className="aeos-badge-dot" aria-hidden="true" />}
       {leftIcon && (
-        <span className="aeos-badge-icon" style={{ fontSize: 12, lineHeight: 1 }}>
+        <span className="aeos-badge-icon">
           {leftIcon}
         </span>
       )}
@@ -189,7 +189,6 @@ export function Avatar({
         <img
           src={src}
           alt={name ?? ''}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       ) : (
         <span className="aeos-avatar-initials" aria-hidden="true">
@@ -227,7 +226,6 @@ export function AvatarStack({
   return (
     <div
       className={cx('aeos-avatar-stack', className)}
-      style={{ display: 'flex', alignItems: 'center' }}
       {...rest}
     >
       {visible.map((user, i) => (
@@ -318,7 +316,7 @@ export function Tag({
           onClick={onRemove}
           aria-label="Remove"
         >
-          <XMarkIcon className="w-2.5 h-2.5" />
+          <XMarkIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
         </button>
       )}
     </span>
@@ -440,11 +438,11 @@ const ALERT_DEFAULT_ICON = {
 };
 
 const ALERT_ICON_MAP = {
-  sparkles: <SparklesIcon className="w-4 h-4" />,
-  info: <InformationCircleIcon className="w-4 h-4" />,
-  checkCircle: <CheckCircleIcon className="w-4 h-4" />,
-  alertTriangle: <ExclamationTriangleIcon className="w-4 h-4" />,
-  alertCircle: <ExclamationCircleIcon className="w-4 h-4" />,
+  sparkles: <SparklesIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  info: <InformationCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  checkCircle: <CheckCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  alertTriangle: <ExclamationTriangleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  alertCircle: <ExclamationCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
 };
 
 /**
@@ -489,7 +487,7 @@ export function Alert({
           onClick={onClose}
           aria-label="Dismiss alert"
         >
-          <XMarkIcon className="w-3.5 h-3.5" />
+          <XMarkIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
         </button>
       )}
     </div>

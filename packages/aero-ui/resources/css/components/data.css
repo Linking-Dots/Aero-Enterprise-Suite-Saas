@@ -10,7 +10,7 @@
   flex-direction: column;
   padding: var(--aeos-pad-card);
   background: var(--aeos-bg-card);
-  border: 1px solid var(--aeos-border-subtle);
+  border: var(--aeos-border-width) solid var(--aeos-border-subtle);
   border-radius: var(--aeos-card-radius);
 }
 
@@ -80,8 +80,8 @@
 .aeos-sparkline-bar {
   flex: 1;
   background: var(--aeos-grad-cyan);
-  border-radius: 2px;
-  min-height: 2px;
+  border-radius: var(--aeos-space-0-5);
+  min-height: var(--aeos-space-0-5);
   transition: opacity var(--aeos-dur-fast) var(--aeos-ease-out);
 }
 
@@ -98,7 +98,7 @@
 .aeos-stat-card {
   padding: var(--aeos-pad-card);
   background: var(--aeos-bg-elevated);
-  border: 1px solid var(--aeos-primary-tint);
+  border: var(--aeos-border-width) solid var(--aeos-primary-tint);
   border-radius: var(--aeos-card-radius);
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -108,11 +108,11 @@
 
 /* Icon tile */
 .aeos-stat-icon {
-  width: 44px;
-  height: 44px;
+  width: var(--aeos-space-11);
+  height: var(--aeos-space-11);
   border-radius: var(--aeos-r-lg);
   background: var(--aeos-primary-bg);
-  border: 1px solid var(--aeos-primary-border);
+  border: var(--aeos-border-width) solid var(--aeos-primary-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,21 +123,21 @@
 /* Amber icon tile (payroll/finance) */
 .aeos-stat-icon-amber {
   background: var(--aeos-warning-bg);
-  border: 1px solid var(--aeos-warning-border);
+  border: var(--aeos-border-width) solid var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }
 
 /* Indigo icon tile (analytics) */
 .aeos-stat-icon-indigo {
-  background: rgba(99, 102, 241, 0.10);
-  border: 1px solid rgba(99, 102, 241, 0.22);
+  background: color-mix(in srgb, var(--aeos-tertiary) 10%, transparent);
+  border: var(--aeos-border-width) solid color-mix(in srgb, var(--aeos-tertiary) 22%, transparent);
   color: var(--aeos-tertiary);
 }
 
 /* Success icon tile */
 .aeos-stat-icon-success {
   background: var(--aeos-success-bg);
-  border: 1px solid var(--aeos-success-border);
+  border: var(--aeos-border-width) solid var(--aeos-success-border);
   color: var(--aeos-success);
 }
 
@@ -145,7 +145,7 @@
 .aeos-stat-body h3 {
   margin: 0 0 var(--aeos-space-1);
   font-family: var(--aeos-font-body);
-  font-size: 0.95rem;
+  font-size: var(--aeos-text-base);
   font-weight: 600;
   color: var(--aeos-text-primary);
 }
@@ -184,7 +184,7 @@
 /* ── Progress Bar ─────────────────────────────────────────────── */
 .aeos-progress {
   width: 100%;
-  height: 6px;
+  height: var(--aeos-space-1-5);
   background: var(--aeos-bg-hover);
   border-radius: var(--aeos-r-full);
   overflow: hidden;
@@ -202,7 +202,7 @@
 }
 
 .aeos-progress-fill-success {
-  background: linear-gradient(90deg, #22C55E, #16A34A);
+  background: linear-gradient(90deg, var(--aeos-success), color-mix(in srgb, var(--aeos-success) 68%, #000));
 }
 
 /* Labeled progress row */
@@ -248,13 +248,13 @@
   color: var(--aeos-text-secondary);
   text-align: left;
   padding: var(--aeos-pad-cell);
-  border-bottom: 1px solid var(--aeos-divider);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   font-weight: 500;
 }
 
 .aeos-table td {
   padding: var(--aeos-pad-cell);
-  border-bottom: 1px solid var(--aeos-divider);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   color: var(--aeos-text-primary);
   vertical-align: middle;
 }
@@ -280,7 +280,7 @@
   gap: var(--aeos-space-1-5);
   padding: var(--aeos-pad-badge-y) var(--aeos-pad-badge-x);
   background: var(--aeos-primary-tint);
-  border: 1px solid var(--aeos-primary-border);
+  border: var(--aeos-border-width) solid var(--aeos-primary-border);
   border-radius: var(--aeos-r-sm);
   font-family: var(--aeos-font-mono);
   font-feature-settings: "tnum";

@@ -138,11 +138,12 @@
   --aeos-leading-loose:   1.8;
 
   /* Radii */
-  --aeos-r-sm:   6px;
-  --aeos-r-md:   8px;
-  --aeos-r-lg:   12px;
-  --aeos-r-xl:   16px;
-  --aeos-r-2xl:  24px;
+  --aeos-radius-factor: 1;
+  --aeos-r-sm:   calc(6px  * var(--aeos-radius-factor));
+  --aeos-r-md:   calc(8px  * var(--aeos-radius-factor));
+  --aeos-r-lg:   calc(12px * var(--aeos-radius-factor));
+  --aeos-r-xl:   calc(16px * var(--aeos-radius-factor));
+  --aeos-r-2xl:  calc(24px * var(--aeos-radius-factor));
   --aeos-r-full: 9999px;
   --aeos-card-radius: var(--aeos-r-xl);
 
@@ -157,12 +158,15 @@
   --aeos-space-4:    16px;
   --aeos-space-5:    20px;
   --aeos-space-6:    24px;
+  --aeos-space-7:    28px;
   --aeos-space-8:    32px;
   --aeos-space-10:   40px;
+  --aeos-space-11:   44px;
   --aeos-space-12:   48px;
   --aeos-space-16:   64px;
   --aeos-space-20:   80px;
   --aeos-space-24:   96px;
+  --aeos-space-32:   128px;
 
   /* Density — all interactive spacing responds to density-factor */
   --aeos-density-factor:  1;
@@ -187,6 +191,9 @@
   --aeos-h-nav-item:      calc(36px * var(--aeos-density-factor));
   --aeos-pad-section:     clamp(4rem, 8vw, 8rem);
   --aeos-gap-section:     1.5rem;
+
+  /* Border weight */
+  --aeos-border-width: 1px;
 
   /* Alpha / semantic surfaces (dark defaults — light themes override) */
   --aeos-bg-subtle:       rgba(255, 255, 255, 0.03);
@@ -252,6 +259,8 @@
   --aeos-shell-topbar-bg:    rgba(0, 0, 0, 0.25);
   --aeos-shell-panel-bg:     rgba(0, 0, 0, 0.15);
   --aeos-shell-floating-bg:  rgba(13, 17, 32, 0.90);
+  --aeos-shell-bg:          var(--aeos-grad-mesh), var(--aeos-bg-page);
+  --aeos-overlay-backdrop:  rgba(0, 0, 0, 0.72);
 
   /* Motion */
   --aeos-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
@@ -280,6 +289,7 @@ body[data-mode="light"] {
   --aeos-shell-topbar-bg:    rgba(241, 245, 249, 0.90);
   --aeos-shell-panel-bg:     rgba(248, 250, 252, 0.80);
   --aeos-shell-floating-bg:  rgba(255, 255, 255, 0.90);
+  --aeos-shell-bg: var(--aeos-bg-page);
 }
 
 /* ── Motion keyframes ──────────────────────────────────────────────────── */
@@ -311,6 +321,14 @@ body[data-mode="light"] {
 /* ── Density data attributes ───────────────────────────────────────────── */
 body[data-density="compact"]  { --aeos-density-factor: 0.85; }
 body[data-density="spacious"] { --aeos-density-factor: 1.15; }
+
+/* ── Radius scale data attributes ─────────────────────────────────────── */
+body[data-radius="sharp"] { --aeos-radius-factor: 0.5; }
+body[data-radius="soft"]  { --aeos-radius-factor: 1.5; }
+
+/* ── Border weight data attributes ────────────────────────────────────── */
+body[data-borders="hairline"] { --aeos-border-width: 0.5px; }
+body[data-borders="bold"]     { --aeos-border-width: 2px;   }
 
 /* ── System reduce-motion preference ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
