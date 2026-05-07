@@ -63,6 +63,9 @@
   text-overflow: ellipsis;
 }
 
+/* ── Flex spacer — pushes adjacent items apart ───────────────── */
+.aeos-shell-flex-spacer { flex: 1; }
+
 /* ── Ensure ThemeDrawer trigger visible in authenticated app ──── */
 /* Auth/install pages hide it; the app must show it explicitly.   */
 .aeos-app-chrome-active .aeos-theme-drawer-trigger {

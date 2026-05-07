@@ -78,10 +78,10 @@ export function SidebarShell({
               }}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              <Bars3Icon className="w-4 h-4" />
+              <Bars3Icon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
             </button>
             {topbar}
-            <span style={{ flex: 1 }} />
+            <span className="aeos-shell-flex-spacer" />
             {actions}
           </div>
         )}
@@ -160,7 +160,7 @@ export function FloatingShell({
               onClick={toggle}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              <Bars3Icon className="w-4 h-4" />
+              <Bars3Icon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
             </button>
           </div>
         )}
@@ -189,7 +189,7 @@ export function FloatingShell({
       <main className="aeos-shell-content">
         {actions && (
           <div className="aeos-shell-topbar">
-            <span style={{ flex: 1 }} />
+            <span className="aeos-shell-flex-spacer" />
             {actions}
           </div>
         )}
@@ -250,7 +250,7 @@ export function CommandShell({
       <div className="aeos-shell-main">
         <header className="aeos-shell-topbar">
           {topbar}
-          <span style={{ flex: 1 }} />
+          <span className="aeos-shell-flex-spacer" />
           {actions}
         </header>
         <div className="aeos-shell-content">{children}</div>
