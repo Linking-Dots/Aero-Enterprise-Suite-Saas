@@ -1,0 +1,71 @@
+# deptrac.yaml — Architectural boundary enforcement
+# Run: cd aeos365 && vendor/bin/deptrac analyze --config-file=../Aero-Enterprise-Suite-Saas/deptrac.yaml
+
+parameters:
+  paths:
+    - packages/aero-core/src
+    - packages/aero-platform/src
+    - packages/aero-auth/src
+    - packages/aero-i18n/src
+    - packages/aero-notifications/src
+    - packages/aero-hrmac/src
+    - packages/aero-hrm/src
+    - packages/aero-crm/src
+    - packages/aero-cms/src
+    - packages/aero-workflow/src
+
+  exclude_files:
+    - '#.*Test\.php$#'
+    - '#.*Seeder\.php$#'
+    - '#.*Factory\.php$#'
+
+layers:
+  - name: Core
+    collectors:
+      - type: className
+        regex: ^Aero\\Core\\
+
+  - name: Platform
+    collectors:
+      - type: className
+        regex: ^Aero\\Platform\\
+
+  - name: Infrastructure
+    collectors:
+      - type: className
+        regex: ^Aero\\(Auth|I18n|Notifications|HRMAC)\\
+
+  - name: Features
+    collectors:
+      - type: className
+        regex: ^Aero\\(HRM|CRM|Cms|Workflow)\\
+
+ruleset:
+  Core: []
+  Platform: [Core]
+  Infrastructure: [Core]
+  Features: [Core, Infrastructure]
+
+# Temporary skip_violations for known pre-existing coupling to fix in follow-up
+skip_violations:
+  Aero\Core\AeroCoreServiceProvider:
+    - Aero\Notifications\Contracts\MailContextResolver
+    - Aero\Notifications\Contracts\SmsContextResolver
+  Aero\Core\Services\Notifications\CoreMailContextResolver:
+    - Aero\Notifications\Contracts\MailContextResolver
+  Aero\Core\Services\Notifications\CoreSmsContextResolver:
+    - Aero\Notifications\Contracts\SmsContextResolver
+  Aero\Core\Http\Controllers\Admin\EmailTemplateController:
+    - Aero\Notifications\Services\EmailTemplateService
+    - Aero\Notifications\Models\EmailTemplate
+  Aero\Core\Http\Controllers\Settings\SystemSettingController:
+    - Aero\Notifications\Services\Mail\MailService
+    - Aero\Notifications\Services\Sms\SmsGatewayService
+  Aero\Core\Http\Controllers\Settings\MailSettingsController:
+    - Aero\Notifications\Services\Mail\MailService
+  Aero\Core\Services\Dashboard\AdminDashboardService:
+    - Aero\Notifications\Models\NotificationLog
+  Aero\Core\Notifications\InviteTeamMember:
+    - Aero\Notifications\Services\Mail\MailService
+  Aero\Core\Http\Kernel:
+    - Aero\I18n\Http\Middleware\SetLocale
