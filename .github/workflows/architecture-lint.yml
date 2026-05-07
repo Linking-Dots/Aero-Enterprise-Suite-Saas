@@ -1,0 +1,46 @@
+name: Architecture Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  architecture-lint:
+    runs-on: ubuntu-latest
+    name: Architecture Lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql, zip
+          coverage: none
+
+      - name: Install dependencies
+        working-directory: aeos365
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Validate module manifests
+        working-directory: aeos365
+        run: php artisan aero:validate-manifests --strict
+
+      - name: Run deptrac (layer boundary check)
+        working-directory: aeos365
+        run: |
+          vendor/bin/deptrac analyze \
+            --config-file=../Aero-Enterprise-Suite-Saas/deptrac.yaml \
+            --no-progress
+
+      - name: Run PHPStan (tenancy() call rule)
+        working-directory: aeos365
+        run: |
+          vendor/bin/phpstan analyse \
+            --configuration=../Aero-Enterprise-Suite-Saas/phpstan.neon \
+            --no-progress \
+            --error-format=github
+        continue-on-error: true

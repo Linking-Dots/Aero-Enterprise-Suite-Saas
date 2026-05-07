@@ -1,0 +1,23 @@
+parameters:
+    level: 3
+    paths:
+        - packages/aero-core/src
+        - packages/aero-platform/src
+        - packages/aero-auth/src
+        - packages/aero-hrm/src
+        - packages/aero-crm/src
+
+    excludePaths:
+        - packages/*/tests/*
+        - packages/*/database/seeders/*
+        - packages/*/database/factories/*
+
+    ignoreErrors:
+        - '#Call to an undefined method#'
+        - '#Variable \$this might not be defined#'
+
+services:
+    -
+        class: Aero\Core\PHPStan\ForbidDirectTenancyCallRule
+        tags:
+            - phpstan.rules.rule
