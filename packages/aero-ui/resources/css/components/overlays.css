@@ -61,6 +61,7 @@
 .aeos-banner-warning { border-color:var(--aeos-warning-border); background:var(--aeos-warning-tint); }
 .aeos-banner-danger  { border-color:var(--aeos-danger-border);  background:var(--aeos-danger-tint); }
 .aeos-banner-icon    { flex-shrink:0; padding-top:2px; }
+.aeos-banner-icon-string { font-size:var(--aeos-icon-md); line-height:1; }
 .aeos-banner-body    { flex:1; min-width:0; }
 .aeos-banner-title   { font-weight:600; font-size:var(--aeos-text-sm); margin-bottom:var(--aeos-space-0-5); display:block; }
 .aeos-banner-text    { font-size:var(--aeos-text-sm); color:var(--aeos-text-secondary); line-height:var(--aeos-leading-snug); }

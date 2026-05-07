@@ -21,6 +21,9 @@
   line-height: 1.4;
 }
 
+/* Badge icon span (left icon slot) */
+.aeos-badge-icon { font-size:var(--aeos-icon-xs); line-height:1; display:inline-flex; align-items:center; }
+
 /* ── Cyan (primary — links, highlights, active state) ────────── */
 .aeos-badge-cyan {
   background: var(--aeos-primary-tint);

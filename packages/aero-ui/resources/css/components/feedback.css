@@ -7,6 +7,7 @@
 .aeos-toast-warning { border-color:var(--aeos-warning-border); }
 .aeos-toast-danger  { border-color:var(--aeos-danger-border); }
 .aeos-toast-icon  { flex-shrink:0; }
+.aeos-toast-icon-string { font-size:var(--aeos-icon-sm); line-height:1; }
 .aeos-toast-body  { flex:1; min-width:0; }
 .aeos-toast-title { font-weight:600; font-size:var(--aeos-text-sm); margin-bottom:var(--aeos-space-0-5); display:block; }
 .aeos-toast-text  { font-size:var(--aeos-text-xs); color:var(--aeos-text-secondary); line-height:var(--aeos-leading-snug); }

@@ -16,10 +16,10 @@ export function useToast() {
 
 /* ── Toast component ──────────────────────────────────────────── */
 const TOAST_ICON = {
-  info: <SparklesIcon className="w-4 h-4" />,
-  success: <CheckCircleIcon className="w-4 h-4" />,
-  warning: <ExclamationTriangleIcon className="w-4 h-4" />,
-  danger: <ExclamationCircleIcon className="w-4 h-4" />,
+  info: <SparklesIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  success: <CheckCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  warning: <ExclamationTriangleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  danger: <ExclamationCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
 };
 
 export function Toast({ intent = 'info', title, icon, onClose, children, className }) {
@@ -34,7 +34,7 @@ export function Toast({ intent = 'info', title, icon, onClose, children, classNa
       <div className="aeos-toast-icon">
         {typeof iconComponent === 'string' ? (
           // Fallback for string icons during migration
-          <span style={{ fontSize: 16, lineHeight: 1 }}>{iconComponent}</span>
+          <span className="aeos-toast-icon-string">{iconComponent}</span>
         ) : (
           iconComponent
         )}
@@ -45,7 +45,7 @@ export function Toast({ intent = 'info', title, icon, onClose, children, classNa
       </div>
       {onClose && (
         <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Dismiss">
-          <XMarkIcon className="w-3 h-3" />
+          <XMarkIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
         </button>
       )}
     </div>

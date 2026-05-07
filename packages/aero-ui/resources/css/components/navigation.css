@@ -6,6 +6,9 @@
 .aeos-breadcrumb-text { font-size:var(--aeos-text-xs); color:var(--aeos-text-secondary); }
 .aeos-breadcrumb-text.is-current { color:var(--aeos-text-primary); }
 
+/* Breadcrumb item wrapper — display:contents removes it from layout flow */
+.aeos-breadcrumb-item { display: contents; }
+
 /* ── Tabs ────────────────────────────────────────────────────── */
 .aeos-tabs { display:flex; flex-direction:column; }
 .aeos-tabs-list { display:flex; align-items:stretch; border-bottom:var(--aeos-border-width) solid var(--aeos-divider); overflow-x:auto; scrollbar-width:none; }
