@@ -1,5 +1,9 @@
 <?php
 
+// CANONICAL MODE SOURCE: storage/app/aeos.mode (written by FinalizeStep during install).
+// ModeDetector in aero-installation uses this file + class_exists fallback during installation only.
+// The running application ALWAYS uses these helpers, never ModeDetector.
+
 /**
  * Helper Functions for Aero Module System
  *
