@@ -4,8 +4,10 @@ namespace Aero\Core;
 
 use Aero\Core\Contracts\EmployeeServiceContract;
 use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Core\Contracts\NotificationChannelInterface;
 use Aero\Core\Contracts\NotificationRoutingContract;
 use Aero\Core\Contracts\TenantScopeInterface;
+use Aero\Core\Contracts\TranslationDriverInterface;
 use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
 use Aero\Core\Exceptions\Handler;
 use Aero\Core\Http\Middleware\CheckModuleAccess;
@@ -1079,6 +1081,46 @@ class AeroCoreServiceProvider extends ServiceProvider
                     public function batchResolveUserIds(array $employeeIds): array
                     {
                         return [];
+                    }
+                };
+            }
+        );
+
+        // TranslationDriverInterface — default uses Laravel's own trans() helper
+        $this->app->singleton(
+            TranslationDriverInterface::class,
+            function ($app) {
+                return new class implements TranslationDriverInterface
+                {
+                    public function translate(string $key, array $replace = [], ?string $locale = null): string
+                    {
+                        return __($key, $replace, $locale) ?? $key;
+                    }
+
+                    public function has(string $key, ?string $locale = null): bool
+                    {
+                        return app('translator')->has($key, $locale);
+                    }
+
+                    public function getLocale(): string
+                    {
+                        return app()->getLocale();
+                    }
+                };
+            }
+        );
+
+        // NotificationChannelInterface — no-op null channel default
+        $this->app->singleton(
+            NotificationChannelInterface::class,
+            function ($app) {
+                return new class implements NotificationChannelInterface
+                {
+                    public function send(object $notifiable, object $notification): void {}
+
+                    public function channelName(): string
+                    {
+                        return 'null';
                     }
                 };
             }
