@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Models;
 
+use Aero\Core\Contracts\TenantScopeInterface;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -102,9 +103,13 @@ class Module extends Model
     {
         $relation = $this->hasMany(ModulePermission::class);
 
-        // When tenancy is active, force the query to use tenant connection
-        if (tenancy()->initialized) {
-            $relation->getQuery()->getModel()->setConnection('tenant');
+        try {
+            $scope = app(TenantScopeInterface::class);
+            if ($scope->inTenantContext() && ! $scope->isStandaloneMode()) {
+                $relation->getQuery()->getModel()->setConnection('tenant');
+            }
+        } catch (\Throwable) {
+            // TenantScopeInterface not yet bound during early boot — skip
         }
 
         return $relation;
