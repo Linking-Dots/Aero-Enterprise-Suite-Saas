@@ -3,6 +3,7 @@
 namespace Aero\Core\Http\Middleware;
 
 use Aero\Core\Services\ModuleAccessService;
+use Aero\Core\ValueObjects\RequestContext;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
 use Aero\Platform\Services\ProductAccessService;
 use Closure;
@@ -184,42 +185,26 @@ class CheckModuleAccess
     }
 
     /**
-     * Detect which authentication guard to use based on the request context.
+     * Detect which authentication guard to use based on the injected RequestContext.
+     *
+     * RequestContext is set by ResolvePlatformContext or ResolveTenantContext middleware
+     * on route groups. This eliminates hostname sniffing and active-session bleeding.
+     *
+     * Falls back to 'web' if no context is bound (e.g. during testing or pre-install).
      */
     protected function detectGuard(Request $request): string
     {
-        // In standalone mode, always use 'web' guard
         if (is_standalone_mode()) {
             return 'web';
         }
 
-        // Check if landlord guard is defined in auth config
-        $guards = array_keys(config('auth.guards', []));
-        $landlordExists = in_array('landlord', $guards);
+        try {
+            $context = app(RequestContext::class);
 
-        // Check if we're on an admin subdomain or route
-        $host = $request->getHost();
-
-        // Check for admin subdomain pattern
-        if ($landlordExists && (str_starts_with($host, 'admin.') || str_contains($host, 'admin'))) {
-            return 'landlord';
+            return $context->guard;
+        } catch (\Throwable) {
+            return 'web';
         }
-
-        // Check route middleware for landlord guard
-        $route = $request->route();
-        if ($landlordExists && $route) {
-            $middleware = $route->middleware();
-            if (in_array('auth:landlord', $middleware)) {
-                return 'landlord';
-            }
-        }
-
-        // Check if landlord guard is already authenticated (only if guard exists)
-        if ($landlordExists && Auth::guard('landlord')->check()) {
-            return 'landlord';
-        }
-
-        return 'web';
     }
 
     /**

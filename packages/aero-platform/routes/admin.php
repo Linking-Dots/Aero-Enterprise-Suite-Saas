@@ -2,14 +2,24 @@
 
 declare(strict_types=1);
 
+use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AdminOnboardingController;
+use Aero\Platform\Http\Controllers\Admin\AffiliateController;
+use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
+use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
+use Aero\Platform\Http\Controllers\Admin\NewsletterController;
+use Aero\Platform\Http\Controllers\Admin\RateLimitConfigController;
+use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\RoleController;
+use Aero\Platform\Http\Controllers\Admin\SeoController;
+use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
 use Aero\Platform\Http\Controllers\Admin\UserController;
 use Aero\Platform\Http\Controllers\Billing\BillingController;
 use Aero\Platform\Http\Controllers\DomainController;
 use Aero\Platform\Http\Controllers\ErrorLogController;
+use Aero\Platform\Http\Controllers\Integrations\WebhookController;
 use Aero\Platform\Http\Controllers\MaintenanceController;
 use Aero\Platform\Http\Controllers\ModuleAnalyticsController;
 use Aero\Platform\Http\Controllers\PlanController;
@@ -18,6 +28,10 @@ use Aero\Platform\Http\Controllers\PlatformSettingController;
 use Aero\Platform\Http\Controllers\SystemMonitoring\AuditLogController;
 use Aero\Platform\Http\Controllers\TenantController;
 use Aero\Platform\Http\Middleware\IdentifyDomainContext;
+use Aero\Platform\Models\Module;
+use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Tenant;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -76,7 +90,7 @@ Route::middleware('admin.domain')->group(function () {
     // PROTECTED ADMIN ROUTES (Require Landlord Authentication)
     // =========================================================================
 
-    Route::middleware(['auth:landlord'])->group(function () {
+    Route::middleware(['auth:landlord', 'resolve.platform.context'])->group(function () {
 
         // =========================================================================
         // 1. DASHBOARD MODULE (platform-dashboard)
@@ -132,7 +146,7 @@ Route::middleware('admin.domain')->group(function () {
             // Dynamic routes with {tenant} parameter MUST come after static routes
             Route::get('/{tenant}', function ($tenant) {
                 // Validate tenant exists - return 404 if not found
-                $tenantModel = \Aero\Platform\Models\Tenant::find($tenant);
+                $tenantModel = Tenant::find($tenant);
                 if (! $tenantModel) {
                     abort(404, 'Tenant not found');
                 }
@@ -153,7 +167,7 @@ Route::middleware('admin.domain')->group(function () {
 
             Route::get('/{tenant}/edit', function ($tenant) {
                 // Validate tenant exists - return 404 if not found
-                $tenantModel = \Aero\Platform\Models\Tenant::find($tenant);
+                $tenantModel = Tenant::find($tenant);
                 if (! $tenantModel) {
                     abort(404, 'Tenant not found');
                 }
@@ -162,7 +176,7 @@ Route::middleware('admin.domain')->group(function () {
             })->middleware(['hrmac:tenants.tenant-list.tenant-management.update'])->name('edit');
 
             // Tenant Impersonation
-            Route::post('/{tenant}/impersonate', [\Aero\Auth\Http\Controllers\Auth\ImpersonationController::class, 'impersonate'])
+            Route::post('/{tenant}/impersonate', [ImpersonationController::class, 'impersonate'])
                 ->middleware(['hrmac:tenants.tenant-list.tenant-management.impersonate'])
                 ->name('impersonate');
         });
@@ -175,19 +189,19 @@ Route::middleware('admin.domain')->group(function () {
                 ->middleware(['hrmac:platform-users.admin-users'])
                 ->name('index');
 
-            Route::get('/paginate', function (\Illuminate\Http\Request $request) {
+            Route::get('/paginate', function (Request $request) {
                 return app(UserController::class)->paginate($request, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.view'])->name('paginate');
 
-            Route::get('/stats', function (\Illuminate\Http\Request $request) {
+            Route::get('/stats', function (Request $request) {
                 return app(UserController::class)->stats($request, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.view'])->name('stats');
 
-            Route::post('/', function (\Illuminate\Http\Request $request) {
+            Route::post('/', function (Request $request) {
                 return app(UserController::class)->store($request, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.create'])->name('store');
 
-            Route::put('/{user}', function (\Illuminate\Http\Request $request, $user) {
+            Route::put('/{user}', function (Request $request, $user) {
                 return app(UserController::class)->update($request, $user, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('update');
 
@@ -195,11 +209,11 @@ Route::middleware('admin.domain')->group(function () {
                 return app(UserController::class)->destroy($user, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.delete'])->name('destroy');
 
-            Route::patch('/{user}/toggle-status', function (\Illuminate\Http\Request $request, $user) {
+            Route::patch('/{user}/toggle-status', function (Request $request, $user) {
                 return app(UserController::class)->toggleStatus($request, $user, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('toggle-status');
 
-            Route::patch('/{user}/roles', function (\Illuminate\Http\Request $request, $user) {
+            Route::patch('/{user}/roles', function (Request $request, $user) {
                 return app(UserController::class)->updateRoles($request, $user, 'admin');
             })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('update-roles');
 
@@ -354,7 +368,7 @@ Route::middleware('admin.domain')->group(function () {
                         ['code' => 'GBP', 'name' => 'British Pound', 'symbol' => '£'],
                         ['code' => 'BDT', 'name' => 'Bangladeshi Taka', 'symbol' => '৳'],
                     ]),
-                    'modules' => \Aero\Platform\Models\Module::where('is_active', true)
+                    'modules' => Module::where('is_active', true)
                         ->orderBy('sort_order')
                         ->get(['id', 'code', 'name', 'description', 'is_core']),
                     'features' => config('aero-platform.plan_features', []),
@@ -362,7 +376,7 @@ Route::middleware('admin.domain')->group(function () {
             })->middleware(['hrmac:subscriptions.plans.plan-list.create'])->name('create');
 
             // View Plan Details Page
-            Route::get('/{plan}', function (\Aero\Platform\Models\Plan $plan) {
+            Route::get('/{plan}', function (Plan $plan) {
                 $plan->load(['modules', 'subscriptions.tenant']);
 
                 return Inertia::render('Platform/Admin/Plans/PlanShow', [
@@ -376,7 +390,7 @@ Route::middleware('admin.domain')->group(function () {
             })->middleware(['hrmac:subscriptions.plans.plan-list.view'])->name('show');
 
             // Edit Plan Page
-            Route::get('/{plan}/edit', function (\Aero\Platform\Models\Plan $plan) {
+            Route::get('/{plan}/edit', function (Plan $plan) {
                 $plan->load(['modules']);
 
                 return Inertia::render('Platform/Admin/Plans/PlanForm', [
@@ -387,7 +401,7 @@ Route::middleware('admin.domain')->group(function () {
                         ['code' => 'GBP', 'name' => 'British Pound', 'symbol' => '£'],
                         ['code' => 'BDT', 'name' => 'Bangladeshi Taka', 'symbol' => '৳'],
                     ]),
-                    'modules' => \Aero\Platform\Models\Module::where('is_active', true)
+                    'modules' => Module::where('is_active', true)
                         ->orderBy('sort_order')
                         ->get(['id', 'code', 'name', 'description', 'is_core']),
                     'features' => config('aero-platform.plan_features', []),
@@ -395,7 +409,7 @@ Route::middleware('admin.domain')->group(function () {
             })->middleware(['hrmac:subscriptions.plans.plan-list.update'])->name('edit');
 
             // Clone Plan Page (pre-fill form with existing plan data)
-            Route::get('/{plan}/clone', function (\Aero\Platform\Models\Plan $plan) {
+            Route::get('/{plan}/clone', function (Plan $plan) {
                 $plan->load(['modules']);
                 $cloneData = $plan->replicate();
                 $cloneData->name = $plan->name.' (Copy)';
@@ -410,7 +424,7 @@ Route::middleware('admin.domain')->group(function () {
                         ['code' => 'GBP', 'name' => 'British Pound', 'symbol' => '£'],
                         ['code' => 'BDT', 'name' => 'Bangladeshi Taka', 'symbol' => '৳'],
                     ]),
-                    'modules' => \Aero\Platform\Models\Module::where('is_active', true)
+                    'modules' => Module::where('is_active', true)
                         ->orderBy('sort_order')
                         ->get(['id', 'code', 'name', 'description', 'is_core']),
                     'features' => config('aero-platform.plan_features', []),
@@ -748,34 +762,34 @@ Route::middleware('admin.domain')->group(function () {
         // REPORT MANAGEMENT API (Phase 3 Week 6)
         // =========================================================================
         Route::middleware(['hrmac:platform-analytics'])->prefix('reports')->name('admin.reports.')->group(function () {
-            Route::get('/', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'index'])
+            Route::get('/', [ReportController::class, 'index'])
                 ->middleware(['hrmac:platform-analytics.platform-reports'])
                 ->name('index');
-            Route::post('/', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'store'])
+            Route::post('/', [ReportController::class, 'store'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.create'])
                 ->name('store');
-            Route::get('/templates', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'templates'])
+            Route::get('/templates', [ReportController::class, 'templates'])
                 ->middleware(['hrmac:platform-analytics.platform-reports'])
                 ->name('templates');
-            Route::post('/generate', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'generate'])
+            Route::post('/generate', [ReportController::class, 'generate'])
                 ->middleware(['hrmac:platform-analytics.platform-reports'])
                 ->name('generate');
-            Route::get('/{id}', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'show'])
+            Route::get('/{id}', [ReportController::class, 'show'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.view'])
                 ->name('show');
-            Route::put('/{id}', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'update'])
+            Route::put('/{id}', [ReportController::class, 'update'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.update'])
                 ->name('update');
-            Route::delete('/{id}', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'destroy'])
+            Route::delete('/{id}', [ReportController::class, 'destroy'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.delete'])
                 ->name('destroy');
-            Route::post('/{id}/run', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'run'])
+            Route::post('/{id}/run', [ReportController::class, 'run'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.execute'])
                 ->name('run');
-            Route::post('/{id}/duplicate', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'duplicate'])
+            Route::post('/{id}/duplicate', [ReportController::class, 'duplicate'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.create'])
                 ->name('duplicate');
-            Route::get('/{id}/executions', [\Aero\Platform\Http\Controllers\Admin\ReportController::class, 'executions'])
+            Route::get('/{id}/executions', [ReportController::class, 'executions'])
                 ->middleware(['hrmac:platform-analytics.platform-reports.report-list.view'])
                 ->name('executions');
         });
@@ -1086,43 +1100,43 @@ Route::middleware('admin.domain')->group(function () {
         // 15. SEO MANAGEMENT MODULE (seo-management)
         // =========================================================================
         Route::middleware(['hrmac:seo-management'])->prefix('seo')->name('admin.seo.')->group(function () {
-            Route::get('/', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'index'])
+            Route::get('/', [SeoController::class, 'index'])
                 ->middleware(['hrmac:seo-management.seo-settings.view'])
                 ->name('index');
 
-            Route::put('/settings', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'updateSettings'])
+            Route::put('/settings', [SeoController::class, 'updateSettings'])
                 ->middleware(['hrmac:seo-management.seo-settings.update'])
                 ->name('settings.update');
 
-            Route::put('/analytics', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'updateAnalytics'])
+            Route::put('/analytics', [SeoController::class, 'updateAnalytics'])
                 ->middleware(['hrmac:seo-management.analytics-integrations.update'])
                 ->name('analytics.update');
 
-            Route::get('/pages', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'pages'])
+            Route::get('/pages', [SeoController::class, 'pages'])
                 ->middleware(['hrmac:seo-management.page-seo.view'])
                 ->name('pages.index');
 
-            Route::post('/pages', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'storePage'])
+            Route::post('/pages', [SeoController::class, 'storePage'])
                 ->middleware(['hrmac:seo-management.page-seo.create'])
                 ->name('pages.store');
 
-            Route::put('/pages/{page}', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'updatePage'])
+            Route::put('/pages/{page}', [SeoController::class, 'updatePage'])
                 ->middleware(['hrmac:seo-management.page-seo.update'])
                 ->name('pages.update');
 
-            Route::delete('/pages/{page}', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'destroyPage'])
+            Route::delete('/pages/{page}', [SeoController::class, 'destroyPage'])
                 ->middleware(['hrmac:seo-management.page-seo.delete'])
                 ->name('pages.destroy');
 
-            Route::get('/sitemap', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'sitemap'])
+            Route::get('/sitemap', [SeoController::class, 'sitemap'])
                 ->middleware(['hrmac:seo-management.sitemap.view'])
                 ->name('sitemap');
 
-            Route::post('/sitemap/regenerate', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'regenerateSitemap'])
+            Route::post('/sitemap/regenerate', [SeoController::class, 'regenerateSitemap'])
                 ->middleware(['hrmac:seo-management.sitemap.generate'])
                 ->name('sitemap.regenerate');
 
-            Route::post('/validate-meta', [\Aero\Platform\Http\Controllers\Admin\SeoController::class, 'validateMeta'])
+            Route::post('/validate-meta', [SeoController::class, 'validateMeta'])
                 ->middleware(['hrmac:seo-management.seo-settings.view'])
                 ->name('validate-meta');
         });
@@ -1131,51 +1145,51 @@ Route::middleware('admin.domain')->group(function () {
         // 16. LEAD MANAGEMENT MODULE (lead-management)
         // =========================================================================
         Route::middleware(['hrmac:lead-management'])->prefix('leads')->name('admin.leads.')->group(function () {
-            Route::get('/', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'index'])
+            Route::get('/', [LeadController::class, 'index'])
                 ->middleware(['hrmac:lead-management.all-leads.view'])
                 ->name('index');
 
-            Route::get('/paginate', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'paginate'])
+            Route::get('/paginate', [LeadController::class, 'paginate'])
                 ->middleware(['hrmac:lead-management.all-leads.view'])
                 ->name('paginate');
 
-            Route::get('/stats', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'stats'])
+            Route::get('/stats', [LeadController::class, 'stats'])
                 ->middleware(['hrmac:lead-management.lead-analytics.view'])
                 ->name('stats');
 
-            Route::get('/high-value', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'highValue'])
+            Route::get('/high-value', [LeadController::class, 'highValue'])
                 ->middleware(['hrmac:lead-management.all-leads.view'])
                 ->name('high-value');
 
-            Route::get('/{lead}', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'show'])
+            Route::get('/{lead}', [LeadController::class, 'show'])
                 ->middleware(['hrmac:lead-management.all-leads.view'])
                 ->name('show');
 
-            Route::post('/', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'store'])
+            Route::post('/', [LeadController::class, 'store'])
                 ->middleware(['hrmac:lead-management.all-leads.create'])
                 ->name('store');
 
-            Route::put('/{lead}', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'update'])
+            Route::put('/{lead}', [LeadController::class, 'update'])
                 ->middleware(['hrmac:lead-management.all-leads.update'])
                 ->name('update');
 
-            Route::delete('/{lead}', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'destroy'])
+            Route::delete('/{lead}', [LeadController::class, 'destroy'])
                 ->middleware(['hrmac:lead-management.all-leads.delete'])
                 ->name('destroy');
 
-            Route::post('/{lead}/assign', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'assign'])
+            Route::post('/{lead}/assign', [LeadController::class, 'assign'])
                 ->middleware(['hrmac:lead-management.all-leads.assign'])
                 ->name('assign');
 
-            Route::post('/bulk-assign', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'bulkAssign'])
+            Route::post('/bulk-assign', [LeadController::class, 'bulkAssign'])
                 ->middleware(['hrmac:lead-management.all-leads.assign'])
                 ->name('bulk-assign');
 
-            Route::put('/{lead}/status', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'updateStatus'])
+            Route::put('/{lead}/status', [LeadController::class, 'updateStatus'])
                 ->middleware(['hrmac:lead-management.pipeline.move'])
                 ->name('status');
 
-            Route::post('/{lead}/convert', [\Aero\Platform\Http\Controllers\Admin\LeadController::class, 'convert'])
+            Route::post('/{lead}/convert', [LeadController::class, 'convert'])
                 ->middleware(['hrmac:lead-management.pipeline.convert'])
                 ->name('convert');
         });
@@ -1184,59 +1198,59 @@ Route::middleware('admin.domain')->group(function () {
         // 17. NEWSLETTER MANAGEMENT MODULE (newsletter-management)
         // =========================================================================
         Route::middleware(['hrmac:newsletter-management'])->prefix('newsletter')->name('admin.newsletter.')->group(function () {
-            Route::get('/', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'index'])
+            Route::get('/', [NewsletterController::class, 'index'])
                 ->middleware(['hrmac:newsletter-management.subscribers.view'])
                 ->name('index');
 
-            Route::get('/paginate', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'paginate'])
+            Route::get('/paginate', [NewsletterController::class, 'paginate'])
                 ->middleware(['hrmac:newsletter-management.subscribers.view'])
                 ->name('paginate');
 
-            Route::get('/stats', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'stats'])
+            Route::get('/stats', [NewsletterController::class, 'stats'])
                 ->middleware(['hrmac:newsletter-management.subscribers.view'])
                 ->name('stats');
 
-            Route::get('/export', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'export'])
+            Route::get('/export', [NewsletterController::class, 'export'])
                 ->middleware(['hrmac:newsletter-management.subscribers.export'])
                 ->name('export');
 
-            Route::post('/import', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'import'])
+            Route::post('/import', [NewsletterController::class, 'import'])
                 ->middleware(['hrmac:newsletter-management.subscribers.import'])
                 ->name('import');
 
-            Route::get('/{subscriber}', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'show'])
+            Route::get('/{subscriber}', [NewsletterController::class, 'show'])
                 ->middleware(['hrmac:newsletter-management.subscribers.view'])
                 ->name('show');
 
-            Route::post('/', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'store'])
+            Route::post('/', [NewsletterController::class, 'store'])
                 ->middleware(['hrmac:newsletter-management.subscribers.create'])
                 ->name('store');
 
-            Route::put('/{subscriber}', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'update'])
+            Route::put('/{subscriber}', [NewsletterController::class, 'update'])
                 ->middleware(['hrmac:newsletter-management.subscribers.update'])
                 ->name('update');
 
-            Route::delete('/{subscriber}', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'destroy'])
+            Route::delete('/{subscriber}', [NewsletterController::class, 'destroy'])
                 ->middleware(['hrmac:newsletter-management.subscribers.delete'])
                 ->name('destroy');
 
-            Route::post('/bulk-delete', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'bulkDelete'])
+            Route::post('/bulk-delete', [NewsletterController::class, 'bulkDelete'])
                 ->middleware(['hrmac:newsletter-management.subscribers.delete'])
                 ->name('bulk-delete');
 
-            Route::post('/{subscriber}/confirm', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'confirm'])
+            Route::post('/{subscriber}/confirm', [NewsletterController::class, 'confirm'])
                 ->middleware(['hrmac:newsletter-management.subscribers.update'])
                 ->name('confirm');
 
-            Route::post('/{subscriber}/unsubscribe', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'unsubscribe'])
+            Route::post('/{subscriber}/unsubscribe', [NewsletterController::class, 'unsubscribe'])
                 ->middleware(['hrmac:newsletter-management.subscribers.update'])
                 ->name('unsubscribe');
 
-            Route::post('/{subscriber}/resend-confirmation', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'resendConfirmation'])
+            Route::post('/{subscriber}/resend-confirmation', [NewsletterController::class, 'resendConfirmation'])
                 ->middleware(['hrmac:newsletter-management.subscribers.update'])
                 ->name('resend-confirmation');
 
-            Route::put('/settings', [\Aero\Platform\Http\Controllers\Admin\NewsletterController::class, 'updateSettings'])
+            Route::put('/settings', [NewsletterController::class, 'updateSettings'])
                 ->middleware(['hrmac:newsletter-management.newsletter-settings.update'])
                 ->name('settings.update');
         });
@@ -1245,71 +1259,71 @@ Route::middleware('admin.domain')->group(function () {
         // 18. AFFILIATE PROGRAM MODULE (affiliate-program)
         // =========================================================================
         Route::middleware(['hrmac:affiliate-program'])->prefix('affiliates')->name('admin.affiliates.')->group(function () {
-            Route::get('/', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'index'])
+            Route::get('/', [AffiliateController::class, 'index'])
                 ->middleware(['hrmac:affiliate-program.affiliates.view'])
                 ->name('index');
 
-            Route::get('/paginate', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'paginate'])
+            Route::get('/paginate', [AffiliateController::class, 'paginate'])
                 ->middleware(['hrmac:affiliate-program.affiliates.view'])
                 ->name('paginate');
 
-            Route::get('/stats', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'stats'])
+            Route::get('/stats', [AffiliateController::class, 'stats'])
                 ->middleware(['hrmac:affiliate-program.affiliate-analytics.view'])
                 ->name('stats');
 
-            Route::get('/pending-payouts', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'pendingPayouts'])
+            Route::get('/pending-payouts', [AffiliateController::class, 'pendingPayouts'])
                 ->middleware(['hrmac:affiliate-program.payouts.view'])
                 ->name('pending-payouts');
 
-            Route::get('/{affiliate}', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'show'])
+            Route::get('/{affiliate}', [AffiliateController::class, 'show'])
                 ->middleware(['hrmac:affiliate-program.affiliates.view'])
                 ->name('show');
 
-            Route::post('/', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'store'])
+            Route::post('/', [AffiliateController::class, 'store'])
                 ->middleware(['hrmac:affiliate-program.affiliates.create'])
                 ->name('store');
 
-            Route::put('/{affiliate}', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'update'])
+            Route::put('/{affiliate}', [AffiliateController::class, 'update'])
                 ->middleware(['hrmac:affiliate-program.affiliates.update'])
                 ->name('update');
 
-            Route::delete('/{affiliate}', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'destroy'])
+            Route::delete('/{affiliate}', [AffiliateController::class, 'destroy'])
                 ->middleware(['hrmac:affiliate-program.affiliates.delete'])
                 ->name('destroy');
 
-            Route::post('/{affiliate}/approve', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'approve'])
+            Route::post('/{affiliate}/approve', [AffiliateController::class, 'approve'])
                 ->middleware(['hrmac:affiliate-program.affiliates.approve'])
                 ->name('approve');
 
-            Route::post('/{affiliate}/reject', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'reject'])
+            Route::post('/{affiliate}/reject', [AffiliateController::class, 'reject'])
                 ->middleware(['hrmac:affiliate-program.affiliates.reject'])
                 ->name('reject');
 
-            Route::post('/{affiliate}/suspend', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'suspend'])
+            Route::post('/{affiliate}/suspend', [AffiliateController::class, 'suspend'])
                 ->middleware(['hrmac:affiliate-program.affiliates.suspend'])
                 ->name('suspend');
 
-            Route::get('/{affiliate}/referrals', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'referrals'])
+            Route::get('/{affiliate}/referrals', [AffiliateController::class, 'referrals'])
                 ->middleware(['hrmac:affiliate-program.referrals.view'])
                 ->name('referrals');
 
-            Route::get('/{affiliate}/payouts', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'payouts'])
+            Route::get('/{affiliate}/payouts', [AffiliateController::class, 'payouts'])
                 ->middleware(['hrmac:affiliate-program.payouts.view'])
                 ->name('payouts');
 
-            Route::post('/{affiliate}/payout', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'createPayout'])
+            Route::post('/{affiliate}/payout', [AffiliateController::class, 'createPayout'])
                 ->middleware(['hrmac:affiliate-program.payouts.create'])
                 ->name('payout.create');
 
-            Route::post('/payouts/{payout}/process', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'processPayout'])
+            Route::post('/payouts/{payout}/process', [AffiliateController::class, 'processPayout'])
                 ->middleware(['hrmac:affiliate-program.payouts.process'])
                 ->name('payout.process');
 
-            Route::post('/payouts/{payout}/complete', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'completePayout'])
+            Route::post('/payouts/{payout}/complete', [AffiliateController::class, 'completePayout'])
                 ->middleware(['hrmac:affiliate-program.payouts.complete'])
                 ->name('payout.complete');
 
-            Route::put('/settings', [\Aero\Platform\Http\Controllers\Admin\AffiliateController::class, 'updateSettings'])
+            Route::put('/settings', [AffiliateController::class, 'updateSettings'])
                 ->middleware(['hrmac:affiliate-program.affiliate-settings.update'])
                 ->name('settings.update');
         });
@@ -1318,35 +1332,35 @@ Route::middleware('admin.domain')->group(function () {
         // 19. SOCIAL AUTHENTICATION MODULE (social-authentication)
         // =========================================================================
         Route::middleware(['hrmac:social-authentication'])->prefix('social-auth')->name('admin.social-auth.')->group(function () {
-            Route::get('/', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'index'])
+            Route::get('/', [SocialAuthController::class, 'index'])
                 ->middleware(['hrmac:social-authentication.providers.view'])
                 ->name('index');
 
-            Route::get('/providers/{provider}', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'showProvider'])
+            Route::get('/providers/{provider}', [SocialAuthController::class, 'showProvider'])
                 ->middleware(['hrmac:social-authentication.providers.view'])
                 ->name('providers.show');
 
-            Route::put('/providers/{provider}', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'updateProvider'])
+            Route::put('/providers/{provider}', [SocialAuthController::class, 'updateProvider'])
                 ->middleware(['hrmac:social-authentication.providers.configure'])
                 ->name('providers.update');
 
-            Route::post('/providers/{provider}/toggle', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'toggleProvider'])
+            Route::post('/providers/{provider}/toggle', [SocialAuthController::class, 'toggleProvider'])
                 ->middleware(['hrmac:social-authentication.providers.configure'])
                 ->name('providers.toggle');
 
-            Route::get('/accounts', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'accounts'])
+            Route::get('/accounts', [SocialAuthController::class, 'accounts'])
                 ->middleware(['hrmac:social-authentication.linked-accounts.view'])
                 ->name('accounts.index');
 
-            Route::delete('/accounts/{account}', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'destroyAccount'])
+            Route::delete('/accounts/{account}', [SocialAuthController::class, 'destroyAccount'])
                 ->middleware(['hrmac:social-authentication.linked-accounts.delete'])
                 ->name('accounts.destroy');
 
-            Route::get('/stats', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'stats'])
+            Route::get('/stats', [SocialAuthController::class, 'stats'])
                 ->middleware(['hrmac:social-authentication.providers.view'])
                 ->name('stats');
 
-            Route::put('/settings', [\Aero\Platform\Http\Controllers\Admin\SocialAuthController::class, 'updateSettings'])
+            Route::put('/settings', [SocialAuthController::class, 'updateSettings'])
                 ->middleware(['hrmac:social-authentication.providers.configure'])
                 ->name('settings.update');
         });
@@ -1446,41 +1460,41 @@ Route::middleware('admin.domain')->group(function () {
 
             // Webhook Management API
             Route::prefix('webhooks')->name('webhooks.')->group(function () {
-                Route::get('/', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'index'])->name('index');
-                Route::post('/', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'store'])->name('store');
-                Route::put('/{id}', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'update'])->name('update');
-                Route::delete('/{id}', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'destroy'])->name('destroy');
-                Route::put('/{id}/toggle', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'toggle'])->name('toggle');
-                Route::post('/{id}/test', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'test'])->name('test');
-                Route::get('/{id}/logs', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'logs'])->name('logs');
-                Route::get('/{id}/stats', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'stats'])->name('stats');
-                Route::get('/events', [\Aero\Platform\Http\Controllers\Integrations\WebhookController::class, 'events'])->name('events');
+                Route::get('/', [WebhookController::class, 'index'])->name('index');
+                Route::post('/', [WebhookController::class, 'store'])->name('store');
+                Route::put('/{id}', [WebhookController::class, 'update'])->name('update');
+                Route::delete('/{id}', [WebhookController::class, 'destroy'])->name('destroy');
+                Route::put('/{id}/toggle', [WebhookController::class, 'toggle'])->name('toggle');
+                Route::post('/{id}/test', [WebhookController::class, 'test'])->name('test');
+                Route::get('/{id}/logs', [WebhookController::class, 'logs'])->name('logs');
+                Route::get('/{id}/stats', [WebhookController::class, 'stats'])->name('stats');
+                Route::get('/events', [WebhookController::class, 'events'])->name('events');
             });
 
             // Bulk Tenant Operations API
             Route::prefix('bulk-tenant-operations')->name('bulk-tenant-operations.')->group(function () {
-                Route::post('/', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'execute'])->name('execute');
-                Route::post('/suspend', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'suspend'])->name('suspend');
-                Route::post('/activate', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'activate'])->name('activate');
-                Route::post('/delete', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'delete'])->name('delete');
-                Route::post('/update-plan', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'updatePlan'])->name('update-plan');
-                Route::post('/reset-quota', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'resetQuota'])->name('reset-quota');
-                Route::post('/preview', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'preview'])->name('preview');
-                Route::get('/history', [\Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController::class, 'history'])->name('history');
+                Route::post('/', [BulkTenantOperationsController::class, 'execute'])->name('execute');
+                Route::post('/suspend', [BulkTenantOperationsController::class, 'suspend'])->name('suspend');
+                Route::post('/activate', [BulkTenantOperationsController::class, 'activate'])->name('activate');
+                Route::post('/delete', [BulkTenantOperationsController::class, 'delete'])->name('delete');
+                Route::post('/update-plan', [BulkTenantOperationsController::class, 'updatePlan'])->name('update-plan');
+                Route::post('/reset-quota', [BulkTenantOperationsController::class, 'resetQuota'])->name('reset-quota');
+                Route::post('/preview', [BulkTenantOperationsController::class, 'preview'])->name('preview');
+                Route::get('/history', [BulkTenantOperationsController::class, 'history'])->name('history');
             });
 
             // Rate Limit Configuration API
             Route::prefix('rate-limit-configs')->name('rate-limit-configs.')->group(function () {
-                Route::get('/', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'index'])->name('index');
-                Route::get('/defaults', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'defaults'])->name('defaults');
-                Route::get('/stats', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'stats'])->name('stats');
-                Route::get('/{id}', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'show'])->name('show');
-                Route::post('/', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'store'])->name('store');
-                Route::put('/{id}', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'update'])->name('update');
-                Route::delete('/{id}', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'destroy'])->name('destroy');
-                Route::put('/{id}/toggle', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'toggle'])->name('toggle');
-                Route::post('/{id}/test', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'test'])->name('test');
-                Route::post('/bulk-update', [\Aero\Platform\Http\Controllers\Admin\RateLimitConfigController::class, 'bulkUpdate'])->name('bulk-update');
+                Route::get('/', [RateLimitConfigController::class, 'index'])->name('index');
+                Route::get('/defaults', [RateLimitConfigController::class, 'defaults'])->name('defaults');
+                Route::get('/stats', [RateLimitConfigController::class, 'stats'])->name('stats');
+                Route::get('/{id}', [RateLimitConfigController::class, 'show'])->name('show');
+                Route::post('/', [RateLimitConfigController::class, 'store'])->name('store');
+                Route::put('/{id}', [RateLimitConfigController::class, 'update'])->name('update');
+                Route::delete('/{id}', [RateLimitConfigController::class, 'destroy'])->name('destroy');
+                Route::put('/{id}/toggle', [RateLimitConfigController::class, 'toggle'])->name('toggle');
+                Route::post('/{id}/test', [RateLimitConfigController::class, 'test'])->name('test');
+                Route::post('/bulk-update', [RateLimitConfigController::class, 'bulkUpdate'])->name('bulk-update');
             });
         });
     });
