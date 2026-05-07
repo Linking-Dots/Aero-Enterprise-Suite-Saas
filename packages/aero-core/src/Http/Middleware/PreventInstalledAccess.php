@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Http\Middleware;
 
+use Aero\Core\Services\InstallationState;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +44,6 @@ class PreventInstalledAccess
      */
     protected function isInstalled(): bool
     {
-        return file_exists(storage_path('app/aeos.installed'));
+        return InstallationState::isInstalled();
     }
 }

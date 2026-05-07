@@ -17,6 +17,7 @@ use Aero\Core\Models\Module;
 use Aero\Core\Models\ModuleComponent;
 use Aero\Core\Models\ModuleComponentAction;
 use Aero\Core\Models\SubModule;
+use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\LicenseValidationService;
 use Aero\Core\Services\Module\ModuleDiscoveryService;
 use Dotenv\Dotenv;
@@ -129,7 +130,7 @@ class UnifiedInstallationController extends Controller
      */
     protected function isInstalled(): bool
     {
-        return File::exists(storage_path(self::LOCK_FILE));
+        return InstallationState::isInstalled();
     }
 
     /**
@@ -1214,7 +1215,7 @@ class UnifiedInstallationController extends Controller
         // SaaS mode: sync platform-scoped modules for central database
         // Standalone mode: sync all modules (scope='all')
         $scope = ($mode === 'saas') ? 'platform' : 'all';
-        
+
         // Sync modules directly using ModuleDiscoveryService
         $this->syncModuleHierarchy($scope);
     }

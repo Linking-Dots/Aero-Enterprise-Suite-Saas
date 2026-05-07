@@ -2,10 +2,10 @@
 
 namespace Aero\Installation\Installation\Steps;
 
+use Aero\Core\Services\InstallationState;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 /**
  * Finalize Step
@@ -65,7 +65,7 @@ class FinalizeStep extends BaseInstallationStep
         try {
             $hrmacStatus = $this->verifyHrmacStructure();
             $results['hrmac_verified'] = $hrmacStatus['valid'];
-            if (!$hrmacStatus['valid']) {
+            if (! $hrmacStatus['valid']) {
                 $this->warn('HRMAC verification found issues: '.implode(', ', $hrmacStatus['issues']));
             }
         } catch (\Exception $e) {
@@ -131,6 +131,7 @@ class FinalizeStep extends BaseInstallationStep
         // Installation history will be created during execution (fresh install)
         try {
             \DB::connection()->getPdo();
+
             return true;
         } catch (\Exception) {
             return false;
@@ -261,23 +262,20 @@ class FinalizeStep extends BaseInstallationStep
      * Writes the unified lock file (aeos.installed) and mode file (aeos.mode)
      * to storage/app. Both aero-core and aero-platform packages check for
      * aeos.installed to decide whether to register runtime routes.
+     *
+     * InstallationState::markInstalled() writes the file-based cache entry
+     * AND the legacy flat file for backward compatibility.
      */
     protected function createLockFile(): void
     {
-        $lockFile = storage_path('app/aeos.installed');
-        $mode = env('INSTALLATION_MODE', 'standalone');
+        File::ensureDirectoryExists(storage_path('app'));
 
-        $lockData = [
-            'installed_at' => now()->toDateTimeString(),
-            'version'      => config('app.version', '1.0.0'),
-            'mode'         => $mode,
-            'key'          => Str::uuid()->toString(),
-        ];
-
-        File::ensureDirectoryExists(dirname($lockFile));
-        File::put($lockFile, json_encode($lockData, JSON_PRETTY_PRINT));
+        // Mark installed via InstallationState: populates the file-based cache
+        // AND writes the legacy storage/app/aeos.installed flat file.
+        InstallationState::markInstalled();
 
         // Also write the mode file used by service providers
+        $mode = env('INSTALLATION_MODE', 'standalone');
         $modeFile = storage_path('app/aeos.mode');
         File::put($modeFile, $mode);
     }

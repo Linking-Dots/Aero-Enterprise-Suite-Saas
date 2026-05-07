@@ -25,6 +25,7 @@ use Aero\Core\Observers\UserQuotaObserver;
 use Aero\Core\Policies\RolePolicy;
 use Aero\Core\Policies\UserPolicy;
 use Aero\Core\Services\DashboardRegistry;
+use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\Search\GlobalSearchService;
 use Aero\HRMAC\Models\Role;
 use Illuminate\Contracts\Http\Kernel;
@@ -146,7 +147,7 @@ class CoreModuleProvider extends AbstractModuleProvider
         }
 
         // In standalone mode, load installation routes if not installed
-        if (config('aero.mode') === 'standalone' && ! file_exists(storage_path('app/aeos.installed'))) {
+        if (config('aero.mode') === 'standalone' && ! InstallationState::isInstalled()) {
             // Installation routes are now handled by aero-installation package
             // Skip loading installation routes here
         }

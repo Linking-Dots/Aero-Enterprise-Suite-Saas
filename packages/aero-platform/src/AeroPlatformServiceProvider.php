@@ -5,6 +5,7 @@ namespace Aero\Platform;
 use Aero\Auth\Context\TenantAuthContext;
 use Aero\Auth\Contracts\AuthContext;
 use Aero\Core\Contracts\TenantScopeInterface;
+use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
@@ -170,7 +171,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(HRMACRoleModuleAccessService::class, function ($app) {
             // Before installation: return a null-object stub that satisfies the
             // RoleModuleAccessService type hint without making any DB queries.
-            if (! file_exists(storage_path('app/aeos.installed'))) {
+            if (! InstallationState::isInstalled()) {
                 return new NullRoleModuleAccessService;
             }
 
@@ -186,7 +187,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
 
         $this->app->singleton(ModuleAccessService::class, function ($app) {
             // Only instantiate if installed to avoid DB queries pre-install
-            if (! file_exists(storage_path('app/aeos.installed'))) {
+            if (! InstallationState::isInstalled()) {
                 return new class
                 {
                     public function __call($method, $args)
@@ -1013,7 +1014,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
 
                     // During installation or testing, allow ALL package migrations to run on central DB
                     // Core, HRMAC, and other package migrations are needed for the initial setup
-                    if (! file_exists(storage_path('app/aeos.installed')) || app()->environment('testing')) {
+                    if (! InstallationState::isInstalled() || app()->environment('testing')) {
                         return $files;
                     }
 
@@ -1137,7 +1138,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function installed(): bool
     {
-        return file_exists(storage_path('app/aeos.installed'));
+        return InstallationState::isInstalled();
     }
 
     /**

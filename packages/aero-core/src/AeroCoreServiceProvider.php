@@ -14,12 +14,17 @@ use Aero\Core\Http\Middleware\EnforceLicense;
 use Aero\Core\Http\Middleware\EnsureTenantContext;
 use Aero\Core\Http\Middleware\HandleInertiaRequests;
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
+use Aero\Core\Http\Middleware\ResolvePlatformContext;
+use Aero\Core\Http\Middleware\ResolveTenantContext;
 use Aero\Core\Models\User;
 use Aero\Core\Providers\CoreModuleProvider;
 use Aero\Core\Providers\ModuleRouteServiceProvider;
+use Aero\Core\Services\AddonCatalogService;
+use Aero\Core\Services\AddonInstaller;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Core\Services\HrmacNotificationRoutingService;
+use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\License\DomainBinding;
 use Aero\Core\Services\License\LicenseCache;
 use Aero\Core\Services\License\LicenseService;
@@ -119,8 +124,8 @@ class AeroCoreServiceProvider extends ServiceProvider
 
             $this->app->singleton(ProductManifestLoader::class);
 
-            $this->app->singleton(\Aero\Core\Services\AddonCatalogService::class);
-            $this->app->singleton(\Aero\Core\Services\AddonInstaller::class);
+            $this->app->singleton(AddonCatalogService::class);
+            $this->app->singleton(AddonInstaller::class);
 
             // Configure auth to use Core's User model
             config(['auth.providers.users.model' => User::class]);
@@ -140,7 +145,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             // These services are lazy-loaded, so they won't cause issues pre-install
             $this->app->singleton(ModuleAccessService::class, function ($app) {
                 // Only instantiate if installed to avoid DB queries pre-install
-                if (! file_exists(storage_path('app/aeos.installed'))) {
+                if (! InstallationState::isInstalled()) {
                     return new class
                     {
                         private function deny(string $reason): array
@@ -205,7 +210,7 @@ class AeroCoreServiceProvider extends ServiceProvider
 
             $this->app->singleton(RoleModuleAccessService::class, function ($app) {
                 // Only instantiate if installed to avoid DB queries pre-install
-                if (! file_exists(storage_path('app/aeos.installed'))) {
+                if (! InstallationState::isInstalled()) {
                     return new class
                     {
                         public function canUserAccessModule(int $userId, string $moduleCode): bool
@@ -638,8 +643,8 @@ class AeroCoreServiceProvider extends ServiceProvider
             $router->aliasMiddleware('dashboard.redirect', DashboardRedirectMiddleware::class);
 
             // Register request context resolution middleware aliases
-            $router->aliasMiddleware('resolve.platform.context', \Aero\Core\Http\Middleware\ResolvePlatformContext::class);
-            $router->aliasMiddleware('resolve.tenant.context', \Aero\Core\Http\Middleware\ResolveTenantContext::class);
+            $router->aliasMiddleware('resolve.platform.context', ResolvePlatformContext::class);
+            $router->aliasMiddleware('resolve.tenant.context', ResolveTenantContext::class);
         });
     }
 
@@ -1001,7 +1006,7 @@ class AeroCoreServiceProvider extends ServiceProvider
      */
     protected function installed(): bool
     {
-        return file_exists(storage_path('app/aeos.installed'));
+        return InstallationState::isInstalled();
     }
 
     /**
@@ -1084,7 +1089,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             NotificationRoutingContract::class,
             function ($app) {
                 // Only instantiate if HRMAC and installed
-                if (! file_exists(storage_path('app/aeos.installed'))) {
+                if (! InstallationState::isInstalled()) {
                     return new class implements NotificationRoutingContract
                     {
                         public function getRecipients(string $moduleCode, string $subModuleCode, ?string $componentCode = null, ?string $actionCode = null, array $context = []): Collection
