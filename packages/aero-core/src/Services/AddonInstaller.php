@@ -111,35 +111,21 @@ class AddonInstaller
             throw new \RuntimeException('module.php manifest not found in ZIP.');
         }
 
-        // SAFE PARSE: write to temp file, parse via isolated PHP subprocess
-        // that returns JSON. Any malicious code in the file would only affect
-        // the subprocess, not the running app.
+        $this->assertOnlyArrayLiteralTokens($manifestContent);
+
         $tmpFile = tempnam(sys_get_temp_dir(), 'aero_manifest_');
         try {
             file_put_contents($tmpFile, $manifestContent);
-
-            $cmd = sprintf(
-                '%s -d disable_functions=exec,shell_exec,passthru,system,proc_open,popen,curl_exec -r %s 2>&1',
-                escapeshellarg(PHP_BINARY),
-                escapeshellarg(sprintf(
-                    'try { $r = require %s; echo json_encode($r); } catch (\Throwable $e) { echo "PARSE_ERROR:" . $e->getMessage(); }',
-                    var_export($tmpFile, true)
-                ))
-            );
-
-            $output = shell_exec($cmd);
-
-            if ($output === null || str_starts_with($output, 'PARSE_ERROR:')) {
-                throw new \RuntimeException('Failed to parse module.php manifest safely: '.$output);
-            }
-
-            $manifest = json_decode(trim($output), true);
-
-            if (! is_array($manifest)) {
-                throw new \RuntimeException('module.php manifest is not a valid PHP array.');
-            }
+            // Safe to execute: token check above proved only array literals
+            $manifest = (static function (string $f): mixed {
+                return require $f;
+            })($tmpFile);
         } finally {
             @unlink($tmpFile);
+        }
+
+        if (! is_array($manifest)) {
+            throw new \RuntimeException('module.php manifest is not a valid PHP array.');
         }
 
         foreach (['code', 'name', 'version'] as $key) {
@@ -149,6 +135,56 @@ class AddonInstaller
         }
 
         return $manifest;
+    }
+
+    private function assertOnlyArrayLiteralTokens(string $phpContent): void
+    {
+        // Allowlist approach: only these tokens are safe in a module.php manifest
+        $allowedTokens = [
+            T_OPEN_TAG,                  // <?php
+            T_RETURN,                    // return
+            T_ARRAY,                     // array keyword
+            T_CONSTANT_ENCAPSED_STRING,  // 'string' or "string"
+            T_ENCAPSED_AND_WHITESPACE,   // inside heredoc (rare)
+            T_LNUMBER,                   // integers
+            T_DNUMBER,                   // floats
+            T_WHITESPACE,
+            T_COMMENT,
+            T_DOC_COMMENT,
+            T_DOUBLE_ARROW,              // =>
+            T_STRING,                    // true, false, null - checked below
+            T_CLOSE_TAG,                 // closing tag
+        ];
+
+        $tokens = token_get_all($phpContent);
+        foreach ($tokens as $token) {
+            if (is_string($token)) {
+                // Single-char tokens: [  ]  (  )  ,  ;  are all fine
+                if (! in_array($token, ['[', ']', '(', ')', ',', ';'], true)) {
+                    throw new \RuntimeException(
+                        "module.php manifest contains forbidden character [{$token}]. Only static array literals are permitted."
+                    );
+                }
+
+                continue;
+            }
+
+            [$id, $text] = $token;
+
+            if (! in_array($id, $allowedTokens, true)) {
+                throw new \RuntimeException(sprintf(
+                    'module.php manifest contains forbidden PHP construct [%s]. Only static array literals are permitted.',
+                    token_name($id)
+                ));
+            }
+
+            // T_STRING is in the allowlist but must only be true/false/null/array
+            if ($id === T_STRING && ! in_array(strtolower($text), ['true', 'false', 'null', 'array'], true)) {
+                throw new \RuntimeException(
+                    "module.php manifest references an identifier [{$text}] which is not permitted. Only true, false, null are allowed."
+                );
+            }
+        }
     }
 
     private function detectPackageDirectory(string $zipPath): string

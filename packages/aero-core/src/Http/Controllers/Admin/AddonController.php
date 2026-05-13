@@ -61,6 +61,11 @@ class AddonController extends Controller
                         'zip_file' => 'Auto-download failed. Please upload the ZIP file manually.',
                     ]);
                 }
+                if ($download['checksum'] === null) {
+                    return back()->withErrors([
+                        'zip_file' => 'This add-on cannot be auto-installed because the license server did not provide an integrity checksum. Please download and install the ZIP file manually from your account portal.',
+                    ]);
+                }
                 $zipPath = $download['path'];
                 $expectedChecksum = $download['checksum'];
             }
