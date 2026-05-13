@@ -26,6 +26,10 @@ class LicenseService implements LicenseServiceInterface
     {
         $this->validator->validateFormat($licenseKey);
 
+        if (! $this->validator->verifyChecksum($licenseKey)) {
+            throw LicenseException::invalidFormat();
+        }
+
         $serverUrl = config('license.server_url');
         try {
             $response = Http::timeout(15)->post("{$serverUrl}/api/license/activate", [

@@ -30,7 +30,7 @@ class LicenseCache
             return null;
         }
 
-        if ((time() - $data['cached_at']) > $ttlSeconds) {
+        if (abs(time() - $data['cached_at']) > $ttlSeconds) {
             return null;
         }
 

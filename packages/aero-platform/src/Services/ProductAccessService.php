@@ -22,8 +22,11 @@ class ProductAccessService implements \Aero\Core\Contracts\ProductAccessInterfac
 
         $cacheKey = "product_access:{$tenantId}:{$moduleCode}";
 
-        return Cache::tags(["tenant:{$tenantId}", 'product-access'])
-            ->remember($cacheKey, 300, function () use ($tenantId, $moduleCode) {
+        return $this->cacheRemember(
+            ["tenant:{$tenantId}", 'product-access'],
+            $cacheKey,
+            300,
+            function () use ($tenantId, $moduleCode) {
                 $product = Product::active()
                     ->where('module_code', $moduleCode)
                     ->first();
@@ -36,15 +39,19 @@ class ProductAccessService implements \Aero\Core\Contracts\ProductAccessInterfac
                     ->where('product_id', $product->id)
                     ->hasAccess()
                     ->exists();
-            });
+            }
+        );
     }
 
     public function getAccessibleModuleCodes(string $tenantId): array
     {
         $cacheKey = "product_access:all:{$tenantId}";
 
-        return Cache::tags(["tenant:{$tenantId}", 'product-access'])
-            ->remember($cacheKey, 300, function () use ($tenantId) {
+        return $this->cacheRemember(
+            ["tenant:{$tenantId}", 'product-access'],
+            $cacheKey,
+            300,
+            function () use ($tenantId) {
                 $accessible = ['core'];
 
                 $subscribedProductIds = ProductSubscription::where('tenant_id', $tenantId)
@@ -56,11 +63,30 @@ class ProductAccessService implements \Aero\Core\Contracts\ProductAccessInterfac
                     ->toArray();
 
                 return array_merge($accessible, $moduleCodes);
-            });
+            }
+        );
     }
 
     public function flushCache(string $tenantId): void
     {
-        Cache::tags(["tenant:{$tenantId}", 'product-access'])->flush();
+        try {
+            Cache::tags(["tenant:{$tenantId}", 'product-access'])->flush();
+        } catch (\BadMethodCallException) {
+            // Cache driver does not support tags (e.g., file, database) — clear by individual keys
+            Cache::forget("product_access:{$tenantId}:*");
+            Cache::forget("product_access:all:{$tenantId}");
+        }
+    }
+
+    /**
+     * Cache::tags()-based remember with fallback to plain Cache for non-Redis drivers.
+     */
+    private function cacheRemember(array $tags, string $key, int $ttl, \Closure $callback): mixed
+    {
+        try {
+            return Cache::tags($tags)->remember($key, $ttl, $callback);
+        } catch (\BadMethodCallException) {
+            return Cache::remember($key, $ttl, $callback);
+        }
     }
 }
