@@ -3,6 +3,8 @@
 namespace Aero\Platform\Http\Controllers\Webhooks;
 
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Product;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\WebhookEvent;
@@ -104,6 +106,55 @@ class StripeWebhookController extends CashierWebhookController
 
         // Update tenant status based on subscription state
         $this->updateTenantStatus($tenant, $stripeStatus);
+
+        // Upsert ProductSubscription rows for each subscription item
+        $items = $data['items']['data'] ?? [];
+        $productService = app(\Aero\Platform\Services\ProductSubscriptionService::class);
+
+        foreach ($items as $item) {
+            $productCode = $item['price']['metadata']['aero_product_code'] ?? null;
+
+            if (! $productCode) {
+                continue;
+            }
+
+            $product = Product::where('code', $productCode)->first();
+            if (! $product) {
+                Log::warning('Stripe webhook: unknown aero_product_code in price metadata', [
+                    'product_code' => $productCode,
+                    'stripe_price_id' => $item['price']['id'] ?? null,
+                ]);
+                continue;
+            }
+
+            $status = match ($stripeStatus) {
+                'active', 'trialing' => 'active',
+                'past_due', 'unpaid' => 'past_due',
+                'canceled'           => 'cancelled',
+                default              => 'expired',
+            };
+
+            ProductSubscription::updateOrCreate(
+                [
+                    'tenant_id'                => $tenant->id,
+                    'product_id'               => $product->id,
+                    'external_subscription_id' => $stripeSubscriptionId,
+                ],
+                [
+                    'status'        => $status,
+                    'billing_cycle' => isset($item['price']['recurring']['interval']) && $item['price']['recurring']['interval'] === 'year' ? 'yearly' : 'monthly',
+                    'amount'        => ($item['price']['unit_amount'] ?? 0) / 100,
+                    'currency'      => strtoupper($item['price']['currency'] ?? 'USD'),
+                    'starts_at'     => isset($data['current_period_start']) ? Carbon::createFromTimestamp($data['current_period_start']) : now(),
+                    'ends_at'       => isset($data['current_period_end']) ? Carbon::createFromTimestamp($data['current_period_end']) : null,
+                ]
+            );
+        }
+
+        // Flush product access cache so tenant sees updated access immediately
+        if (! empty($items)) {
+            $productService->flushTenantCache($tenant->id);
+        }
 
         Log::info('Stripe webhook: Subscription updated', [
             'tenant_id' => $tenant->id,

@@ -79,4 +79,15 @@ class ProductSubscriptionService
 
         return $subscription->fresh();
     }
+
+    /**
+     * Flush the product-access cache for a tenant.
+     *
+     * Called by webhook handlers after a Stripe event mutates ProductSubscription
+     * rows so the tenant sees updated module access immediately.
+     */
+    public function flushTenantCache(string $tenantId): void
+    {
+        $this->accessService->flushCache($tenantId);
+    }
 }
