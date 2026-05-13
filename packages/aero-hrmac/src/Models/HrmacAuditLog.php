@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Aero\Core\Models\TenantModel;
 
-class HrmacAuditLog extends Model
+class HrmacAuditLog extends TenantModel
 {
     protected $table = 'hrmac_audit_log';
 
