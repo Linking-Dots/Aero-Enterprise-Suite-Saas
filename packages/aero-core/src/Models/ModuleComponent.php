@@ -3,7 +3,6 @@
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -14,7 +13,7 @@ use Illuminate\Support\Collection;
  * Represents a specific UI component or feature within a module/sub-module
  * that requires permission control (pages, sections, widgets, actions, APIs).
  */
-class ModuleComponent extends Model
+class ModuleComponent extends TenantModel
 {
     use HasFactory;
 

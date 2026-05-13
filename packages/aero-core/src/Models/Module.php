@@ -5,7 +5,6 @@ namespace Aero\Core\Models;
 use Aero\Contracts\TenantScopeInterface;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
@@ -15,7 +14,7 @@ use Illuminate\Support\Collection;
  * Represents a top-level application module (HRM, CRM, DMS, etc.)
  * Used for organizing the application into logical functional areas.
  */
-class Module extends Model
+class Module extends TenantModel
 {
     use HasFactory;
 
