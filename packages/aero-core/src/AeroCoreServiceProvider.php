@@ -78,6 +78,9 @@ class AeroCoreServiceProvider extends ServiceProvider
             // This handles navigation, self-service items, dashboards, etc.
             $this->app->register(CoreModuleProvider::class);
 
+            // Register Octane flush callbacks for per-request singletons
+            $this->app->register(\Aero\Core\Providers\AeroOctaneServiceProvider::class);
+
             // Override the Migrator to exclude app's migration directory
             // Core and module packages provide all necessary migrations
             //
