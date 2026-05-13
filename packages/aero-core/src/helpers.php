@@ -25,22 +25,31 @@ if (! function_exists('aero_mode')) {
     {
         static $mode = null;
 
-        if ($mode === null) {
-            $modePath = storage_path('app/aeos.mode');
+        if ($mode !== null) {
+            return $mode;
+        }
 
-            if (! file_exists($modePath)) {
-                $mode = 'standalone'; // Default to standalone if not set
-            } else {
-                $mode = trim(file_get_contents($modePath));
-
-                // Validate mode value
-                if (! in_array($mode, ['saas', 'standalone'], true)) {
-                    $mode = 'standalone';
-                }
+        // Primary: explicit mode file
+        $modePath = storage_path('app/aeos.mode');
+        if (file_exists($modePath)) {
+            $v = trim(file_get_contents($modePath));
+            if (in_array($v, ['saas', 'standalone'], true)) {
+                return $mode = $v;
             }
         }
 
-        return $mode;
+        // Fallback: detect from DB structure — SaaS always has a 'tenants' table in central connection
+        try {
+            if (\Illuminate\Support\Facades\Schema::connection('central')->hasTable('tenants')) {
+                \Illuminate\Support\Facades\Log::warning('aeos.mode file missing -- recovered as SaaS from DB schema');
+
+                return $mode = 'saas';
+            }
+        } catch (\Throwable) {
+            // Central connection unavailable — definitely not SaaS
+        }
+
+        return $mode = 'standalone';
     }
 }
 

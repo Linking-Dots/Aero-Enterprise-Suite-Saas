@@ -223,6 +223,16 @@ class CheckModuleAccess
         ?string $componentCode = null,
         ?string $actionCode = null
     ): Response {
+        // Emergency bypass: Super Platform Admin is never locked out by HRMAC failures.
+        // This role is checked at the model level so it survives HRMAC infrastructure outages.
+        try {
+            if ($user->roles()->where('name', 'Super Platform Admin')->exists()) {
+                return $next($request);
+            }
+        } catch (\Throwable) {
+            // Role lookup itself failed — proceed to HRMAC check
+        }
+
         try {
             /** @var RoleModuleAccessInterface $hrmac */
             $hrmac = app(RoleModuleAccessInterface::class);
