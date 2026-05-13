@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OffboardingTask extends Model
+class OffboardingTask extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

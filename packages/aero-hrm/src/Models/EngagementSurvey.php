@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Manages employee engagement surveys.
  */
-class EngagementSurvey extends Model
+class EngagementSurvey extends TenantModel
 {
     protected $fillable = [
         'title',

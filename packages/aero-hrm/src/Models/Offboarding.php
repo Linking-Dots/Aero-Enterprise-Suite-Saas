@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Auth;
  * @property-read User|null $creator
  * @property-read User|null $updater
  */
-class Offboarding extends Model
+class Offboarding extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

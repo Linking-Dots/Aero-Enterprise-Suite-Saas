@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * ARCHITECTURAL NOTE: Uses user_id only. Does NOT depend on HRM Employee model.
  */
-class ProjectAttachment extends Model
+class ProjectAttachment extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

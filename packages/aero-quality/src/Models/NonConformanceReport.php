@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $blocks_all_layers
  * @property bool $blocks_payment
  */
-class NonConformanceReport extends Model
+class NonConformanceReport extends TenantModel
 {
     use SoftDeletes;
 

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Individual responses to pulse surveys.
  */
-class PulseSurveyResponse extends Model
+class PulseSurveyResponse extends TenantModel
 {
     use HasFactory;
 

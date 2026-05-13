@@ -7,7 +7,7 @@ namespace Aero\Cms\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class CmsMenu extends Model
+class CmsMenu extends TenantModel
 {
     protected $connection = 'central';
 

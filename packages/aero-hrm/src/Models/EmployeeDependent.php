@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Used for benefits, insurance, and emergency purposes.
  * Has a 1:Many relationship with User model.
  */
-class EmployeeDependent extends Model
+class EmployeeDependent extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

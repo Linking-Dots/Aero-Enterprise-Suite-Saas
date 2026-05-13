@@ -5,7 +5,7 @@ namespace Aero\Analytics\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DashboardWidget extends Model
+class DashboardWidget extends TenantModel
 {
     use HasFactory;
 

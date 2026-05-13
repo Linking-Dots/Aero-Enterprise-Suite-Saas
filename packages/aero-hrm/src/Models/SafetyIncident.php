@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Carbon\Carbon|null $updated_at
  * @property-read User $reporter
  */
-class SafetyIncident extends Model
+class SafetyIncident extends TenantModel
 {
     use HasFactory;
 

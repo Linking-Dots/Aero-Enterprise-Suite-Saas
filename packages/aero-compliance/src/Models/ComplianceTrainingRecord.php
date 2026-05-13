@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ComplianceTrainingRecord extends Model
+class ComplianceTrainingRecord extends TenantModel
 {
     use HasFactory;
 

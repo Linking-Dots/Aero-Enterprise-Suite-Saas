@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Quick, frequent check-in surveys for employee engagement.
  */
-class PulseSurvey extends Model
+class PulseSurvey extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

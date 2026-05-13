@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class JobInterviewFeedback extends Model
+class JobInterviewFeedback extends TenantModel
 {
     use HasFactory;
 

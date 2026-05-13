@@ -7,7 +7,7 @@ namespace Aero\Cms\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CmsBlockTemplate extends Model
+class CmsBlockTemplate extends TenantModel
 {
     use HasFactory;
 

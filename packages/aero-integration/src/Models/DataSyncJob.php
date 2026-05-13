@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DataSyncJob extends Model
+class DataSyncJob extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

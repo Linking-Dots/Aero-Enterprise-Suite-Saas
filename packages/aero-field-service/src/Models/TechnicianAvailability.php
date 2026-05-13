@@ -5,7 +5,7 @@ namespace Aero\FieldService\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TechnicianAvailability extends Model
+class TechnicianAvailability extends TenantModel
 {
     use HasFactory;
 

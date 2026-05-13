@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Tracks historical attrition predictions for each employee.
  * Used for model accuracy tracking and trend analysis.
  */
-class AttritionPrediction extends Model
+class AttritionPrediction extends TenantModel
 {
     protected $fillable = [
         'employee_id',

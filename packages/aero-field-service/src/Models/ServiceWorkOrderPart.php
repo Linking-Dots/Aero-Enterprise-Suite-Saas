@@ -5,7 +5,7 @@ namespace Aero\FieldService\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ServiceWorkOrderPart extends Model
+class ServiceWorkOrderPart extends TenantModel
 {
     use HasFactory;
 

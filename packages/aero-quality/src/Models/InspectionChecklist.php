@@ -4,7 +4,7 @@ namespace Aero\Quality\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InspectionChecklist extends Model
+class InspectionChecklist extends TenantModel
 {
     protected $fillable = [
         'inspection_id',

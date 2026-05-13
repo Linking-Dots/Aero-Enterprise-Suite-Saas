@@ -6,7 +6,7 @@ use App\Models\Tenant\IMS\InventoryItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductionPlanMaterial extends Model
+class ProductionPlanMaterial extends TenantModel
 {
     use HasFactory;
 

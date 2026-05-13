@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Captures exit interview data for departing employees.
  */
-class ExitInterview extends Model
+class ExitInterview extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

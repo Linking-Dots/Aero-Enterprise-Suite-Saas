@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read User|null $processedBy
  * @property-read string $period
  */
-class Payroll extends Model
+class Payroll extends TenantModel
 {
     use HasFactory;
 

@@ -4,7 +4,7 @@ namespace Aero\Crm\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DealLostReason extends Model
+class DealLostReason extends TenantModel
 {
     protected $fillable = [
         'name',

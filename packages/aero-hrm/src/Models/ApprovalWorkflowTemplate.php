@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Defines reusable approval workflow configurations.
  */
-class ApprovalWorkflowTemplate extends Model
+class ApprovalWorkflowTemplate extends TenantModel
 {
     protected $fillable = [
         'name',

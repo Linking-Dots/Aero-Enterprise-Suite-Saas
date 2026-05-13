@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Stores sentiment analysis results from various sources.
  * Supports continuous engagement monitoring.
  */
-class EmployeeSentimentRecord extends Model
+class EmployeeSentimentRecord extends TenantModel
 {
     protected $fillable = [
         'employee_id',

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Manages employee grievances and complaints separate from disciplinary cases.
  */
-class Grievance extends Model
+class Grievance extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

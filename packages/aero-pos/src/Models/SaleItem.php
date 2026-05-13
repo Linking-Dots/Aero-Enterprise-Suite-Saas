@@ -5,7 +5,7 @@ namespace Aero\Pos\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SaleItem extends Model
+class SaleItem extends TenantModel
 {
     use HasFactory;
 

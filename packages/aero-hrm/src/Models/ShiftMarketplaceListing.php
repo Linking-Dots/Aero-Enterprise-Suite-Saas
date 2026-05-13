@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks analytics and metadata for shift swap listings in the marketplace.
  */
-class ShiftMarketplaceListing extends Model
+class ShiftMarketplaceListing extends TenantModel
 {
     use HasFactory;
 

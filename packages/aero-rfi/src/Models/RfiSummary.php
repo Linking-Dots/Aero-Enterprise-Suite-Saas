@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Virtual/calculated model for RFI summary statistics.
  * Used for aggregated reporting by date and user.
  */
-class RfiSummary extends Model
+class RfiSummary extends TenantModel
 {
     use HasFactory;
 

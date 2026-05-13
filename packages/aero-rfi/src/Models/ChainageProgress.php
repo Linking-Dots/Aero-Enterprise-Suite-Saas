@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $quality_inspection_id
  * @property int|null $boq_measurement_id
  */
-class ChainageProgress extends Model
+class ChainageProgress extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $prerequisite_layer_id
  * @property array|null $required_quality_checks
  */
-class WorkLayer extends Model
+class WorkLayer extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

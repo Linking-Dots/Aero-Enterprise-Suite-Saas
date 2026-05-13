@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * ARCHITECTURAL NOTE: Uses user_id only. Does NOT depend on HRM Employee model.
  */
-class ProjectSprint extends Model
+class ProjectSprint extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

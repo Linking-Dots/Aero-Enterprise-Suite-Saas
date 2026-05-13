@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SafetyIncidentParticipant extends Model
+class SafetyIncidentParticipant extends TenantModel
 {
     use HasFactory;
 

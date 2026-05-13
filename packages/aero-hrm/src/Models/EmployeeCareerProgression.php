@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks an employee's progress along a career path.
  */
-class EmployeeCareerProgression extends Model
+class EmployeeCareerProgression extends TenantModel
 {
     use HasFactory;
 

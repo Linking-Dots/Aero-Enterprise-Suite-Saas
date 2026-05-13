@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks salary changes, bonuses, and compensation adjustments over time.
  */
-class CompensationHistory extends Model
+class CompensationHistory extends TenantModel
 {
     use HasFactory;
 

@@ -41,7 +41,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property \DateTime $updated_at
  * @property \DateTime|null $deleted_at
  */
-class Objection extends Model implements HasMedia
+class Objection extends TenantModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
 

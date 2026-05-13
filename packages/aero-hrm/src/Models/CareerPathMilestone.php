@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Defines milestones/steps within a career path.
  */
-class CareerPathMilestone extends Model
+class CareerPathMilestone extends TenantModel
 {
     use HasFactory;
 

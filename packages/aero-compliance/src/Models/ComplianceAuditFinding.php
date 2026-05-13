@@ -5,7 +5,7 @@ namespace Aero\Compliance\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ComplianceAuditFinding extends Model
+class ComplianceAuditFinding extends TenantModel
 {
     use HasFactory;
 

@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read User|null $approver
  * @property-read string $status_color
  */
-class Leave extends Model
+class Leave extends TenantModel
 {
     use HasFactory;
 

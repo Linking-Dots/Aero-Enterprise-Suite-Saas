@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-class ProgressPhoto extends Model
+class ProgressPhoto extends TenantModel
 {
     use SoftDeletes;
 

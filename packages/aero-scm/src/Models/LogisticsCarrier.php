@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class LogisticsCarrier extends Model
+class LogisticsCarrier extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

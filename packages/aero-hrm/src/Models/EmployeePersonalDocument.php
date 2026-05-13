@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read bool $is_expiring_soon
  * @property-read bool $is_expired
  */
-class EmployeePersonalDocument extends Model
+class EmployeePersonalDocument extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

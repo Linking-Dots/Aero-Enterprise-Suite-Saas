@@ -5,7 +5,7 @@ namespace Aero\Commerce\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderCoupon extends Model
+class OrderCoupon extends TenantModel
 {
     use HasFactory;
 

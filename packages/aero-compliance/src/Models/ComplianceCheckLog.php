@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Logs automated compliance checks performed during RFI submission.
  */
-class ComplianceCheckLog extends Model
+class ComplianceCheckLog extends TenantModel
 {
     protected $fillable = [
         'project_id',

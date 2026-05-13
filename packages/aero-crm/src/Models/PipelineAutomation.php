@@ -5,7 +5,7 @@ namespace Aero\Crm\Models;
 use Aero\Core\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class PipelineAutomation extends Model
+class PipelineAutomation extends TenantModel
 {
     protected $fillable = [
         'pipeline_id',

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Defines career progression paths and tracks employee career development.
  */
-class CareerPath extends Model
+class CareerPath extends TenantModel
 {
     use HasFactory;
 

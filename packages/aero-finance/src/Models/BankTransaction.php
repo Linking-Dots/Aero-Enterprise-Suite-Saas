@@ -5,7 +5,7 @@ namespace Aero\Finance\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BankTransaction extends Model
+class BankTransaction extends TenantModel
 {
     use HasFactory;
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PaymentGateway extends Model
+class PaymentGateway extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

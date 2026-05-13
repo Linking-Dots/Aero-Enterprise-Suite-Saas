@@ -4,7 +4,7 @@ namespace Aero\Quality\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class QualityStandard extends Model
+class QualityStandard extends TenantModel
 {
     protected $fillable = [
         'code',

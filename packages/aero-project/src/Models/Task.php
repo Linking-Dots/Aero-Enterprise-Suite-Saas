@@ -4,7 +4,7 @@ namespace Aero\Project\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Task extends Model
+class Task extends TenantModel
 {
     protected $fillable = [
         'project_id',

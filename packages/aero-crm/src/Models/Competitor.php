@@ -5,7 +5,7 @@ namespace Aero\Crm\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Competitor extends Model
+class Competitor extends TenantModel
 {
     use SoftDeletes;
 

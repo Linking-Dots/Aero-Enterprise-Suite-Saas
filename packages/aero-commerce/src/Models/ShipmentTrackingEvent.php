@@ -5,7 +5,7 @@ namespace Aero\Commerce\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ShipmentTrackingEvent extends Model
+class ShipmentTrackingEvent extends TenantModel
 {
     use HasFactory;
 

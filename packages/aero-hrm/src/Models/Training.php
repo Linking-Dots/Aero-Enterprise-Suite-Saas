@@ -41,7 +41,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property-read User|null $instructor
  * @property-read User|null $creator
  */
-class Training extends Model implements HasMedia
+class Training extends TenantModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
 

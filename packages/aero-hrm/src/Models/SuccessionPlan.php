@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Manages succession planning for critical positions.
  * Links key positions to potential successors with readiness levels.
  */
-class SuccessionPlan extends Model
+class SuccessionPlan extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

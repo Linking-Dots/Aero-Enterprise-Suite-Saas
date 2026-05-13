@@ -4,7 +4,7 @@ namespace Aero\Crm\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DealCustomFieldDefinition extends Model
+class DealCustomFieldDefinition extends TenantModel
 {
     protected $fillable = [
         'pipeline_id',

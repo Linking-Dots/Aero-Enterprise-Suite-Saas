@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-class CmsBlockType extends Model
+class CmsBlockType extends TenantModel
 {
     use HasFactory;
 

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Strategic workforce planning and headcount forecasting.
  */
-class WorkforcePlan extends Model
+class WorkforcePlan extends TenantModel
 {
     use HasFactory;
 

@@ -5,7 +5,7 @@ namespace Aero\Analytics\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class KPIValue extends Model
+class KPIValue extends TenantModel
 {
     use HasFactory;
 

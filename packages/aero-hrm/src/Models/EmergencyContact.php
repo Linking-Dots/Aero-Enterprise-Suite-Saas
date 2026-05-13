@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Stores emergency contacts for employees.
  * Has a 1:Many relationship with User model.
  */
-class EmergencyContact extends Model
+class EmergencyContact extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

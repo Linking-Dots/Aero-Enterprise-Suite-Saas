@@ -47,7 +47,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property \DateTime $updated_at
  * @property \DateTime|null $deleted_at
  */
-class Rfi extends Model implements HasMedia
+class Rfi extends TenantModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
     use HasGeoLock;          // PATENTABLE: GPS validation (anti-fraud)

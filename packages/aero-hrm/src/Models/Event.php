@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class Event extends Model
+class Event extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

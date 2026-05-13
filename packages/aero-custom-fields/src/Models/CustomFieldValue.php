@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Aero\Core\Models\User;
 
-class CustomFieldValue extends Model
+class CustomFieldValue extends TenantModel
 {
     use HasFactory;
 

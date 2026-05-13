@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DeviceTelemetry extends Model
+class DeviceTelemetry extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

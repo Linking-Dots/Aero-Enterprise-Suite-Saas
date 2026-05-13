@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read JobApplication $application
  * @property-read User|null $sentBy
  */
-class JobOffer extends Model
+class JobOffer extends TenantModel
 {
     use HasFactory;
 

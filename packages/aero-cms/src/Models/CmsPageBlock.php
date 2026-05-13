@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
-class CmsPageBlock extends Model
+class CmsPageBlock extends TenantModel
 {
     use HasFactory;
 

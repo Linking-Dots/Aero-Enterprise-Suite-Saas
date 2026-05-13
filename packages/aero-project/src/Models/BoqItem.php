@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property float $total_amount (rate * estimated_quantity)
  * @property float $executed_quantity (Sum of approved measurements)
  */
-class BoqItem extends Model
+class BoqItem extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

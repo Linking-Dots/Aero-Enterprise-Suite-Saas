@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class EmployeeSalaryStructure extends Model
+class EmployeeSalaryStructure extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

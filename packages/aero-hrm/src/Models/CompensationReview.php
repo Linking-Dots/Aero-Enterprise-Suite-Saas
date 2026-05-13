@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Manages compensation review cycles and planning.
  */
-class CompensationReview extends Model
+class CompensationReview extends TenantModel
 {
     use HasFactory;
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class WorkflowStep extends Model
+class WorkflowStep extends TenantModel
 {
     protected $fillable = [
         'workflow_id',

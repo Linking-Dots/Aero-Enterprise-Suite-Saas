@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-class ProjectIssue extends Model implements HasMedia
+class ProjectIssue extends TenantModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 

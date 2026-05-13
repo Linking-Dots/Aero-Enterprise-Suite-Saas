@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $location_description (Chainage 100-200)
  * @property string $status (draft, verified, billed)
  */
-class BoqMeasurement extends Model
+class BoqMeasurement extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

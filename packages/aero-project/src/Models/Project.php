@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\DB;
  * @property array|null $type_specific_data Domain-specific fields from project type
  * @property array|null $enabled_features Array of enabled feature codes
  */
-class Project extends Model
+class Project extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

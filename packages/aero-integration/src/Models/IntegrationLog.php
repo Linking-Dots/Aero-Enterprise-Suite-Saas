@@ -5,7 +5,7 @@ namespace Aero\Integration\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class IntegrationLog extends Model
+class IntegrationLog extends TenantModel
 {
     use HasFactory;
 

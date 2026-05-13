@@ -5,7 +5,7 @@ namespace Aero\Scm\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProcurementRequestItem extends Model
+class ProcurementRequestItem extends TenantModel
 {
     use HasFactory;
 

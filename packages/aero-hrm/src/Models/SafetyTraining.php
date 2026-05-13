@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class SafetyTraining extends Model
+class SafetyTraining extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Tracks employee overtime hours, approvals, and compensation.
  */
-class OvertimeRecord extends Model
+class OvertimeRecord extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

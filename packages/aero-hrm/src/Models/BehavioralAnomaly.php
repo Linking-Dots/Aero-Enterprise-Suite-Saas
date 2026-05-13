@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Detects and tracks unusual patterns in employee behavior.
  * Supports early intervention and performance management.
  */
-class BehavioralAnomaly extends Model
+class BehavioralAnomaly extends TenantModel
 {
     protected $fillable = [
         'employee_id',

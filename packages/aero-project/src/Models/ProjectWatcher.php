@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  *
  * ARCHITECTURAL NOTE: Uses user_id only. Does NOT depend on HRM Employee model.
  */
-class ProjectWatcher extends Model
+class ProjectWatcher extends TenantModel
 {
     protected $table = 'project_watchers';
 

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Tracks employee promotions with position and compensation changes.
  */
-class PromotionHistory extends Model
+class PromotionHistory extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

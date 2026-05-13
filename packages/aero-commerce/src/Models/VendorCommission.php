@@ -5,7 +5,7 @@ namespace Aero\Commerce\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VendorCommission extends Model
+class VendorCommission extends TenantModel
 {
     use HasFactory;
 

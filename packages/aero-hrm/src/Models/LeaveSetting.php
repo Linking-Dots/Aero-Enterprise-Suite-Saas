@@ -5,7 +5,7 @@ namespace Aero\HRM\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LeaveSetting extends Model
+class LeaveSetting extends TenantModel
 {
     use HasFactory;
 

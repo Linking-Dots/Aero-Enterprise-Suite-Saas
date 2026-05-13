@@ -5,7 +5,7 @@ namespace Aero\Manufacturing\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RouteOperation extends Model
+class RouteOperation extends TenantModel
 {
     use HasFactory;
 

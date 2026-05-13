@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \DateTime $created_at
  * @property \DateTime $updated_at
  */
-class SubmissionOverrideLog extends Model
+class SubmissionOverrideLog extends TenantModel
 {
     use HasFactory;
 

@@ -6,7 +6,7 @@ use Aero\Core\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DealAttachment extends Model
+class DealAttachment extends TenantModel
 {
     use SoftDeletes;
 

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Individual approval step actions within a workflow.
  */
-class ApprovalAction extends Model
+class ApprovalAction extends TenantModel
 {
     protected $fillable = [
         'workflow_instance_id',

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * 360-degree feedback review for employees.
  */
-class Feedback360 extends Model
+class Feedback360 extends TenantModel
 {
     use HasFactory;
 

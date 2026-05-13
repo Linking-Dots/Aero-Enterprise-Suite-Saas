@@ -6,7 +6,7 @@ use App\Models\Tenant\HRM\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Education extends Model
+class Education extends TenantModel
 {
     use HasFactory;
 

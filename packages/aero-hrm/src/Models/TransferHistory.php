@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Tracks employee transfers between departments, locations, or branches.
  */
-class TransferHistory extends Model
+class TransferHistory extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

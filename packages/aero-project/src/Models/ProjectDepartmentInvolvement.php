@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - Uses department_id as foreign key (resolved via DepartmentResolverContract when needed)
  * - Allows projects to span multiple departments with different roles
  */
-class ProjectDepartmentInvolvement extends Model
+class ProjectDepartmentInvolvement extends TenantModel
 {
     protected $table = 'project_department_involvements';
 

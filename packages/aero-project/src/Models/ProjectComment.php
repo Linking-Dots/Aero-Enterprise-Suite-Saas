@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Polymorphic comments for tasks, milestones, issues, and projects.
  * Supports threading via parent_id and mentions.
  */
-class ProjectComment extends Model
+class ProjectComment extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

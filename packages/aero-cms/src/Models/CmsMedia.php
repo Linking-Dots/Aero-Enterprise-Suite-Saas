@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-class CmsMedia extends Model
+class CmsMedia extends TenantModel
 {
     use HasFactory;
     use SoftDeletes;

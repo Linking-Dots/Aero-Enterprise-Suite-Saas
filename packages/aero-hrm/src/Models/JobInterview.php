@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read User|null $scheduledBy
  * @property-read \Illuminate\Database\Eloquent\Collection|User[] $interviewers
  */
-class JobInterview extends Model
+class JobInterview extends TenantModel
 {
     use HasFactory;
 

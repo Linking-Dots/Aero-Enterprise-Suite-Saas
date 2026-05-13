@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Individual salary adjustments within a compensation review.
  */
-class CompensationAdjustment extends Model
+class CompensationAdjustment extends TenantModel
 {
     use HasFactory;
 

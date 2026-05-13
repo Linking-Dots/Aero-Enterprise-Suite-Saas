@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Stores multiple addresses for employees (permanent, current, mailing, etc.)
  * Has a 1:Many relationship with User model.
  */
-class EmployeeAddress extends Model
+class EmployeeAddress extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

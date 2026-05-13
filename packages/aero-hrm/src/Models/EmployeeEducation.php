@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Stores educational background for employees.
  * Has a 1:Many relationship with User model.
  */
-class EmployeeEducation extends Model
+class EmployeeEducation extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

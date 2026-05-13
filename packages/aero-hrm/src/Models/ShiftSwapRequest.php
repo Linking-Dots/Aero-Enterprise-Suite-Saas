@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Manages employee shift swap requests and open shift pickups for the shift marketplace.
  */
-class ShiftSwapRequest extends Model
+class ShiftSwapRequest extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

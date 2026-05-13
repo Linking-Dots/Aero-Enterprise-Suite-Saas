@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Links employees to succession plans with readiness assessments.
  */
-class SuccessionCandidate extends Model
+class SuccessionCandidate extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class LaborDeployment extends Model
+class LaborDeployment extends TenantModel
 {
     use SoftDeletes;
 

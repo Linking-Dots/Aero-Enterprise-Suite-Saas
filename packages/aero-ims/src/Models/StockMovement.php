@@ -5,7 +5,7 @@ namespace Aero\Ims\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StockMovement extends Model
+class StockMovement extends TenantModel
 {
     use HasFactory;
 

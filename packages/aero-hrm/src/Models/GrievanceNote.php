@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Notes and updates added to grievance cases during investigation.
  */
-class GrievanceNote extends Model
+class GrievanceNote extends TenantModel
 {
     use HasFactory;
 

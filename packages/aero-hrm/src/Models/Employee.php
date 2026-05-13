@@ -82,7 +82,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read Designation|null $designation
  * @property-read Employee|null $manager
  */
-class Employee extends Model implements HasMedia
+class Employee extends TenantModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia, SoftDeletes;
 

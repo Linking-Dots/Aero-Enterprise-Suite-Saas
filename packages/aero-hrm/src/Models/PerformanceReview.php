@@ -36,7 +36,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read User $reviewer
  * @property-read string $review_period
  */
-class PerformanceReview extends Model
+class PerformanceReview extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

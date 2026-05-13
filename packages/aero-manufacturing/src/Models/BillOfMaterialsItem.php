@@ -5,7 +5,7 @@ namespace Aero\Manufacturing\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BillOfMaterialsItem extends Model
+class BillOfMaterialsItem extends TenantModel
 {
     use HasFactory;
 

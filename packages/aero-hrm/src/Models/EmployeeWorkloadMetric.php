@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks daily/weekly/monthly workload for burnout risk analysis.
  */
-class EmployeeWorkloadMetric extends Model
+class EmployeeWorkloadMetric extends TenantModel
 {
     protected $fillable = [
         'employee_id',

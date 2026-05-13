@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - Steps track completion status and timing
  * - Supports go/no-go decisions at each stage
  */
-class ProjectWorkflowStep extends Model
+class ProjectWorkflowStep extends TenantModel
 {
     protected $table = 'project_workflow_steps';
 

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Individual reviewer responses in a 360 feedback.
  */
-class Feedback360Response extends Model
+class Feedback360Response extends TenantModel
 {
     use HasFactory;
 

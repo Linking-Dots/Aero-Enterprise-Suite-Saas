@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Engagement Survey Response Model
  */
-class EngagementSurveyResponse extends Model
+class EngagementSurveyResponse extends TenantModel
 {
     protected $fillable = [
         'survey_id',

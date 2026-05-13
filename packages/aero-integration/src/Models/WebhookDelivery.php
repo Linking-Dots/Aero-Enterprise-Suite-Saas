@@ -5,7 +5,7 @@ namespace Aero\Integration\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WebhookDelivery extends Model
+class WebhookDelivery extends TenantModel
 {
     use HasFactory;
 

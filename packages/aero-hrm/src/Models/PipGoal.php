@@ -5,7 +5,7 @@ namespace Aero\HRM\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PipGoal extends Model
+class PipGoal extends TenantModel
 {
     protected $table = 'pip_goals';
 

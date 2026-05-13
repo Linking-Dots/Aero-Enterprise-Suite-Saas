@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Individual position requirements within a workforce plan.
  */
-class WorkforcePlanPosition extends Model
+class WorkforcePlanPosition extends TenantModel
 {
     use HasFactory;
 

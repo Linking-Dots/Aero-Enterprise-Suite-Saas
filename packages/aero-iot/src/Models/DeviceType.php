@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DeviceType extends Model
+class DeviceType extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

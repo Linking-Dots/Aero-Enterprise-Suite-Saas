@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class AssetCategory extends Model
+class AssetCategory extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

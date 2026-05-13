@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ConsensusNode extends Model
+class ConsensusNode extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

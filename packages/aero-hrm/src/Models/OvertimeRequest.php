@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Manages overtime requests and approvals.
  */
-class OvertimeRequest extends Model
+class OvertimeRequest extends TenantModel
 {
     use HasFactory;
 

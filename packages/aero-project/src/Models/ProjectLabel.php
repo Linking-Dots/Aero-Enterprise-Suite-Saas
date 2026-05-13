@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *
  * Represents labels/tags for categorizing tasks within a project.
  */
-class ProjectLabel extends Model
+class ProjectLabel extends TenantModel
 {
     use HasFactory;
 

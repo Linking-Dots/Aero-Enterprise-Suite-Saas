@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Carbon\Carbon|null $verified_at
  * @property int|null $verified_by
  */
-class EmployeeBankDetail extends Model
+class EmployeeBankDetail extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

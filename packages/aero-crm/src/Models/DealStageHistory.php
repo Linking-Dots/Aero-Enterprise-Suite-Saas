@@ -4,7 +4,7 @@ namespace Aero\Crm\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DealStageHistory extends Model
+class DealStageHistory extends TenantModel
 {
     public $timestamps = false;
 

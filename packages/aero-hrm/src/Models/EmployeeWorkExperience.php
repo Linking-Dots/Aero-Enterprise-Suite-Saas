@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Stores previous work experience for employees.
  * Has a 1:Many relationship with User model.
  */
-class EmployeeWorkExperience extends Model
+class EmployeeWorkExperience extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

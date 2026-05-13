@@ -5,7 +5,7 @@ namespace Aero\Commerce\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WishlistItem extends Model
+class WishlistItem extends TenantModel
 {
     use HasFactory;
 

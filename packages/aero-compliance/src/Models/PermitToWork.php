@@ -59,7 +59,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $completion_notes
  * @property array|null $audit_log
  */
-class PermitToWork extends Model
+class PermitToWork extends TenantModel
 {
     use SoftDeletes;
 

@@ -5,7 +5,7 @@ namespace Aero\Finance\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class JournalEntryLine extends Model
+class JournalEntryLine extends TenantModel
 {
     use HasFactory;
 

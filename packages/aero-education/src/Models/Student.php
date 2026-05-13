@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Crypt;
 
-class Student extends Model
+class Student extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PerformanceReviewTemplate extends Model
+class PerformanceReviewTemplate extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

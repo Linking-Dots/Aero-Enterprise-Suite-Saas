@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - Values stored as key-value pairs with type information
  * - Supports text, number, date, boolean, json field types
  */
-class ProjectTypeMetadata extends Model
+class ProjectTypeMetadata extends TenantModel
 {
     protected $table = 'project_type_metadata';
 

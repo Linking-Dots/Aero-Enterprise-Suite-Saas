@@ -5,7 +5,7 @@ namespace Aero\Workflow\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WorkflowTransition extends Model
+class WorkflowTransition extends TenantModel
 {
     protected $fillable = [
         'instance_id',

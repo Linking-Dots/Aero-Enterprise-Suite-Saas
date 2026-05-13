@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * ARCHITECTURAL NOTE: Uses user_id only. Does NOT depend on HRM Employee model.
  * Cross-package resolution is done via contracts if employee data is needed.
  */
-class ProjectMember extends Model
+class ProjectMember extends TenantModel
 {
     use HasFactory;
 

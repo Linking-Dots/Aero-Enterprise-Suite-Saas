@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
-class OnboardingStep extends Model
+class OnboardingStep extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

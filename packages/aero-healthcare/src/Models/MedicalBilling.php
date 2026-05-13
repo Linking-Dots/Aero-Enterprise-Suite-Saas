@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MedicalBilling extends Model
+class MedicalBilling extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

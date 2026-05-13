@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class EventActivityLog extends Model
+class EventActivityLog extends TenantModel
 {
     use HasFactory;
 

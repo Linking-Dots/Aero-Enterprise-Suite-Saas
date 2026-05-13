@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Represents an iteration/sprint in Agile project management.
  * Sprints are time-boxed periods for completing planned work.
  */
-class Sprint extends Model
+class Sprint extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

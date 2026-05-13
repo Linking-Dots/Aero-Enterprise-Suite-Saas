@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
-class EventRegistration extends Model
+class EventRegistration extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

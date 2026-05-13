@@ -6,7 +6,7 @@ use Aero\Core\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ReportExecution extends Model
+class ReportExecution extends TenantModel
 {
     use HasFactory;
 

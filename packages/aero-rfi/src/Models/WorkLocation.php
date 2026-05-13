@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \DateTime $updated_at
  * @property \DateTime|null $deleted_at
  */
-class WorkLocation extends Model
+class WorkLocation extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \DateTime $created_at
  * @property \DateTime $updated_at
  */
-class ObjectionStatusLog extends Model
+class ObjectionStatusLog extends TenantModel
 {
     use HasFactory;
 

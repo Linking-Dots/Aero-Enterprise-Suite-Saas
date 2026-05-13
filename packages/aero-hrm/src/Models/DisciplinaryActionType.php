@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DisciplinaryActionType extends Model
+class DisciplinaryActionType extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

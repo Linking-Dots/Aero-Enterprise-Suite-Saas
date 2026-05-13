@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read JobHiringStage|null $currentStage
  * @property-read User|null $assignedTo
  */
-class JobApplication extends Model
+class JobApplication extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

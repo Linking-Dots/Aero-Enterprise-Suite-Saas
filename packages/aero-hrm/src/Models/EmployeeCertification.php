@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Stores professional certifications for employees.
  * Has a 1:Many relationship with User model.
  */
-class EmployeeCertification extends Model
+class EmployeeCertification extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

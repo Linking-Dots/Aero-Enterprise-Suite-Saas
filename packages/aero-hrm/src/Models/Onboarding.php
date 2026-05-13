@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Auth;
  * @property-read User|null $creator
  * @property-read User|null $updater
  */
-class Onboarding extends Model
+class Onboarding extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

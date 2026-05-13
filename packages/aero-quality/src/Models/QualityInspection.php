@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $geo_verified
  * @property string|null $verification_hash
  */
-class QualityInspection extends Model
+class QualityInspection extends TenantModel
 {
     use SoftDeletes;
 

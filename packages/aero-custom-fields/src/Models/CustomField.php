@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Aero\Core\Models\User;
 
-class CustomField extends Model
+class CustomField extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

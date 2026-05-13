@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DemandForecast extends Model
+class DemandForecast extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

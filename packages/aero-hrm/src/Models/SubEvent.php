@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class SubEvent extends Model
+class SubEvent extends TenantModel
 {
     use HasFactory, SoftDeletes;
 

@@ -36,7 +36,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property \Carbon\Carbon|null $updated_at
  * @property-read User $user
  */
-class Attendance extends Model implements HasMedia
+class Attendance extends TenantModel implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks communication threads for grievances.
  */
-class GrievanceCommunication extends Model
+class GrievanceCommunication extends TenantModel
 {
     use HasFactory;
 

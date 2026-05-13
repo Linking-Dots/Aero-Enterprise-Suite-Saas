@@ -5,7 +5,7 @@ namespace Aero\Rfi\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WeatherLog extends Model
+class WeatherLog extends TenantModel
 {
     protected $fillable = [
         'daily_work_id',
