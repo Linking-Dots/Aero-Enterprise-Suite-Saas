@@ -3,11 +3,10 @@
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Activity extends Model
+class Activity extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
@@ -77,6 +76,7 @@ class Activity extends Model
         if ($endDate) {
             return $query->whereBetween('created_at', [$startDate, $endDate]);
         }
+
         return $query->where('created_at', '>=', $startDate);
     }
 

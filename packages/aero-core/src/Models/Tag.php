@@ -25,7 +25,7 @@ use Illuminate\Support\Str;
  * @property string|null $description
  * @property string|null $icon
  */
-class Tag extends Model implements Searchable
+class Tag extends TenantModel implements Searchable
 {
     use SearchableTrait;
     use SoftDeletes;
@@ -74,11 +74,11 @@ class Tag extends Model implements Searchable
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $term) . '%';
+        $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
 
         return $query->where(function (Builder $q) use ($like): void {
             $q->where('name', 'LIKE', $like)
-              ->orWhere('slug', 'LIKE', $like);
+                ->orWhere('slug', 'LIKE', $like);
         });
     }
 

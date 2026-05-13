@@ -3,9 +3,8 @@
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class BackupConfiguration extends Model
+class BackupConfiguration extends TenantModel
 {
     use HasFactory;
 

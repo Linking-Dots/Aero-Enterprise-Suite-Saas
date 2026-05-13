@@ -3,11 +3,10 @@
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class RetentionPolicy extends Model
+class RetentionPolicy extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
@@ -79,9 +78,9 @@ class RetentionPolicy extends Model
     public function getEntityQuery()
     {
         $queries = [
-            'audit_logs' => \Aero\Core\Models\AuditLog::query(),
-            'activities' => \Aero\Core\Models\Activity::query(),
-            'data_exports' => \Aero\Core\Models\DataExport::query(),
+            'audit_logs' => AuditLog::query(),
+            'activities' => Activity::query(),
+            'data_exports' => DataExport::query(),
             'trash' => null, // Special case for trash - handled in service
         ];
 

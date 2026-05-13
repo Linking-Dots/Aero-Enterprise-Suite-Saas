@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -28,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $shared_with
  * @property bool $is_system
  */
-class SavedView extends Model
+class SavedView extends TenantModel
 {
     use SoftDeletes;
 
@@ -133,7 +132,7 @@ class SavedView extends Model
     {
         return $query->where(function (Builder $q) {
             $q->where('is_system', true)
-              ->orWhere('is_shared', true);
+                ->orWhere('is_shared', true);
         });
     }
 

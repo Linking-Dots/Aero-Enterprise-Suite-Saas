@@ -5,7 +5,6 @@ namespace Aero\Core\Models;
 use Aero\Contracts\Searchable;
 use Aero\Core\Traits\Searchable as SearchableTrait;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -27,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property array|null $metadata
  * @property Carbon $created_at
  */
-class AuditLog extends Model implements Searchable
+class AuditLog extends TenantModel implements Searchable
 {
     use SearchableTrait;
 
@@ -175,7 +174,7 @@ class AuditLog extends Model implements Searchable
 
     public function getSearchResultTitle(): string
     {
-        return $this->action_name . ' — ' . ($this->user_name ?? 'System');
+        return $this->action_name.' — '.($this->user_name ?? 'System');
     }
 
     public function getSearchResultUrl(): ?string

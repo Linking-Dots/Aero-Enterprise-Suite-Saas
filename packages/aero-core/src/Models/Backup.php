@@ -3,10 +3,9 @@
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Backup extends Model
+class Backup extends TenantModel
 {
     use HasFactory;
 
@@ -106,6 +105,6 @@ class Backup extends Model
             $unit++;
         }
 
-        return round($size, 2) . ' ' . $units[$unit];
+        return round($size, 2).' '.$units[$unit];
     }
 }

@@ -2,12 +2,12 @@
 
 namespace Aero\Core\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DataExport extends Model
+class DataExport extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
@@ -44,7 +44,7 @@ class DataExport extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
