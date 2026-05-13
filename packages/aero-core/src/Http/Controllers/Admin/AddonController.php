@@ -17,17 +17,17 @@ use Inertia\Response;
 class AddonController extends Controller
 {
     public function __construct(
-        private readonly AddonCatalogService     $catalog,
-        private readonly AddonInstaller          $installer,
+        private readonly AddonCatalogService $catalog,
+        private readonly AddonInstaller $installer,
         private readonly LicenseServiceInterface $license,
     ) {}
 
     public function index(): Response
     {
         return Inertia::render('Addons/Index', [
-            'installed'       => InstalledAddon::orderBy('installed_at', 'desc')->get(),
-            'available'       => $this->catalog->getAvailableAddons(),
-            'product'         => config('product', []),
+            'installed' => InstalledAddon::orderBy('installed_at', 'desc')->get(),
+            'available' => $this->catalog->getAvailableAddons(),
+            'product' => config('product', []),
             'marketplace_url' => rtrim(config('license.server_url', ''), '/').'/marketplace',
         ]);
     }
@@ -35,12 +35,12 @@ class AddonController extends Controller
     public function install(Request $request): RedirectResponse
     {
         $request->validate([
-            'license_key'  => ['required', 'string'],
+            'license_key' => ['required', 'string'],
             'product_code' => ['required', 'string'],
-            'zip_file'     => ['nullable', 'file', 'mimes:zip', 'max:102400'],
+            'zip_file' => ['nullable', 'file', 'mimes:zip', 'max:102400'],
         ]);
 
-        $licenseKey  = strtoupper(trim($request->license_key));
+        $licenseKey = strtoupper(trim($request->license_key));
         $productCode = $request->product_code;
 
         $validation = $this->validateLicenseKey($licenseKey, $productCode);
@@ -49,12 +49,20 @@ class AddonController extends Controller
         }
 
         $zipPath = null;
+        $expectedChecksum = null;
         try {
             if ($request->hasFile('zip_file')) {
-                $stored  = $request->file('zip_file')->store('addon-uploads', 'local');
+                $stored = $request->file('zip_file')->store('addon-uploads', 'local');
                 $zipPath = storage_path("app/{$stored}");
             } else {
-                $zipPath = $this->autoDownload($licenseKey, $productCode);
+                $download = $this->autoDownload($licenseKey, $productCode);
+                if ($download === null) {
+                    return back()->withErrors([
+                        'zip_file' => 'Auto-download failed. Please upload the ZIP file manually.',
+                    ]);
+                }
+                $zipPath = $download['path'];
+                $expectedChecksum = $download['checksum'];
             }
 
             if ($zipPath === null) {
@@ -63,7 +71,7 @@ class AddonController extends Controller
                 ]);
             }
 
-            $addon = $this->installer->install($zipPath, $licenseKey);
+            $addon = $this->installer->install($zipPath, $licenseKey, $expectedChecksum);
 
             return redirect()->route('addons.index')
                 ->with('success', "Add-on [{$addon->name}] installed successfully. Refresh to see it in the navigation.");
@@ -79,13 +87,13 @@ class AddonController extends Controller
 
     private function validateLicenseKey(string $key, string $productCode): array
     {
-        $serverUrl  = config('license.server_url');
+        $serverUrl = config('license.server_url');
         $domainHash = hash('sha256', strtolower(request()->getHost()));
 
         try {
             $response = Http::timeout(10)->post("{$serverUrl}/api/license/validate", [
                 'license_key' => $key,
-                'product_id'  => $productCode,
+                'product_id' => $productCode,
                 'domain_hash' => $domainHash,
             ]);
 
@@ -94,9 +102,9 @@ class AddonController extends Controller
             }
 
             return match ($response->json('status')) {
-                'valid'   => ['valid' => true,  'message' => ''],
+                'valid' => ['valid' => true,  'message' => ''],
                 'expired' => ['valid' => false, 'message' => 'This license key has expired. Please renew.'],
-                default   => ['valid' => false, 'message' => 'Invalid license key. Please check your purchase email.'],
+                default => ['valid' => false, 'message' => 'Invalid license key. Please check your purchase email.'],
             };
 
         } catch (\Throwable $e) {
@@ -106,13 +114,13 @@ class AddonController extends Controller
         }
     }
 
-    private function autoDownload(string $licenseKey, string $productCode): ?string
+    private function autoDownload(string $licenseKey, string $productCode): ?array
     {
         $serverUrl = config('license.server_url');
         try {
             $response = Http::timeout(15)->post("{$serverUrl}/api/license/download-url", [
                 'license_key' => $licenseKey,
-                'product_id'  => $productCode,
+                'product_id' => $productCode,
             ]);
 
             if (! $response->successful() || ! $response->json('download_url')) {
@@ -120,7 +128,8 @@ class AddonController extends Controller
             }
 
             $downloadUrl = $response->json('download_url');
-            $zipPath     = storage_path('app/addon-downloads/'.$productCode.'-'.time().'.zip');
+            $expectedChecksum = $response->json('expected_sha256');
+            $zipPath = storage_path('app/addon-downloads/'.$productCode.'-'.time().'.zip');
 
             if (! is_dir(dirname($zipPath))) {
                 mkdir(dirname($zipPath), 0755, true);
@@ -128,7 +137,7 @@ class AddonController extends Controller
 
             $fileResponse = Http::timeout(120)->sink($zipPath)->get($downloadUrl);
 
-            return $fileResponse->successful() ? $zipPath : null;
+            return $fileResponse->successful() ? ['path' => $zipPath, 'checksum' => $expectedChecksum] : null;
 
         } catch (\Throwable $e) {
             Log::warning('AddonController: auto-download failed', ['error' => $e->getMessage()]);

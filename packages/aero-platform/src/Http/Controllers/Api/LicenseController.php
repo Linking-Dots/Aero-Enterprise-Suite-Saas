@@ -163,6 +163,12 @@ class LicenseController extends Controller
             ['license' => $license->id, 'product' => $license->product->code]
         );
 
-        return response()->json(['download_url' => $signedUrl]);
+        // Return sha256 from product metadata if stored (set when ZIP is uploaded to marketplace)
+        $zipSha256 = data_get($license->product->metadata, 'zip_sha256');
+
+        return response()->json([
+            'download_url' => $signedUrl,
+            'expected_sha256' => $zipSha256,
+        ]);
     }
 }

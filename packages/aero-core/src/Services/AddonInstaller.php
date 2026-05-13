@@ -25,16 +25,18 @@ class AddonInstaller
      * 4. Seed package permissions (if seeder exists)
      * 5. Record in installed_addons
      */
-    public function install(string $zipPath, string $licenseKey): InstalledAddon
+    public function install(string $zipPath, string $licenseKey, ?string $expectedChecksum = null): InstalledAddon
     {
         if (! file_exists($zipPath)) {
             throw new \RuntimeException("ZIP file not found: {$zipPath}");
         }
 
-        $manifest    = $this->readManifestFromZip($zipPath);
-        $packageDir  = $this->detectPackageDirectory($zipPath);
+        $this->verifyZipIntegrity($zipPath, $expectedChecksum);
+
+        $manifest = $this->readManifestFromZip($zipPath);
+        $packageDir = $this->detectPackageDirectory($zipPath);
         $installPath = "modules/{$packageDir}";
-        $fullPath    = base_path($installPath);
+        $fullPath = base_path($installPath);
 
         if (InstalledAddon::where('module_code', $manifest['code'])->exists()) {
             throw new \RuntimeException("Add-on [{$manifest['code']}] is already installed.");
@@ -46,7 +48,7 @@ class AddonInstaller
         $migrationsPath = "{$fullPath}/database/migrations";
         if (is_dir($migrationsPath)) {
             Artisan::call('migrate', [
-                '--path'  => $installPath.'/database/migrations',
+                '--path' => $installPath.'/database/migrations',
                 '--force' => true,
             ]);
             Log::info("AddonInstaller: ran migrations for {$packageDir}");
@@ -62,13 +64,13 @@ class AddonInstaller
         }
 
         $addon = InstalledAddon::create([
-            'module_code'  => $manifest['code'],
+            'module_code' => $manifest['code'],
             'product_code' => $manifest['code'],
-            'name'         => $manifest['name'],
-            'version'      => $manifest['version'],
-            'license_key'  => $licenseKey,
+            'name' => $manifest['name'],
+            'version' => $manifest['version'],
+            'license_key' => $licenseKey,
             'install_path' => $installPath,
-            'status'       => 'active',
+            'status' => 'active',
             'installed_at' => now(),
         ]);
 
@@ -77,9 +79,21 @@ class AddonInstaller
         return $addon;
     }
 
+    private function verifyZipIntegrity(string $zipPath, ?string $expectedSha256): void
+    {
+        if ($expectedSha256 === null) {
+            throw new \RuntimeException('Expected SHA-256 checksum required for ZIP installation');
+        }
+
+        $actual = hash_file('sha256', $zipPath);
+        if (! hash_equals($expectedSha256, $actual)) {
+            throw new \RuntimeException("ZIP checksum mismatch. Expected {$expectedSha256}, got {$actual}. File may be tampered.");
+        }
+    }
+
     private function readManifestFromZip(string $zipPath): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($zipPath) !== true) {
             throw new \RuntimeException("Cannot open ZIP: {$zipPath}");
         }
@@ -94,13 +108,38 @@ class AddonInstaller
         $zip->close();
 
         if ($manifestContent === null) {
-            throw new \RuntimeException('module.php manifest not found in ZIP. This does not appear to be a valid Aero add-on package.');
+            throw new \RuntimeException('module.php manifest not found in ZIP.');
         }
 
-        $manifest = eval('?>'.$manifestContent);
+        // SAFE PARSE: write to temp file, parse via isolated PHP subprocess
+        // that returns JSON. Any malicious code in the file would only affect
+        // the subprocess, not the running app.
+        $tmpFile = tempnam(sys_get_temp_dir(), 'aero_manifest_');
+        try {
+            file_put_contents($tmpFile, $manifestContent);
 
-        if (! is_array($manifest)) {
-            throw new \RuntimeException('module.php manifest is not a valid PHP array.');
+            $cmd = sprintf(
+                '%s -d disable_functions=exec,shell_exec,passthru,system,proc_open,popen,curl_exec -r %s 2>&1',
+                escapeshellarg(PHP_BINARY),
+                escapeshellarg(sprintf(
+                    'try { $r = require %s; echo json_encode($r); } catch (\Throwable $e) { echo "PARSE_ERROR:" . $e->getMessage(); }',
+                    var_export($tmpFile, true)
+                ))
+            );
+
+            $output = shell_exec($cmd);
+
+            if ($output === null || str_starts_with($output, 'PARSE_ERROR:')) {
+                throw new \RuntimeException('Failed to parse module.php manifest safely: '.$output);
+            }
+
+            $manifest = json_decode(trim($output), true);
+
+            if (! is_array($manifest)) {
+                throw new \RuntimeException('module.php manifest is not a valid PHP array.');
+            }
+        } finally {
+            @unlink($tmpFile);
         }
 
         foreach (['code', 'name', 'version'] as $key) {
@@ -114,7 +153,7 @@ class AddonInstaller
 
     private function detectPackageDirectory(string $zipPath): string
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($zipPath);
         $firstName = $zip->getNameIndex(0);
         $zip->close();
@@ -128,7 +167,7 @@ class AddonInstaller
             mkdir($targetDir, 0755, true);
         }
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($zipPath) !== true) {
             throw new \RuntimeException("Cannot extract ZIP: {$zipPath}");
         }
