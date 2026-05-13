@@ -28,45 +28,16 @@ class DashboardController extends Controller
      */
     public function index(Request $request): Response
     {
-        return Inertia::render('Tenant/Dashboard', [
-            'title' => 'Tenant Dashboard',
+        $user = $request->user();
 
-            // Dashboard stats for the Tenant Dashboard
-            'dashboardStats' => [
-                'totalUsers' => [
-                    'value' => number_format($this->dashboardService->getTotalUsers()),
-                    'delta' => '+12.5%',
-                    'deltaTrend' => 'up',
-                    'label' => 'Total Users',
-                    'accent' => 'cyan',
-                ],
-                'activeUsers' => [
-                    'value' => number_format($this->dashboardService->getActiveSessions()),
-                    'delta' => '+8.3%',
-                    'deltaTrend' => 'up',
-                    'label' => 'Active Users',
-                    'accent' => 'cyan',
-                ],
-                'storageUsed' => [
-                    'value' => '0 GB',
-                    'delta' => '+0%',
-                    'deltaTrend' => 'neutral',
-                    'label' => 'Storage Used',
-                    'accent' => 'amber',
-                ],
-                'billingStatus' => [
-                    'value' => 'Active',
-                    'delta' => '',
-                    'deltaTrend' => 'neutral',
-                    'label' => 'Billing Status',
-                    'accent' => 'indigo',
-                ],
+        return Inertia::render('Tenant/Dashboard', [
+            'title'          => 'Dashboard',
+            'user'           => [
+                'name'  => $user?->name ?? 'User',
+                'email' => $user?->email,
             ],
-            'recentActivity' => $this->dashboardService->getRecentActivity(),
-            'tenantInfo' => [
-                'name' => $request->user()?->name ?? 'User',
-                'email' => $request->user()?->email,
-            ],
+            'stats'          => Inertia::defer(fn () => $this->dashboardService->getCoreStats()),
+            'recentActivity' => Inertia::defer(fn () => $this->dashboardService->getRecentActivity()),
         ]);
     }
 
