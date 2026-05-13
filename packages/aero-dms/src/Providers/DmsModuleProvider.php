@@ -3,11 +3,18 @@
 namespace Aero\Dms\Providers;
 
 use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\DMS\Models\Document;
 use Aero\DMS\Models\Folder;
 use Aero\DMS\Policies\DocumentPolicy;
 use Aero\DMS\Policies\FolderPolicy;
+use Aero\DMS\Services\DigitalSignatureService;
+use Aero\DMS\Services\DMSService;
+use Aero\DMS\Services\DocumentApprovalService;
+use Aero\DMS\Services\DocumentSearchService;
+use Aero\DMS\Services\DocumentService;
+use Aero\DMS\Services\DocumentVersioningService;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -44,28 +51,28 @@ class DmsModuleProvider extends AbstractModuleProvider
     {
         // Register main DMS service
         $this->app->singleton('dms', function ($app) {
-            return new \Aero\DMS\Services\DMSService;
+            return new DMSService;
         });
 
         // Register specific services
         $this->app->singleton('dms.documents', function ($app) {
-            return new \Aero\DMS\Services\DocumentService;
+            return new DocumentService;
         });
 
         $this->app->singleton('dms.versioning', function ($app) {
-            return new \Aero\DMS\Services\DocumentVersioningService;
+            return new DocumentVersioningService;
         });
 
         $this->app->singleton('dms.approval', function ($app) {
-            return new \Aero\DMS\Services\DocumentApprovalService;
+            return new DocumentApprovalService;
         });
 
         $this->app->singleton('dms.search', function ($app) {
-            return new \Aero\DMS\Services\DocumentSearchService;
+            return new DocumentSearchService;
         });
 
         $this->app->singleton('dms.signature', function ($app) {
-            return new \Aero\DMS\Services\DigitalSignatureService;
+            return new DigitalSignatureService;
         });
 
         // Merge DMS-specific configuration
@@ -89,9 +96,6 @@ class DmsModuleProvider extends AbstractModuleProvider
         // Register navigation items for auto-discovery
         $this->registerNavigation();
 
-        // Register dashboard widgets for Core Dashboard
-        $this->registerDashboardWidgets();
-
         // Register dashboards
         $this->registerDashboards();
 
@@ -106,11 +110,11 @@ class DmsModuleProvider extends AbstractModuleProvider
      */
     protected function registerDashboards(): void
     {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardRegistry::class)) {
+        if (! $this->app->bound(DashboardRegistry::class)) {
             return;
         }
 
-        $registry = $this->app->make(\Aero\Core\Services\DashboardRegistry::class);
+        $registry = $this->app->make(DashboardRegistry::class);
 
         $registry->register(
             'dms.dashboard',
@@ -120,30 +124,6 @@ class DmsModuleProvider extends AbstractModuleProvider
             'DocumentTextIcon',
             'dms.dashboard.view'
         );
-    }
-
-    /**
-     * Register DMS widgets for the Core Dashboard.
-     *
-     * These are ACTION/ALERT/SUMMARY widgets only.
-     * Full analytics stay on DMS Dashboard (/dms/dashboard).
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        // Only register if the registry is available
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        // Register DMS widgets for Core Dashboard
-        $registry->registerMany([
-            new \Aero\DMS\Widgets\RecentDocumentsWidget,
-            new \Aero\DMS\Widgets\StorageUsageWidget,
-            new \Aero\DMS\Widgets\PendingApprovalsWidget,
-            new \Aero\DMS\Widgets\SharedWithMeWidget,
-        ]);
     }
 
     /**

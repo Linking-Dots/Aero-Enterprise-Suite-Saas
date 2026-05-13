@@ -2,6 +2,10 @@
 
 namespace Aero\Rfi;
 
+use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
+use Aero\Core\Services\DashboardRegistry;
+use Aero\Platform\AeroPlatformServiceProvider;
+use Aero\Rfi\Contracts\NcrBlockingServiceInterface;
 use Aero\Rfi\Providers\RfiModuleProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -44,13 +48,13 @@ class AeroRfiServiceProvider extends ServiceProvider
      */
     protected function registerQualityFallback(): void
     {
-        $interfaceName = \Aero\Rfi\Contracts\NcrBlockingServiceInterface::class;
+        $interfaceName = NcrBlockingServiceInterface::class;
 
         // Only register fallback if not already bound
         if (! $this->app->bound($interfaceName)) {
             $this->app->singleton($interfaceName, function () {
                 // Return a null implementation that doesn't block anything
-                return new class implements \Aero\Rfi\Contracts\NcrBlockingServiceInterface
+                return new class implements NcrBlockingServiceInterface
                 {
                     public function getBlockingNcrsInRange(int $projectId, float $startChainage, float $endChainage): array
                     {
@@ -80,9 +84,6 @@ class AeroRfiServiceProvider extends ServiceProvider
         // Register routes
         $this->registerRoutes();
 
-        // Register dashboard widgets for Core Dashboard
-        $this->registerDashboardWidgets();
-
         // Register RFI dashboards
         $this->registerDashboards();
 
@@ -93,29 +94,6 @@ class AeroRfiServiceProvider extends ServiceProvider
 
         // NOTE: Frontend is handled by aero/ui package
         // This package is backend-only (controllers, models, services)
-    }
-
-    /**
-     * Register RFI widgets for the Core Dashboard.
-     *
-     * These are ACTION/ALERT/SUMMARY widgets only.
-     * Full analytics stay on RFI Dashboard (/rfi/dashboard).
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        // Only register if the registry is available
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        // Register RFI widgets for Core Dashboard
-        $registry->registerMany([
-            new \Aero\Rfi\Widgets\MyRfiStatusWidget,
-            new \Aero\Rfi\Widgets\PendingInspectionsWidget,
-            new \Aero\Rfi\Widgets\OverdueRfisWidget,
-        ]);
     }
 
     /**
@@ -140,7 +118,7 @@ class AeroRfiServiceProvider extends ServiceProvider
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([
                     'web',
-                    \Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral::class,
+                    InitializeTenancyIfNotCentral::class,
                     'tenant',
                 ])
                 ->prefix('rfi')
@@ -181,7 +159,7 @@ class AeroRfiServiceProvider extends ServiceProvider
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([
                     'api',
-                    \Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral::class,
+                    InitializeTenancyIfNotCentral::class,
                     'tenant',
                 ])->group($apiRoutesPath);
         } else {
@@ -202,7 +180,7 @@ class AeroRfiServiceProvider extends ServiceProvider
             return isPlatformActive();
         }
 
-        return class_exists(\Aero\Platform\AeroPlatformServiceProvider::class);
+        return class_exists(AeroPlatformServiceProvider::class);
     }
 
     /**
@@ -224,11 +202,11 @@ class AeroRfiServiceProvider extends ServiceProvider
      */
     protected function registerDashboards(): void
     {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardRegistry::class)) {
+        if (! $this->app->bound(DashboardRegistry::class)) {
             return;
         }
 
-        $registry = $this->app->make(\Aero\Core\Services\DashboardRegistry::class);
+        $registry = $this->app->make(DashboardRegistry::class);
 
         $registry->register(
             'rfi.dashboard',

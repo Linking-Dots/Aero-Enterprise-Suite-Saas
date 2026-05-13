@@ -3,6 +3,7 @@
 namespace Aero\Finance\Providers;
 
 use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Core\Services\ModuleRegistry;
 
 /**
  * Finance Module Provider
@@ -270,29 +271,7 @@ class FinanceModuleProvider extends AbstractModuleProvider
      */
     protected function bootModule(): void
     {
-        // Register dashboard widgets
-        $this->registerDashboardWidgets();
-
         // Register module-specific middleware, policies, etc.
-    }
-
-    /**
-     * Register dashboard widgets for Core Dashboard.
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        $registry->registerMany([
-            new \Aero\Finance\Widgets\PendingInvoicesWidget,
-            new \Aero\Finance\Widgets\ExpenseApprovalWidget,
-            new \Aero\Finance\Widgets\CashFlowWidget,
-            new \Aero\Finance\Widgets\BudgetOverviewWidget,
-        ]);
     }
 
     /**
@@ -303,7 +282,7 @@ class FinanceModuleProvider extends AbstractModuleProvider
         parent::register();
 
         // Register this module with the registry
-        $registry = $this->app->make(\Aero\Core\Services\ModuleRegistry::class);
+        $registry = $this->app->make(ModuleRegistry::class);
         $registry->register($this);
     }
 }

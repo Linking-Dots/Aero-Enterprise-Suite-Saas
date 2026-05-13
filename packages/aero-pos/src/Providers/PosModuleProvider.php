@@ -3,6 +3,8 @@
 namespace Aero\Pos\Providers;
 
 use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Core\Services\ModuleRegistry;
+use Aero\Pos\Services\POSService;
 
 /**
  * POS Module Provider
@@ -133,39 +135,18 @@ class PosModuleProvider extends AbstractModuleProvider
     protected function registerServices(): void
     {
         // Register POS service
-        $this->app->singleton(\Aero\Pos\Services\POSService::class);
+        $this->app->singleton(POSService::class);
     }
 
     protected function bootModule(): void
     {
-        // Register dashboard widgets
-        $this->registerDashboardWidgets();
-
         // Register module-specific middleware, policies, etc.
-    }
-
-    /**
-     * Register dashboard widgets for Core Dashboard.
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        $registry->registerMany([
-            new \Aero\Pos\Widgets\TodaysSalesWidget,
-            new \Aero\Pos\Widgets\OpenCashRegistersWidget,
-            new \Aero\Pos\Widgets\TopSellingItemsWidget,
-        ]);
     }
 
     public function register(): void
     {
         parent::register();
-        $registry = $this->app->make(\Aero\Core\Services\ModuleRegistry::class);
+        $registry = $this->app->make(ModuleRegistry::class);
         $registry->register($this);
     }
 }

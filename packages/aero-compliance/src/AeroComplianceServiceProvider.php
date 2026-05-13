@@ -3,6 +3,8 @@
 namespace Aero\Compliance;
 
 use Aero\Compliance\Providers\ComplianceModuleProvider;
+use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
+use Aero\Core\Services\DashboardRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,9 +48,6 @@ class AeroComplianceServiceProvider extends ServiceProvider
         // Register dashboards
         $this->registerDashboards();
 
-        // Register dashboard widgets
-        $this->registerDashboardWidgets();
-
         // Publish configuration
         $this->publishes([
             __DIR__.'/../config/module.php' => config_path('modules/compliance.php'),
@@ -91,7 +90,7 @@ class AeroComplianceServiceProvider extends ServiceProvider
                 $route->domain('{tenant}.'.$platformDomain)
                     ->middleware([
                         'web',
-                        \Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral::class,
+                        InitializeTenancyIfNotCentral::class,
                         'tenant',
                     ]);
             } else {
@@ -120,11 +119,11 @@ class AeroComplianceServiceProvider extends ServiceProvider
      */
     protected function registerDashboards(): void
     {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardRegistry::class)) {
+        if (! $this->app->bound(DashboardRegistry::class)) {
             return;
         }
 
-        $registry = $this->app->make(\Aero\Core\Services\DashboardRegistry::class);
+        $registry = $this->app->make(DashboardRegistry::class);
 
         $registry->register(
             'compliance.dashboard',
@@ -134,23 +133,5 @@ class AeroComplianceServiceProvider extends ServiceProvider
             'ShieldCheckIcon',
             'compliance.dashboard.view'
         );
-    }
-
-    /**
-     * Register dashboard widgets for Core Dashboard.
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        $registry->registerMany([
-            new \Aero\Compliance\Widgets\PendingComplianceActionsWidget,
-            new \Aero\Compliance\Widgets\ComplianceScoreWidget,
-            new \Aero\Compliance\Widgets\UpcomingComplianceAuditsWidget,
-        ]);
     }
 }

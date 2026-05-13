@@ -3,6 +3,7 @@
 namespace Aero\Project\Providers;
 
 use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Core\Services\ModuleRegistry;
 
 /**
  * Project Module Provider
@@ -188,34 +189,12 @@ class ProjectModuleProvider extends AbstractModuleProvider
     protected function bootModule(): void
     {
         // Register module-specific middleware, policies, etc.
-
-        // Register dashboard widgets
-        $this->registerDashboardWidgets();
-    }
-
-    /**
-     * Register dashboard widgets for Core Dashboard.
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        $registry->registerMany([
-            new \Aero\Project\Widgets\MyTasksWidget,
-            new \Aero\Project\Widgets\OverdueTasksWidget,
-            new \Aero\Project\Widgets\ProjectProgressWidget,
-            new \Aero\Project\Widgets\UpcomingMilestonesWidget,
-        ]);
     }
 
     public function register(): void
     {
         parent::register();
-        $registry = $this->app->make(\Aero\Core\Services\ModuleRegistry::class);
+        $registry = $this->app->make(ModuleRegistry::class);
         $registry->register($this);
     }
 

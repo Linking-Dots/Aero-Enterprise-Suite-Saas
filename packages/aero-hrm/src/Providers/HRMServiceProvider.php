@@ -5,7 +5,6 @@ namespace Aero\HRM\Providers;
 use Aero\Contracts\EmployeeServiceContract;
 use Aero\Core\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Core\Services\ModuleRegistry;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\HRM\Console\Commands\SendOnboardingRemindersCommand;
@@ -42,15 +41,6 @@ use Aero\HRM\Services\HRMetricsAggregatorService;
 use Aero\HRM\Services\HrmNotificationChannelResolver;
 use Aero\HRM\Services\LeaveBalanceService;
 use Aero\HRM\Services\PayrollCalculationService;
-use Aero\HRM\Widgets\MyGoalsWidget;
-use Aero\HRM\Widgets\MyLeaveBalanceWidget;
-use Aero\HRM\Widgets\OrganizationInfoWidget;
-use Aero\HRM\Widgets\PayrollSummaryWidget;
-use Aero\HRM\Widgets\PendingLeaveApprovalsWidget;
-use Aero\HRM\Widgets\PendingReviewsWidget;
-use Aero\HRM\Widgets\PunchStatusWidget;
-use Aero\HRM\Widgets\TeamAttendanceWidget;
-use Aero\HRM\Widgets\UpcomingHolidaysWidget;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 
@@ -175,9 +165,6 @@ class HRMServiceProvider extends AbstractModuleProvider
         // Register scheduled jobs
         $this->registerScheduledJobs();
 
-        // Register dashboard widgets for Core Dashboard
-        $this->registerDashboardWidgets();
-
         // Register HRM dashboards with DashboardRegistry
         $this->registerDashboards();
     }
@@ -259,38 +246,6 @@ class HRMServiceProvider extends AbstractModuleProvider
                 'icon' => 'UserIcon',
                 'requiredPermission' => 'hrm.employee-self-service',
             ],
-        ]);
-    }
-
-    /**
-     * Register HRM widgets for the Core Dashboard.
-     *
-     * These are ACTION/ALERT/SUMMARY widgets only.
-     * Full analytics stay on HRM Dashboard (/hrm/dashboard).
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        // Only register if the registry is available
-        if (! $this->app->bound(DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(DashboardWidgetRegistry::class);
-
-        // Register HRM widgets for Core Dashboard
-        $registry->registerMany([
-            // Leave & Attendance widgets
-            new PunchStatusWidget,
-            new MyLeaveBalanceWidget,
-            new PendingLeaveApprovalsWidget,
-            new UpcomingHolidaysWidget,
-            new OrganizationInfoWidget,
-            // Performance Management widgets
-            new MyGoalsWidget,
-            new PendingReviewsWidget,
-            // Manager widgets
-            new TeamAttendanceWidget,
-            new PayrollSummaryWidget,
         ]);
     }
 
@@ -408,7 +363,7 @@ class HRMServiceProvider extends AbstractModuleProvider
             Leave::class => LeavePolicy::class,
             Attendance::class => AttendancePolicy::class,
             SafetyInspection::class => SafetyInspectionPolicy::class,
-                    SafetyTraining::class => SafetyTrainingPolicy::class,
+            SafetyTraining::class => SafetyTrainingPolicy::class,
         ];
 
         foreach ($policies as $model => $policy) {

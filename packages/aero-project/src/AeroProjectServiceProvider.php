@@ -2,6 +2,8 @@
 
 namespace Aero\Project;
 
+use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
+use Aero\Core\Services\DashboardRegistry;
 use Aero\Project\Adapters\DepartmentResolverAdapter;
 use Aero\Project\Adapters\ProjectAuthorizationAdapter;
 use Aero\Project\Adapters\UserResolverAdapter;
@@ -99,9 +101,6 @@ class AeroProjectServiceProvider extends ServiceProvider
         // Register dashboards
         $this->registerDashboards();
 
-        // Register dashboard widgets
-        $this->registerDashboardWidgets();
-
         // Publish configuration
         $this->publishConfigurations();
     }
@@ -159,7 +158,7 @@ class AeroProjectServiceProvider extends ServiceProvider
                 Route::domain('{tenant}.'.$platformDomain)
                     ->middleware([
                         'web',
-                        \Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral::class,
+                        InitializeTenancyIfNotCentral::class,
                         'tenant',
                     ])->group($webRoutesPath);
             } else {
@@ -175,7 +174,7 @@ class AeroProjectServiceProvider extends ServiceProvider
                 Route::domain('{tenant}.'.$platformDomain)
                     ->middleware([
                         'api',
-                        \Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral::class,
+                        InitializeTenancyIfNotCentral::class,
                         'tenant',
                     ])->group($apiRoutesPath);
             } else {
@@ -189,11 +188,11 @@ class AeroProjectServiceProvider extends ServiceProvider
      */
     protected function registerDashboards(): void
     {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardRegistry::class)) {
+        if (! $this->app->bound(DashboardRegistry::class)) {
             return;
         }
 
-        $registry = $this->app->make(\Aero\Core\Services\DashboardRegistry::class);
+        $registry = $this->app->make(DashboardRegistry::class);
 
         $registry->register(
             'project.dashboard',
@@ -203,22 +202,5 @@ class AeroProjectServiceProvider extends ServiceProvider
             'BriefcaseIcon',
             'project.dashboard.view'
         );
-    }
-
-    /**
-     * Register dashboard widgets for Core Dashboard.
-     */
-    protected function registerDashboardWidgets(): void
-    {
-        if (! $this->app->bound(\Aero\Core\Services\DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(\Aero\Core\Services\DashboardWidgetRegistry::class);
-
-        $registry->registerMany([
-            new \Aero\Project\Widgets\MyTasksWidget,
-            new \Aero\Project\Widgets\OverdueTasksWidget,
-        ]);
     }
 }
