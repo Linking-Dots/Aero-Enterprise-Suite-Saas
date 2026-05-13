@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
  * Represents a functional area within a module (e.g., Employees within HRM)
  * Contains components and has its own permission requirements.
  */
-class SubModule extends Model
+class SubModule extends CentralModel
 {
     use HasFactory, SoftDeletes;
 

@@ -5,7 +5,7 @@ namespace Aero\Platform\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class QuotaWarning extends Model
+class QuotaWarning extends CentralModel
 {
     protected $fillable = [
         'tenant_id',

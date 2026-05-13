@@ -5,7 +5,7 @@ namespace Aero\Platform\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SubscriptionAuditLog extends Model
+class SubscriptionAuditLog extends CentralModel
 {
     protected $table = 'subscription_audit_logs';
 

@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  *
  * Manages newsletter subscriptions for platform marketing.
  */
-class NewsletterSubscriber extends Model
+class NewsletterSubscriber extends CentralModel
 {
     use HasFactory;
     use SoftDeletes;

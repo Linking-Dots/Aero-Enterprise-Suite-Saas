@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $tax_id VAT/GST number
  * @property string|null $tax_id_type eu_vat, us_ein, etc.
  */
-class TenantBillingAddress extends Model
+class TenantBillingAddress extends CentralModel
 {
     /**
      * The attributes that are mass assignable.

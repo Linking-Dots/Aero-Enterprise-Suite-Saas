@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $unit_price DECIMAL
  * @property string $amount DECIMAL (quantity × unit_price − discount)
  */
-class InvoiceLineItem extends Model
+class InvoiceLineItem extends CentralModel
 {
     use HasUuids;
 

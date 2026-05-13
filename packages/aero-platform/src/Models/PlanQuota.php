@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PlanQuota extends Model
+class PlanQuota extends CentralModel
 {
     use HasFactory;
     use HasUuids;

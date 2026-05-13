@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Represents potential customers who have shown interest in the platform
  * but haven't yet registered as tenants.
  */
-class ProspectLead extends Model
+class ProspectLead extends CentralModel
 {
     use HasFactory;
     use SoftDeletes;

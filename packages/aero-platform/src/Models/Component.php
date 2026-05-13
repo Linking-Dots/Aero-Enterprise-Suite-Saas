@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $priority
  * @property bool $is_active
  */
-class Component extends Model
+class Component extends CentralModel
 {
     use HasFactory;
     use SoftDeletes;

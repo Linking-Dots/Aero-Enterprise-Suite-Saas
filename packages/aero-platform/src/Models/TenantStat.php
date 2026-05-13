@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array|null $module_usage
  * @property Carbon $created_at
  */
-class TenantStat extends Model
+class TenantStat extends CentralModel
 {
     /**
      * Use the central database connection.

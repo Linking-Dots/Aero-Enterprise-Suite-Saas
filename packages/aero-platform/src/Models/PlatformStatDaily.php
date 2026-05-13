@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon $created_at
  * @property Carbon|null $updated_at
  */
-class PlatformStatDaily extends Model
+class PlatformStatDaily extends CentralModel
 {
     /**
      * Use the central database connection.

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProductSubscription extends Model
+class ProductSubscription extends CentralModel
 {
     use HasUuids, SoftDeletes;
 

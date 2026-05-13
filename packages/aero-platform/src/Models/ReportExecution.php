@@ -5,7 +5,7 @@ namespace Aero\Platform\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ReportExecution extends Model
+class ReportExecution extends CentralModel
 {
     protected $fillable = [
         'scheduled_report_id',

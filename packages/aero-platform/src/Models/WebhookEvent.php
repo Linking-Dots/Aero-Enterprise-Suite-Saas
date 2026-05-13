@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Duplicate deliveries from Stripe or other providers are safely skipped
  * by checking this table before processing.
  */
-class WebhookEvent extends Model
+class WebhookEvent extends CentralModel
 {
     use HasUuids;
 

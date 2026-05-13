@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Carbon\Carbon|null $subscribed_at When the tenant subscribed to the module
  * @property \Carbon\Carbon|null $unsubscribed_at When the tenant unsubscribed (if applicable)
  */
-class TenantModule extends Model
+class TenantModule extends CentralModel
 {
     /**
      * The connection name for the model.

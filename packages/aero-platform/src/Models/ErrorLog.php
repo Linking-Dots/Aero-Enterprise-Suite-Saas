@@ -40,7 +40,7 @@ use Illuminate\Support\Str;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class ErrorLog extends Model
+class ErrorLog extends CentralModel
 {
     use HasFactory;
 

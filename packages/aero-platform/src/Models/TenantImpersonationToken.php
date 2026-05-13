@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  * @property string $redirect_url Where to redirect after login
  * @property Carbon $created_at Token creation timestamp
  */
-class TenantImpersonationToken extends Model
+class TenantImpersonationToken extends CentralModel
 {
     /**
      * Token expiration time in minutes.

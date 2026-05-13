@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks commission payouts to affiliates.
  */
-class AffiliatePayout extends Model
+class AffiliatePayout extends CentralModel
 {
     use HasFactory;
 

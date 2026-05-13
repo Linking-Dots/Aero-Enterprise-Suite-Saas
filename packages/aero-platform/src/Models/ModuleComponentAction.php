@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Represents granular actions that can be performed on a component.
  * Examples: view, create, update, delete, export, import, approve, etc.
  */
-class ModuleComponentAction extends Model
+class ModuleComponentAction extends CentralModel
 {
     use HasFactory;
 

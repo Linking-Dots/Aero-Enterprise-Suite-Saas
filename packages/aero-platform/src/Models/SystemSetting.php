@@ -10,7 +10,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Throwable;
 
-class SystemSetting extends Model implements HasMedia
+class SystemSetting extends CentralModel implements HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;

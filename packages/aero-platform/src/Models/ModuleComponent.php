@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  * Represents a specific UI component or feature within a module/sub-module
  * that requires permission control (pages, sections, widgets, actions, APIs).
  */
-class ModuleComponent extends Model
+class ModuleComponent extends CentralModel
 {
     use HasFactory;
 

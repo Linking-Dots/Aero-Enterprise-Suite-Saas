@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class EnterprisePlanRequest extends Model
+class EnterprisePlanRequest extends CentralModel
 {
     use HasUuids, SoftDeletes;
 

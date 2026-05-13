@@ -16,7 +16,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  *
  * Manages SEO settings for platform pages (landing, pricing, features, etc.).
  */
-class PlatformPage extends Model implements HasMedia
+class PlatformPage extends CentralModel implements HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;

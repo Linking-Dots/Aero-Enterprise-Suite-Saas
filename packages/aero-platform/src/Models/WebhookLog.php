@@ -5,7 +5,7 @@ namespace Aero\Platform\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WebhookLog extends Model
+class WebhookLog extends CentralModel
 {
     use HasFactory;
 

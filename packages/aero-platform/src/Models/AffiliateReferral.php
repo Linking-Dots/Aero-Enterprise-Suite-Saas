@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Tracks individual referrals from affiliates.
  */
-class AffiliateReferral extends Model
+class AffiliateReferral extends CentralModel
 {
     use HasFactory;
 

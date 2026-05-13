@@ -16,7 +16,7 @@ use Illuminate\Support\Collection;
  * Represents a top-level application module (HRM, CRM, DMS, etc.)
  * Used for organizing the application into logical functional areas.
  */
-class Module extends Model
+class Module extends CentralModel
 {
     use HasFactory, SoftDeletes;
 

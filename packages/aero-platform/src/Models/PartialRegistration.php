@@ -23,7 +23,7 @@ use Illuminate\Notifications\Notifiable;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class PartialRegistration extends Model
+class PartialRegistration extends CentralModel
 {
     use HasFactory;
     use Notifiable;

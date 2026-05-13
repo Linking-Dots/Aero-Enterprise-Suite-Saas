@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $amount_paid DECIMAL amount paid
  * @property string $amount_due DECIMAL remaining amount due
  */
-class Invoice extends Model
+class Invoice extends CentralModel
 {
     use HasUuids, SoftDeletes;
 

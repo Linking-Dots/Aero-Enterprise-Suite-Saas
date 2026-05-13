@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
  *
  * Represents referral partners who earn commissions for bringing new tenants.
  */
-class Affiliate extends Model
+class Affiliate extends CentralModel
 {
     use HasFactory;
     use SoftDeletes;

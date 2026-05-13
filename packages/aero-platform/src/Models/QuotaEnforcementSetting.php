@@ -4,7 +4,7 @@ namespace Aero\Platform\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class QuotaEnforcementSetting extends Model
+class QuotaEnforcementSetting extends CentralModel
 {
     protected $fillable = [
         'quota_type',

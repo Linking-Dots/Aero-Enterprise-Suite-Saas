@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * Stores rate limiting configurations for tenants and global settings
  */
-class RateLimitConfig extends Model
+class RateLimitConfig extends CentralModel
 {
     use HasUuids;
 

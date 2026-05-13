@@ -5,7 +5,7 @@ namespace Aero\Platform\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
-class ExchangeRate extends Model
+class ExchangeRate extends CentralModel
 {
     protected $fillable = [
         'from_currency',

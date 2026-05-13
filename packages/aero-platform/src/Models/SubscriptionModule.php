@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Carbon\Carbon|null $trial_ends_at
  * @property \Carbon\Carbon|null $ends_at
  */
-class SubscriptionModule extends Model
+class SubscriptionModule extends CentralModel
 {
     use HasFactory, HasUuids, SoftDeletes;
 
