@@ -4,6 +4,8 @@ namespace Aero\Platform\Listeners;
 
 use Aero\Core\Services\Module\ModuleDiscoveryService;
 use Aero\Core\Services\ModuleRegistry;
+use Aero\Platform\Models\Module;
+use Aero\Platform\Services\Tenant\TenantRoleSeeder;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -83,6 +85,9 @@ class TenantCreatedListener implements ShouldQueue
 
             // Step 3: Seed essential tenant data
             $this->seedTenantData($tenant);
+
+            // Step 4: Seed default HRMAC roles (Tenant Admin + Tenant User)
+            $this->seedTenantRoles($tenant);
 
             Log::info("[TenantCreated] Tenant setup completed successfully for: {$tenant->id}");
         } catch (\Throwable $e) {
@@ -233,7 +238,7 @@ class TenantCreatedListener implements ShouldQueue
             }
 
             foreach ($selectedModules as $moduleCode) {
-                $module = \Aero\Platform\Models\Module::where('code', $moduleCode)->first();
+                $module = Module::where('code', $moduleCode)->first();
                 if ($module) {
                     DB::table('tenant_module')->insert([
                         'tenant_id' => $tenant->id,
@@ -255,6 +260,20 @@ class TenantCreatedListener implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
             // Don't throw - module seeding failure shouldn't prevent tenant creation
+        }
+    }
+
+    /**
+     * Seed default HRMAC roles (Tenant Admin + Tenant User) for the tenant.
+     * Failures are swallowed so a role-seeding issue never blocks tenant provisioning.
+     */
+    protected function seedTenantRoles($tenant): void
+    {
+        try {
+            app(TenantRoleSeeder::class)->seedFor($tenant);
+        } catch (\Throwable $e) {
+            Log::error("[TenantCreated] Role seeding failed for tenant {$tenant->id}: ".$e->getMessage());
+            // Do not rethrow — tenant is provisioned, admin can manually re-run via artisan
         }
     }
 
