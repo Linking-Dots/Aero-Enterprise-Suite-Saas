@@ -2,10 +2,9 @@
 
 namespace Aero\Core\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserInvitation extends Model
+class UserInvitation extends TenantModel
 {
     protected $fillable = [
         'email',

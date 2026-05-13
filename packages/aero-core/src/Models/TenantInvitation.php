@@ -4,7 +4,6 @@ namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -33,7 +32,7 @@ use Illuminate\Support\Str;
  * @property-read bool $is_accepted
  * @property-read bool $is_cancelled
  */
-class TenantInvitation extends Model
+class TenantInvitation extends TenantModel
 {
     use HasFactory, Notifiable;
 

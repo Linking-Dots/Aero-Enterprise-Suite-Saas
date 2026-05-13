@@ -4,7 +4,6 @@ namespace Aero\Core\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -24,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class UserNavigationAnalytic extends Model
+class UserNavigationAnalytic extends TenantModel
 {
     protected $fillable = [
         'user_id',

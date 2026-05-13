@@ -3,9 +3,8 @@
 namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class CompanySetting extends Model
+class CompanySetting extends TenantModel
 {
     use HasFactory;
 

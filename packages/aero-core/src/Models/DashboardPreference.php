@@ -3,7 +3,6 @@
 namespace Aero\Core\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -20,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class DashboardPreference extends Model
+class DashboardPreference extends TenantModel
 {
     protected $fillable = [
         'user_id',

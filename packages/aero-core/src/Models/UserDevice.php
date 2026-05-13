@@ -4,10 +4,9 @@ namespace Aero\Core\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserDevice extends Model
+class UserDevice extends TenantModel
 {
     use HasFactory;
 
