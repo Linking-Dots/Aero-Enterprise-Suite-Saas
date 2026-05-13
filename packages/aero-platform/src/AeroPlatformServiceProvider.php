@@ -4,14 +4,22 @@ namespace Aero\Platform;
 
 use Aero\Auth\Context\TenantAuthContext;
 use Aero\Auth\Contracts\AuthContext;
+use Aero\Core\Contracts\MailSenderInterface;
+use Aero\Core\Contracts\PlanCatalogInterface;
+use Aero\Core\Contracts\ProductAccessInterface;
+use Aero\Core\Contracts\SmsGatewayInterface;
 use Aero\Core\Contracts\TenantScopeInterface;
+use Aero\Core\Contracts\TranslationDriverInterface;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
 use Aero\I18n\Http\Middleware\SetLocale;
+use Aero\I18n\Services\TranslationService;
 use Aero\Notifications\Contracts\MailContextResolver;
 use Aero\Notifications\Contracts\SmsContextResolver;
+use Aero\Notifications\Services\Mail\MailService;
+use Aero\Notifications\Services\Sms\SmsGatewayService;
 use Aero\Platform\Auth\LandlordAuthContext;
 use Aero\Platform\Bootstrappers\CachePrefixTenancyBootstrapper;
 use Aero\Platform\Console\Commands\CleanupFailedInstallation;
@@ -225,11 +233,11 @@ class AeroPlatformServiceProvider extends ServiceProvider
 
         // Interface bindings for aero-core compatibility (standalone mode uses class_exists guard)
         $this->app->singleton(
-            \Aero\Core\Contracts\ProductAccessInterface::class,
+            ProductAccessInterface::class,
             ProductAccessService::class
         );
         $this->app->singleton(
-            \Aero\Core\Contracts\PlanCatalogInterface::class,
+            PlanCatalogInterface::class,
             PlatformPlanService::class
         );
 
@@ -243,6 +251,13 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Bind notification context resolvers to platform implementations
         $this->app->singleton(MailContextResolver::class, PlatformMailContextResolver::class);
         $this->app->singleton(SmsContextResolver::class, PlatformSmsContextResolver::class);
+
+        // aero-core interface bindings for mail/SMS services
+        $this->app->singleton(MailSenderInterface::class, MailService::class);
+        $this->app->singleton(SmsGatewayInterface::class, SmsGatewayService::class);
+
+        // aero-core TranslationDriverInterface — override the anonymous-class default registered in Core
+        $this->app->singleton(TranslationDriverInterface::class, TranslationService::class);
 
         // Configure auth guards and providers programmatically
         $this->configureAuth();

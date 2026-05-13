@@ -4,8 +4,10 @@ namespace Aero\Core;
 
 use Aero\Core\Contracts\EmployeeServiceContract;
 use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Core\Contracts\MailContextResolverInterface;
 use Aero\Core\Contracts\NotificationChannelInterface;
 use Aero\Core\Contracts\NotificationRoutingContract;
+use Aero\Core\Contracts\SmsContextResolverInterface;
 use Aero\Core\Contracts\TenantScopeInterface;
 use Aero\Core\Contracts\TranslationDriverInterface;
 use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
@@ -46,8 +48,6 @@ use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRM\Services\EmployeeService;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Services\RoleModuleAccessService;
-use Aero\Notifications\Contracts\MailContextResolver;
-use Aero\Notifications\Contracts\SmsContextResolver;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Migrations\Migrator;
@@ -137,9 +137,13 @@ class AeroCoreServiceProvider extends ServiceProvider
             $this->app->singleton(DashboardWidgetRegistry::class);
             $this->app->singleton(DashboardRegistry::class);
 
-            // Bind notification context resolvers to new aero-notifications package
-            $this->app->singleton(MailContextResolver::class, CoreMailContextResolver::class);
-            $this->app->singleton(SmsContextResolver::class, CoreSmsContextResolver::class);
+            // Bind notification context resolvers — use aero-core interfaces as the canonical binding
+            $this->app->singleton(MailContextResolverInterface::class, CoreMailContextResolver::class);
+            $this->app->singleton(SmsContextResolverInterface::class, CoreSmsContextResolver::class);
+            if (class_exists('Aero\\Notifications\\Contracts\\MailContextResolver')) {
+                $this->app->singleton('Aero\\Notifications\\Contracts\\MailContextResolver', CoreMailContextResolver::class);
+                $this->app->singleton('Aero\\Notifications\\Contracts\\SmsContextResolver', CoreSmsContextResolver::class);
+            }
 
             // Register Module Access Services (with error handling for missing tables)
             // These services are lazy-loaded, so they won't cause issues pre-install

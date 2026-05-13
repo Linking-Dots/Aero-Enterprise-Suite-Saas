@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace Aero\Notifications\Contracts;
 
-interface SmsContextResolver
-{
-    /**
-     * Resolve current SMS configuration.
-     *
-     * @return array{
-     *     configured: bool,
-     *     provider: string,
-     *     credentials: array<string, mixed>,
-     * }
-     */
-    public function resolve(): array;
-}
+use Aero\Core\Contracts\SmsContextResolverInterface;
+
+/**
+ * Extends the aero-core contract so implementations can be bound to either
+ * interface in the container.
+ */
+interface SmsContextResolver extends SmsContextResolverInterface {}
