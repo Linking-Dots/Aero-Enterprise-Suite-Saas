@@ -3,6 +3,7 @@
 namespace Aero\Platform\Http\Controllers\Marketplace;
 
 use Aero\Platform\Models\Product;
+use Aero\Platform\Models\StandaloneLicense;
 use Aero\Platform\Services\LicenseIssuer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -117,6 +118,15 @@ class PurchaseController extends Controller
     private function handleSuccessfulPurchase(object $session): void
     {
         try {
+            $orderId = $session->payment_intent;
+
+            // Idempotency check: skip if this order was already processed
+            if (StandaloneLicense::where('external_order_id', $orderId)->exists()) {
+                Log::info('Duplicate marketplace webhook ignored', ['payment_intent' => $orderId]);
+
+                return;
+            }
+
             $metadata = (array) $session->metadata;
             $productCode = $metadata['product_code'];
             $billingType = $metadata['billing_cycle'] === 'annual' ? 'annual' : 'one_time';
@@ -126,7 +136,7 @@ class PurchaseController extends Controller
                 customerEmail: $session->customer_email,
                 billingType: $billingType,
                 source: 'marketplace',
-                orderId: $session->payment_intent,
+                orderId: $orderId,
                 customerName: $metadata['customer_name'] ?? null,
             );
 
