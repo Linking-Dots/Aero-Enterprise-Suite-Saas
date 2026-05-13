@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Aero\Installation\Installation\Steps;
 

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Aero\Core\Http\Controllers\Admin;
 

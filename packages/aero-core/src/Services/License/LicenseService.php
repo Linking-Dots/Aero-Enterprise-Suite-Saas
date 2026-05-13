@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // packages/aero-core/src/Services/License/LicenseService.php
 
