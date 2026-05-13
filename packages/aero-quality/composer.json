@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/quality",
     "description": "Quality Management System module for Aero ERP",
     "type": "library",
@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.2",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
+        "aero/contracts": "^1.0"
     },
     "extra": {
         "laravel": {

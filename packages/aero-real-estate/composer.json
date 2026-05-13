@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/real-estate",
     "description": "Real Estate Management System - Property Management, MLS Integration, Lease Management",
     "type": "library",
@@ -7,7 +7,7 @@
         "php": "^8.2|^8.3",
         "laravel/framework": "^11.0|^12.0",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
+        "aero/contracts": "^1.0"
     },
     "autoload": {
         "psr-4": {

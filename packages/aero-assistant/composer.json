@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/assistant",
     "description": "Aero AI Assistant Module - RAG-based intelligent assistant for user guidance and task automation",
     "type": "library",
@@ -22,7 +22,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.0|^12.0",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",,
+        "aero/contracts": "^1.0",
         "guzzlehttp/guzzle": "^7.8",
         "pgvector/pgvector": "^0.2"
     },

@@ -1,4 +1,4 @@
-﻿
+
 {
   "name": "aero/hrm",
   "version": "1.0.0",
@@ -16,7 +16,7 @@
     "php": "^8.2",
     "laravel/framework": "^11.0|^12.0",
     "aero/core": "^1.0",
-        "aero/contracts": "^1.0",,
+        "aero/contracts": "^1.0",
     "inertiajs/inertia-laravel": "^2.0",
     "spatie/laravel-permission": "^6.20",
     "spatie/laravel-activitylog": "^4.10",

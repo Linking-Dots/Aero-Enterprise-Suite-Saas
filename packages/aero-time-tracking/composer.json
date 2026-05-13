@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/time-tracking",
     "description": "Universal Time Tracking for aeos365 - time entries, timesheets, approval, project tracking, billing integration, and reporting",
     "type": "library",

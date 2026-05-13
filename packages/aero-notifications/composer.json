@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/notifications",
     "description": "Aero Notifications Engine - Unified mail, SMS, push, web/broadcast, and database notification pipeline",
     "type": "library",

@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/installation",
     "description": "Aero Installation Package - Unified installation wizard for both SaaS and standalone modes",
     "type": "library",
@@ -19,7 +19,7 @@
     "require": {
         "php": "^8.2",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",,
+        "aero/contracts": "^1.0",
         "laravel/framework": "^11.0|^12.0",
         "inertiajs/inertia-laravel": "^2.0",
         "tightenco/ziggy": "^2.0"

@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/dms",
     "description": "Document Management System module for aeos365",
     "type": "library",
@@ -12,7 +12,7 @@
     "require": {
         "php": "^8.2",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
+        "aero/contracts": "^1.0"
     },
     "autoload": {
         "psr-4": {

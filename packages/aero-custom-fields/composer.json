@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/custom-fields",
     "description": "Custom Fields System for aeos365 - cross-module custom field definitions, field types, and validation rules",
     "type": "library",
@@ -18,6 +18,6 @@
     "require": {
         "php": "^8.2",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
+        "aero/contracts": "^1.0"
     }
 }

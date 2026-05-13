@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/automation",
     "description": "Business Process Automation for aeos365 - scheduled tasks, RPA, event triggers, webhooks, and API automation",
     "type": "library",

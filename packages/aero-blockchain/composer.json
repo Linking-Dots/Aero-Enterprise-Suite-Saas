@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/blockchain",
     "description": "Aero Blockchain Module - Distributed ledger technology integration for enterprise applications with smart contracts, transaction verification, and consensus mechanisms",
     "type": "library",
@@ -24,7 +24,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.0|^12.0",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",,
+        "aero/contracts": "^1.0",
         "guzzlehttp/guzzle": "^7.8",
         "web3p/web3.php": "^0.1",
         "kornrunner/keccak": "^1.1",

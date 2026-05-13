@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/helpdesk",
     "description": "IT Helpdesk and Support for aeos365 - ticket management, SLA, knowledge base, agent assignment, and customer portal",
     "type": "library",

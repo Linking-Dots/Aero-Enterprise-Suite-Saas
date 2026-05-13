@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/forms",
     "description": "Dynamic Form Builder for aeos365 - cross-module form builder with templates, validations, and PDF generation",
     "type": "library",
@@ -18,6 +18,6 @@
     "require": {
         "php": "^8.2",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
+        "aero/contracts": "^1.0"
     }
 }

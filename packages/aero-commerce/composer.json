@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "aero/commerce",
     "description": "Aero Commerce Module - E-commerce Platform with Multi-vendor Support",
     "type": "library",
@@ -24,7 +24,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.0|^12.0",
         "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
+        "aero/contracts": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0",
