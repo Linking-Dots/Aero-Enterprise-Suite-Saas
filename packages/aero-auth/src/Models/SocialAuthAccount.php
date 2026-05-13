@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Models;
 
+use Aero\Core\Models\CentralModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  *
  * Stores OAuth provider links for social login.
  */
-class SocialAuthAccount extends Model
+class SocialAuthAccount extends CentralModel
 {
     use HasFactory;
 
@@ -95,7 +95,7 @@ class SocialAuthAccount extends Model
     /**
      * Link to an authenticatable model.
      */
-    public function linkTo(Model $authenticatable): bool
+    public function linkTo(\Illuminate\Database\Eloquent\Model $authenticatable): bool
     {
         return $this->update([
             'authenticatable_type' => get_class($authenticatable),
