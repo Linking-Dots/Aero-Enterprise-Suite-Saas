@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Base class for all models that live in the TENANT database.
  *
+ * @todo Plan Q: Move this class (and CentralModel) to packages/aero-contracts/src/
+ *   so that feature packages can depend on aero/contracts only, without aero/core.
+ *   Blocked by: aero-contracts currently requires only illuminate/support and illuminate/database;
+ *   TenantModel needs the full aero-core boot context (is_saas_mode(), TenantScopeInterface).
+ *   Resolution: extract is_saas_mode() to aero-contracts as a static helper first.
+ *
  * In SaaS mode: connection is switched to the tenant's DB by stancl/tenancy middleware.
  * In standalone mode: single DB is used; no switching occurs.
  *
