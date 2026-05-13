@@ -43,4 +43,3 @@ jobs:
             --configuration=../Aero-Enterprise-Suite-Saas/phpstan.neon \
             --no-progress \
             --error-format=github
-        continue-on-error: true
