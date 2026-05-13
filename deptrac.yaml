@@ -3,15 +3,48 @@
 
 parameters:
   paths:
+    # Foundation
     - packages/aero-core/src
     - packages/aero-platform/src
+    # Infrastructure
     - packages/aero-auth/src
-    - packages/aero-i18n/src
-    - packages/aero-notifications/src
     - packages/aero-hrmac/src
-    - packages/aero-hrm/src
-    - packages/aero-crm/src
+    - packages/aero-i18n/src
+    - packages/aero-installation/src
+    - packages/aero-notifications/src
+    - packages/aero-ui/src
+    # Feature modules
+    - packages/aero-analytics/src
+    - packages/aero-assistant/src
+    - packages/aero-automation/src
+    - packages/aero-blockchain/src
+    - packages/aero-booking/src
     - packages/aero-cms/src
+    - packages/aero-commerce/src
+    - packages/aero-compliance/src
+    - packages/aero-crm/src
+    - packages/aero-custom-fields/src
+    - packages/aero-dms/src
+    - packages/aero-eam/src
+    - packages/aero-education/src
+    - packages/aero-field-service/src
+    - packages/aero-finance/src
+    - packages/aero-forms/src
+    - packages/aero-healthcare/src
+    - packages/aero-helpdesk/src
+    - packages/aero-hrm/src
+    - packages/aero-ims/src
+    - packages/aero-integration/src
+    - packages/aero-iot/src
+    - packages/aero-manufacturing/src
+    - packages/aero-mobile/src
+    - packages/aero-pos/src
+    - packages/aero-project/src
+    - packages/aero-quality/src
+    - packages/aero-real-estate/src
+    - packages/aero-rfi/src
+    - packages/aero-scm/src
+    - packages/aero-time-tracking/src
     - packages/aero-workflow/src
 
   exclude_files:
@@ -33,12 +66,12 @@ layers:
   - name: Infrastructure
     collectors:
       - type: className
-        regex: ^Aero\\(Auth|I18n|Notifications|HRMAC)\\
+        regex: ^Aero\\(Auth|I18n|Notifications|HRMAC|Installation|UI)\\
 
   - name: Features
     collectors:
       - type: className
-        regex: ^Aero\\(HRM|CRM|Cms|Workflow)\\
+        regex: ^Aero\\(Analytics|Assistant|Automation|Blockchain|Booking|Cms|Commerce|Compliance|CRM|CustomFields|DMS|EAM|Education|FieldService|Finance|Forms|Healthcare|Helpdesk|HRM|IMS|Integration|IOT|Manufacturing|Mobile|POS|Project|Quality|RealEstate|RFI|SCM|TimeTracking|Workflow)\\
 
 ruleset:
   Core: []
@@ -46,26 +79,39 @@ ruleset:
   Infrastructure: [Core]
   Features: [Core, Infrastructure]
 
-# Temporary skip_violations for known pre-existing coupling to fix in follow-up
+# Temporary skip_violations for known pre-existing coupling.
+# Each entry MUST have a target deadline — these are not permanent.
+# Format: "TODO: Plan J / target 2026-Q3 — [description]"
 skip_violations:
+  # Core → Notifications coupling: to be severed in Plan J (aero-contracts extraction)
+  # TODO: Issue #201 — remove by 2026-Q3
   Aero\Core\AeroCoreServiceProvider:
     - Aero\Notifications\Contracts\MailContextResolver
     - Aero\Notifications\Contracts\SmsContextResolver
+  # TODO: Issue #202 — move to aero-contracts by 2026-Q3
   Aero\Core\Services\Notifications\CoreMailContextResolver:
     - Aero\Notifications\Contracts\MailContextResolver
   Aero\Core\Services\Notifications\CoreSmsContextResolver:
     - Aero\Notifications\Contracts\SmsContextResolver
+  # TODO: Issue #203 — extract EmailTemplate to aero-contracts or aero-notifications interface by 2026-Q3
   Aero\Core\Http\Controllers\Admin\EmailTemplateController:
     - Aero\Notifications\Services\EmailTemplateService
     - Aero\Notifications\Models\EmailTemplate
+  # TODO: Issue #204 — inject MailService via interface by 2026-Q3
   Aero\Core\Http\Controllers\Settings\SystemSettingController:
     - Aero\Notifications\Services\Mail\MailService
     - Aero\Notifications\Services\Sms\SmsGatewayService
   Aero\Core\Http\Controllers\Settings\MailSettingsController:
     - Aero\Notifications\Services\Mail\MailService
+  # TODO: Issue #205 — inject via interface by 2026-Q3
   Aero\Core\Services\Dashboard\AdminDashboardService:
     - Aero\Notifications\Models\NotificationLog
   Aero\Core\Notifications\InviteTeamMember:
     - Aero\Notifications\Services\Mail\MailService
+  # TODO: Issue #206 — move SetLocale registration to aero-i18n ServiceProvider by 2026-Q3
   Aero\Core\Http\Kernel:
     - Aero\I18n\Http\Middleware\SetLocale
+  # Core → HandleInertiaRequests → I18n coupling
+  # TODO: Issue #207 — inject TranslationService via TranslationDriverInterface by 2026-Q3
+  Aero\Core\Http\Middleware\HandleInertiaRequests:
+    - Aero\I18n\Services\TranslationService
