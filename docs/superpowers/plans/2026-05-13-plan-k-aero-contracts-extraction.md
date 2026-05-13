@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extract all stable, cross-package interfaces from `aero-core/src/Contracts/` into a new zero-dependency `packages/aero-contracts/` package, pin all `aero/core: "*"` wildcards to `aero/core: "^1.0"` semver, and wire backward-compat aliases so no existing code breaks.
+**Goal:** Extract all stable, cross-package interfaces from `aero-core/src/Contracts/` into a new zero-dependency `packages/aero-contracts/` package, pin all `aero/core: "*"` wildcards to `aero/core: "^1.0"` semver, and update every import across the monorepo atomically — **no backward-compat shims, clean cut**.
 
-**Architecture:** `aero-contracts` requires only `illuminate/support ^11|^12` and `illuminate/database ^11|^12` (much lighter than `laravel/framework`). aero-core registers `class_alias()` mappings in a Composer-autoloaded file so that `Aero\Core\Contracts\X` silently resolves to `Aero\Contracts\X` during the migration window. All 18 moved interfaces/enums get their imports updated across the monorepo in a single automated pass. The net result: every package can declare `"aero/contracts": "^1.0"` for its contract imports and `"aero/core": "^1.0"` for runtime code — proper semver, no diamond conflicts.
+**Architecture:** `aero-contracts` requires only `illuminate/support ^11|^12` and `illuminate/database ^11|^12` (much lighter than `laravel/framework`). The 18 moved interfaces/enums are deleted from aero-core immediately; all 96 import sites across the monorepo are updated in a single automated pass. The net result: every package declares `"aero/contracts": "^1.0"` for contract imports and `"aero/core": "^1.0"` for runtime code — proper semver, no diamond conflicts, no migration shims.
 
 **Tech Stack:** PHP 8.2, Composer 2, `illuminate/support ^11|^12`, `illuminate/database ^11|^12`. No new runtime packages added to the application.
 
@@ -342,96 +342,56 @@ git commit -m "feat(aero-contracts): add all 18 moved interfaces and enums with 
 
 ---
 
-## Task K3: Wire aero-core to aero-contracts + Backward-Compat Aliases
+## Task K3: Wire aero-core to aero-contracts — Clean Cut
 
 **Files:**
 - Modify: `packages/aero-core/composer.json`
-- Create: `packages/aero-core/src/contract_aliases.php`
 - Delete: 18 files from `packages/aero-core/src/Contracts/`
 
-- [ ] **Step K3.1: Add `aero/contracts` dependency to aero-core**
+No aliases file. The old namespaces are gone; all imports are updated atomically in Task K4.
 
-Read `packages/aero-core/composer.json`. In the `"require"` block, add:
-```json
-"aero/contracts": "^1.0",
-```
+- [ ] **Step K3.1: Add `aero/contracts` dependency + version to aero-core**
 
-Also add `"version": "1.0.0"` as a top-level field (after `"license"`) if not already present.
+Read `packages/aero-core/composer.json`. Make two changes:
 
-Also add `"src/contract_aliases.php"` to the `autoload.files` array:
-```json
-"autoload": {
-    "psr-4": { ... },
-    "files": [
-        "src/helpers.php",
-        "src/contract_aliases.php"
-    ]
-}
-```
+1. Add `"version": "1.0.0"` as a top-level field after `"license"`:
+   ```json
+   "license": "MIT",
+   "version": "1.0.0",
+   ```
 
-- [ ] **Step K3.2: Create the backward-compat aliases file**
+2. In the `"require"` block, add:
+   ```json
+   "aero/contracts": "^1.0",
+   ```
 
-Create `packages/aero-core/src/contract_aliases.php`:
+Do NOT add a `contract_aliases.php` to autoload.files — there is no aliases file.
 
-```php
-<?php
-
-/**
- * Backward-compatibility aliases for contracts moved to aero-contracts (Plan K).
- *
- * These allow existing code that imports `Aero\Core\Contracts\X` to continue
- * working without modification while new code uses `Aero\Contracts\X` directly.
- *
- * @deprecated The Aero\Core\Contracts\* aliases will be removed in aero-core v2.0.
- *             Use Aero\Contracts\* directly.
- */
-
-$contractAliases = [
-    'Aero\\Core\\Contracts\\TenantScopeInterface'        => 'Aero\\Contracts\\TenantScopeInterface',
-    'Aero\\Core\\Contracts\\LicenseServiceInterface'     => 'Aero\\Contracts\\LicenseServiceInterface',
-    'Aero\\Core\\Contracts\\ProductAccessInterface'      => 'Aero\\Contracts\\ProductAccessInterface',
-    'Aero\\Core\\Contracts\\PlanCatalogInterface'        => 'Aero\\Contracts\\PlanCatalogInterface',
-    'Aero\\Core\\Contracts\\DomainContextContract'       => 'Aero\\Contracts\\DomainContextContract',
-    'Aero\\Core\\Contracts\\DomainEventContract'         => 'Aero\\Contracts\\DomainEventContract',
-    'Aero\\Core\\Contracts\\ModuleSummaryProvider'       => 'Aero\\Contracts\\ModuleSummaryProvider',
-    'Aero\\Core\\Contracts\\ModuleProviderInterface'     => 'Aero\\Contracts\\ModuleProviderInterface',
-    'Aero\\Core\\Contracts\\Searchable'                  => 'Aero\\Contracts\\Searchable',
-    'Aero\\Core\\Contracts\\NotificationChannelInterface'=> 'Aero\\Contracts\\NotificationChannelInterface',
-    'Aero\\Core\\Contracts\\NotificationRoutingContract' => 'Aero\\Contracts\\NotificationRoutingContract',
-    'Aero\\Core\\Contracts\\MailContextResolverInterface'=> 'Aero\\Contracts\\MailContextResolverInterface',
-    'Aero\\Core\\Contracts\\SmsContextResolverInterface' => 'Aero\\Contracts\\SmsContextResolverInterface',
-    'Aero\\Core\\Contracts\\MailSenderInterface'         => 'Aero\\Contracts\\MailSenderInterface',
-    'Aero\\Core\\Contracts\\SmsGatewayInterface'         => 'Aero\\Contracts\\SmsGatewayInterface',
-    'Aero\\Core\\Contracts\\TranslationDriverInterface'  => 'Aero\\Contracts\\TranslationDriverInterface',
-    'Aero\\Core\\Contracts\\CoreWidgetCategory'          => 'Aero\\Contracts\\CoreWidgetCategory',
-    'Aero\\Core\\Contracts\\DashboardWidgetInterface'    => 'Aero\\Contracts\\DashboardWidgetInterface',
-];
-
-foreach ($contractAliases as $old => $new) {
-    if (! class_exists($old, false) && ! interface_exists($old, false)) {
-        class_alias($new, $old);
-    }
-}
-```
-
-- [ ] **Step K3.3: Delete the 18 old contract files from aero-core**
+- [ ] **Step K3.2: Delete the 18 old contract files from aero-core**
 
 ```powershell
-$moved = @(
-    'TenantScopeInterface', 'LicenseServiceInterface', 'ProductAccessInterface',
-    'PlanCatalogInterface', 'DomainContextContract', 'DomainEventContract',
-    'ModuleSummaryProvider', 'ModuleProviderInterface', 'Searchable',
-    'NotificationChannelInterface', 'NotificationRoutingContract',
-    'MailContextResolverInterface', 'SmsContextResolverInterface',
-    'MailSenderInterface', 'SmsGatewayInterface', 'TranslationDriverInterface',
-    'CoreWidgetCategory', 'DashboardWidgetInterface'
-)
-foreach ($f in $moved) {
-    Remove-Item "packages\aero-core\src\Contracts\$f.php" -Force
-}
+git rm `
+  packages/aero-core/src/Contracts/TenantScopeInterface.php `
+  packages/aero-core/src/Contracts/LicenseServiceInterface.php `
+  packages/aero-core/src/Contracts/ProductAccessInterface.php `
+  packages/aero-core/src/Contracts/PlanCatalogInterface.php `
+  packages/aero-core/src/Contracts/DomainContextContract.php `
+  packages/aero-core/src/Contracts/DomainEventContract.php `
+  packages/aero-core/src/Contracts/ModuleSummaryProvider.php `
+  packages/aero-core/src/Contracts/ModuleProviderInterface.php `
+  packages/aero-core/src/Contracts/Searchable.php `
+  packages/aero-core/src/Contracts/NotificationChannelInterface.php `
+  packages/aero-core/src/Contracts/NotificationRoutingContract.php `
+  packages/aero-core/src/Contracts/MailContextResolverInterface.php `
+  packages/aero-core/src/Contracts/SmsContextResolverInterface.php `
+  packages/aero-core/src/Contracts/MailSenderInterface.php `
+  packages/aero-core/src/Contracts/SmsGatewayInterface.php `
+  packages/aero-core/src/Contracts/TranslationDriverInterface.php `
+  packages/aero-core/src/Contracts/CoreWidgetCategory.php `
+  packages/aero-core/src/Contracts/DashboardWidgetInterface.php
 ```
 
-- [ ] **Step K3.4: Verify 4 files remain in aero-core/src/Contracts/**
+- [ ] **Step K3.3: Verify exactly 4 files remain in aero-core/src/Contracts/**
 
 ```powershell
 Get-ChildItem "packages\aero-core\src\Contracts" -Filter "*.php" | Select-Object Name
@@ -445,37 +405,11 @@ UserContract.php
 UserRepositoryContract.php
 ```
 
-- [ ] **Step K3.5: Verify aliases file exists**
+- [ ] **Step K3.4: Commit**
 
 ```powershell
-Test-Path "packages\aero-core\src\contract_aliases.php"
-```
-
-Expected: `True`
-
-- [ ] **Step K3.6: Commit**
-
-```powershell
-git add packages/aero-core/composer.json packages/aero-core/src/contract_aliases.php
-git rm packages/aero-core/src/Contracts/TenantScopeInterface.php `
-       packages/aero-core/src/Contracts/LicenseServiceInterface.php `
-       packages/aero-core/src/Contracts/ProductAccessInterface.php `
-       packages/aero-core/src/Contracts/PlanCatalogInterface.php `
-       packages/aero-core/src/Contracts/DomainContextContract.php `
-       packages/aero-core/src/Contracts/DomainEventContract.php `
-       packages/aero-core/src/Contracts/ModuleSummaryProvider.php `
-       packages/aero-core/src/Contracts/ModuleProviderInterface.php `
-       packages/aero-core/src/Contracts/Searchable.php `
-       packages/aero-core/src/Contracts/NotificationChannelInterface.php `
-       packages/aero-core/src/Contracts/NotificationRoutingContract.php `
-       packages/aero-core/src/Contracts/MailContextResolverInterface.php `
-       packages/aero-core/src/Contracts/SmsContextResolverInterface.php `
-       packages/aero-core/src/Contracts/MailSenderInterface.php `
-       packages/aero-core/src/Contracts/SmsGatewayInterface.php `
-       packages/aero-core/src/Contracts/TranslationDriverInterface.php `
-       packages/aero-core/src/Contracts/CoreWidgetCategory.php `
-       packages/aero-core/src/Contracts/DashboardWidgetInterface.php
-git commit -m "feat(aero-core): add aero/contracts dep + backward-compat aliases file; delete moved contract files"
+git add packages/aero-core/composer.json
+git commit -m "feat(aero-core): add aero/contracts ^1.0 dep + version 1.0.0; delete 18 moved contract files -- clean cut, no aliases"
 ```
 
 ---
@@ -757,8 +691,7 @@ git commit -m "fix(aero-contracts): address smoke-test regressions"
 **Spec coverage:**
 - New `aero-contracts` package created → K1 ✅
 - 18 interfaces/enums moved with `Aero\Contracts\` namespace → K2 ✅
-- backward-compat `class_alias` file in aero-core → K3 ✅
-- Old 18 files deleted from aero-core → K3 ✅
+- Old 18 files deleted from aero-core (clean cut, no aliases) → K3 ✅
 - All 96 existing imports updated to new namespace → K4 ✅
 - `aero/core: "*"` → `aero/core: "^1.0"` in all 30 packages → K5 ✅
 - `aero/contracts: "^1.0"` added to all packages → K5 ✅
