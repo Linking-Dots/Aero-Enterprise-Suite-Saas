@@ -48,8 +48,6 @@ use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Services\RoleModuleAccessService;
 use Aero\Notifications\Contracts\MailContextResolver;
 use Aero\Notifications\Contracts\SmsContextResolver;
-use Aero\Platform\AeroPlatformServiceProvider;
-use Aero\Platform\Http\Middleware\EnsureTenantIsActive;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Migrations\Migrator;
@@ -87,7 +85,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             // NOTE: Skip this override if Platform is installed
             // Platform has its own migrator override that restricts landlord migrations
             // to only platform package migrations (tenants, domains, plans, etc.)
-            if (! class_exists(AeroPlatformServiceProvider::class)) {
+            if (! class_exists('Aero\\Platform\\AeroPlatformServiceProvider')) {
                 $this->app->extend('migrator', function ($migrator, $app) {
                     return new class($app['migration.repository'], $app['db'], $app['files'], $app['events']) extends Migrator
                     {
@@ -627,8 +625,8 @@ class AeroCoreServiceProvider extends ServiceProvider
             $router->pushMiddlewareToGroup('web', HandleInertiaRequests::class);
 
             // In SaaS mode, add tenant.active middleware to web group (after auth)
-            if (is_saas_mode() && class_exists('\Aero\Platform\Http\Middleware\EnsureTenantIsActive')) {
-                $router->pushMiddlewareToGroup('web', EnsureTenantIsActive::class);
+            if (is_saas_mode() && class_exists('Aero\\Platform\\Http\\Middleware\\EnsureTenantIsActive')) {
+                $router->pushMiddlewareToGroup('web', 'Aero\\Platform\\Http\\Middleware\\EnsureTenantIsActive');
             }
 
             // Enforce license validity on every web request (standalone mode only; SaaS is a no-op)

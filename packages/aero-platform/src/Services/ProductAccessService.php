@@ -6,7 +6,7 @@ use Aero\Platform\Models\Product;
 use Aero\Platform\Models\ProductSubscription;
 use Illuminate\Support\Facades\Cache;
 
-class ProductAccessService
+class ProductAccessService implements \Aero\Core\Contracts\ProductAccessInterface
 {
     /**
      * Check if a tenant has an active product subscription granting access

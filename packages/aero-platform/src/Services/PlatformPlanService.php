@@ -6,7 +6,7 @@ use Aero\Platform\Models\Plan;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-class PlatformPlanService
+class PlatformPlanService implements \Aero\Core\Contracts\PlanCatalogInterface
 {
     /**
      * Get all plans that include the given module code.

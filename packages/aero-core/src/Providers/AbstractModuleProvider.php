@@ -5,7 +5,6 @@ namespace Aero\Core\Providers;
 use Aero\Core\Contracts\ModuleProviderInterface;
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
 use Aero\Core\Services\NavigationRegistry;
-use Aero\Platform\AeroPlatformServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -336,7 +335,7 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
      */
     protected function isPlatformActive(): bool
     {
-        return class_exists(AeroPlatformServiceProvider::class);
+        return class_exists('Aero\\Platform\\AeroPlatformServiceProvider');
     }
 
     /**

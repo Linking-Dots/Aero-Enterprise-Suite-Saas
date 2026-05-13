@@ -7,7 +7,6 @@ use Aero\Core\Models\User;
 use Aero\HRMAC\Console\Commands\SyncModuleHierarchy;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\AeroPlatformServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -374,7 +373,7 @@ class InstallCommand extends Command
                 // Determine scope based on mode
                 // In standalone mode (no Platform package), sync ALL modules
                 // In SaaS mode with Platform, sync platform-scoped modules for central database
-                $scope = class_exists(AeroPlatformServiceProvider::class)
+                $scope = class_exists('Aero\\Platform\\AeroPlatformServiceProvider')
                     ? 'platform'  // SaaS mode - platform modules for central database
                     : 'all';      // Standalone mode - all modules
 

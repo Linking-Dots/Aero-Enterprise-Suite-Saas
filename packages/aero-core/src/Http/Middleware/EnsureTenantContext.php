@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Aero\Core\Http\Middleware;
 
 use Aero\Core\Traits\ParsesHostDomain;
-use Aero\Platform\AeroPlatformServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -57,6 +56,6 @@ class EnsureTenantContext
      */
     protected function isPlatformActive(): bool
     {
-        return class_exists(AeroPlatformServiceProvider::class);
+        return class_exists('Aero\\Platform\\AeroPlatformServiceProvider');
     }
 }

@@ -11,7 +11,7 @@ use Aero\Core\Services\AuditService;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\RoleModuleAccess;
 use Aero\HRMAC\Services\RoleModuleAccessService;
-use Aero\Platform\Services\PlatformPlanService;
+use Aero\Core\Contracts\PlanCatalogInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -529,8 +529,8 @@ class ModuleController extends Controller
         try {
             $module = Module::findOrFail($moduleId);
 
-            // Check if module is in use by any plans (uses PlatformPlanService to avoid cross-DB join)
-            if (app(PlatformPlanService::class)->isModuleInAnyPlan($module->code)) {
+            // Check if module is in use by any plans (uses PlanCatalogInterface to avoid cross-DB join)
+            if (app()->bound(PlanCatalogInterface::class) && app(PlanCatalogInterface::class)->isModuleInAnyPlan($module->code)) {
                 return response()->json([
                     'error' => 'Cannot delete module that is assigned to plans. Remove from plans first.',
                 ], 422);

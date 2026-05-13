@@ -5,7 +5,7 @@ namespace Aero\Core\Http\Middleware;
 use Aero\Core\Services\ModuleAccessService;
 use Aero\Core\ValueObjects\RequestContext;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
-use Aero\Platform\Services\ProductAccessService;
+use Aero\Core\Contracts\ProductAccessInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -100,12 +100,12 @@ class CheckModuleAccess
         // ── SaaS product subscription gate ─────────────────────────────────────────
         // In SaaS mode, verify tenant has an active product subscription for the module.
         // Plan tier does NOT gate product access — plans govern limits only.
-        if (! $isStandalone && class_exists(ProductAccessService::class)) {
+        if (! $isStandalone && app()->bound(ProductAccessInterface::class)) {
             try {
                 $tenantKey = tenant()?->getTenantKey();
                 if ($tenantKey) {
-                    /** @var ProductAccessService $productAccess */
-                    $productAccess = app(ProductAccessService::class);
+                    /** @var ProductAccessInterface $productAccess */
+                    $productAccess = app(ProductAccessInterface::class);
 
                     if (! $productAccess->tenantCanAccessModule((string) $tenantKey, $moduleCode)) {
                         return $this->denyAccess(

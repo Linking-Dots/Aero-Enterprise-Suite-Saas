@@ -9,7 +9,6 @@ use Aero\Core\Models\SubModule;
 use Aero\Core\Models\User;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Services\RoleModuleAccessService;
-use Aero\Platform\Models\Plan;
 use Illuminate\Support\Facades\Cache;
 
 /**

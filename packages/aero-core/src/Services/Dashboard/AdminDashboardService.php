@@ -20,7 +20,6 @@ use Aero\HRM\Models\Holiday;
 use Aero\HRM\Models\LeaveRequest;
 use Aero\HRMAC\Facades\HRMAC;
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\ErrorLog;
 use Aero\Project\Models\Task;
 use Aero\Quality\Models\NonConformanceReport;
 use Illuminate\Support\Carbon;
@@ -621,8 +620,9 @@ class AdminDashboardService
 
                 // Error count today
                 try {
-                    if (class_exists(ErrorLog::class)) {
-                        $health['errorCountToday'] = ErrorLog::whereDate('created_at', today())->count();
+                    if (class_exists('Aero\\Platform\\Models\\ErrorLog')) {
+                        $errLogClass = 'Aero\\Platform\\Models\\ErrorLog';
+                        $health['errorCountToday'] = $errLogClass::whereDate('created_at', today())->count();
                     }
                 } catch (\Throwable) {
                     // Platform not installed

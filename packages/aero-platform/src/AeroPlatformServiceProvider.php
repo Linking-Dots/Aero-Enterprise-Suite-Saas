@@ -223,6 +223,16 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(DownloadService::class);
         $this->app->singleton(PlatformPlanService::class);
 
+        // Interface bindings for aero-core compatibility (standalone mode uses class_exists guard)
+        $this->app->singleton(
+            \Aero\Core\Contracts\ProductAccessInterface::class,
+            ProductAccessService::class
+        );
+        $this->app->singleton(
+            \Aero\Core\Contracts\PlanCatalogInterface::class,
+            PlatformPlanService::class
+        );
+
         // Register tenant lifecycle services
         $this->app->singleton(TenantRetentionService::class);
         $this->app->singleton(TenantPurgeService::class);
