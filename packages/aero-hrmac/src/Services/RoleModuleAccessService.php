@@ -37,7 +37,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         $cacheKey = $this->getCacheKey("role_access:{$roleId}:module:{$moduleId}");
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $moduleId) {
-            return RoleModuleAccess::where('role_id', $roleId)
+            return $this->modelForCurrentContext()::where('role_id', $roleId)
                 ->where('module_id', $moduleId)
                 ->whereNull('sub_module_id')
                 ->whereNull('component_id')
@@ -56,7 +56,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $subModuleId) {
             // Check direct sub-module access
-            if (RoleModuleAccess::where('role_id', $roleId)
+            if ($this->modelForCurrentContext()::where('role_id', $roleId)
                 ->where('sub_module_id', $subModuleId)
                 ->whereNull('component_id')
                 ->whereNull('action_id')
@@ -84,7 +84,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $componentId) {
             // Check direct component access
-            if (RoleModuleAccess::where('role_id', $roleId)
+            if ($this->modelForCurrentContext()::where('role_id', $roleId)
                 ->where('component_id', $componentId)
                 ->whereNull('action_id')
                 ->exists()) {
@@ -111,7 +111,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $actionId) {
             // Check direct action access
-            if (RoleModuleAccess::where('role_id', $roleId)
+            if ($this->modelForCurrentContext()::where('role_id', $roleId)
                 ->where('action_id', $actionId)
                 ->exists()) {
                 return true;
@@ -316,7 +316,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         $cacheKey = $this->getCacheKey("role_accessible_modules:{$roleId}");
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId) {
-            $access = RoleModuleAccess::where('role_id', $roleId)->get();
+            $access = $this->modelForCurrentContext()::where('role_id', $roleId)->get();
 
             $moduleIds = collect();
 
@@ -364,7 +364,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             $subModuleIds = collect();
 
             foreach ($user->roles as $role) {
-                $access = RoleModuleAccess::where('role_id', $role->id)->get();
+                $access = $this->modelForCurrentContext()::where('role_id', $role->id)->get();
 
                 foreach ($access as $entry) {
                     // Direct sub-module access
@@ -409,11 +409,11 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         $roleId = is_object($role) ? $role->id : $role;
 
         // Clear existing access for this role
-        RoleModuleAccess::where('role_id', $roleId)->delete();
+        $this->modelForCurrentContext()::where('role_id', $roleId)->delete();
 
         // Add module-level access
         foreach ($accessData['modules'] ?? [] as $moduleId) {
-            RoleModuleAccess::create([
+            $this->modelForCurrentContext()::create([
                 'role_id' => $roleId,
                 'module_id' => $moduleId,
                 'access_scope' => RoleModuleAccess::SCOPE_ALL,
@@ -422,7 +422,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
 
         // Add sub-module-level access
         foreach ($accessData['sub_modules'] ?? [] as $subModuleId) {
-            RoleModuleAccess::create([
+            $this->modelForCurrentContext()::create([
                 'role_id' => $roleId,
                 'sub_module_id' => $subModuleId,
                 'access_scope' => RoleModuleAccess::SCOPE_ALL,
@@ -431,7 +431,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
 
         // Add component-level access
         foreach ($accessData['components'] ?? [] as $componentId) {
-            RoleModuleAccess::create([
+            $this->modelForCurrentContext()::create([
                 'role_id' => $roleId,
                 'component_id' => $componentId,
                 'access_scope' => RoleModuleAccess::SCOPE_ALL,
@@ -441,13 +441,13 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         // Add action-level access with scope
         foreach ($accessData['actions'] ?? [] as $actionData) {
             if (is_array($actionData)) {
-                RoleModuleAccess::create([
+                $this->modelForCurrentContext()::create([
                     'role_id' => $roleId,
                     'action_id' => $actionData['id'],
                     'access_scope' => $actionData['scope'] ?? RoleModuleAccess::SCOPE_ALL,
                 ]);
             } else {
-                RoleModuleAccess::create([
+                $this->modelForCurrentContext()::create([
                     'role_id' => $roleId,
                     'action_id' => $actionData,
                     'access_scope' => RoleModuleAccess::SCOPE_ALL,
@@ -470,7 +470,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     public function getRoleAccessTree(mixed $role): array
     {
         $roleId = is_object($role) ? $role->id : $role;
-        $access = RoleModuleAccess::where('role_id', $roleId)->get();
+        $access = $this->modelForCurrentContext()::where('role_id', $roleId)->get();
 
         // Explicit module-level grants (module_id set, no sub_module_id).
         $explicitModuleIds = $access->whereNotNull('module_id')
@@ -585,7 +585,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         }
 
         // Build query to find role IDs with access
-        $roleIdsQuery = RoleModuleAccess::query()
+        $roleIdsQuery = $this->modelForCurrentContext()::query()
             ->where(function ($query) use ($module, $subModule) {
                 // Direct module access (grants access to all sub-modules)
                 $query->where(function ($q) use ($module) {
@@ -683,7 +683,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             ->first();
 
         // Build query to find role IDs with cascading access
-        $roleIds = RoleModuleAccess::query()
+        $roleIds = $this->modelForCurrentContext()::query()
             ->where(function ($query) use ($module, $subModule, $component, $action) {
                 // Module level access (full access)
                 $query->where(function ($q) use ($module) {
@@ -746,5 +746,25 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     protected function cache()
     {
         return Cache::store();
+    }
+
+    /**
+     * Return the correct RoleModuleAccess model class for the current execution context.
+     *
+     * Platform/landlord context → LandlordRoleModuleAccess (pinned to central connection)
+     * Tenant/standalone context → RoleModuleAccess (uses current connection)
+     */
+    private function modelForCurrentContext(): string
+    {
+        try {
+            $context = app(\Aero\Core\ValueObjects\RequestContext::class);
+            if ($context->isPlatform()) {
+                return \Aero\HRMAC\Models\LandlordRoleModuleAccess::class;
+            }
+        } catch (\Throwable) {
+            // No RequestContext bound (CLI, queue, test) — use default
+        }
+
+        return RoleModuleAccess::class;
     }
 }

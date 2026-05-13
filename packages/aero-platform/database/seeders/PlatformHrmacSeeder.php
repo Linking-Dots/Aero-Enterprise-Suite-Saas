@@ -13,6 +13,9 @@ class PlatformHrmacSeeder extends Seeder
 {
     public function run(): void
     {
+        // Ensure all writes go to the central (landlord) DB
+        \Illuminate\Support\Facades\DB::setDefaultConnection('central');
+
         /** @var RoleModuleAccessInterface $hrmac */
         $hrmac = app(RoleModuleAccessInterface::class);
 
