@@ -9,17 +9,12 @@ use Aero\Compliance\Models\ComplianceTrainingRecord;
 use Aero\Compliance\Models\ControlledDocument;
 use Aero\Compliance\Models\RegulatoryRequirement;
 use Aero\Compliance\Models\RiskAssessment;
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 
 class ComplianceController extends Controller
 {
-    public function __construct(
-        protected DashboardWidgetRegistry $widgetRegistry
-    ) {}
-
     /**
      * Display the compliance dashboard
      */
@@ -27,8 +22,8 @@ class ComplianceController extends Controller
     {
         $stats = $this->getComplianceStats();
 
-        // Get dynamic widgets for Compliance dashboard
-        $dynamicWidgets = $this->widgetRegistry->getWidgetsForFrontend('compliance');
+        // Dynamic widgets removed — widget registry is being deleted
+        $dynamicWidgets = [];
 
         return Inertia::render('Compliance/Dashboard', [
             'stats' => $stats,

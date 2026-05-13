@@ -2,7 +2,6 @@
 
 namespace Aero\Dms\Http\Controllers;
 
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Dms\Models\Category;
 use Aero\Dms\Models\Document;
 use Aero\Dms\Models\DocumentVersion;
@@ -19,7 +18,6 @@ class DMSController extends Controller
 {
     public function __construct(
         protected DMSService $dmsService,
-        protected DashboardWidgetRegistry $widgetRegistry
     ) {}
 
     /**
@@ -31,8 +29,8 @@ class DMSController extends Controller
         $statistics = $this->dmsService->getStatistics($user);
         $recentActivity = $this->dmsService->getRecentActivity(10);
 
-        // Get dynamic widgets for DMS dashboard
-        $dynamicWidgets = $this->widgetRegistry->getWidgetsForFrontend('dms');
+        // Dynamic widgets removed — widget registry is being deleted
+        $dynamicWidgets = [];
 
         return Inertia::render('DMS/Dashboard/Index', [
             'statistics' => $statistics,

@@ -2,7 +2,6 @@
 
 namespace Aero\Rfi\Http\Controllers;
 
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Rfi\Services\RfiService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -18,7 +17,6 @@ class RfiDashboardController extends Controller
 {
     public function __construct(
         protected RfiService $rfiService,
-        protected DashboardWidgetRegistry $widgetRegistry
     ) {}
 
     /**
@@ -31,8 +29,8 @@ class RfiDashboardController extends Controller
         $resolutionRate = $this->rfiService->getObjectionResolutionRate();
         $pendingLocations = $this->rfiService->getLocationsPendingReview();
 
-        // Get dynamic widgets for RFI dashboard
-        $dynamicWidgets = $this->widgetRegistry->getWidgetsForFrontend('rfi');
+        // Dynamic widgets removed — widget registry is being deleted
+        $dynamicWidgets = [];
 
         return Inertia::render('Rfi/Dashboard/Index', [
             'title' => 'RFI Dashboard',

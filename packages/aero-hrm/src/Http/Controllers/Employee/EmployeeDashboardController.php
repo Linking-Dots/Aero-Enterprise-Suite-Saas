@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRM\Http\Controllers\Employee;
 
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\Employee;
 use Aero\HRM\Services\EmployeeDashboardService;
@@ -18,7 +17,6 @@ class EmployeeDashboardController extends Controller
 {
     public function __construct(
         protected EmployeeDashboardService $dashboardService,
-        protected DashboardWidgetRegistry $widgetRegistry
     ) {}
 
     public function index(Request $request): Response
@@ -32,7 +30,7 @@ class EmployeeDashboardController extends Controller
             return Inertia::render('HRM/Employee/Dashboard', [
                 'title' => 'My Dashboard',
                 'employee' => null,
-                'dynamicWidgets' => $this->widgetRegistry->getWidgetsForFrontend('hrm.employee'),
+                'dynamicWidgets' => [],
             ]);
         }
 
@@ -48,7 +46,7 @@ class EmployeeDashboardController extends Controller
             'title' => 'My Dashboard',
             'employee' => $profile,
             'quickActions' => $quickActions,
-            'dynamicWidgets' => $this->widgetRegistry->getWidgetsForFrontend('hrm.employee'),
+            'dynamicWidgets' => [],
 
             // Immediate data
             ...$attendanceData,

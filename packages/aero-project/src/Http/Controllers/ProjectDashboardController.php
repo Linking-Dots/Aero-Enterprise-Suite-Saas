@@ -2,7 +2,6 @@
 
 namespace Aero\Project\Http\Controllers;
 
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Project\Models\Project;
 use Aero\Project\Models\Task;
 use Illuminate\Routing\Controller;
@@ -11,10 +10,6 @@ use Inertia\Inertia;
 
 class ProjectDashboardController extends Controller
 {
-    public function __construct(
-        protected DashboardWidgetRegistry $widgetRegistry
-    ) {}
-
     public function index()
     {
         // Build stats with defensive checks for missing tables
@@ -40,8 +35,8 @@ class ProjectDashboardController extends Controller
             report($e);
         }
 
-        // Get dynamic widgets for Project dashboard
-        $dynamicWidgets = $this->widgetRegistry->getWidgetsForFrontend('project');
+        // Dynamic widgets removed — widget registry is being deleted
+        $dynamicWidgets = [];
 
         return Inertia::render('Project/Dashboard', [
             'title' => 'Project Dashboard',

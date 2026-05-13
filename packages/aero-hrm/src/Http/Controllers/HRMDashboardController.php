@@ -2,7 +2,6 @@
 
 namespace Aero\HRM\Http\Controllers;
 
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\HRM\Models\Attendance;
 use Aero\HRM\Models\Department;
 use Aero\HRM\Models\Employee;
@@ -24,10 +23,6 @@ use Inertia\Response;
  */
 class HRMDashboardController extends Controller
 {
-    public function __construct(
-        protected DashboardWidgetRegistry $widgetRegistry
-    ) {}
-
     /**
      * Display the HRM Dashboard.
      */
@@ -138,8 +133,8 @@ class HRMDashboardController extends Controller
             ->whereYear('joining_date', $today->year)
             ->count();
 
-        // Get dynamic widgets for HRM dashboard
-        $dynamicWidgets = $this->widgetRegistry->getWidgetsForFrontend('hrm');
+        // Dynamic widgets removed — widget registry is being deleted
+        $dynamicWidgets = [];
 
         return Inertia::render('HRM/Dashboard', [
             'title' => 'HRM Dashboard',
