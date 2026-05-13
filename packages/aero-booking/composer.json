@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/booking",
     "description": "Booking and Scheduling System for aeos365 - booking calendar, resource scheduling, availability, payments, reminders, and cancellation policies",
     "type": "library",

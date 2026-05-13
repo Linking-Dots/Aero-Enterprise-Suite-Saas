@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/finance",
     "description": "Aero Finance Module - Financial Management System",
     "type": "library",
@@ -20,7 +20,8 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.0|^12.0",
-        "aero/core": "*"
+        "aero/core": "^1.0",
+        "aero/contracts": "^1.0",
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0",

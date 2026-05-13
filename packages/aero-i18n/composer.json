@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/i18n",
     "description": "Aero I18n Package - Internationalisation infrastructure: locale config, middleware, translation dictionaries, and locale switching API",
     "type": "library",

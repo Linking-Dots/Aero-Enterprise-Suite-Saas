@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/workflow",
     "description": "Workflow Engine for aeos365 - approval workflows, business rules, automation triggers",
     "type": "library",
@@ -17,6 +17,7 @@
     },
     "require": {
         "php": "^8.2",
-        "aero/core": "*"
+        "aero/core": "^1.0",
+        "aero/contracts": "^1.0",
     }
 }

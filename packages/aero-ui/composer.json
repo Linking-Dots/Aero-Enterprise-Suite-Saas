@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/ui",
     "description": "Aero UI Package - Shared React components, hooks, and utilities for all Aero modules",
     "type": "library",

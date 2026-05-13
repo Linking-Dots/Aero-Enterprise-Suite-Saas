@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/project",
     "description": "Aero Project Management Module",
     "type": "library",
@@ -6,7 +6,8 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.0|^12.0",
-        "aero/core": "*"
+        "aero/core": "^1.0",
+        "aero/contracts": "^1.0",
     },
     "autoload": {
         "psr-4": {

@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/mobile",
     "description": "Mobile App Framework for aeos365 - PWA configuration, push notifications, offline sync, and mobile app builder",
     "type": "library",

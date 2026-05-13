@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "aero/hrmac",
     "description": "Hierarchical Role-Module Access Control for aeos365",
     "type": "library",
