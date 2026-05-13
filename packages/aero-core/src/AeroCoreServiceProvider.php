@@ -26,7 +26,6 @@ use Aero\Core\Providers\ModuleRouteServiceProvider;
 use Aero\Core\Services\AddonCatalogService;
 use Aero\Core\Services\AddonInstaller;
 use Aero\Core\Services\DashboardRegistry;
-use Aero\Core\Services\DashboardWidgetRegistry;
 use Aero\Core\Services\HrmacNotificationRoutingService;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\License\DomainBinding;
@@ -134,7 +133,6 @@ class AeroCoreServiceProvider extends ServiceProvider
             $this->app->singleton(ModuleRegistry::class);
             $this->app->singleton(NavigationRegistry::class);
             $this->app->singleton(UserRelationshipRegistry::class);
-            $this->app->singleton(DashboardWidgetRegistry::class);
             $this->app->singleton(DashboardRegistry::class);
 
             // Bind notification context resolvers — use aero-core interfaces as the canonical binding
@@ -388,7 +386,6 @@ class AeroCoreServiceProvider extends ServiceProvider
                 $this->registerCoreNavigation();
 
                 // Register Core dashboard widgets
-                $this->registerDashboardWidgets();
 
                 // Register Core dashboards in the DashboardRegistry
                 $this->registerDashboards();
@@ -413,18 +410,6 @@ class AeroCoreServiceProvider extends ServiceProvider
      *
      * Note: Holidays and Organization widgets are in HRM package
      */
-    protected function registerDashboardWidgets(): void
-    {
-        // Only register if the registry is available
-        if (! $this->app->bound(DashboardWidgetRegistry::class)) {
-            return;
-        }
-
-        $registry = $this->app->make(DashboardWidgetRegistry::class);
-
-        // All core dashboard widgets are now statically rendered in Dashboard.jsx
-        // No dynamic widget registrations needed for core dashboard
-    }
 
     /**
      * Register Core dashboards with DashboardRegistry.
