@@ -2,12 +2,12 @@
 
 namespace Aero\Core\Http\Controllers\Settings;
 
+use Aero\Core\Contracts\MailSenderInterface;
+use Aero\Core\Contracts\SmsGatewayInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\UpdateSystemSettingRequest;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
-use Aero\Notifications\Services\Mail\MailService;
-use Aero\Notifications\Services\Sms\SmsGatewayService as RuntimeSmsConfigService;
 use Aero\Core\Services\SystemSettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,8 +18,8 @@ class SystemSettingController extends Controller
 {
     public function __construct(
         private readonly SystemSettingService $service,
-        private readonly MailService $mailService,
-        private readonly RuntimeSmsConfigService $smsService
+        private readonly MailSenderInterface $mailService,
+        private readonly SmsGatewayInterface $smsService
     ) {}
 
     public function index(Request $request): Response|SystemSettingResource

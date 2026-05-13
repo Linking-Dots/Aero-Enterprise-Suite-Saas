@@ -1,12 +1,11 @@
 <?php
 
-namespace Aero\Core\Http\Controllers\Admin;
+namespace Aero\Notifications\Http\Controllers;
 
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\StoreEmailTemplateRequest;
 use Aero\Core\Http\Requests\UpdateEmailTemplateRequest;
 use Aero\Notifications\Services\EmailTemplateService;
-use Aero\Notifications\Models\EmailTemplate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -141,7 +140,7 @@ class EmailTemplateController extends Controller
         // For now, just return success response
         return response()->json([
             'success' => true,
-            'message' => 'Test email sent successfully to ' . $testEmail,
+            'message' => 'Test email sent successfully to '.$testEmail,
         ]);
     }
 }

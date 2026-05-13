@@ -3,7 +3,6 @@
 namespace Aero\Core\Http;
 
 use Aero\Core\Http\Middleware\RedirectIfAuthenticated;
-use Aero\I18n\Http\Middleware\SetLocale;
 use App\Http\Middleware\ApiSecurityMiddleware;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckMaintenanceMode;
@@ -74,7 +73,7 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             ValidateCsrfToken::class,
             SubstituteBindings::class,
-            SetLocale::class, // Locale detection before Inertia
+            'Aero\\I18n\\Http\\Middleware\\SetLocale', // Locale detection before Inertia
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             Cors::class,

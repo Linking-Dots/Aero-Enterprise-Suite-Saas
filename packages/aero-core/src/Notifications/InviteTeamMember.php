@@ -2,8 +2,8 @@
 
 namespace Aero\Core\Notifications;
 
+use Aero\Core\Contracts\MailSenderInterface;
 use Aero\Core\Models\TenantInvitation;
-use Aero\Notifications\Services\Mail\MailService;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
@@ -86,7 +86,7 @@ class InviteTeamMember extends Notification
         ";
 
         // Use platform settings if available (SaaS mode), otherwise use app config
-        $mailService = app(MailService::class);
+        $mailService = app(MailSenderInterface::class);
 
         if (method_exists($mailService, 'usePlatformSettings')) {
             $mailService->usePlatformSettings();

@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Aero\Core\Services\Notifications;
 
-use Aero\Notifications\Contracts\MailContextResolver;
+use Aero\Core\Contracts\MailContextResolverInterface;
+use Aero\Core\Models\SystemSetting;
 use Illuminate\Support\Facades\Log;
 
-class CoreMailContextResolver implements MailContextResolver
+class CoreMailContextResolver implements MailContextResolverInterface
 {
     public function resolve(): array
     {
         try {
-            $settings = \Aero\Core\Models\SystemSetting::current()->email_settings ?? [];
+            $settings = SystemSetting::current()->email_settings ?? [];
             if ($settings && ! empty($settings['driver'])) {
                 $driver = $settings['driver'];
                 $base = [

@@ -2,10 +2,10 @@
 
 namespace Aero\Core\Http\Controllers\Settings;
 
+use Aero\Core\Contracts\MailSenderInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\StoreMailSettingsRequest;
 use Aero\Core\Models\SystemSetting;
-use Aero\Notifications\Services\Mail\MailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,7 +14,7 @@ use Inertia\Response;
 class MailSettingsController extends Controller
 {
     public function __construct(
-        private readonly MailService $mailService,
+        private readonly MailSenderInterface $mailService,
     ) {}
 
     public function index(Request $request): Response

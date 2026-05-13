@@ -8,7 +8,6 @@ use Aero\Core\Contracts\ModuleSummaryProvider;
 use Aero\Core\Models\Announcement;
 use Aero\Core\Models\AuditLog;
 use Aero\Core\Models\CompanySetting;
-use Aero\Notifications\Models\NotificationLog;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserDevice;
 use Aero\Core\Models\UserSession;
@@ -866,7 +865,13 @@ class AdminDashboardService
     {
         return Cache::remember('admin_dashboard.recent_notifications', 120, function () {
             try {
-                $items = NotificationLog::latest()
+                if (! class_exists('Aero\Notifications\Models\NotificationLog')) {
+                    return ['items' => [], 'total' => 0, 'unread' => 0, 'failedToday' => 0];
+                }
+
+                $notifLogClass = 'Aero\Notifications\Models\NotificationLog';
+
+                $items = $notifLogClass::latest()
                     ->limit(8)
                     ->get(['id', 'user_id', 'channel', 'notification_type', 'subject', 'status', 'sent_at', 'read_at', 'created_at'])
                     ->map(fn ($n) => [
@@ -880,9 +885,9 @@ class AdminDashboardService
                     ])
                     ->toArray();
 
-                $total = NotificationLog::count();
-                $unread = NotificationLog::whereNull('read_at')->count();
-                $failedToday = NotificationLog::where('status', 'failed')
+                $total = $notifLogClass::count();
+                $unread = $notifLogClass::whereNull('read_at')->count();
+                $failedToday = $notifLogClass::where('status', 'failed')
                     ->whereDate('created_at', today())
                     ->count();
 

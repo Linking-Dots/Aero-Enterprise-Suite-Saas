@@ -11,7 +11,6 @@ use Aero\HRMAC\Models\Action;
 use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
-use Aero\I18n\Services\TranslationService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -169,7 +168,9 @@ class HandleInertiaRequests extends Middleware
             'url' => $request->fullUrl(),
             'csrfToken' => csrf_token(),
             'locale' => App::getLocale(),
-            ...app(TranslationService::class)->getSharedProps(),
+            ...(class_exists('Aero\I18n\Services\TranslationService')
+                ? app('Aero\I18n\Services\TranslationService')->getSharedProps()
+                : []),
             'navigation' => fn () => $this->getNavigationProps($user),
             'navigationGroups' => fn () => $this->getNavigationGroupsProps($user),
             'userNavMetadata' => fn () => $user ? app(NavigationRegistry::class)->getUserNavigationMetadata($user) : null,
@@ -522,13 +523,14 @@ class HandleInertiaRequests extends Middleware
                     if (! $subModule || ! $module) {
                         continue;
                     }
-                    $key = $module->code . '.' . $subModule->code . '.' . $component->code . '.' . $action->code;
+                    $key = $module->code.'.'.$subModule->code.'.'.$component->code.'.'.$action->code;
                     $map[$key] = true;
                 }
 
                 return $map;
             } catch (Throwable $e) {
                 Log::warning('Failed to build user permissions map', ['error' => $e->getMessage()]);
+
                 return [];
             }
         });
