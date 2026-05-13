@@ -3,6 +3,8 @@
 
 parameters:
   paths:
+    # Contracts (zero-dependency foundation)
+    - packages/aero-contracts/src
     # Foundation
     - packages/aero-core/src
     - packages/aero-platform/src
@@ -53,6 +55,11 @@ parameters:
     - '#.*Factory\.php$#'
 
 layers:
+  - name: Contracts
+    collectors:
+      - type: className
+        regex: ^Aero\\Contracts\\
+
   - name: Core
     collectors:
       - type: className
@@ -74,10 +81,11 @@ layers:
         regex: ^Aero\\(Analytics|Assistant|Automation|Blockchain|Booking|Cms|Commerce|Compliance|CRM|CustomFields|DMS|EAM|Education|FieldService|Finance|Forms|Healthcare|Helpdesk|HRM|IMS|Integration|IOT|Manufacturing|Mobile|POS|Project|Quality|RealEstate|RFI|SCM|TimeTracking|Workflow)\\
 
 ruleset:
-  Core: []
-  Platform: [Core]
-  Infrastructure: [Core]
-  Features: [Core, Infrastructure]
+  Contracts: []
+  Core: [Contracts]
+  Platform: [Core, Contracts]
+  Infrastructure: [Core, Contracts]
+  Features: [Core, Infrastructure, Contracts]
 
 # Temporary skip_violations for known pre-existing coupling.
 # Each entry MUST have a target deadline — these are not permanent.
