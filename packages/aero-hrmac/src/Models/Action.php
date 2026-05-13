@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
+use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Examples: view, create, update, delete, export, import, approve, etc.
  * Connection-agnostic: uses current database context.
  */
-class Action extends Model
+class Action extends TenantModel
 {
     use HasFactory;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $action_id
  * @property string $access_scope
  */
-class RoleModuleAccess extends Model
+class RoleModuleAccess extends TenantModel
 {
     protected $table = 'role_module_access';
 

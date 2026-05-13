@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Aero\Core\Models\CentralModel;
 
 /**
  * LandlordRoleModuleAccess
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * accidentally hit a tenant DB (e.g., inside a queue job that switched the
  * default connection via stancl/tenancy).
  */
-class LandlordRoleModuleAccess extends Model
+class LandlordRoleModuleAccess extends CentralModel
 {
     protected $connection = 'central';
 

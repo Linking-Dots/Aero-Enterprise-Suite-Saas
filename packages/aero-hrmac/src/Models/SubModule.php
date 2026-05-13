@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
+use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Represents a functional area within a module (e.g., Employees within HRM)
  * Connection-agnostic: uses current database context.
  */
-class SubModule extends Model
+class SubModule extends TenantModel
 {
     use HasFactory;
 

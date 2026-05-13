@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -25,7 +25,7 @@ use Illuminate\Support\Collection;
  * @property string|null $scope
  * @property string|null $dashboard_route
  */
-class Role extends Model
+class Role extends TenantModel
 {
     protected $table = 'roles';
 
