@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Project\Services;
 
-use Aero\Core\Contracts\ModuleSummaryProvider;
+use Aero\Contracts\ModuleSummaryProvider;
 use Aero\Project\Models\Project;
 use Aero\Project\Models\ProjectTask;
 

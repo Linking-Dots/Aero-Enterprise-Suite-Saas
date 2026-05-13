@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Notifications\Services\Sms;
 
-use Aero\Core\Contracts\SmsGatewayInterface;
+use Aero\Contracts\SmsGatewayInterface;
 use Aero\Notifications\Contracts\SmsContextResolver;
 use Aws\Sns\SnsClient;
 use Illuminate\Support\Facades\Http;

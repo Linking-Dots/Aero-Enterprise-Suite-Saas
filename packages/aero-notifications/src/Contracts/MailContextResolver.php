@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Notifications\Contracts;
 
-use Aero\Core\Contracts\MailContextResolverInterface;
+use Aero\Contracts\MailContextResolverInterface;
 
 /**
  * Extends the aero-core contract so implementations can be bound to either

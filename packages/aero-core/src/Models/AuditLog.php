@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Models;
 
-use Aero\Core\Contracts\Searchable;
+use Aero\Contracts\Searchable;
 use Aero\Core\Traits\Searchable as SearchableTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;

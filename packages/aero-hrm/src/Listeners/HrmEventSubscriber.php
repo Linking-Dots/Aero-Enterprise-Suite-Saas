@@ -1,12 +1,12 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\HRM\Listeners;
 
-use Aero\Core\Contracts\DomainEventContract;
+use Aero\Contracts\DomainEventContract;
 use Aero\Core\Contracts\EmployeeServiceContract;
-use Aero\Core\Contracts\NotificationRoutingContract;
+use Aero\Contracts\NotificationRoutingContract;
 use Aero\HRM\Events\BaseHrmEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Events\Dispatcher;

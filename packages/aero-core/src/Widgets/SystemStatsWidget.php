@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Core\Widgets;
 
 use Aero\Core\Contracts\AbstractDashboardWidget;
-use Aero\Core\Contracts\CoreWidgetCategory;
+use Aero\Contracts\CoreWidgetCategory;
 use Aero\Core\Models\User;
 use Aero\HRMAC\Models\Role;
 use Illuminate\Support\Facades\Cache;

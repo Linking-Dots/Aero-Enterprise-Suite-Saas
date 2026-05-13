@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Middleware;
 
 use Aero\Core\Services\ModuleAccessService;
 use Aero\Core\ValueObjects\RequestContext;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
-use Aero\Core\Contracts\ProductAccessInterface;
+use Aero\Contracts\ProductAccessInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

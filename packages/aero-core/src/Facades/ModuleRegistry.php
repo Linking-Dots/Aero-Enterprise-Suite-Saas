@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Facades;
 
@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Facade;
 /**
  * ModuleRegistry Facade
  *
- * @method static void register(\Aero\Core\Contracts\ModuleProviderInterface $provider)
- * @method static \Aero\Core\Contracts\ModuleProviderInterface|null get(string $moduleCode)
+ * @method static void register(\Aero\Contracts\ModuleProviderInterface $provider)
+ * @method static \Aero\Contracts\ModuleProviderInterface|null get(string $moduleCode)
  * @method static \Illuminate\Support\Collection all()
  * @method static \Illuminate\Support\Collection enabled()
  * @method static bool has(string $moduleCode)

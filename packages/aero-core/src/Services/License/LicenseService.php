@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 // packages/aero-core/src/Services/License/LicenseService.php
 
 namespace Aero\Core\Services\License;
 
-use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Contracts\LicenseServiceInterface;
 use Aero\Core\Exceptions\LicenseException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

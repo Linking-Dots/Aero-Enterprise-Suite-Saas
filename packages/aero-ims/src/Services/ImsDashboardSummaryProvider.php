@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Ims\Services;
 
-use Aero\Core\Contracts\ModuleSummaryProvider;
+use Aero\Contracts\ModuleSummaryProvider;
 use Aero\Ims\Models\Product;
 use Aero\Ims\Models\Warehouse;
 

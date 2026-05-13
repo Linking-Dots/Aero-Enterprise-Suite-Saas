@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Models;
 
-use Aero\Core\Contracts\TenantScopeInterface;
+use Aero\Contracts\TenantScopeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 

@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Controllers\Settings;
 
-use Aero\Core\Contracts\MailSenderInterface;
-use Aero\Core\Contracts\SmsGatewayInterface;
+use Aero\Contracts\MailSenderInterface;
+use Aero\Contracts\SmsGatewayInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\UpdateSystemSettingRequest;
 use Aero\Core\Http\Resources\SystemSettingResource;

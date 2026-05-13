@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Core\Services;
 
 use Aero\Core\Contracts\EmployeeServiceContract;
-use Aero\Core\Contracts\NotificationRoutingContract;
+use Aero\Contracts\NotificationRoutingContract;
 use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;

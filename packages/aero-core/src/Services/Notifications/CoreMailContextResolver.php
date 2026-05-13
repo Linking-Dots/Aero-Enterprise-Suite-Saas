@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Core\Services\Notifications;
 
-use Aero\Core\Contracts\MailContextResolverInterface;
+use Aero\Contracts\MailContextResolverInterface;
 use Aero\Core\Models\SystemSetting;
 use Illuminate\Support\Facades\Log;
 

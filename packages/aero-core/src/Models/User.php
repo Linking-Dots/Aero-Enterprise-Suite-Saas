@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Models;
 
-use Aero\Core\Contracts\Searchable;
+use Aero\Contracts\Searchable;
 use Aero\Core\Contracts\UserContract;
 use Aero\Core\Database\Factories\UserFactory;
 use Aero\Core\Services\UserRelationshipRegistry;

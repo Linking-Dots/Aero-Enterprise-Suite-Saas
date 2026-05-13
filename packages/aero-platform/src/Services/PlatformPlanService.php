@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Aero\Platform\Services;
 
@@ -6,7 +6,7 @@ use Aero\Platform\Models\Plan;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-class PlatformPlanService implements \Aero\Core\Contracts\PlanCatalogInterface
+class PlatformPlanService implements \Aero\Contracts\PlanCatalogInterface
 {
     /**
      * Get all plans that include the given module code.

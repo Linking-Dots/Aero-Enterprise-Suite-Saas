@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Services;
 
-use Aero\Core\Contracts\ModuleProviderInterface;
+use Aero\Contracts\ModuleProviderInterface;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Support\Collection;
 

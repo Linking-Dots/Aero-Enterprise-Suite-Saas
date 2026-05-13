@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Middleware;
 
-use Aero\Core\Contracts\DomainContextContract;
+use Aero\Contracts\DomainContextContract;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
 use Aero\Core\Services\NavigationRegistry;

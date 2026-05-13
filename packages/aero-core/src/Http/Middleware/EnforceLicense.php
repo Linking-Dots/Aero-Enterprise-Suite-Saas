@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Middleware;
 
-use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Contracts\LicenseServiceInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

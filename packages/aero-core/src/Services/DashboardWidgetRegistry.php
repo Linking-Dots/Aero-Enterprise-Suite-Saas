@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Core\Services;
 
-use Aero\Core\Contracts\DashboardWidgetInterface;
+use Aero\Contracts\DashboardWidgetInterface;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 

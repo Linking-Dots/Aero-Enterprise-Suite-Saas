@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Platform\Http\Middleware;
 
-use Aero\Core\Contracts\DomainContextContract;
+use Aero\Contracts\DomainContextContract;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Traits\ParsesHostDomain;
 use Closure;

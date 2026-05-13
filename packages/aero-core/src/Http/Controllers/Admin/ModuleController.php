@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Controllers\Admin;
 
@@ -11,7 +11,7 @@ use Aero\Core\Services\AuditService;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\RoleModuleAccess;
 use Aero\HRMAC\Services\RoleModuleAccessService;
-use Aero\Core\Contracts\PlanCatalogInterface;
+use Aero\Contracts\PlanCatalogInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;

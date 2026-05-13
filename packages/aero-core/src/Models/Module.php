@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Models;
 
-use Aero\Core\Contracts\TenantScopeInterface;
+use Aero\Contracts\TenantScopeInterface;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

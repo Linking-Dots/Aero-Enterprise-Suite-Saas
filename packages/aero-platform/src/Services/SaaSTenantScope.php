@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Platform\Services;
 
-use Aero\Core\Contracts\TenantScopeInterface;
+use Aero\Contracts\TenantScopeInterface;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\Platform\Models\Tenant;
 

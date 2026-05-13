@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Scm\Services;
 
-use Aero\Core\Contracts\ModuleSummaryProvider;
+use Aero\Contracts\ModuleSummaryProvider;
 use Aero\Scm\Models\Supplier;
 
 class ScmDashboardSummaryProvider implements ModuleSummaryProvider

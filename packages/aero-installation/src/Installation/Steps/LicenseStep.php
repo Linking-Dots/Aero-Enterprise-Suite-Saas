@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Installation\Installation\Steps;
 
-use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Contracts\LicenseServiceInterface;
 use Aero\Core\Exceptions\LicenseException;
 
 /**

@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Notifications;
 
-use Aero\Core\Contracts\MailSenderInterface;
+use Aero\Contracts\MailSenderInterface;
 use Aero\Core\Models\TenantInvitation;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;

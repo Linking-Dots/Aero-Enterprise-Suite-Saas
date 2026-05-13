@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Controllers\Settings;
 
-use Aero\Core\Contracts\MailSenderInterface;
+use Aero\Contracts\MailSenderInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\StoreMailSettingsRequest;
 use Aero\Core\Models\SystemSetting;

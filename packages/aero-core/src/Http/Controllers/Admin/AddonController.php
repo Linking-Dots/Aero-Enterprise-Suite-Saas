@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Http\Controllers\Admin;
 
-use Aero\Core\Contracts\LicenseServiceInterface;
+use Aero\Contracts\LicenseServiceInterface;
 use Aero\Core\Models\InstalledAddon;
 use Aero\Core\Services\AddonCatalogService;
 use Aero\Core\Services\AddonInstaller;

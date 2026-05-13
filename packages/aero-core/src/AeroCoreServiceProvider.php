@@ -1,15 +1,15 @@
-<?php
+﻿<?php
 
 namespace Aero\Core;
 
 use Aero\Core\Contracts\EmployeeServiceContract;
-use Aero\Core\Contracts\LicenseServiceInterface;
-use Aero\Core\Contracts\MailContextResolverInterface;
-use Aero\Core\Contracts\NotificationChannelInterface;
-use Aero\Core\Contracts\NotificationRoutingContract;
-use Aero\Core\Contracts\SmsContextResolverInterface;
-use Aero\Core\Contracts\TenantScopeInterface;
-use Aero\Core\Contracts\TranslationDriverInterface;
+use Aero\Contracts\LicenseServiceInterface;
+use Aero\Contracts\MailContextResolverInterface;
+use Aero\Contracts\NotificationChannelInterface;
+use Aero\Contracts\NotificationRoutingContract;
+use Aero\Contracts\SmsContextResolverInterface;
+use Aero\Contracts\TenantScopeInterface;
+use Aero\Contracts\TranslationDriverInterface;
 use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
 use Aero\Core\Exceptions\Handler;
 use Aero\Core\Http\Middleware\CheckModuleAccess;

@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\HRM\Services;
 
-use Aero\Core\Contracts\ModuleSummaryProvider;
+use Aero\Contracts\ModuleSummaryProvider;
 use Aero\HRM\Models\Department;
 use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\Leave;

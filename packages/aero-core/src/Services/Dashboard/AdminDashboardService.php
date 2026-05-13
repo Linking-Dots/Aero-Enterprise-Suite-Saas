@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Core\Services\Dashboard;
 
-use Aero\Core\Contracts\ModuleSummaryProvider;
+use Aero\Contracts\ModuleSummaryProvider;
 use Aero\Core\Models\Announcement;
 use Aero\Core\Models\AuditLog;
 use Aero\Core\Models\CompanySetting;

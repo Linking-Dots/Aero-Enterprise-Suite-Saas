@@ -1,15 +1,15 @@
-<?php
+﻿<?php
 
 namespace Aero\Platform;
 
 use Aero\Auth\Context\TenantAuthContext;
 use Aero\Auth\Contracts\AuthContext;
-use Aero\Core\Contracts\MailSenderInterface;
-use Aero\Core\Contracts\PlanCatalogInterface;
-use Aero\Core\Contracts\ProductAccessInterface;
-use Aero\Core\Contracts\SmsGatewayInterface;
-use Aero\Core\Contracts\TenantScopeInterface;
-use Aero\Core\Contracts\TranslationDriverInterface;
+use Aero\Contracts\MailSenderInterface;
+use Aero\Contracts\PlanCatalogInterface;
+use Aero\Contracts\ProductAccessInterface;
+use Aero\Contracts\SmsGatewayInterface;
+use Aero\Contracts\TenantScopeInterface;
+use Aero\Contracts\TranslationDriverInterface;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Traits\ParsesHostDomain;

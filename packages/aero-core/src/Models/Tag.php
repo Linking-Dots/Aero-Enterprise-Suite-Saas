@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
 namespace Aero\Core\Models;
 
-use Aero\Core\Contracts\Searchable;
+use Aero\Contracts\Searchable;
 use Aero\Core\Traits\Searchable as SearchableTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

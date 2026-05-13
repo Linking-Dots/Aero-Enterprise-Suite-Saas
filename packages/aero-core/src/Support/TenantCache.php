@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -18,7 +18,7 @@ class TenantCache
     {
         if (is_saas_mode()) {
             try {
-                $scope = app(\Aero\Core\Contracts\TenantScopeInterface::class);
+                $scope = app(\Aero\Contracts\TenantScopeInterface::class);
                 if ($scope->inTenantContext()) {
                     $tenantId = $scope->getCurrentTenantId();
                     return "tenant:{$tenantId}:{$key}";

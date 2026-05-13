@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Aero\Core\Providers;
 
-use Aero\Core\Contracts\ModuleProviderInterface;
+use Aero\Contracts\ModuleProviderInterface;
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
 use Aero\Core\Services\NavigationRegistry;
 use Illuminate\Support\Facades\Route;
