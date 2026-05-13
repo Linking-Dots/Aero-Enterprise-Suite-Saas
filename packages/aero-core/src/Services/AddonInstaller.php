@@ -5,6 +5,7 @@ namespace Aero\Core\Services;
 use Aero\Core\Models\InstalledAddon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use ZipArchive;
 
 class AddonInstaller
@@ -47,6 +48,7 @@ class AddonInstaller
 
         $migrationsPath = "{$fullPath}/database/migrations";
         if (is_dir($migrationsPath)) {
+            $this->detectMigrationCollisions($migrationsPath);
             Artisan::call('migrate', [
                 '--path' => $installPath.'/database/migrations',
                 '--force' => true,
@@ -210,6 +212,10 @@ class AddonInstaller
 
         $zip->extractTo($targetDir);
         $zip->close();
+
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
     }
 
     private function detectSeederClass(string $packagePath, string $moduleCode): ?string
@@ -228,5 +234,33 @@ class AddonInstaller
         }
 
         return null;
+    }
+
+    private function detectMigrationCollisions(string $migrationsPath): void
+    {
+        $migrationFiles = glob("{$migrationsPath}/*.php");
+        if (empty($migrationFiles)) {
+            return;
+        }
+
+        $collisions = [];
+
+        foreach ($migrationFiles as $file) {
+            $content = file_get_contents($file);
+            preg_match_all('/Schema::create\s*\(\s*[\'"]([^\'"]+)[\'"]/m', $content, $matches);
+            foreach ($matches[1] as $tableName) {
+                if (Schema::hasTable($tableName)) {
+                    $collisions[] = $tableName;
+                }
+            }
+        }
+
+        if (! empty($collisions)) {
+            throw new \RuntimeException(
+                'Add-on migration collision detected. The following tables already exist and would be overwritten: '
+                .implode(', ', array_unique($collisions))
+                .'. Remove the conflicting add-on before installing this one.'
+            );
+        }
     }
 }
