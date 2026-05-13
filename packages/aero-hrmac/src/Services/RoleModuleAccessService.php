@@ -408,6 +408,11 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     {
         $roleId = is_object($role) ? $role->id : $role;
 
+        // Capture before state for audit trail
+        $beforeState = $this->modelForCurrentContext()::where('role_id', $roleId)
+            ->get(['module_id', 'sub_module_id', 'component_id', 'action_id', 'access_scope'])
+            ->toArray();
+
         // Clear existing access for this role
         $this->modelForCurrentContext()::where('role_id', $roleId)->delete();
 
@@ -457,6 +462,21 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
 
         // Clear cache
         $this->clearRoleCache($role);
+
+        // Write audit log — failure must never break the sync
+        try {
+            \Aero\HRMAC\Models\HrmacAuditLog::create([
+                'actor_user_id' => auth()->id(),
+                'role_id'       => $roleId,
+                'action'        => 'sync',
+                'before_state'  => $beforeState,
+                'after_state'   => $accessData,
+                'ip_address'    => request()->ip(),
+                'user_agent'    => request()->userAgent(),
+            ]);
+        } catch (\Throwable) {
+            // Audit failure must not break the access sync
+        }
     }
 
     /**
