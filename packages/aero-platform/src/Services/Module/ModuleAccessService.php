@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services\Module;
 
 use Aero\Core\Support\TenantCache;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Module;
 use Aero\Platform\Models\ModuleComponent;

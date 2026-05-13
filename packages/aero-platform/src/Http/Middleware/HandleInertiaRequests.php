@@ -8,7 +8,7 @@ use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\User;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Support\TenantCache;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Aero\I18n\Services\TranslationService;

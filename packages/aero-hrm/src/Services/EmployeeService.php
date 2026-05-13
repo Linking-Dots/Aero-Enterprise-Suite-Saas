@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRM\Services;
 
-use Aero\Core\Contracts\EmployeeServiceContract;
+use Aero\Contracts\EmployeeServiceContract;
 use Aero\HRM\Models\Employee;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;

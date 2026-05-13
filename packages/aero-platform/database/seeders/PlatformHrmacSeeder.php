@@ -2,7 +2,7 @@
 
 namespace Aero\Platform\Database\Seeders;
 
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Models\Action as HrmacAction;
 use Aero\HRMAC\Models\Module as HrmacModule;
 use Aero\HRMAC\Models\Role as HrmacRole;

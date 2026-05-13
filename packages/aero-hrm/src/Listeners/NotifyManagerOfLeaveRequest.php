@@ -55,9 +55,9 @@ class NotifyManagerOfLeaveRequest implements ShouldQueue
      */
     protected function notifyUsersWithLeaveAccess($leave, $employee, $manager): void
     {
-        if (app()->bound('Aero\HRMAC\Contracts\RoleModuleAccessInterface')) {
+        if (app()->bound('Aero\Contracts\RoleModuleAccessInterface')) {
             try {
-                $hrmacService = app('Aero\HRMAC\Contracts\RoleModuleAccessInterface');
+                $hrmacService = app('Aero\Contracts\RoleModuleAccessInterface');
 
                 // Get users with access to the 'leaves' submodule in 'hrm' module
                 // Using 'approve' action to target users who can approve leave requests

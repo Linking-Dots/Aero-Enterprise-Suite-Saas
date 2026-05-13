@@ -2,7 +2,7 @@
 
 namespace Aero\HRM\Providers;
 
-use Aero\Core\Contracts\EmployeeServiceContract;
+use Aero\Contracts\EmployeeServiceContract;
 use Aero\Core\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\DashboardWidgetRegistry;

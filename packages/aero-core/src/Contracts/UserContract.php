@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Collection;
  *
  * Usage in Modules:
  * ```php
- * use Aero\Core\Contracts\UserContract;
+ * use Aero\Contracts\UserContract;
  *
  * public function __construct(private UserContract $user) {}
  * ```

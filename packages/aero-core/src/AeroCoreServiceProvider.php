@@ -2,7 +2,7 @@
 
 namespace Aero\Core;
 
-use Aero\Core\Contracts\EmployeeServiceContract;
+use Aero\Contracts\EmployeeServiceContract;
 use Aero\Contracts\LicenseServiceInterface;
 use Aero\Contracts\MailContextResolverInterface;
 use Aero\Contracts\NotificationChannelInterface;
@@ -46,7 +46,7 @@ use Aero\Core\Services\StandaloneTenantScope;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRM\Services\EmployeeService;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Services\RoleModuleAccessService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;

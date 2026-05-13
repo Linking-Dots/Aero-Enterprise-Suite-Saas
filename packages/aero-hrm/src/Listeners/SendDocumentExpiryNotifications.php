@@ -50,7 +50,7 @@ class SendDocumentExpiryNotifications implements ShouldQueue
      */
     protected function notifyHr($document, int $daysUntilExpiry): void
     {
-        if (app()->bound('Aero\HRMAC\Contracts\RoleModuleAccessInterface')) {
+        if (app()->bound('Aero\Contracts\RoleModuleAccessInterface')) {
             try {
                 $hrUsers = \Aero\HRMAC\Facades\HRMAC::getUsersWithSubModuleAccess('hrm', 'employees');
 

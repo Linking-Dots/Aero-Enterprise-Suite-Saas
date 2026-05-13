@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Core\Contracts;
 
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;

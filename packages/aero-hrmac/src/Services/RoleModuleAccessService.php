@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Services;
 
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Models\Action;
 use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;

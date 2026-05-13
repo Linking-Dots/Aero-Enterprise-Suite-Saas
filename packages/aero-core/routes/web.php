@@ -36,7 +36,7 @@ use Aero\Core\Http\Controllers\Upload\FileManagerController;
 use Aero\Core\Http\Middleware\EnsureTenantContext;
 use Aero\Core\Models\User;
 use Aero\Core\Services\PlatformErrorReporter;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -151,7 +151,7 @@ Route::post('/api/version/check', function (Request $request) {
 // (aeos365.test) in SaaS mode, so the platform's public landing page is served instead.
 Route::get('/', function () {
     // Check if HRMAC package is available for smart landing
-    if (class_exists('Aero\HRMAC\Contracts\RoleModuleAccessInterface')) {
+    if (class_exists('Aero\Contracts\RoleModuleAccessInterface')) {
         $service = app(RoleModuleAccessInterface::class);
         $user = auth()->user();
 

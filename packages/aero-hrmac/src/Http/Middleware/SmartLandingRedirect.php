@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Http\Middleware;
 
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

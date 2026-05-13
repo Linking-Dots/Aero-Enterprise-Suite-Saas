@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Core\Services\Module\ModuleDiscoveryService;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Module;

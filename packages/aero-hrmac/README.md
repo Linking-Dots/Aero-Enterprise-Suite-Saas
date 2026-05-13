@@ -168,7 +168,7 @@ php artisan hrmac:sync-modules --prune
 ### Using the Service
 
 ```php
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 
 class SomeController
 {

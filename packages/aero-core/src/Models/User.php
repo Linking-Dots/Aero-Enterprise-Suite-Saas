@@ -3,7 +3,7 @@
 namespace Aero\Core\Models;
 
 use Aero\Contracts\Searchable;
-use Aero\Core\Contracts\UserContract;
+use Aero\Contracts\UserContract;
 use Aero\Core\Database\Factories\UserFactory;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\Searchable as SearchableTrait;

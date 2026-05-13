@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\HRM\Services;
 
 use Aero\HRM\Models\Employee;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Illuminate\Support\Facades\Cache;
 
 /**

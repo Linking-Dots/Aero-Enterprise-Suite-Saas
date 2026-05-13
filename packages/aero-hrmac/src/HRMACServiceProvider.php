@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\HRMAC;
 
 use Aero\HRMAC\Console\Commands\SyncModuleHierarchy;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess;
 use Aero\HRMAC\Http\Middleware\SmartLandingRedirect;
 use Aero\HRMAC\Services\ModuleDiscoveryService;

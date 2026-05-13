@@ -4,7 +4,7 @@ namespace Aero\Core\Http\Middleware;
 
 use Aero\Core\Services\ModuleAccessService;
 use Aero\Core\ValueObjects\RequestContext;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Contracts\ProductAccessInterface;
 use Closure;
 use Illuminate\Http\Request;

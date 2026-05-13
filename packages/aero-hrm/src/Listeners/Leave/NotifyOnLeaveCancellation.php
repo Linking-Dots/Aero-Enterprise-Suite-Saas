@@ -88,7 +88,7 @@ class NotifyOnLeaveCancellation implements ShouldQueue
     protected function notifyUsersWithLeaveAccess($leave, string $cancelledByName, ?int $cancellerEmployeeId, $employee): void
     {
         // Use HRMAC to get users with access to hrm.leaves submodule
-        if (! app()->bound('Aero\HRMAC\Contracts\RoleModuleAccessInterface')) {
+        if (! app()->bound('Aero\Contracts\RoleModuleAccessInterface')) {
             return;
         }
 
@@ -100,7 +100,7 @@ class NotifyOnLeaveCancellation implements ShouldQueue
         }
 
         try {
-            $hrmacService = app('Aero\HRMAC\Contracts\RoleModuleAccessInterface');
+            $hrmacService = app('Aero\Contracts\RoleModuleAccessInterface');
 
             // Get users with access to the 'leaves' submodule in 'hrm' module
             $usersWithAccess = $hrmacService->getUsersWithSubModuleAccess('hrm', 'leaves');

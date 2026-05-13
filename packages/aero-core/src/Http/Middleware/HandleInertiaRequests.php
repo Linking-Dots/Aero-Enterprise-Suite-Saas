@@ -6,7 +6,7 @@ use Aero\Contracts\DomainContextContract;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
 use Aero\Core\Services\NavigationRegistry;
-use Aero\HRMAC\Contracts\RoleModuleAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Models\Action;
 use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;
