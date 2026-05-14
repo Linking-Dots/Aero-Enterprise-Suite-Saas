@@ -25,7 +25,8 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamps();
-            
+            $table->softDeletes();
+
             $table->index(['tenant_id', 'created_at']);
             $table->index(['module', 'action']);
             $table->index(['entity_type', 'entity_id']);
