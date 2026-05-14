@@ -3,7 +3,9 @@
 namespace Aero\Core;
 
 use Aero\Contracts\AeroMode;
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Contracts\EmployeeServiceContract;
+use Aero\Contracts\EncryptionDriverInterface;
 use Aero\Contracts\LicenseServiceInterface;
 use Aero\Contracts\MailContextResolverInterface;
 use Aero\Contracts\NotificationChannelInterface;
@@ -132,6 +134,16 @@ class AeroCoreServiceProvider extends ServiceProvider
 
             // Configure auth to use Core's User model
             config(['auth.providers.users.model' => User::class]);
+
+            // Encryption driver — swappable for AWS KMS, HashiCorp Vault, etc.
+            $this->app->singleton(EncryptionDriverInterface::class, function ($app) {
+                return new \Aero\Core\Encryption\LaravelEncryptionDriver(
+                    $app['encrypter']
+                );
+            });
+
+            // Audit service — writes to audit_logs (tenant) or platform_audit_logs (central)
+            $this->app->singleton(AuditServiceInterface::class, \Aero\Core\Services\Audit\AuditService::class);
 
             // Register Core Singletons
             $this->app->singleton(ModuleRegistry::class);
