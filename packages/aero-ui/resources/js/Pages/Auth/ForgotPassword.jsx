@@ -11,43 +11,35 @@ export default function ForgotPassword({ status }) {
   }
 
   return (
-    <form className="al-form" onSubmit={submit} noValidate>
-      {status && <Alert intent="success">{status}</Alert>}
-
-      <Text tone="secondary">
-        Enter your email and we'll send you a secure link to reset your password.
-      </Text>
-
-      <Field label="Email address" htmlFor="email" error={errors.email} required>
-        <Input
-          id="email"
-          type="email"
-          value={data.email}
-          onChange={e => setData('email', e.target.value)}
-          leftIcon="mail"
-          placeholder="you@company.com"
-          autoComplete="email"
-          autoFocus
-          error={!!errors.email}
-        />
-      </Field>
-
-      <Button intent="primary" fullWidth loading={processing} disabled={processing} type="submit" size="lg">
-        Send reset link
-      </Button>
-
-      <div className="al-links">
-        <Text tone="secondary">
-          Remember your password?{' '}
-          <Link href={route('login')} className="al-link">Sign in</Link>
+    <AuthLayout title="Reset your password">
+      <form className="al-form" onSubmit={submit} noValidate>
+        <Text tone="secondary" size="sm">
+          Enter your email address and we'll send you a link to reset your password.
         </Text>
-      </div>
-    </form>
+
+        {status && <Alert intent="success">{status}</Alert>}
+
+        <Field label="Email address" htmlFor="email" error={errors.email} required>
+          <Input
+            id="email"
+            type="email"
+            value={data.email}
+            onChange={e => setData('email', e.target.value)}
+            placeholder="you@company.com"
+            autoComplete="email"
+            autoFocus
+            error={!!errors.email}
+          />
+        </Field>
+
+        <Button intent="primary" fullWidth loading={processing} type="submit">
+          Send reset link
+        </Button>
+
+        <Text tone="secondary" size="sm" style={{ textAlign: 'center' }}>
+          <Link href={route('login')} className="al-link">Back to login</Link>
+        </Text>
+      </form>
+    </AuthLayout>
   );
 }
-
-ForgotPassword.layout = page => (
-  <AuthLayout title="Reset your password" eyebrow="Password recovery">
-    {page}
-  </AuthLayout>
-);
