@@ -22,12 +22,11 @@ return new class extends Migration
             $table->string('storage_path');
             $table->string('storage_driver')->default('local');
             $table->boolean('encryption_status')->default(false);
-            $table->timestamp('created_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->text('error_message')->nullable();
             $table->json('metadata')->nullable();
-            $table->timestamps();
+            $table->timestamps(); // adds created_at + updated_at
             
             $table->index('tenant_id');
             $table->index('status');
