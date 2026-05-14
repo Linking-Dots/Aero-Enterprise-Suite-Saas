@@ -21,8 +21,9 @@ import {
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-const TAB_ACTIVITY = 'activity';
-const TAB_SECURITY = 'security';
+const TAB_BUSINESS = 'business';
+const TAB_MODEL    = 'model';
+const TAB_ACCESS   = 'access';
 
 export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initialFilters }) {
   const toast = useToast();
@@ -39,10 +40,10 @@ export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initia
     if (dateFrom) params.date_from = dateFrom;
     if (dateTo) params.date_to = dateTo;
 
-    if (newTab === TAB_ACTIVITY && actionType) {
+    if (newTab === TAB_BUSINESS && actionType) {
       params.action = actionType;
     }
-    if (newTab === TAB_SECURITY && eventType) {
+    if (newTab === TAB_ACCESS && eventType) {
       params.event_type = eventType;
     }
 
@@ -114,7 +115,7 @@ export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initia
         style={{ minWidth: 200, flex: 1 }}
       />
 
-      {tab === TAB_ACTIVITY && (
+      {tab === TAB_BUSINESS && (
         <Select
           value={actionType}
           onChange={e => setActionType(e.target.value)}
@@ -130,7 +131,7 @@ export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initia
         />
       )}
 
-      {tab === TAB_SECURITY && (
+      {tab === TAB_ACCESS && (
         <Select
           value={eventType}
           onChange={e => setEventType(e.target.value)}
@@ -175,10 +176,11 @@ export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initia
         <VStack gap={4}>
           <Tabs
             tabs={[
-              { value: TAB_ACTIVITY, label: 'Activity Logs', count: meta?.total ?? 0 },
-              { value: TAB_SECURITY, label: 'Security Logs' },
+              { value: TAB_BUSINESS, label: 'Business Events', count: meta?.total ?? 0 },
+              { value: TAB_MODEL, label: 'Model Changes' },
+              { value: TAB_ACCESS, label: 'Sensitive Access' },
             ]}
-            value={tab ?? TAB_ACTIVITY}
+            value={tab ?? TAB_BUSINESS}
             onChange={handleTabChange}
           />
           {filterBar}
@@ -186,7 +188,7 @@ export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initia
       }
       table={
         <DataTable
-          columns={tab === TAB_SECURITY ? securityColumns : activityColumns}
+          columns={tab === TAB_ACCESS ? securityColumns : activityColumns}
           rows={logs ?? []}
           empty="No logs found. Try adjusting your filters."
         />

@@ -3,302 +3,181 @@
 namespace Aero\Core\Http\Controllers\Admin;
 
 use Aero\Core\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AuditLogController extends Controller
 {
-    /**
-     * Display the audit logs listing with stats, logs and filters as Inertia props.
-     */
     public function index(Request $request): Response
     {
-        $tab = $request->get('tab', 'activity');
-        $perPage = $request->get('per_page', 15);
-        $search = $request->get('search', '');
-        $userId = $request->get('user_id');
-        $action = $request->get('action');
+        $tab = $request->get('tab', 'business');
+        $perPage = (int) $request->get('per_page', 20);
+        $search = (string) $request->get('search', '');
+        $actorId = $request->get('actor_id');
         $eventType = $request->get('event_type');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        $stats = $this->getStats();
-        $logs = [];
-        $meta = [
-            'current_page' => 1,
-            'last_page' => 1,
-            'per_page' => $perPage,
-            'total' => 0,
-        ];
-
-        if ($tab === 'activity') {
-            $result = $this->getActivityLogs($perPage, $search, $userId, $action, $dateFrom, $dateTo);
-            $logs = $result['data'] ?? [];
-            $meta = $result['meta'] ?? $meta;
-        } elseif ($tab === 'security') {
-            $result = $this->getSecurityLogs($perPage, $search, $eventType, $dateFrom, $dateTo);
-            $logs = $result['data'] ?? [];
-            $meta = $result['meta'] ?? $meta;
-        }
+        [$logs, $meta] = match ($tab) {
+            'business' => $this->getBusinessLogs($perPage, $search, $actorId, $eventType, $dateFrom, $dateTo),
+            'model' => $this->getModelActivityLogs($perPage, $search, $actorId, $dateFrom, $dateTo),
+            'access' => $this->getAccessLogs($perPage, $search, $actorId, $dateFrom, $dateTo),
+            default => $this->getBusinessLogs($perPage, $search, $actorId, $eventType, $dateFrom, $dateTo),
+        };
 
         return Inertia::render('Core/AuditLogs/Index', [
-            'title' => 'Audit & Activity Logs',
-            'stats' => $stats,
+            'title' => 'Audit Logs',
+            'stats' => $this->getStats(),
             'tab' => $tab,
             'logs' => $logs,
             'meta' => $meta,
-            'filters' => [
-                'search' => $search,
-                'user_id' => $userId,
-                'action' => $action,
-                'event_type' => $eventType,
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-            ],
+            'filters' => $request->only(['search', 'actor_id', 'event_type', 'date_from', 'date_to']),
         ]);
     }
 
-    /**
-     * Get paginated activity logs (JSON API).
-     */
     public function activityLogs(Request $request): JsonResponse
     {
-        $perPage = $request->get('per_page', 15);
-        $search = $request->get('search', '');
-        $userId = $request->get('user_id');
-        $action = $request->get('action');
-        $dateFrom = $request->get('date_from');
-        $dateTo = $request->get('date_to');
+        [$logs, $meta] = $this->getBusinessLogs(
+            (int) $request->get('per_page', 20),
+            (string) $request->get('search', ''),
+            $request->get('actor_id'),
+            $request->get('event_type'),
+            $request->get('date_from'),
+            $request->get('date_to'),
+        );
 
-        $result = $this->getActivityLogs($perPage, $search, $userId, $action, $dateFrom, $dateTo);
-
-        return response()->json($result);
+        return response()->json(['data' => $logs, 'meta' => $meta]);
     }
 
-    /**
-     * Get paginated security logs (JSON API).
-     */
-    public function securityLogs(Request $request): JsonResponse
-    {
-        $perPage = $request->get('per_page', 15);
-        $search = $request->get('search', '');
-        $eventType = $request->get('event_type');
-        $dateFrom = $request->get('date_from');
-        $dateTo = $request->get('date_to');
-
-        $result = $this->getSecurityLogs($perPage, $search, $eventType, $dateFrom, $dateTo);
-
-        return response()->json($result);
-    }
-
-    /**
-     * Export activity logs.
-     */
-    public function exportActivityLogs(Request $request): JsonResponse
-    {
-        return response()->json([
-            'message' => 'Export functionality coming soon',
-        ]);
-    }
-
-    /**
-     * Export security logs.
-     */
-    public function exportSecurityLogs(Request $request): JsonResponse
-    {
-        return response()->json([
-            'message' => 'Export functionality coming soon',
-        ]);
-    }
-
-    /**
-     * Get audit log statistics (JSON API).
-     */
     public function stats(): JsonResponse
     {
         return response()->json($this->getStats());
     }
 
-    /**
-     * Build activity logs query and return paginated array.
-     */
-    private function getActivityLogs(int $perPage, string $search, ?string $userId, ?string $action, ?string $dateFrom, ?string $dateTo): array
+    private function getBusinessLogs(int $perPage, string $search, ?string $actorId, ?string $eventType, ?string $dateFrom, ?string $dateTo): array
+    {
+        if (! $this->tableExists('audit_logs')) {
+            return [[], $this->emptyMeta($perPage)];
+        }
+
+        $query = DB::table('audit_logs')
+            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                    ->orWhere('actor_name', 'like', "%{$search}%")
+                    ->orWhere('subject_label', 'like', "%{$search}%");
+            }))
+            ->when($actorId, fn ($q) => $q->where('actor_id', $actorId))
+            ->when($eventType, fn ($q) => $q->where('event_type', $eventType))
+            ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        return [
+            $query->items(),
+            [
+                'current_page' => $query->currentPage(),
+                'last_page' => $query->lastPage(),
+                'per_page' => $query->perPage(),
+                'total' => $query->total(),
+            ],
+        ];
+    }
+
+    private function getModelActivityLogs(int $perPage, string $search, ?string $actorId, ?string $dateFrom, ?string $dateTo): array
     {
         if (! $this->tableExists('activity_log')) {
-            return [
-                'data' => [],
-                'meta' => [
-                    'current_page' => 1,
-                    'last_page' => 1,
-                    'per_page' => $perPage,
-                    'total' => 0,
-                ],
-                'message' => 'Activity logging not configured',
-            ];
+            return [[], $this->emptyMeta($perPage)];
         }
 
         $query = DB::table('activity_log')
             ->leftJoin('users', 'activity_log.causer_id', '=', 'users.id')
             ->select([
                 'activity_log.id',
-                'activity_log.log_name',
+                'activity_log.log_name as event_type',
                 'activity_log.description',
                 'activity_log.subject_type',
                 'activity_log.subject_id',
-                'activity_log.causer_type',
-                'activity_log.causer_id',
                 'activity_log.properties',
                 'activity_log.created_at',
-                'users.name as causer_name',
-                'users.email as causer_email',
-            ]);
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
+                'users.name as actor_name',
+                'users.email as actor_email',
+            ])
+            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('activity_log.description', 'like', "%{$search}%")
-                    ->orWhere('activity_log.log_name', 'like', "%{$search}%")
                     ->orWhere('users.name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($userId) {
-            $query->where('activity_log.causer_id', $userId);
-        }
-
-        if ($action) {
-            $query->where('activity_log.log_name', $action);
-        }
-
-        if ($dateFrom) {
-            $query->whereDate('activity_log.created_at', '>=', $dateFrom);
-        }
-
-        if ($dateTo) {
-            $query->whereDate('activity_log.created_at', '<=', $dateTo);
-        }
-
-        $logs = $query->orderBy('activity_log.created_at', 'desc')
+            }))
+            ->when($actorId, fn ($q) => $q->where('activity_log.causer_id', $actorId))
+            ->when($dateFrom, fn ($q) => $q->whereDate('activity_log.created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($q) => $q->whereDate('activity_log.created_at', '<=', $dateTo))
+            ->orderByDesc('activity_log.created_at')
             ->paginate($perPage);
 
         return [
-            'data' => $logs->items(),
-            'meta' => [
-                'current_page' => $logs->currentPage(),
-                'last_page' => $logs->lastPage(),
-                'per_page' => $logs->perPage(),
-                'total' => $logs->total(),
+            $query->items(),
+            [
+                'current_page' => $query->currentPage(),
+                'last_page' => $query->lastPage(),
+                'per_page' => $query->perPage(),
+                'total' => $query->total(),
             ],
         ];
     }
 
-    /**
-     * Build security logs query and return paginated array.
-     */
-    private function getSecurityLogs(int $perPage, string $search, ?string $eventType, ?string $dateFrom, ?string $dateTo): array
+    private function getAccessLogs(int $perPage, string $search, ?string $actorId, ?string $dateFrom, ?string $dateTo): array
     {
-        if (! $this->tableExists('security_logs')) {
-            return [
-                'data' => [],
-                'meta' => [
-                    'current_page' => 1,
-                    'last_page' => 1,
-                    'per_page' => $perPage,
-                    'total' => 0,
-                ],
-                'message' => 'Security logging not configured',
-            ];
+        if (! $this->tableExists('access_logs')) {
+            return [[], $this->emptyMeta($perPage)];
         }
 
-        $query = DB::table('security_logs')
-            ->leftJoin('users', 'security_logs.user_id', '=', 'users.id')
-            ->select([
-                'security_logs.id',
-                'security_logs.event_type',
-                'security_logs.description',
-                'security_logs.ip_address',
-                'security_logs.user_agent',
-                'security_logs.metadata',
-                'security_logs.created_at',
-                'users.name as user_name',
-                'users.email as user_email',
-            ]);
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('security_logs.description', 'like', "%{$search}%")
-                    ->orWhere('security_logs.ip_address', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($eventType) {
-            $query->where('security_logs.event_type', $eventType);
-        }
-
-        if ($dateFrom) {
-            $query->whereDate('security_logs.created_at', '>=', $dateFrom);
-        }
-
-        if ($dateTo) {
-            $query->whereDate('security_logs.created_at', '<=', $dateTo);
-        }
-
-        $logs = $query->orderBy('security_logs.created_at', 'desc')
+        $query = DB::table('access_logs')
+            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
+                $q->where('resource_type', 'like', "%{$search}%")
+                    ->orWhere('accessor_name', 'like', "%{$search}%")
+                    ->orWhere('subject_label', 'like', "%{$search}%");
+            }))
+            ->when($actorId, fn ($q) => $q->where('accessor_id', $actorId))
+            ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
+            ->orderByDesc('created_at')
             ->paginate($perPage);
 
         return [
-            'data' => $logs->items(),
-            'meta' => [
-                'current_page' => $logs->currentPage(),
-                'last_page' => $logs->lastPage(),
-                'per_page' => $logs->perPage(),
-                'total' => $logs->total(),
+            $query->items(),
+            [
+                'current_page' => $query->currentPage(),
+                'last_page' => $query->lastPage(),
+                'per_page' => $query->perPage(),
+                'total' => $query->total(),
             ],
         ];
     }
 
-    /**
-     * Build stats array.
-     */
     private function getStats(): array
     {
-        $stats = [
-            'total_activities' => 0,
-            'today_activities' => 0,
-            'security_events' => 0,
-            'active_users_today' => 0,
+        return [
+            'business_events_today' => $this->tableExists('audit_logs')
+                ? DB::table('audit_logs')->whereDate('created_at', today())->count() : 0,
+            'business_events_total' => $this->tableExists('audit_logs')
+                ? DB::table('audit_logs')->count() : 0,
+            'model_changes_today' => $this->tableExists('activity_log')
+                ? DB::table('activity_log')->whereDate('created_at', today())->count() : 0,
+            'sensitive_accesses_today' => $this->tableExists('access_logs')
+                ? DB::table('access_logs')->whereDate('created_at', today())->count() : 0,
+            'active_users_today' => $this->tableExists('sessions')
+                ? DB::table('sessions')->whereNotNull('user_id')->distinct('user_id')->count('user_id') : 0,
         ];
-
-        if ($this->tableExists('activity_log')) {
-            $stats['total_activities'] = DB::table('activity_log')->count();
-            $stats['today_activities'] = DB::table('activity_log')
-                ->whereDate('created_at', today())
-                ->count();
-        }
-
-        if ($this->tableExists('security_logs')) {
-            $stats['security_events'] = DB::table('security_logs')
-                ->whereDate('created_at', today())
-                ->count();
-        }
-
-        if ($this->tableExists('sessions')) {
-            $stats['active_users_today'] = DB::table('sessions')
-                ->whereNotNull('user_id')
-                ->distinct('user_id')
-                ->count('user_id');
-        }
-
-        return $stats;
     }
 
-    /**
-     * Check if a table exists in the database.
-     */
-    protected function tableExists(string $table): bool
+    private function emptyMeta(int $perPage): array
+    {
+        return ['current_page' => 1, 'last_page' => 1, 'per_page' => $perPage, 'total' => 0];
+    }
+
+    private function tableExists(string $table): bool
     {
         return DB::getSchemaBuilder()->hasTable($table);
     }
