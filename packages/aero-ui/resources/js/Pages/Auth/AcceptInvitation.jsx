@@ -18,7 +18,7 @@ export default function AcceptInvitation({ invitation, token }) {
   return (
     <AuthLayout title="Accept your invitation">
       <form className="al-form" onSubmit={submit} noValidate>
-        <VStack gap={2} style={{ marginBottom: 16 }}>
+        <VStack gap={2} className="aai-header">
           {invitation.inviter && (
             <Text tone="secondary" size="sm">
               {invitation.inviter.name} has invited you to join.
@@ -75,6 +75,10 @@ export default function AcceptInvitation({ invitation, token }) {
           Create account and sign in
         </Button>
       </form>
+
+      <style>{`
+        .aai-header { margin-bottom: 1rem; }
+      `}</style>
     </AuthLayout>
   );
 }
