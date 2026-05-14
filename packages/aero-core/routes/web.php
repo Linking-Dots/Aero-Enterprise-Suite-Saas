@@ -27,6 +27,7 @@ use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
 use Aero\Core\Http\Controllers\Settings\BrandingSettingsController;
+use Aero\Core\Http\Controllers\Settings\IpWhitelistController;
 use Aero\Core\Http\Controllers\Settings\LocalizationSettingsController;
 use Aero\Core\Http\Controllers\Settings\MailSettingsController;
 use Aero\Core\Http\Controllers\Settings\OrganizationProfileController;

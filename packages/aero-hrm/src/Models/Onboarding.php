@@ -60,7 +60,7 @@ class Onboarding extends TenantModel
         'actual_completion_date' => 'date',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
         static::creating(function (self $model) {

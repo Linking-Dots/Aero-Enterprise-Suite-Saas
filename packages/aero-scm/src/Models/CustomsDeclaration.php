@@ -103,7 +103,7 @@ class CustomsDeclaration extends TenantModel
     /**
      * Calculate total charges.
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

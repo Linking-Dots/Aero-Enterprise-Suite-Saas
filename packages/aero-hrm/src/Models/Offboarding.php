@@ -73,7 +73,7 @@ class Offboarding extends TenantModel
         'exit_interview_date' => 'date',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
         static::creating(function (self $model) {

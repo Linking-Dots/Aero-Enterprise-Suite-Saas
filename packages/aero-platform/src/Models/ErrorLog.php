@@ -97,7 +97,7 @@ class ErrorLog extends CentralModel
     /**
      * Boot method to generate trace_id
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

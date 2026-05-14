@@ -3,6 +3,9 @@
 namespace Aero\Platform\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Aero\Platform\Database\Seeders\ModulePricingSeeder;
+use Aero\Platform\Database\Seeders\PlanSeeder;
+use Aero\Platform\Database\Seeders\ProductSeeder;
 
 /**
  * Main database seeder for the Aero Platform package.
@@ -25,6 +28,7 @@ class PlatformDatabaseSeeder extends Seeder
 
         $this->call([
             PlanSeeder::class,
+            ProductSeeder::class,
             ModulePricingSeeder::class,
         ]);
 

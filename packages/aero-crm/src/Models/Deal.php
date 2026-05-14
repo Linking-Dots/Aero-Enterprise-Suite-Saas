@@ -84,7 +84,7 @@ class Deal extends TenantModel
     /**
      * Boot the model
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

@@ -45,7 +45,7 @@ class EventRegistration extends TenantModel
 
     protected $appends = ['status_badge_color'];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

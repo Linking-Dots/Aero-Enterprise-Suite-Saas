@@ -69,7 +69,7 @@ class EmergencyContact extends TenantModel
     // BOOT
     // =========================================================================
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

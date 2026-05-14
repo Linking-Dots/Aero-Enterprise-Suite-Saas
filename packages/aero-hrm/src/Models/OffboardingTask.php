@@ -38,7 +38,7 @@ class OffboardingTask extends TenantModel
         'completed_date' => 'date',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
         static::creating(function (self $model) {

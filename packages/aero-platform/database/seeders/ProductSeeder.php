@@ -49,6 +49,26 @@ class ProductSeeder extends Seeder
             'yearly_price'  => 340.00,
             'sort_order'    => 4,
         ],
+        [
+            'code'          => 'quality',
+            'module_code'   => 'quality',
+            'name'          => 'Quality Management & Labs',
+            'description'   => 'Full QMS: inspections (ITP/WIR), material labs (LIMS), NCR/CAPA, SPC, calibration, supplier quality, audits, ISO compliance, and EAM asset-quality checks.',
+            'icon'          => 'BeakerIcon',
+            'monthly_price' => 34.00,
+            'yearly_price'  => 340.00,
+            'sort_order'    => 5,
+        ],
+        [
+            'code'          => 'rfi',
+            'module_code'   => 'rfi',
+            'name'          => 'RFI & Site Intelligence',
+            'description'   => 'Request For Inspection (construction) + RFI/RFQ workflow, geo-fenced validation, and linear chainage mapping.',
+            'icon'          => 'MapPinIcon',
+            'monthly_price' => 29.00,
+            'yearly_price'  => 290.00,
+            'sort_order'    => 6,
+        ],
     ];
 
     public function run(): void

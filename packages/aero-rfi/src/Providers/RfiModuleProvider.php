@@ -219,5 +219,6 @@ class RfiModuleProvider extends AbstractModuleProvider
                 }
             }
         );
-    }    }
+    }
 }
+

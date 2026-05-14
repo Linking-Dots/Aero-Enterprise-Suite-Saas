@@ -39,7 +39,7 @@ class ProcurementRequestItem extends TenantModel
     /**
      * Calculate estimated total when unit price or quantity changes.
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

@@ -198,7 +198,7 @@ class Grievance extends TenantModel
     /**
      * Boot method for model events.
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

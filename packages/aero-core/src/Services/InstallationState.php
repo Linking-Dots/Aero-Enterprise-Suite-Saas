@@ -19,17 +19,29 @@ class InstallationState
     {
         $legacyFile = storage_path('app/aeos.installed');
 
-        return Cache::store('file')->rememberForever(self::CACHE_KEY, function () use ($legacyFile) {
-            if (file_exists($legacyFile)) {
-                return true;
-            }
+        // Fast path: file check requires no service container — safe during register() phase.
+        if (file_exists($legacyFile)) {
+            return true;
+        }
 
+        // Cache-backed schema check (only reachable when the file doesn't exist yet).
+        // CacheServiceProvider is deferred, so wrap in try/catch for early-boot safety.
+        try {
+            return Cache::store('file')->rememberForever(self::CACHE_KEY, function () {
+                try {
+                    return Schema::hasTable('users') && Schema::hasTable('modules');
+                } catch (\Throwable) {
+                    return false;
+                }
+            });
+        } catch (\Throwable) {
+            // Cache not yet registered (very early boot) — fall back to direct schema check.
             try {
                 return Schema::hasTable('users') && Schema::hasTable('modules');
             } catch (\Throwable) {
                 return false;
             }
-        });
+        }
     }
 
     /**

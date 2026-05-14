@@ -51,7 +51,7 @@ class Event extends TenantModel
 
     protected $appends = ['full_event_datetime', 'registration_status', 'participants_count'];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

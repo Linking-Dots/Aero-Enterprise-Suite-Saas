@@ -368,7 +368,7 @@ class PermitToWork extends TenantModel
     /**
      * Boot method
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 

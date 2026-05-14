@@ -3,6 +3,7 @@
 namespace Aero\Core\Installation\Steps;
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Seeding Step
@@ -35,37 +36,69 @@ class SeedingStep extends BaseInstallationStep
     {
         $this->log('Starting database seeding');
 
+        $modeFile = storage_path('app/aeos.mode');
+        $mode     = file_exists($modeFile) ? trim(file_get_contents($modeFile)) : env('INSTALLATION_MODE', 'standalone');
+
         try {
-            Artisan::call('db:seed', [
-                '--force' => true,
-            ]);
+            if ($mode === 'saas') {
+                // Directly call platform seeders — no app-level DatabaseSeeder exists in SaaS
+                $seededClasses = [];
+
+                $platformSeeder = 'Aero\\Platform\\Database\\Seeders\\PlatformDatabaseSeeder';
+                if (class_exists($platformSeeder)) {
+                    app($platformSeeder)->setCommand($this->createNullCommand())->run();
+                    $seededClasses[] = $platformSeeder;
+                }
+
+                $productSeeder = 'Aero\\Platform\\Database\\Seeders\\ProductSeeder';
+                if (class_exists($productSeeder)) {
+                    app($productSeeder)->setCommand($this->createNullCommand())->run();
+                    $seededClasses[] = $productSeeder;
+                }
+
+                return [
+                    'seeding_status' => 'success',
+                    'mode'           => 'saas',
+                    'seeded'         => $seededClasses,
+                ];
+            }
+
+            // Standalone: fall back to app DatabaseSeeder if it exists
+            Artisan::call('db:seed', ['--force' => true]);
 
             return [
                 'seeding_status' => 'success',
-                'seeded_tables' => [
-                    'roles',
-                    'permissions',
-                    'settings',
-                    'modules',
-                ],
+                'mode'           => 'standalone',
+                'seeded_tables'  => ['roles', 'permissions', 'settings', 'modules'],
             ];
 
         } catch (\Exception $e) {
-            $this->warn('Seeding partially completed: '.$e->getMessage());
+            $this->warn('Seeding partially completed: ' . $e->getMessage());
 
             return [
                 'seeding_status' => 'completed_with_warnings',
-                'warning' => $e->getMessage(),
+                'warning'        => $e->getMessage(),
             ];
         }
+    }
+
+    /** Returns a minimal command stub so seeders can call $this->command->info() without crashing. */
+    private function createNullCommand(): \Illuminate\Console\Command
+    {
+        return new class extends \Illuminate\Console\Command {
+            protected $name = 'install:seed-stub';
+            public function info($string, $verbosity = null): void {}
+            public function line($string, $style = null, $verbosity = null): void {}
+            public function handle(): void {}
+        };
     }
 
     public function validate(): bool
     {
         // Check that some seed data exists
         try {
-            $hasRoles = \DB::table('roles')->exists();
-            $hasPermissions = \DB::table('permissions')->exists();
+            $hasRoles = DB::table('roles')->exists();
+            $hasPermissions = DB::table('permissions')->exists();
 
             return $hasRoles && $hasPermissions;
 
