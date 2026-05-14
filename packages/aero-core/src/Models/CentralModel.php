@@ -2,26 +2,9 @@
 
 namespace Aero\Core\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 /**
- * Base class for all models that live in the CENTRAL (landlord) database.
+ * Backward-compatibility shim — CentralModel now lives in aero-contracts.
  *
- * Central models are tenant-agnostic: Plans, LandlordUsers, Tenants, Products, etc.
- * The connection is pinned to 'central' and cannot be changed at runtime.
- *
- * NEVER add relationships to TenantModel subclasses — cross-DB joins fail.
- * In standalone mode: do NOT extend CentralModel (no 'central' connection exists).
+ * @see \Aero\Contracts\Models\CentralModel
  */
-abstract class CentralModel extends Model
-{
-    protected $connection = 'central';
-
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(fn (self $m) => $m->setConnection('central'));
-        static::saving(fn (self $m) => $m->setConnection('central'));
-    }
-}
+abstract class CentralModel extends \Aero\Contracts\Models\CentralModel {}
