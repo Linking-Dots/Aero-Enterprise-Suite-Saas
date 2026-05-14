@@ -3,7 +3,6 @@
 namespace Aero\Pos\Providers;
 
 use Aero\Contracts\Providers\AbstractModuleProvider;
-use Aero\Core\Services\ModuleRegistry;
 use Aero\Pos\Services\POSService;
 
 /**
@@ -141,12 +140,4 @@ class PosModuleProvider extends AbstractModuleProvider
     protected function bootModule(): void
     {
         // Register module-specific middleware, policies, etc.
-    }
-
-    public function register(): void
-    {
-        parent::register();
-        $registry = $this->app->make(ModuleRegistry::class);
-        $registry->register($this);
-    }
-}
+    }}

@@ -3,7 +3,6 @@
 namespace Aero\Ims\Providers;
 
 use Aero\Contracts\Providers\AbstractModuleProvider;
-use Aero\Core\Services\ModuleRegistry;
 
 /**
  * IMS Module Provider
@@ -156,12 +155,4 @@ class ImsModuleProvider extends AbstractModuleProvider
     protected function bootModule(): void
     {
         // Register module-specific middleware, policies, etc.
-    }
-
-    public function register(): void
-    {
-        parent::register();
-        $registry = $this->app->make(ModuleRegistry::class);
-        $registry->register($this);
-    }
-}
+    }}

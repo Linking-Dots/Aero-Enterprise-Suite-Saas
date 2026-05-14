@@ -219,19 +219,5 @@ class RfiModuleProvider extends AbstractModuleProvider
                 }
             }
         );
-    }
-
-    /**
-     * Register this module with the ModuleRegistry.
-     */
-    public function register(): void
-    {
-        parent::register();
-
-        // Register this module with the registry
-        if ($this->app->bound(\Aero\Core\Services\ModuleRegistry::class)) {
-            $registry = $this->app->make(\Aero\Core\Services\ModuleRegistry::class);
-            $registry->register($this);
-        }
-    }
+    }    }
 }

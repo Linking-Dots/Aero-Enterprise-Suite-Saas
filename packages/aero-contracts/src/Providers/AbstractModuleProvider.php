@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Contracts\Providers;
 
 use Aero\Contracts\ModuleProviderInterface;
+use Aero\Contracts\ModuleRegistryInterface;
 use Aero\Contracts\NavigationRegistryInterface;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -166,6 +167,10 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
             }
 
             $this->registerServices();
+
+            if ($this->app->bound(ModuleRegistryInterface::class)) {
+                $this->app->make(ModuleRegistryInterface::class)->register($this);
+            }
         } catch (\Throwable) {
             // Silently fail during package discovery
         }

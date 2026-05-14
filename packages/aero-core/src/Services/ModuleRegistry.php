@@ -3,6 +3,7 @@
 namespace Aero\Core\Services;
 
 use Aero\Contracts\ModuleProviderInterface;
+use Aero\Contracts\ModuleRegistryInterface;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Support\Collection;
 
@@ -12,7 +13,7 @@ use Illuminate\Support\Collection;
  * Central registry for discovering, registering, and managing modules.
  * Provides dynamic module loading and metadata management.
  */
-class ModuleRegistry
+class ModuleRegistry implements ModuleRegistryInterface
 {
     /**
      * Registered module providers.

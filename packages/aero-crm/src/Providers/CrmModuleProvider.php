@@ -211,17 +211,4 @@ class CrmModuleProvider extends AbstractModuleProvider
     protected function bootModule(): void
     {
         // Register module-specific middleware, policies, etc.
-    }
-
-    /**
-     * Register this module with the ModuleRegistry.
-     */
-    public function register(): void
-    {
-        parent::register();
-
-        // Register this module with the registry
-        $registry = $this->app->make(\Aero\Core\Services\ModuleRegistry::class);
-        $registry->register($this);
-    }
-}
+    }}

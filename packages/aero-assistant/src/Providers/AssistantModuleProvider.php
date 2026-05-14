@@ -66,21 +66,7 @@ class AssistantModuleProvider extends AbstractModuleProvider
                 $this->getModulePath('config/assistant.php') => config_path('assistant.php'),
             ], 'assistant-config');
         }
-    }
-
-    /**
-     * Register this module with the ModuleRegistry.
-     */
-    public function register(): void
-    {
-        parent::register();
-
-        // Register with module registry if available
-        if ($this->app->bound(\Aero\Core\Services\ModuleRegistry::class)) {
-            $registry = $this->app->make(\Aero\Core\Services\ModuleRegistry::class);
-            $registry->register($this);
-        }
-    }
+    }    }
 
     /**
      * Boot the service provider.

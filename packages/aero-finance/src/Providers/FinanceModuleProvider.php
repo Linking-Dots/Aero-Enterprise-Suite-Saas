@@ -3,7 +3,6 @@
 namespace Aero\Finance\Providers;
 
 use Aero\Contracts\Providers\AbstractModuleProvider;
-use Aero\Core\Services\ModuleRegistry;
 
 /**
  * Finance Module Provider
@@ -272,17 +271,4 @@ class FinanceModuleProvider extends AbstractModuleProvider
     protected function bootModule(): void
     {
         // Register module-specific middleware, policies, etc.
-    }
-
-    /**
-     * Register this module with the ModuleRegistry.
-     */
-    public function register(): void
-    {
-        parent::register();
-
-        // Register this module with the registry
-        $registry = $this->app->make(ModuleRegistry::class);
-        $registry->register($this);
-    }
-}
+    }}

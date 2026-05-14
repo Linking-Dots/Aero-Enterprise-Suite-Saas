@@ -5,7 +5,6 @@ namespace Aero\HRM\Providers;
 use Aero\Contracts\EmployeeServiceContract;
 use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
-use Aero\Core\Services\ModuleRegistry;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\HRM\Console\Commands\SendOnboardingRemindersCommand;
 use Aero\HRM\Jobs\CheckBirthdaysJob;
@@ -383,17 +382,4 @@ class HRMServiceProvider extends AbstractModuleProvider
                 SendOnboardingRemindersCommand::class,
             ]);
         }
-    }
-
-    /**
-     * Register this module with the ModuleRegistry.
-     */
-    public function register(): void
-    {
-        parent::register();
-
-        // Register this module with the registry
-        $registry = $this->app->make(ModuleRegistry::class);
-        $registry->register($this);
-    }
-}
+    }}

@@ -4,7 +4,6 @@ namespace Aero\Quality\Providers;
 
 use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
-use Aero\Core\Services\ModuleRegistry;
 use Aero\Quality\Contracts\NcrBlockingServiceInterface;
 use Aero\Quality\Services\NcrBlockingService;
 
@@ -35,22 +34,6 @@ class QualityModuleProvider extends AbstractModuleProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        parent::register();
-
-        // Register with module registry
-        $this->app->make(ModuleRegistry::class)->register($this);
-
-        // Bind NCR blocking abstraction for other modules (e.g., RFI)
-        $this->app->singleton(NcrBlockingServiceInterface::class, NcrBlockingService::class);
-
-        // Load module configuration
-        $this->mergeConfigFrom(
-            __DIR__.'/../../config/module.php', 'quality'
-        );
-    }
-
     /**
      * Bootstrap any application services.
      */

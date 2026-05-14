@@ -3,7 +3,6 @@
 namespace Aero\Project\Providers;
 
 use Aero\Contracts\Providers\AbstractModuleProvider;
-use Aero\Core\Services\ModuleRegistry;
 
 /**
  * Project Module Provider
@@ -190,14 +189,6 @@ class ProjectModuleProvider extends AbstractModuleProvider
     {
         // Register module-specific middleware, policies, etc.
     }
-
-    public function register(): void
-    {
-        parent::register();
-        $registry = $this->app->make(ModuleRegistry::class);
-        $registry->register($this);
-    }
-
     public function boot(): void
     {
         parent::boot();

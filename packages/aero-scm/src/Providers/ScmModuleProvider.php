@@ -3,7 +3,6 @@
 namespace Aero\Scm\Providers;
 
 use Aero\Contracts\Providers\AbstractModuleProvider;
-use Aero\Core\Services\ModuleRegistry;
 
 /**
  * SCM Module Provider
@@ -190,12 +189,4 @@ class ScmModuleProvider extends AbstractModuleProvider
     protected function bootModule(): void
     {
         // Register module-specific middleware, policies, etc.
-    }
-
-    public function register(): void
-    {
-        parent::register();
-        $registry = $this->app->make(ModuleRegistry::class);
-        $registry->register($this);
-    }
-}
+    }}
