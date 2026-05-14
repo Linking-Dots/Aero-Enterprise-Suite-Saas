@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router, usePage, useForm } from '@inertiajs/react';
 import InstallLayout from './InstallLayout.jsx';
 import { IR } from './installRoutes.js';
 import { VStack, HStack, Box, Field, Input, Button, Badge } from '@aero/ui';
@@ -8,27 +8,25 @@ const STEPS_STANDALONE = ['License', 'Requirements', 'Database', 'Settings', 'Ad
 const STEPS_SAAS       = ['Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
 
 export default function Admin({ mode, savedAdmin }) {
-  const { errors } = usePage().props;
+  const { errors: pageErrors } = usePage().props;
 
-  const [form, setForm] = useState({
+  const { data, setData, post, processing, errors: formErrors } = useForm({
     first_name:            savedAdmin?.first_name ?? '',
     last_name:             savedAdmin?.last_name  ?? '',
     email:                 savedAdmin?.email       ?? '',
     password:              '',
     password_confirmation: '',
   });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved]   = useState(!!savedAdmin);
+  const [saved, setSaved] = useState(!!savedAdmin);
 
-  function set(key, val) { setForm(f => ({ ...f, [key]: val })); setSaved(false); }
+  // Merge server errors from usePage().props with useForm errors
+  const allErrors = { ...pageErrors, ...formErrors };
 
   function save() {
-    setSaving(true);
-    router.post(IR.saveAdmin, form, {
+    post(IR.saveAdmin, {
       preserveState: true,
       preserveScroll: true,
       onSuccess: () => setSaved(true),
-      onFinish:  () => setSaving(false),
     });
   }
 
@@ -41,31 +39,31 @@ export default function Admin({ mode, savedAdmin }) {
 
       <HStack gap={3}>
         <Box grow style={{ flex: 1 }}>
-          <Field label="First Name" htmlFor="first_name" error={errors.first_name} required>
-            <Input id="first_name" value={form.first_name} onChange={e => set('first_name', e.target.value)} leftIcon="user" autoFocus error={!!errors.first_name} />
+          <Field label="First Name" htmlFor="first_name" error={allErrors.first_name} required>
+            <Input id="first_name" value={data.first_name} onChange={e => setData('first_name', e.target.value)} leftIcon="user" autoFocus error={!!allErrors.first_name} />
           </Field>
         </Box>
         <Box grow style={{ flex: 1 }}>
-          <Field label="Last Name" htmlFor="last_name" error={errors.last_name} required>
-            <Input id="last_name" value={form.last_name} onChange={e => set('last_name', e.target.value)} leftIcon="user" error={!!errors.last_name} />
+          <Field label="Last Name" htmlFor="last_name" error={allErrors.last_name} required>
+            <Input id="last_name" value={data.last_name} onChange={e => setData('last_name', e.target.value)} leftIcon="user" error={!!allErrors.last_name} />
           </Field>
         </Box>
       </HStack>
 
-      <Field label="Email Address" htmlFor="admin_email" error={errors.email} required>
-        <Input id="admin_email" type="email" value={form.email} onChange={e => set('email', e.target.value)} leftIcon="mail" placeholder="admin@company.com" error={!!errors.email} />
+      <Field label="Email Address" htmlFor="admin_email" error={allErrors.email} required>
+        <Input id="admin_email" type="email" value={data.email} onChange={e => setData('email', e.target.value)} leftIcon="mail" placeholder="admin@company.com" error={!!allErrors.email} />
       </Field>
 
-      <Field label="Password" htmlFor="admin_pass" error={errors.password} hint="Min. 8 characters, mixed case, numbers, and symbols." required>
-        <Input id="admin_pass" type="password" value={form.password} onChange={e => set('password', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!errors.password} />
+      <Field label="Password" htmlFor="admin_pass" error={allErrors.password} hint="Min. 8 characters, mixed case, numbers, and symbols." required>
+        <Input id="admin_pass" type="password" value={data.password} onChange={e => setData('password', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!allErrors.password} />
       </Field>
 
-      <Field label="Confirm Password" htmlFor="admin_pass2" error={errors.password_confirmation} required>
-        <Input id="admin_pass2" type="password" value={form.password_confirmation} onChange={e => set('password_confirmation', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!errors.password_confirmation} />
+      <Field label="Confirm Password" htmlFor="admin_pass2" error={allErrors.password_confirmation} required>
+        <Input id="admin_pass2" type="password" value={data.password_confirmation} onChange={e => setData('password_confirmation', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!allErrors.password_confirmation} />
       </Field>
 
       <HStack gap={2}>
-        <Button intent="soft" loading={saving} onClick={save}>Save Account</Button>
+        <Button intent="soft" loading={processing} onClick={save}>Save Account</Button>
         {saved && <Badge intent="success">Saved</Badge>}
       </HStack>
 
