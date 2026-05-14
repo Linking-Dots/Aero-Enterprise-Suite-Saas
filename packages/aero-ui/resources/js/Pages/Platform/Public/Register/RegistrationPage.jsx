@@ -5,6 +5,7 @@ import StepDetails    from './steps/StepDetails.jsx';
 import StepVerifyEmail from './steps/StepVerifyEmail.jsx';
 import StepVerifyPhone from './steps/StepVerifyPhone.jsx';
 import StepPlan       from './steps/StepPlan.jsx';
+import StepBYOC       from './steps/StepBYOC.jsx';
 import StepPayment    from './steps/StepPayment.jsx';
 import StepProvisioning from './steps/StepProvisioning.jsx';
 import StepSuccess    from './steps/StepSuccess.jsx';
@@ -15,6 +16,7 @@ const STEP_TITLES = {
   'verify-email': 'Verify your email',
   'verify-phone': 'Verify your phone',
   plan:           'Choose a plan',
+  byoc:           'Database setup',
   payment:        'Review & activate',
   provisioning:   'Setting up your workspace',
   success:        "You're all set!",
@@ -76,6 +78,9 @@ export default function RegistrationPage(props) {
             savedData={savedData}
           />
         );
+
+      case 'byoc':
+        return <StepBYOC savedByoc={savedData?.byoc ?? null} />;
 
       case 'payment':
         return (
