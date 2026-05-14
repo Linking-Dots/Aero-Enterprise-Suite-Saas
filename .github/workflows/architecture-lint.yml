@@ -25,6 +25,10 @@ jobs:
         working-directory: aeos365
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Check for known security vulnerabilities
+        working-directory: aeos365
+        run: composer audit --no-dev
+
       - name: Validate module manifests
         working-directory: aeos365
         run: php artisan aero:validate-manifests --strict
