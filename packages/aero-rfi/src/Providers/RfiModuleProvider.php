@@ -2,7 +2,7 @@
 
 namespace Aero\Rfi\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Rfi\Events\RfiApproved;
 use Aero\Rfi\Events\RfiRejected;

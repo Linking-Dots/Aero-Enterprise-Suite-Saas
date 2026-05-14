@@ -2,7 +2,7 @@
 
 namespace Aero\Compliance\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Illuminate\Support\Facades\Gate;
 

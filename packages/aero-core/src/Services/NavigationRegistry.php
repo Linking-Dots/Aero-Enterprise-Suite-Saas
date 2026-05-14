@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Services;
 
+use Aero\Contracts\NavigationRegistryInterface;
 use Aero\Core\Models\User;
 use Aero\Core\Support\TenantCache;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Route;
  *   $registry->register('hrm', [...navigation items...]);
  *   $allNav = $registry->all();
  */
-class NavigationRegistry
+class NavigationRegistry implements NavigationRegistryInterface
 {
     /**
      * Registered navigation items by module.

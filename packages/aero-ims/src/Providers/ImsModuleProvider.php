@@ -2,7 +2,7 @@
 
 namespace Aero\Ims\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\ModuleRegistry;
 
 /**

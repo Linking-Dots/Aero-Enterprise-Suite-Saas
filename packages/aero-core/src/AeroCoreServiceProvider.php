@@ -136,6 +136,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             // Register Core Singletons
             $this->app->singleton(ModuleRegistry::class);
             $this->app->singleton(NavigationRegistry::class);
+            $this->app->alias(NavigationRegistry::class, \Aero\Contracts\NavigationRegistryInterface::class);
             $this->app->singleton(UserRelationshipRegistry::class);
             $this->app->singleton(DashboardRegistry::class);
 

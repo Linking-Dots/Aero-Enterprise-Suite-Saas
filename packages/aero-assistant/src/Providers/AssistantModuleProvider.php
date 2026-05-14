@@ -6,7 +6,7 @@ use Aero\Assistant\Services\AiModelService;
 use Aero\Assistant\Services\AssistantService;
 use Aero\Assistant\Services\IndexingService;
 use Aero\Assistant\Services\RagService;
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 
 /**
  * Assistant Module Provider

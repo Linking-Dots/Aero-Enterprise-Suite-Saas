@@ -2,7 +2,7 @@
 
 namespace Aero\Crm\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 
 /**
  * CRM Module Provider

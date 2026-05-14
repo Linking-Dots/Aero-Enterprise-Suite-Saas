@@ -2,7 +2,7 @@
 
 namespace Aero\Pos\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\ModuleRegistry;
 use Aero\Pos\Services\POSService;
 

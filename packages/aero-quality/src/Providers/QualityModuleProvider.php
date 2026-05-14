@@ -2,7 +2,7 @@
 
 namespace Aero\Quality\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\ModuleRegistry;
 use Aero\Quality\Contracts\NcrBlockingServiceInterface;

@@ -2,7 +2,7 @@
 
 namespace Aero\Dms\Providers;
 
-use Aero\Core\Providers\AbstractModuleProvider;
+use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\DMS\Models\Document;
