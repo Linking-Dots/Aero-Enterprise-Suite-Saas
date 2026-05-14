@@ -2,16 +2,16 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Contracts\AuditServiceInterface;
+use Aero\Contracts\PlanCatalogInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Models\Module;
 use Aero\Core\Models\ModuleComponent;
 use Aero\Core\Models\ModuleComponentAction;
 use Aero\Core\Models\SubModule;
-use Aero\Core\Services\AuditService;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\RoleModuleAccess;
 use Aero\HRMAC\Services\RoleModuleAccessService;
-use Aero\Contracts\PlanCatalogInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -984,7 +984,7 @@ class ModuleController extends Controller
 
             // AUDIT: Log role access change with before/after state
             try {
-                app(AuditService::class)->logRoleAccessChanged($role, $oldAccessData, $accessData);
+                app(AuditServiceInterface::class)->logRoleAccessChanged($role, $oldAccessData, $accessData);
             } catch (\Exception $e) {
                 Log::warning('Failed to create audit log for role access change: '.$e->getMessage());
             }

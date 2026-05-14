@@ -2,10 +2,10 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Models\Module;
 use Aero\Core\Models\User;
-use Aero\Core\Services\AuditService;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Support\TenantCache;
 use Aero\HRMAC\Models\Role;
@@ -295,7 +295,7 @@ class RoleController extends Controller
 
             // AUDIT: Log role creation
             try {
-                app(AuditService::class)->logRoleCreated($role->fresh());
+                app(AuditServiceInterface::class)->logRoleCreated($role->fresh());
             } catch (\Exception $e) {
                 Log::warning('Failed to create audit log for role creation: '.$e->getMessage());
             }
@@ -409,7 +409,7 @@ class RoleController extends Controller
 
             // AUDIT: Log role update with changes
             try {
-                app(AuditService::class)->logRoleUpdated($role->fresh(), $oldData, $newData);
+                app(AuditServiceInterface::class)->logRoleUpdated($role->fresh(), $oldData, $newData);
             } catch (\Exception $e) {
                 Log::warning('Failed to create audit log for role update: '.$e->getMessage());
             }
@@ -469,7 +469,7 @@ class RoleController extends Controller
 
             // AUDIT: Log role deletion before actually deleting
             try {
-                app(AuditService::class)->logRoleDeleted($role);
+                app(AuditServiceInterface::class)->logRoleDeleted($role);
             } catch (\Exception $e) {
                 Log::warning('Failed to create audit log for role deletion: '.$e->getMessage());
             }
@@ -663,7 +663,7 @@ class RoleController extends Controller
 
             // AUDIT: Log status change
             try {
-                app(AuditService::class)->logRoleUpdated(
+                app(AuditServiceInterface::class)->logRoleUpdated(
                     $role->fresh(),
                     ['is_active' => $oldStatus],
                     ['is_active' => $newStatus]

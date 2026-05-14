@@ -4,10 +4,10 @@ namespace Aero\Core\Http\Controllers\Admin;
 
 use Aero\Auth\Services\SessionManagementService;
 use Aero\Auth\Services\UserImpersonationService;
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserInvitation;
-use Aero\Core\Services\AuditService;
 use Aero\Core\Services\UserInvitationService;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\HRMAC\Models\Role;
@@ -30,13 +30,13 @@ class CoreUserController extends Controller
 {
     protected UserInvitationService $invitationService;
 
-    protected AuditService $auditService;
+    protected AuditServiceInterface $auditService;
 
     protected SessionManagementService $sessionManagementService;
 
     public function __construct(
         UserInvitationService $invitationService,
-        AuditService $auditService,
+        AuditServiceInterface $auditService,
         SessionManagementService $sessionManagementService
     ) {
         $this->invitationService = $invitationService;
