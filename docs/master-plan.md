@@ -92,9 +92,9 @@ All 529 models migrated to `TenantModel`/`CentralModel`, `AbstractModuleProvider
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
 | F-0 | *(implemented directly — no plan file)* | ✅ Done | Security foundation (see above) |
-| F-1 | `phase-0/plan-f1-auth.md` | 🟡 Written | Login (+device_id fix), 2FA setup/challenge, devices, sessions, invitations, shared login, password reset, email verify |
-| F-2 | `phase-0/plan-f2-installation.md` | ⬜ | SaaS install wizard (registration → BYOC step → provisioning → success), Standalone wizard (DB setup → admin → complete) |
-| F-3 | `phase-0/plan-f3-tenant-shell.md` | ⬜ | Tenant dashboard, sidebar navigation, user profile, settings (security, 2FA, sessions, devices), notifications, audit log viewer |
+| F-1 | `phase-0/plan-f1-auth.md` | ✅ Done | Login (+device_id fix), 2FA setup/challenge, devices, sessions, invitations, shared login, password reset, email verify |
+| F-2 | `phase-0/plan-f2-installation.md` | ✅ Done | SaaS install wizard (registration → BYOC step → provisioning → success), Standalone wizard (DB setup → admin → complete) |
+| F-3 | `phase-0/plan-f3-tenant-shell.md` | ✅ Done | Tenant dashboard, sidebar navigation, user profile, settings (security, 2FA, sessions, devices), notifications, audit log viewer |
 
 **Note on F-2 BYOC:** The installation wizard for SaaS must include an optional BYOC database credentials step between Plan selection and Provisioning. The `TenantProvisioner` already supports BYOC — F-2 builds the UI step.
 
