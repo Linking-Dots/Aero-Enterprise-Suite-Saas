@@ -2,6 +2,7 @@
 
 namespace Aero\Core;
 
+use Aero\Contracts\AeroMode;
 use Aero\Contracts\EmployeeServiceContract;
 use Aero\Contracts\LicenseServiceInterface;
 use Aero\Contracts\MailContextResolverInterface;
@@ -271,6 +272,26 @@ class AeroCoreServiceProvider extends ServiceProvider
             // Bind TenantScopeInterface to StandaloneTenantScope as default
             // This can be overridden by aero-platform for SaaS mode
             $this->app->singleton(TenantScopeInterface::class, StandaloneTenantScope::class);
+
+            // Wire AeroMode so aero-contracts TenantModel can detect SaaS/standalone
+            // without importing aero-core helpers directly.
+            AeroMode::setModeResolver(fn () => is_saas_mode());
+            AeroMode::setTenantContextChecker(function (string $modelClass) {
+                try {
+                    $scope = app(TenantScopeInterface::class);
+                    if (! $scope->inTenantContext()) {
+                        throw new \LogicException(
+                            $modelClass . ' queried outside of tenant context. ' .
+                            'Ensure this runs after tenancy middleware. ' .
+                            'For central-DB models extend CentralModel instead.'
+                        );
+                    }
+                } catch (\LogicException $e) {
+                    throw $e;
+                } catch (\Throwable) {
+                    // TenantScopeInterface unavailable during early boot — allow
+                }
+            });
 
             // Register cross-package contracts for modular architecture
             $this->registerCrossPackageContracts();
