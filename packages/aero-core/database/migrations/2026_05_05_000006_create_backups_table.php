@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('type')->default('full');
             $table->bigInteger('size')->default(0);
             $table->string('status')->default('pending');
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('tenant_id')->nullable()->index();
             $table->string('storage_path');
             $table->string('storage_driver')->default('local');
             $table->boolean('encryption_status')->default(false);

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('tenant_id')->nullable()->index();
             $table->string('module')->nullable()->index();
             $table->string('action')->index();
             $table->string('entity_type')->nullable();

@@ -897,8 +897,9 @@ class RegistrationController extends Controller
                 return;
             }
 
-            // Fix #3: Validate the database name against a strict whitelist to prevent SQL injection.
-            if (! preg_match('/^[a-zA-Z0-9_]+$/', $databaseName)) {
+            // Validate the database name against a strict whitelist to prevent SQL injection.
+            // Dashes are allowed because UUID-based names use them; always backtick-quoted.
+            if (! preg_match('/^[a-zA-Z0-9_\-]+$/', $databaseName)) {
                 Log::warning('Rejected unsafe database name in cleanupOrphanedDatabase', [
                     'tenant_id' => $tenant->id,
                     'database' => $databaseName,

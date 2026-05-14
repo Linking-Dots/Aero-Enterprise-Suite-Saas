@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('retention_policies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('tenant_id')->nullable()->index();
             $table->string('entity_type'); // e.g., 'audit_logs', 'activities', 'data_exports'
             $table->string('action'); // 'delete', 'archive', 'anonymize'
             $table->integer('retention_days')->default(30); // days to retain data

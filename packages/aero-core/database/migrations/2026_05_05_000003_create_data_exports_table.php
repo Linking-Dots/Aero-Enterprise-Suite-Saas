@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('data_exports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('tenant_id')->nullable()->index();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('entity_type'); // e.g., 'users', 'roles', 'tags'
             $table->string('format')->default('csv'); // csv, json, xlsx

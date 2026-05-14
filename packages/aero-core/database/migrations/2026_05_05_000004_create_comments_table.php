@@ -32,7 +32,7 @@ return new class extends Migration
         Schema::create('comment_mentions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('comment_id')->constrained()->onDelete('cascade');
-            $table->foreignId('mentioned_user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('mentioned_user_id')->constrained('users')->onDelete('cascade');
             $table->boolean('is_read')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();

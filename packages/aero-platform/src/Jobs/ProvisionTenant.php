@@ -1382,8 +1382,9 @@ class ProvisionTenant implements ShouldQueue
 
             $this->logStep("   → Dropping database: {$databaseName}", ['database' => $databaseName], 'warning');
 
-            // Validate database name to prevent SQL injection
-            if (! preg_match('/^[a-zA-Z0-9_]+$/', $databaseName)) {
+            // Validate database name to prevent SQL injection.
+            // Dashes are allowed (UUID-based names) because the name is always backtick-quoted.
+            if (! preg_match('/^[a-zA-Z0-9_\-]+$/', $databaseName)) {
                 $this->logStep("   → Rejected unsafe database name: {$databaseName}", [], 'error');
 
                 return;
