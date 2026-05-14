@@ -28,7 +28,6 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps(); // adds created_at + updated_at
             
-            $table->index('tenant_id');
             $table->index('status');
             $table->index('created_at');
         });
