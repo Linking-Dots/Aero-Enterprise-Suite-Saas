@@ -13,6 +13,7 @@ use Aero\Platform\Services\Monitoring\Tenant\TenantRegistrationSession;
 use Aero\Platform\Services\PlanCanonicalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,6 +28,7 @@ class RegistrationPageController extends Controller
         ['key' => 'verify-email', 'label' => 'Verify Email', 'route' => 'platform.register.verify-email'],
         ['key' => 'verify-phone', 'label' => 'Verify Phone', 'route' => 'platform.register.verify-phone'],
         ['key' => 'plan', 'label' => 'Modules & Plan', 'route' => 'platform.register.plan'],
+        ['key' => 'byoc', 'label' => 'Database Setup', 'route' => 'platform.register.byoc'],
         ['key' => 'payment', 'label' => 'Review', 'route' => 'platform.register.payment'],
         ['key' => 'provisioning', 'label' => 'Setting Up', 'route' => 'platform.register.provisioning'],
         // Admin setup happens on tenant domain after provisioning completes
@@ -176,6 +178,19 @@ class RegistrationPageController extends Controller
             'plans' => $plans,
             'modules' => $modules,
             'modulePricing' => $this->getModulePricing(),
+        ]);
+    }
+
+    public function byoc(): Response|RedirectResponse
+    {
+        if (! $this->registrationSession->ensureSteps(['account', 'details', 'plan'])) {
+            return SafeRedirect::toRoute('platform.register.index', [], 'platform.register.index');
+        }
+
+        $savedData = $this->registrationSession->get();
+
+        return $this->renderStep('byoc', [
+            'savedByoc' => $savedData['byoc'] ?? null,
         ]);
     }
 
@@ -331,7 +346,7 @@ class RegistrationPageController extends Controller
      * from ModuleDiscoveryService. This is the authoritative source for products
      * displayed in the registration plan step.
      */
-    private function getSellableModules(): \Illuminate\Support\Collection
+    private function getSellableModules(): Collection
     {
         $pricingCodes = \DB::table('module_pricing')
             ->where('is_active', true)
@@ -356,7 +371,7 @@ class RegistrationPageController extends Controller
             ->keyBy('module_code')
             ->map(fn ($row) => [
                 'monthly' => (float) $row->monthly_price,
-                'yearly'  => (float) $row->yearly_price,
+                'yearly' => (float) $row->yearly_price,
             ])
             ->all();
     }

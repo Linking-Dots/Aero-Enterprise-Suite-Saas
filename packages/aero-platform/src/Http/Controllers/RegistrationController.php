@@ -381,8 +381,6 @@ class RegistrationController extends Controller
             return to_route('platform.register.index');
         }
 
-    
-
         $payload = $request->validated();
 
         // Store selected modules in tenant data for later seeding via tenant_module
@@ -549,6 +547,7 @@ class RegistrationController extends Controller
                                         'tenant_id' => $tenant->id,
                                         'module_code' => $moduleCode,
                                     ]);
+
                                     continue;
                                 }
 
@@ -615,6 +614,87 @@ class RegistrationController extends Controller
 
             return back()
                 ->with('error', 'Unable to activate your trial. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Save BYOC database credentials to the registration session.
+     * The step is optional — tenants can skip BYOC and use managed database.
+     */
+    public function storeByoc(Request $request): RedirectResponse
+    {
+        $byocEnabled = $request->boolean('byoc_enabled');
+
+        if ($byocEnabled) {
+            $request->validate([
+                'db_driver' => 'required|in:mysql,pgsql',
+                'db_host' => 'required|string|max:255',
+                'db_port' => 'required|integer|min:1|max:65535',
+                'db_name' => 'required|string|max:255',
+                'db_username' => 'required|string|max:255',
+                'db_password' => 'nullable|string|max:255',
+                'db_ssl_mode' => 'nullable|in:require,verify-ca,verify-full',
+            ]);
+        }
+
+        $this->registrationSession->putStep('byoc', [
+            'enabled' => $byocEnabled,
+            'db_driver' => $request->input('db_driver', 'mysql'),
+            'db_host' => $request->input('db_host'),
+            'db_port' => (int) $request->input('db_port', 3306),
+            'db_name' => $request->input('db_name'),
+            'db_username' => $request->input('db_username'),
+            'db_password' => $request->input('db_password'),
+            'db_ssl_mode' => $request->input('db_ssl_mode'),
+        ]);
+
+        return to_route('platform.register.payment');
+    }
+
+    /**
+     * Test BYOC database connectivity without saving credentials.
+     * Returns JSON — not an Inertia response.
+     */
+    public function testByocConnection(Request $request): JsonResponse
+    {
+        $request->validate([
+            'db_driver' => 'required|in:mysql,pgsql',
+            'db_host' => 'required|string',
+            'db_port' => 'required|integer',
+            'db_name' => 'required|string',
+            'db_username' => 'required|string',
+            'db_password' => 'nullable|string',
+        ]);
+
+        try {
+            $dsn = sprintf(
+                '%s:host=%s;port=%d;dbname=%s',
+                $request->db_driver,
+                $request->db_host,
+                (int) $request->db_port,
+                $request->db_name,
+            );
+
+            $pdo = new \PDO(
+                $dsn,
+                $request->db_username,
+                $request->db_password ?? '',
+                [
+                    \PDO::ATTR_TIMEOUT => 5,
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                ],
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection successful.',
+                'version' => $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION),
+            ]);
+        } catch (\PDOException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Connection failed: '.$e->getMessage(),
+            ], 422);
         }
     }
 

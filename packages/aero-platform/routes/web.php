@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use Aero\Platform\Http\Controllers\Billing\BillingController;
+use Aero\Platform\Http\Controllers\Api\ResumeRegistrationController;
 use Aero\Platform\Http\Controllers\PublicPageController;
 use Aero\Platform\Http\Controllers\RegistrationController;
 use Aero\Platform\Http\Controllers\RegistrationPageController;
-use Aero\Platform\Http\Controllers\Webhooks\SslCommerzWebhookController;
-use Aero\Platform\Http\Controllers\Webhooks\StripeWebhookController;
 use Aero\Platform\Http\Middleware\IdentifyDomainContext;
 use Illuminate\Support\Facades\Route;
 
@@ -121,13 +119,17 @@ Route::middleware('platform.domain')->group(function () {
             ->middleware('throttle:5,60')  // 5 trial activations per hour (stricter)
             ->name('trial.activate');
 
+        // BYOC database credentials step (between plan and payment)
+        Route::get('/byoc', [RegistrationPageController::class, 'byoc'])->name('byoc');
+        Route::post('/byoc', [RegistrationController::class, 'storeByoc'])->name('byoc.store');
+        Route::post('/byoc/test-connection', [RegistrationController::class, 'testByocConnection'])
+            ->name('byoc.test');
+
         // Resume registration from magic link
-        Route::get('/resume/{token}', [\Aero\Platform\Http\Controllers\Api\ResumeRegistrationController::class, 'resume'])
+        Route::get('/resume/{token}', [ResumeRegistrationController::class, 'resume'])
             ->middleware('throttle:10,1')
             ->name('resume');
     });
-
-  
 
     Route::prefix('api')->middleware('api')->group(function () {
         require __DIR__.'/api.php';

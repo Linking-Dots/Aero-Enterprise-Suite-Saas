@@ -56,6 +56,22 @@ class TenantProvisioner
         $email = (string) Arr::get($details, 'email');
         $subdomain = (string) Arr::get($details, 'subdomain');
 
+        // BYOC: if tenant opted in, assemble encrypted credential fields
+        $byoc = $payload['byoc'] ?? [];
+        $byocData = [];
+        if (! empty($byoc['enabled'])) {
+            $byocData = [
+                'byoc_enabled' => true,
+                'byoc_db_driver' => $byoc['db_driver'] ?? 'mysql',
+                'byoc_db_host' => $byoc['db_host'] ?? null,
+                'byoc_db_port' => $byoc['db_port'] ?? 3306,
+                'byoc_db_name' => $byoc['db_name'] ?? null,
+                'byoc_db_username' => encrypt($byoc['db_username'] ?? ''),
+                'byoc_db_password' => encrypt($byoc['db_password'] ?? ''),
+                'byoc_db_ssl_mode' => $byoc['db_ssl_mode'] ?? null,
+            ];
+        }
+
         // Look for an existing pending/failed tenant to reuse.
         // Order of preference: exact match (email + subdomain), then subdomain,
         // then email. This prevents duplicate-key violations when a tenant was
@@ -81,7 +97,7 @@ class TenantProvisioner
         if ($existingTenant) {
             // Update existing tenant with full registration data
             // Preserve verification timestamps that were set during email/phone verification
-            $existingTenant->update([
+            $existingTenant->update(array_merge([
                 'name' => (string) Arr::get($details, 'name'),
                 'type' => (string) Arr::get($account, 'type', 'company'),
                 'subdomain' => $subdomain,
@@ -104,7 +120,7 @@ class TenantProvisioner
                     'registration_ip' => request()->ip(),
                     'registered_at' => now()->toIso8601String(),
                 ],
-            ]);
+            ], $byocData));
 
             // Create domain if doesn't exist
             if ($existingTenant->domains()->count() === 0) {
@@ -121,7 +137,7 @@ class TenantProvisioner
         }
 
         // Create new tenant if none exists
-        $tenant = Tenant::create([
+        $tenant = Tenant::create(array_merge([
             'id' => (string) Str::uuid(),
             'name' => (string) Arr::get($details, 'name'),
             'type' => (string) Arr::get($account, 'type', 'company'),
@@ -145,7 +161,7 @@ class TenantProvisioner
                 'registration_ip' => request()->ip(),
                 'registered_at' => now()->toIso8601String(),
             ],
-        ]);
+        ], $byocData));
 
         // Create the primary domain for tenant routing
         $tenant->domains()->create([
@@ -182,9 +198,25 @@ class TenantProvisioner
             ? $tenant->data->getArrayCopy()
             : (array) ($tenant->data ?? []);
 
+        // BYOC: if tenant opted in, assemble encrypted credential fields
+        $byoc = $payload['byoc'] ?? [];
+        $byocData = [];
+        if (! empty($byoc['enabled'])) {
+            $byocData = [
+                'byoc_enabled' => true,
+                'byoc_db_driver' => $byoc['db_driver'] ?? 'mysql',
+                'byoc_db_host' => $byoc['db_host'] ?? null,
+                'byoc_db_port' => $byoc['db_port'] ?? 3306,
+                'byoc_db_name' => $byoc['db_name'] ?? null,
+                'byoc_db_username' => encrypt($byoc['db_username'] ?? ''),
+                'byoc_db_password' => encrypt($byoc['db_password'] ?? ''),
+                'byoc_db_ssl_mode' => $byoc['db_ssl_mode'] ?? null,
+            ];
+        }
+
         // Update tenant with full registration data
         // Preserve company verification timestamps
-        $tenant->update([
+        $tenant->update(array_merge([
             'name' => (string) Arr::get($details, 'name', $tenant->name),
             'type' => (string) Arr::get($account, 'type', $tenant->type ?? 'company'),
             'status' => Tenant::STATUS_PENDING,
@@ -203,7 +235,7 @@ class TenantProvisioner
                 'registration_ip' => request()->ip(),
                 'registered_at' => now()->toIso8601String(),
             ]),
-        ]);
+        ], $byocData));
 
         // Create domain if doesn't exist
         if ($tenant->domains()->count() === 0) {
@@ -258,7 +290,7 @@ class TenantProvisioner
         if (empty($productModules)) {
             Log::warning('No active products found in module_pricing table');
             throw new \InvalidArgumentException(
-                "No active products found in the system. Please contact support."
+                'No active products found in the system. Please contact support.'
             );
         }
 
@@ -277,7 +309,7 @@ class TenantProvisioner
                 'invalid' => $invalid,
             ]);
             throw new \InvalidArgumentException(
-                "The following modules are not available: ".implode(', ', $invalid)
+                'The following modules are not available: '.implode(', ', $invalid)
             );
         }
 
