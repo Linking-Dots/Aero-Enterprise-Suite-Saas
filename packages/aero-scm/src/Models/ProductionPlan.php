@@ -2,6 +2,8 @@
 
 namespace Aero\Scm\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Core\Models\User;
 use App\Models\Tenant\IMS\InventoryItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

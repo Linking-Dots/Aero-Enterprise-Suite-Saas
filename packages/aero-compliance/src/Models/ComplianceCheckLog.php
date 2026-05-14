@@ -2,6 +2,8 @@
 
 namespace Aero\Compliance\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Project\Models\Project;
 use Aero\Rfi\Models\Rfi;
 use Illuminate\Database\Eloquent\Model;

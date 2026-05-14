@@ -2,6 +2,8 @@
 
 namespace Aero\Rfi\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Project\Models\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -2,6 +2,8 @@
 
 namespace Aero\Quality\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
 class InspectionChecklist extends TenantModel

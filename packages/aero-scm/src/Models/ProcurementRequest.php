@@ -2,6 +2,8 @@
 
 namespace Aero\Scm\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Core\Models\User;
 use Aero\HRM\Models\Department;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

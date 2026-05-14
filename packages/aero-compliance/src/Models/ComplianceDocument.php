@@ -2,6 +2,8 @@
 
 namespace Aero\Compliance\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\HRM\Models\Department;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

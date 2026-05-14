@@ -2,6 +2,8 @@
 
 namespace Aero\Crm\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Illuminate\Database\Eloquent\Model;
 
 class DealStageHistory extends TenantModel

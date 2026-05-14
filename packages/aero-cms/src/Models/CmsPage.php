@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Cms\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Cms\Database\Factories\CmsPageFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;

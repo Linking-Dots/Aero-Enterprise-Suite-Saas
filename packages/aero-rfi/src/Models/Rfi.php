@@ -2,6 +2,8 @@
 
 namespace Aero\Rfi\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Compliance\Models\PermitToWork;
 use Aero\Compliance\Traits\RequiresPermit;
 use Aero\Core\Models\User;

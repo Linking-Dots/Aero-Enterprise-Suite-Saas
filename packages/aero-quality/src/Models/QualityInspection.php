@@ -2,6 +2,8 @@
 
 namespace Aero\Quality\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Core\Models\User;
 use Aero\Project\Models\Project;
 use Aero\Rfi\Models\Rfi;

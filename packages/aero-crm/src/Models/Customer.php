@@ -2,6 +2,8 @@
 
 namespace Aero\Crm\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use App\Models\HRM\Opportunity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

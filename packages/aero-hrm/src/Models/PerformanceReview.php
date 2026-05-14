@@ -2,6 +2,8 @@
 
 namespace Aero\HRM\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Core\Models\User;
 use App\Models\PerformanceCompetencyScore;
 use App\Models\PerformanceGoal;

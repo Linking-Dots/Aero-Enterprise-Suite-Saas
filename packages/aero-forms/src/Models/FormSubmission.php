@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Forms\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Core\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

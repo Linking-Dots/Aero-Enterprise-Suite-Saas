@@ -2,6 +2,8 @@
 
 namespace Aero\Rfi\Models;
 
+use Aero\Contracts\Models\TenantModel;
+
 use Aero\Core\Models\User;
 use Aero\Project\Models\BoqMeasurement;
 use Aero\Project\Models\Project;
