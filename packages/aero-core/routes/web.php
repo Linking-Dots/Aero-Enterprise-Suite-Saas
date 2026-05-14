@@ -1,5 +1,6 @@
 <?php
 
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Controllers\Admin\ActivityController;
 use Aero\Core\Http\Controllers\Admin\AddonController;
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
@@ -36,10 +37,9 @@ use Aero\Core\Http\Controllers\Upload\FileManagerController;
 use Aero\Core\Http\Middleware\EnsureTenantContext;
 use Aero\Core\Models\User;
 use Aero\Core\Services\PlatformErrorReporter;
-use Aero\Contracts\RoleModuleAccessInterface;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 // Note: TenantOnboardingController is referenced dynamically if platform package is installed
@@ -684,12 +684,35 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/security', function () {
             $user = auth()->user();
 
-            return inertia('Profile/Security', [
-                'title' => 'Security Settings',
-                'twoFactorEnabled' => ! empty($user->two_factor_secret) && ! empty($user->two_factor_enabled_at),
-                'remainingCodes' => ! empty($user->two_factor_recovery_codes)
-                    ? count(json_decode(Crypt::decryptString($user->two_factor_recovery_codes) ?: '[]', true))
-                    : 0,
+            $sessionCount = 0;
+            $deviceCount = 0;
+
+            try {
+                $sessionCount = DB::table('user_sessions')
+                    ->where('user_id', $user->id)
+                    ->where('is_current', false)
+                    ->count() + 1; // +1 for current session
+            } catch (Throwable) {
+            }
+
+            try {
+                $deviceCount = DB::table('user_devices')
+                    ->where('user_id', $user->id)
+                    ->where('is_active', true)
+                    ->count();
+            } catch (Throwable) {
+            }
+
+            return inertia('Core/Profile/Security', [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'avatar_url' => $user->avatar_url ?? null,
+                    'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
+                    'active_sessions' => $sessionCount,
+                    'registered_devices' => $deviceCount,
+                ],
             ]);
         })->name('security');
 
