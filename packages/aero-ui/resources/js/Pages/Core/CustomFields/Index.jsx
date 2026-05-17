@@ -17,7 +17,7 @@ import {
 import {
   PlusIcon,
   CheckIcon,
-  XIcon,
+  XMarkIcon,
   PencilIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
@@ -233,14 +233,14 @@ export default function CustomFieldsIndex({ fields, filters }) {
                       {field.is_required ? (
                         <CheckIcon className="h-4 w-4 text-green-500" />
                       ) : (
-                        <XIcon className="h-4 w-4 text-gray-400" />
+                        <XMarkIcon className="h-4 w-4 text-gray-400" />
                       )}
                     </td>
                     <td className="p-4 align-middle">
                       {field.is_active ? (
                         <CheckIcon className="h-4 w-4 text-green-500" />
                       ) : (
-                        <XIcon className="h-4 w-4 text-gray-400" />
+                        <XMarkIcon className="h-4 w-4 text-gray-400" />
                       )}
                     </td>
                     <td className="p-4 align-middle text-right">

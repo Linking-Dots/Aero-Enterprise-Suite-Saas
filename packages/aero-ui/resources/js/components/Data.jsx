@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { ArrowUpIcon, ArrowDownIcon, TrendingUpIcon, InboxIcon } from '@heroicons/react/24/outline';
+import { ArrowUpIcon, ArrowDownIcon, ArrowTrendingUpIcon as TrendingUpIcon, InboxIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 import { Skeleton } from './Display.jsx';
 

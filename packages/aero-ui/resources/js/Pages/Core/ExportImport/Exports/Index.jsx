@@ -123,25 +123,25 @@ export default function ExportsIndex({ entity_type, entities, history }) {
                 <Text color="muted">No exports found</Text>
               ) : (
                 <Stack spacing={3}>
-                  {history.map((export) => (
-                    <HStack key={export.id} justify="space-between" align="center">
+                  {history.map((exportItem) => (
+                    <HStack key={exportItem.id} justify="space-between" align="center">
                       <VStack align="start" spacing={1}>
                         <HStack>
-                          <Text fontWeight="medium">{export.entity_type}</Text>
-                          <Badge color={getStatusColor(export.status)}>{export.status}</Badge>
+                          <Text fontWeight="medium">{exportItem.entity_type}</Text>
+                          <Badge color={getStatusColor(exportItem.status)}>{exportItem.status}</Badge>
                         </HStack>
                         <Text size="sm" color="muted">
-                          {export.record_count} records • {export.format.toUpperCase()} • {export.created_at}
+                          {exportItem.record_count} records • {exportItem.format.toUpperCase()} • {exportItem.created_at}
                         </Text>
                       </VStack>
                       <HStack>
-                        {canDownload && export.status === 'completed' && (
-                          <Button size="sm" onClick={() => handleDownload(export.id)}>
+                        {canDownload && exportItem.status === 'completed' && (
+                          <Button size="sm" onClick={() => handleDownload(exportItem.id)}>
                             Download
                           </Button>
                         )}
                         {canDelete && (
-                          <Button size="sm" variant="ghost" onClick={() => handleDelete(export.id)}>
+                          <Button size="sm" variant="ghost" onClick={() => handleDelete(exportItem.id)}>
                             Delete
                           </Button>
                         )}

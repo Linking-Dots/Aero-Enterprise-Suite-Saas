@@ -64,6 +64,12 @@ export {
   Toggle, SearchInput, FileInput, DatePicker,
   OtpInput, PasswordStrength,
 }                                           from './components/Forms.jsx';
+// TextField: alias for Field (backward compat for pages that use the longer name)
+export { Field as TextField }               from './components/Forms.jsx';
+// Switch: alias for Toggle (boolean input)
+export { Toggle as Switch }                 from './components/Forms.jsx';
+// Tab: stub — pages use Tabs for the container; Tab renders a single tab item
+export function Tab({ children }) { return children ?? null; }
 
 // ── Actions ───────────────────────────────────────────────────────
 export {
@@ -88,8 +94,10 @@ export {
 }                                           from './hooks/index.js';
 
 // ── Icons ─────────────────────────────────────────────────────────
-// Icon component removed - use @heroicons/react directly
-// export { Icon, icons } from './icons/icons.jsx';
+// Icon: stub for backward compat — use @heroicons/react directly for new code.
+export function Icon({ name, className, style }) {
+  return null;
+}
 
 // ── App Chrome ───────────────────────────────────────────────
 export {

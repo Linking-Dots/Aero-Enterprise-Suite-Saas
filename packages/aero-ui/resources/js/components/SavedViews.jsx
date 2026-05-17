@@ -12,7 +12,9 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { Modal, Popover } from './Overlays.jsx';
-import { Button, Input, Label, Textarea, Checkbox } from './Forms.jsx';
+import { Button } from './Actions.jsx';
+import { Input, Textarea, Checkbox } from './Forms.jsx';
+import { Label } from './Primitives.jsx';
 import { cx } from './Primitives.jsx';
 import { useHRMAC } from '../hooks/useHRMAC.js';
 

@@ -1,4 +1,4 @@
-import { Card, CardContent, Badge, VStack, HStack, Text, Icon } from '@aero/ui';
+import { Card, CardContent, Badge, VStack, HStack, Text } from '@aero/ui';
 
 export default function HealthCard({ title, icon, data, status }) {
   const getStatusColor = (status) => {
@@ -20,7 +20,7 @@ export default function HealthCard({ title, icon, data, status }) {
         <VStack gap={3}>
           <HStack gap={2} align="center" justify="space-between">
             <HStack gap={2} align="center">
-              <Icon name={icon} style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />
+              <span style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)', display: 'inline-block' }} aria-hidden="true" />
               <Text as="h3">{title}</Text>
             </HStack>
             <Badge intent={getStatusColor(status)}>{status}</Badge>
