@@ -27,6 +27,7 @@ class Department extends TenantModel
         'description',
         'parent_id',
         'manager_id',
+        'head_employee_id',
         'location',
         'is_active',
         'established_date',
@@ -50,9 +51,17 @@ class Department extends TenantModel
     /**
      * Get child departments
      */
-    public function children()
+    public function children(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Department::class, 'parent_id');
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /**
+     * Get the department head employee
+     */
+    public function head(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'head_employee_id');
     }
 
     /**

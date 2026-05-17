@@ -22,6 +22,7 @@ class Designation extends TenantModel
     protected $fillable = [
         'title',
         'department_id',
+        'grade_id',
         'parent_id',
         'hierarchy_level',
         'is_active',
@@ -39,6 +40,11 @@ class Designation extends TenantModel
     public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function grade(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Grade::class);
     }
 
     public function employees(): \Illuminate\Database\Eloquent\Relations\HasMany

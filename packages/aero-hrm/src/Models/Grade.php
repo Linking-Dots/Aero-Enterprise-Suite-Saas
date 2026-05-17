@@ -1,40 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Grade extends TenantModel
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'code',
-        'description',
-        'level',
-        'min_salary',
-        'max_salary',
-        'is_active',
-    ];
+    protected $table = 'grades';
 
-    protected $casts = [
-        'level' => 'integer',
-        'min_salary' => 'decimal:2',
-        'max_salary' => 'decimal:2',
-        'is_active' => 'boolean',
-    ];
+    protected $fillable = ['name', 'code', 'min_salary', 'max_salary', 'is_active'];
 
-    /**
-     * Get the employees for the grade.
-     */
-    public function employees(): HasMany
+    protected function casts(): array
     {
-        return $this->hasMany(\Aero\Core\Models\User::class, 'grade_id');
+        return [
+            'min_salary' => 'decimal:2',
+            'max_salary' => 'decimal:2',
+            'is_active'  => 'boolean',
+        ];
     }
 }
