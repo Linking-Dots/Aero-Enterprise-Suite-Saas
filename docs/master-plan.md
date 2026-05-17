@@ -108,8 +108,8 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
-| H-1 | `phase-1-hrm/plan-h1-employees.md` | 🟡 Written | Employee CRUD (index, create, edit, show), profile photo, documents, bank details (encrypted), emergency contacts, employment history |
-| H-2 | `phase-1-hrm/plan-h2-org-structure.md` | 🟡 Written | Departments (CRUD + org chart), designations, grades, work locations |
+| H-1 | `phase-1-hrm/plan-h1-employees.md` | ✅ Done | Employee CRUD (index, create, edit, show), profile photo, documents, bank details (encrypted), emergency contacts, employment history |
+| H-2 | `phase-1-hrm/plan-h2-org-structure.md` | ✅ Done | Departments (CRUD + org chart), designations, grades, work locations |
 | H-3 | `phase-1-hrm/plan-h3-leave.md` | 🟡 Written | Leave types, apply, admin approval, leave balance, calendar, accrual rules, admin settings |
 | H-4 | `phase-1-hrm/plan-h4-attendance.md` | 🟡 Written | Clock in/out, admin view (daily/monthly), my attendance, overtime requests + approval, timesheets, shift marketplace |
 | H-5 | `phase-1-hrm/plan-h5-payroll.md` | 🟡 Written | Salary structures, pay components, payroll run (immutable payslips), bulk payroll, payslip viewer/print, tax setup |
