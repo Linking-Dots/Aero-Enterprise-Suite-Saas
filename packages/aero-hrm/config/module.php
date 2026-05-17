@@ -1643,6 +1643,58 @@ return [
             ],
         ],
 
+        // 2.27 Org Structure
+        [
+            'code' => 'org-structure',
+            'name' => 'Org Structure',
+            'description' => 'Departments, designations, grades, and work locations',
+            'icon' => 'BuildingOffice2Icon',
+            'route' => '/hrm/org-structure/departments',
+            'priority' => 25,
+            'components' => [
+                [
+                    'code' => 'departments',
+                    'name' => 'Departments',
+                    'type' => 'page',
+                    'route' => '/hrm/org-structure/departments',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Departments'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete Departments'],
+                    ],
+                ],
+                [
+                    'code' => 'designations',
+                    'name' => 'Designations',
+                    'type' => 'page',
+                    'route' => '/hrm/org-structure/designations',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Designations'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete Designations'],
+                    ],
+                ],
+                [
+                    'code' => 'grades',
+                    'name' => 'Grades',
+                    'type' => 'page',
+                    'route' => '/hrm/org-structure/grades',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Grades'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete Grades'],
+                    ],
+                ],
+                [
+                    'code' => 'work-locations',
+                    'name' => 'Work Locations',
+                    'type' => 'page',
+                    'route' => '/hrm/org-structure/work-locations',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Work Locations'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete Work Locations'],
+                    ],
+                ],
+            ],
+        ],
+
         // 2.25 HR Settings
         [
             'code' => 'settings',

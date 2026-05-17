@@ -46,6 +46,8 @@ use Aero\HRM\Http\Controllers\HRMDashboardController;
 use Aero\HRM\Http\Controllers\Leave\BulkLeaveController;
 use Aero\HRM\Http\Controllers\Leave\LeaveAccrualController;
 use Aero\HRM\Http\Controllers\Leave\LeaveController;
+use Aero\HRM\Http\Controllers\OrgStructure\GradeController;
+use Aero\HRM\Http\Controllers\OrgStructure\WorkLocationController;
 use Aero\HRM\Http\Controllers\OvertimeController;
 use Aero\HRM\Http\Controllers\Performance\GoalController;
 use Aero\HRM\Http\Controllers\Performance\PerformanceCalibrationController;
@@ -1284,4 +1286,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->middleware('hrmac:hrm.performance.improvement_plans.update')
                 ->name('goals.update');
         });
+
+    // ============================================================================
+    // ORG STRUCTURE ROUTES
+    // ============================================================================
+    Route::prefix('org-structure')->name('org.')->group(function () {
+
+        Route::prefix('departments')->name('departments.')->group(function () {
+            Route::get('/', [DepartmentController::class, 'index'])->middleware('hrmac:hrm.org-structure.departments.view')->name('index');
+            Route::get('/chart', [DepartmentController::class, 'orgChart'])->middleware('hrmac:hrm.org-structure.departments.view')->name('chart');
+            Route::get('/create', [DepartmentController::class, 'create'])->middleware('hrmac:hrm.org-structure.departments.edit')->name('create');
+            Route::post('/', [DepartmentController::class, 'store'])->middleware('hrmac:hrm.org-structure.departments.edit')->name('store');
+            Route::get('/{department}', [DepartmentController::class, 'show'])->middleware('hrmac:hrm.org-structure.departments.view')->name('show');
+            Route::get('/{department}/edit', [DepartmentController::class, 'edit'])->middleware('hrmac:hrm.org-structure.departments.edit')->name('edit');
+            Route::put('/{department}', [DepartmentController::class, 'update'])->middleware('hrmac:hrm.org-structure.departments.edit')->name('update');
+            Route::delete('/{department}', [DepartmentController::class, 'destroy'])->middleware('hrmac:hrm.org-structure.departments.edit')->name('destroy');
+        });
+
+        Route::prefix('designations')->name('designations.')->group(function () {
+            Route::get('/', [DesignationController::class, 'index'])->middleware('hrmac:hrm.org-structure.designations.view')->name('index');
+            Route::post('/', [DesignationController::class, 'store'])->middleware('hrmac:hrm.org-structure.designations.edit')->name('store');
+            Route::put('/{designation}', [DesignationController::class, 'update'])->middleware('hrmac:hrm.org-structure.designations.edit')->name('update');
+            Route::delete('/{designation}', [DesignationController::class, 'destroy'])->middleware('hrmac:hrm.org-structure.designations.edit')->name('destroy');
+        });
+
+        Route::prefix('grades')->name('grades.')->group(function () {
+            Route::get('/', [GradeController::class, 'index'])->middleware('hrmac:hrm.org-structure.grades.view')->name('index');
+            Route::post('/', [GradeController::class, 'store'])->middleware('hrmac:hrm.org-structure.grades.edit')->name('store');
+            Route::put('/{grade}', [GradeController::class, 'update'])->middleware('hrmac:hrm.org-structure.grades.edit')->name('update');
+            Route::delete('/{grade}', [GradeController::class, 'destroy'])->middleware('hrmac:hrm.org-structure.grades.edit')->name('destroy');
+        });
+
+        Route::prefix('work-locations')->name('work-locations.')->group(function () {
+            Route::get('/', [WorkLocationController::class, 'index'])->middleware('hrmac:hrm.org-structure.work-locations.view')->name('index');
+            Route::post('/', [WorkLocationController::class, 'store'])->middleware('hrmac:hrm.org-structure.work-locations.edit')->name('store');
+            Route::put('/{workLocation}', [WorkLocationController::class, 'update'])->middleware('hrmac:hrm.org-structure.work-locations.edit')->name('update');
+            Route::delete('/{workLocation}', [WorkLocationController::class, 'destroy'])->middleware('hrmac:hrm.org-structure.work-locations.edit')->name('destroy');
+        });
+    });
 });
