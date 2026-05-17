@@ -1,355 +1,163 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Http\Controllers\Employee;
 
-use Aero\Core\Models\User;
+use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\HRM\Http\Controllers\Controller;
+use Aero\HRM\Http\Requests\StoreDepartmentRequest;
+use Aero\HRM\Http\Requests\UpdateDepartmentRequest;
 use Aero\HRM\Models\Department;
+use Aero\HRM\Models\Employee;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DepartmentController extends Controller
 {
-    /**
-     * Display a listing of departments
-     */
-    public function index(Request $request): \Inertia\Response
+    public function __construct(private readonly AuditServiceInterface $audit) {}
+
+    public function index(Request $request): Response
     {
-        $query = Department::with(['parent', 'manager', 'children']);
+        $this->authorize('hrm.org-structure.departments.view');
 
-        // Apply search filter if provided
-        if ($request->has('search') && ! empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%");
-            });
-        }
+        $departments = Department::query()
+            ->with(['parent:id,name', 'head.user:id,name'])
+            ->withCount('children')
+            ->when($request->string('search')->toString(), fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
 
-        // Apply status filter if provided
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        // Get departments with pagination
-        $departments = $query->paginate(10);
-
-        // Get all employees for manager dropdown
-        $managers = User::orderBy('name')->get(['id', 'name']);
-
-        // Get parent departments for dropdown
-        $parentDepartments = Department::whereNull('parent_id')
-            ->orWhere('parent_id', 0)
-            ->get(['id', 'name']);
-
-        // Department statistics
-        $stats = [
-            'total' => Department::count(),
-            'active' => Department::where('is_active', true)->count(),
-            'inactive' => Department::where('is_active', false)->count(),
-            'parent_departments' => Department::whereNull('parent_id')->orWhere('parent_id', 0)->count(),
-        ];
-
-        return Inertia::render('HRM/Departments', [
-            'title' => 'Department Management',
+        return Inertia::render('HRM/OrgStructure/Departments/Index', [
             'departments' => $departments,
-            'managers' => $managers,
-            'parentDepartments' => $parentDepartments,
-            'stats' => $stats,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only('search'),
         ]);
     }
 
-    /**
-     * Store a newly created department
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
+    public function create(): Response
     {
-        // Validate request data
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:departments',
-            'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:departments,id',
-            'manager_id' => 'nullable|exists:users,id',
-            'location' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-            'established_date' => 'nullable|date',
-        ]);
+        $this->authorize('hrm.org-structure.departments.edit');
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        return Inertia::render('HRM/OrgStructure/Departments/Create', $this->formProps());
+    }
+
+    public function store(StoreDepartmentRequest $request): RedirectResponse
+    {
+        $dept = Department::create($request->validated());
+
+        $this->audit->log(
+            event: AuditEventType::RECORD_CREATED->value,
+            action: 'created',
+            subject: $dept,
+            description: "Department {$dept->name} created",
+            after: $dept->only(['name', 'parent_id']),
+        );
+
+        return redirect()->route('hrm.org.departments.index')->with('success', 'Department created.');
+    }
+
+    public function show(Department|int|string $department): Response
+    {
+        $this->authorize('hrm.org-structure.departments.view');
+        if (! $department instanceof Department) {
+            $department = Department::findOrFail($department);
         }
+        $department->load(['parent', 'children', 'head.user']);
 
-        // Create new department
-        $department = Department::create($request->all());
-
-        return response()->json([
-            'message' => 'Department created successfully',
-            'department' => $department,
-        ], 201);
-    }
-
-    /**
-     * Display the specified department
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show($id)
-    {
-        $department = Department::with(['parent', 'manager', 'children'])
-            ->findOrFail($id);
-
-        return response()->json($department);
-    }
-
-    /**
-     * Update the specified department
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(Request $request, $id)
-    {
-        $department = Department::findOrFail($id);
-
-        // Validate request data
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'code' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('departments')->ignore($id),
-            ],
-            'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:departments,id',
-            'manager_id' => 'nullable|exists:users,id',
-            'location' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-            'established_date' => 'nullable|date',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // Update department
-        $department->update($request->all());
-
-        return response()->json([
-            'message' => 'Department updated successfully',
+        return Inertia::render('HRM/OrgStructure/Departments/Show', [
             'department' => $department,
         ]);
     }
 
-    /**
-     * Remove the specified department (soft delete)
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy($id)
+    public function edit(Department|int|string $department): Response
     {
-        $department = Department::findOrFail($id);
-
-        // Check if department has employees
-        if ($department->employees()->count() > 0) {
-            return response()->json([
-                'message' => 'Cannot delete department with active employees',
-                'errors' => ['department' => 'Department has active employees. Reassign them before deleting.'],
-            ], 422);
+        $this->authorize('hrm.org-structure.departments.edit');
+        if (! $department instanceof Department) {
+            $department = Department::findOrFail($department);
         }
 
-        // Soft delete the department
+        return Inertia::render('HRM/OrgStructure/Departments/Edit', array_merge($this->formProps(), [
+            'department' => $department->load(['parent', 'head.user']),
+        ]));
+    }
+
+    public function update(UpdateDepartmentRequest $request, Department|int|string $department): RedirectResponse
+    {
+        if (! $department instanceof Department) {
+            $department = Department::findOrFail($department);
+        }
+        $before = $department->only(['name', 'parent_id', 'head_employee_id']);
+        $department->update($request->validated());
+
+        $this->audit->log(
+            event: AuditEventType::RECORD_UPDATED->value,
+            action: 'updated',
+            subject: $department,
+            description: "Department {$department->name} updated",
+            before: $before,
+            after: $department->only(['name', 'parent_id', 'head_employee_id']),
+        );
+
+        return redirect()->route('hrm.org.departments.index')->with('success', 'Department updated.');
+    }
+
+    public function destroy(Department|int|string $department): RedirectResponse
+    {
+        $this->authorize('hrm.org-structure.departments.edit');
+        if (! $department instanceof Department) {
+            $department = Department::findOrFail($department);
+        }
+
+        if ($department->children()->exists()) {
+            return back()->withErrors(['department' => 'Cannot delete a department that has children.']);
+        }
+
         $department->delete();
 
-        return response()->json([
-            'message' => 'Department deleted successfully',
-        ]);
+        $this->audit->log(
+            event: AuditEventType::RECORD_DELETED->value,
+            action: 'deleted',
+            subject: $department,
+            description: "Department {$department->name} deleted",
+        );
+
+        return redirect()->route('hrm.org.departments.index')->with('success', 'Department deleted.');
     }
 
-    /**
-     * Update a user's department
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function updateUserDepartment(Request $request, $id)
+    public function orgChart(Request $request): JsonResponse|Response
     {
-        try {
-            $request->validate([
-                'department' => 'required|integer|exists:departments,id',
-            ]);
+        $this->authorize('hrm.org-structure.departments.view');
 
-            $user = User::findOrFail($id);
-
-            // Get or create employee record
-            $employee = $user->employee;
-            if (! $employee) {
-                return response()->json([
-                    'errors' => ['user' => 'User is not an employee. Please onboard them first.'],
-                ], 422);
-            }
-
-            // Get the new department ID and verify it exists
-            $newDepartmentId = $request->input('department');
-            $department = Department::find($newDepartmentId);
-
-            if (! $department) {
-                return response()->json([
-                    'errors' => ['department' => 'The selected department does not exist.'],
-                ], 422);
-            }
-
-            // Check if department changed
-            $departmentChanged = $employee->department_id !== $newDepartmentId;
-
-            // Update department on employee record
-            $employee->department_id = $newDepartmentId;
-
-            // Optionally reset designation if department changed
-            if ($departmentChanged) {
-                $employee->designation_id = null; // Reset designation when department changes
-            }
-
-            $employee->save();
-
-            return response()->json([
-                'messages' => ['Department updated successfully'],
-                'user' => $user->load('employee.department', 'employee.designation'),
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error on updateUserDepartment', [
-                'errors' => $e->errors(),
-                'request' => $request->all(),
-            ]);
-
-            return response()->json(['errors' => $e->errors()], 422);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('User not found during updateUserDepartment', [
-                'user_id' => $id,
-            ]);
-
-            return response()->json(['errors' => ['User not found']], 404);
-        } catch (\Exception $e) {
-            Log::error('Unexpected error during updateUserDepartment', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all(),
-                'user_id' => $id,
-            ]);
-
-            return response()->json([
-                'errors' => [
-                    'An unexpected error occurred.',
-                    'Message' => $e->getMessage(),
-                    'File' => $e->getFile(),
-                    'Line' => $e->getLine(),
-                ],
-            ], 500);
-        }
-    }
-
-    /**
-     * Get department statistics
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getStats()
-    {
-        $stats = [
-            'total' => Department::count(),
-            'active' => Department::where('is_active', true)->count(),
-            'inactive' => Department::where('is_active', false)->count(),
-            'parent_departments' => Department::whereNull('parent_id')->orWhere('parent_id', 0)->count(),
-        ];
-
-        return response()->json([
-            'stats' => $stats,
-        ]);
-    }
-
-    /**
-     * Get departments data for API requests
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getDepartments(Request $request)
-    {
-        $query = Department::with(['parent', 'manager', 'children']);
-
-        // Apply search filter if provided
-        if ($request->has('search') && ! empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%");
-            });
-        }
-
-        // Apply status filter if provided
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        // Apply parent department filter if provided
-        if ($request->has('parent_department') && $request->parent_department !== 'all') {
-            if ($request->parent_department === 'none') {
-                $query->whereNull('parent_id')->orWhere('parent_id', 0);
-            } else {
-                $query->where('parent_id', $request->parent_department);
-            }
-        }
-
-        // Get departments with pagination
-        $departments = $query->paginate($request->input('per_page', 10));
-
-        return response()->json([
-            'departments' => $departments,
-        ]);
-    }
-
-    /**
-     * Display the organization chart
-     */
-    public function orgChart(): \Inertia\Response
-    {
-        // Get all departments with their relationships for the org chart
-        $departments = Department::with(['parent', 'manager', 'children', 'employees'])
-            ->where('is_active', true)
+        $tree = Department::query()
+            ->whereNull('parent_id')
+            ->with(['children.children.children', 'head.user:id,name'])
             ->orderBy('name')
             ->get();
 
-        // Build hierarchical structure for org chart
-        $rootDepartments = $departments->filter(function ($dept) {
-            return is_null($dept->parent_id) || $dept->parent_id === 0;
-        });
+        if ($request->wantsJson()) {
+            return response()->json($tree);
+        }
 
-        // Get employee statistics per department
-        $stats = [
-            'total_departments' => $departments->count(),
-            'total_employees' => $departments->sum(function ($dept) {
-                return $dept->employees ? $dept->employees->count() : 0;
-            }),
-            'root_departments' => $rootDepartments->count(),
-        ];
-
-        return Inertia::render('HRM/OrgChart', [
-            'title' => 'Organization Chart',
-            'departments' => $departments,
-            'rootDepartments' => $rootDepartments->values(),
-            'stats' => $stats,
+        return Inertia::render('HRM/OrgStructure/Departments/OrgChart', [
+            'tree' => $tree,
         ]);
+    }
+
+    private function formProps(): array
+    {
+        return [
+            'parents' => Department::query()->select('id', 'name')->orderBy('name')->get(),
+            'heads' => Employee::query()
+                ->with('user:id,name')
+                ->select('id', 'user_id', 'employee_code')
+                ->orderBy('employee_code')
+                ->get()
+                ->map(fn ($e) => ['id' => $e->id, 'label' => "{$e->employee_code} — ".($e->user?->name ?? '—')]),
+        ];
     }
 }
