@@ -17,6 +17,11 @@ class LeaveApplication extends TenantModel
     use HasFactory;
     use SoftDeletes;
 
+    public const STATUS_PENDING   = 'pending';
+    public const STATUS_APPROVED  = 'approved';
+    public const STATUS_REJECTED  = 'rejected';
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'employee_id',
         'leave_type_id',
@@ -55,12 +60,12 @@ class LeaveApplication extends TenantModel
         return $this->belongsTo(LeaveType::class);
     }
 
-    public function approvedBy(): BelongsTo
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    public function rejectedBy(): BelongsTo
+    public function rejector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejected_by');
     }
