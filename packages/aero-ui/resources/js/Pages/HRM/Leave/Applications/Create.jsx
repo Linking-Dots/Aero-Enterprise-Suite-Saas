@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import App from '../../../../App.jsx';
 import {
   FormPageLayout, VStack, HStack, Field, Input, Select, Textarea, Button, Alert, Text,
@@ -100,7 +100,7 @@ export default function ApplicationsCreate({ employees, leaveTypes }) {
             <Button
               type="button"
               intent="ghost"
-              onClick={() => window.history.back()}
+              onClick={() => router.get(route('hrm.leave.applications.index'))}
             >
               Cancel
             </Button>
