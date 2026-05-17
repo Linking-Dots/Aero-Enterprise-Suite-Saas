@@ -49,7 +49,7 @@ use Aero\HRM\Http\Controllers\Leave\LeaveApplicationController;
 use Aero\HRM\Http\Controllers\Leave\LeaveBalanceController;
 use Aero\HRM\Http\Controllers\Leave\LeaveCalendarController;
 use Aero\HRM\Http\Controllers\Leave\LeaveController;
-use Aero\HRM\Http\Controllers\Leave\LeaveSettingController;
+use Aero\HRM\Http\Controllers\Leave\LeaveSettingController as LeaveLeaveSettingController;
 use Aero\HRM\Http\Controllers\Leave\LeaveTypeController;
 use Aero\HRM\Http\Controllers\OrgStructure\GradeController;
 use Aero\HRM\Http\Controllers\OrgStructure\WorkLocationController;
@@ -1340,17 +1340,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('leave/applications')->name('leave.applications.')->group(function () {
         Route::get('/', [LeaveApplicationController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('index');
-        Route::get('/create', [LeaveApplicationController::class, 'create'])->name('create');
-        Route::post('/', [LeaveApplicationController::class, 'store'])->name('store');
+        Route::get('/create', [LeaveApplicationController::class, 'create'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('create');
+        Route::post('/', [LeaveApplicationController::class, 'store'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('store');
         Route::get('/{application}', [LeaveApplicationController::class, 'show'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('show');
         Route::post('/{application}/approve', [LeaveApplicationController::class, 'approve'])->middleware('hrmac:hrm.leaves.leave-requests.approve')->name('approve');
         Route::post('/{application}/reject', [LeaveApplicationController::class, 'reject'])->middleware('hrmac:hrm.leaves.leave-requests.approve')->name('reject');
-        Route::post('/{application}/cancel', [LeaveApplicationController::class, 'cancel'])->name('cancel');
+        Route::post('/{application}/cancel', [LeaveApplicationController::class, 'cancel'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('cancel');
     });
 
     Route::get('leave/balance', [LeaveBalanceController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-balances.view')->name('leave.balance.index');
     Route::get('leave/calendar', [LeaveCalendarController::class, 'index'])->middleware('hrmac:hrm.leaves.holiday-calendar.view')->name('leave.calendar.index');
-    Route::get('leave/settings', [LeaveSettingController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-policies.view')->name('leave.settings.index');
-    Route::put('leave/settings', [LeaveSettingController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-policies.edit')->name('leave.settings.update');
+    Route::get('leave/settings', [LeaveLeaveSettingController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-policies.view')->name('leave.settings.index');
+    Route::put('leave/settings', [LeaveLeaveSettingController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-policies.edit')->name('leave.settings.update');
 
 });
