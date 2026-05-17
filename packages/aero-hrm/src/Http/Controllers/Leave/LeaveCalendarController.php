@@ -22,7 +22,8 @@ class LeaveCalendarController extends Controller
         $events = LeaveApplication::query()
             ->with(['employee.user:id,name', 'leaveType:id,name,color'])
             ->where('status', LeaveApplication::STATUS_APPROVED)
-            ->whereBetween('start_date', [$from, $to])
+            ->where('start_date', '<=', $to)
+            ->where('end_date', '>=', $from)
             ->get()
             ->map(fn (LeaveApplication $a) => [
                 'id' => $a->id,

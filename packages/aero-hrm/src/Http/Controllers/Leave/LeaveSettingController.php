@@ -38,7 +38,7 @@ class LeaveSettingController extends Controller
             subject: $settings,
             description: 'Leave settings updated',
             before: $before,
-            after: $settings->fresh()->toArray(),
+            after: $settings->refresh()->toArray(),
         );
 
         return back()->with('success', 'Settings saved.');
