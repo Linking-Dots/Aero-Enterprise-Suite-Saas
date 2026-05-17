@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
+use Aero\Core\Encryption\EncryptedField;
+use Aero\HRM\Database\Factories\EmployeeFactory;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,10 +48,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property int|null $designation_id
  * @property int|null $manager_id
  * @property string $employee_code
- * @property \Carbon\Carbon $date_of_joining
- * @property \Carbon\Carbon|null $date_of_leaving
- * @property \Carbon\Carbon|null $probation_end_date
- * @property \Carbon\Carbon|null $confirmation_date
+ * @property Carbon $date_of_joining
+ * @property Carbon|null $date_of_leaving
+ * @property Carbon|null $probation_end_date
+ * @property Carbon|null $confirmation_date
  * @property string $employment_type
  * @property string $status
  * @property float $basic_salary
@@ -54,14 +60,14 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string|null $notes
  *
  * Employment date extras:
- * @property \Carbon\Carbon|null $joining_date
+ * @property Carbon|null $joining_date
  * @property int|null $probation_period_months
- * @property \Carbon\Carbon|null $contract_start_date
- * @property \Carbon\Carbon|null $contract_end_date
+ * @property Carbon|null $contract_start_date
+ * @property Carbon|null $contract_end_date
  *
  * Personal Info:
- * @property \Carbon\Carbon|null $birthday
- * @property \Carbon\Carbon|null $date_of_birth
+ * @property Carbon|null $birthday
+ * @property Carbon|null $date_of_birth
  * @property string|null $gender
  * @property string|null $nationality
  * @property string|null $religion
@@ -70,11 +76,11 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * Identity documents:
  * @property string|null $passport_no
- * @property \Carbon\Carbon|null $passport_expiry
+ * @property Carbon|null $passport_expiry
  * @property string|null $visa_no
- * @property \Carbon\Carbon|null $visa_expiry
+ * @property Carbon|null $visa_expiry
  * @property string|null $emirates_id
- * @property \Carbon\Carbon|null $emirates_id_expiry
+ * @property Carbon|null $emirates_id_expiry
  *
  * Accessors:
  * @property-read string $name
@@ -91,11 +97,11 @@ class Employee extends TenantModel implements HasMedia
     /**
      * Create a new factory instance for the model.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     protected static function newFactory()
     {
-        return \Aero\HRM\Database\Factories\EmployeeFactory::new();
+        return EmployeeFactory::new();
     }
 
     /**
@@ -149,6 +155,10 @@ class Employee extends TenantModel implements HasMedia
         'visa_expiry',
         'emirates_id',
         'emirates_id_expiry',
+        'national_id',
+
+        // ── Banking ────────────────────────────────────────────────────────────
+        'bank_account_number',
 
         // ── Notes ──────────────────────────────────────────────────────────────
         'notes',
@@ -161,23 +171,29 @@ class Employee extends TenantModel implements HasMedia
     {
         return [
             // Employment dates
-            'date_of_joining'        => 'date',
-            'joining_date'           => 'date',
-            'date_of_leaving'        => 'date',
-            'probation_end_date'     => 'date',
-            'probation_period_months'=> 'integer',
-            'contract_start_date'    => 'date',
-            'contract_end_date'      => 'date',
-            'confirmation_date'      => 'date',
+            'date_of_joining' => 'date',
+            'joining_date' => 'date',
+            'date_of_leaving' => 'date',
+            'probation_end_date' => 'date',
+            'probation_period_months' => 'integer',
+            'contract_start_date' => 'date',
+            'contract_end_date' => 'date',
+            'confirmation_date' => 'date',
             // Personal
-            'birthday'               => 'date',
-            'date_of_birth'          => 'date',
+            'birthday' => 'date',
+            'date_of_birth' => 'date',
             // Documents
-            'passport_expiry'        => 'date',
-            'visa_expiry'            => 'date',
-            'emirates_id_expiry'     => 'date',
+            'passport_expiry' => 'date',
+            'visa_expiry' => 'date',
+            'emirates_id_expiry' => 'date',
             // Salary
-            'basic_salary'           => 'decimal:2',
+            'basic_salary' => 'decimal:2',
+            // PII — encrypted at rest
+            'passport_no' => EncryptedField::class,
+            'visa_no' => EncryptedField::class,
+            'emirates_id' => EncryptedField::class,
+            'national_id' => EncryptedField::class,
+            'bank_account_number' => EncryptedField::class,
         ];
     }
 
@@ -629,6 +645,27 @@ class Employee extends TenantModel implements HasMedia
             'department:id,name',
             'designation:id,title',
         ]);
+    }
+
+    /**
+     * Apply dynamic filters for index/list queries.
+     *
+     * Supported keys: search, department_id, status, employment_type.
+     */
+    public function scopeFilter(Builder $query, array $filters): Builder
+    {
+        return $query
+            ->when($filters['search'] ?? null, function (Builder $q, string $term) {
+                $q->where(function (Builder $sub) use ($term) {
+                    $sub->where('employee_code', 'like', "%{$term}%")
+                        ->orWhereHas('user', fn (Builder $u) => $u
+                            ->where('name', 'like', "%{$term}%")
+                            ->orWhere('email', 'like', "%{$term}%"));
+                });
+            })
+            ->when($filters['department_id'] ?? null, fn (Builder $q, $id) => $q->where('department_id', $id))
+            ->when($filters['status'] ?? null, fn (Builder $q, $s) => $q->where('status', $s))
+            ->when($filters['employment_type'] ?? null, fn (Builder $q, $t) => $q->where('employment_type', $t));
     }
 
     // =========================================================================
