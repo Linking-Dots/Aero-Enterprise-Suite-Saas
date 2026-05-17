@@ -108,24 +108,24 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
-| H-1 | `phase-1-hrm/plan-h1-employees.md` | ⬜ | Employee CRUD (index, create, edit, show), profile photo, documents, bank details (encrypted), emergency contacts, employment history |
-| H-2 | `phase-1-hrm/plan-h2-org-structure.md` | ⬜ | Departments (CRUD + org chart), designations, grades, work locations |
-| H-3 | `phase-1-hrm/plan-h3-leave.md` | ⬜ | Leave types, apply, admin approval, leave balance, calendar, accrual rules, admin settings |
-| H-4 | `phase-1-hrm/plan-h4-attendance.md` | ⬜ | Clock in/out, admin view (daily/monthly), my attendance, overtime requests + approval, timesheets, shift marketplace |
-| H-5 | `phase-1-hrm/plan-h5-payroll.md` | ⬜ | Salary structures, pay components, payroll run (immutable payslips), bulk payroll, payslip viewer/print, tax setup |
-| H-6 | `phase-1-hrm/plan-h6-performance.md` | ⬜ | Reviews, templates, goals (create/track), 360 feedback, calibration, skill matrix, PIP |
-| H-7 | `phase-1-hrm/plan-h7-recruitment.md` | ⬜ | Jobs, application kanban, interviews, offers, onboarding wizard |
-| H-8 | `phase-1-hrm/plan-h8-training.md` | ⬜ | Courses, categories, enrollments, sessions, materials, feedback |
-| H-9 | `phase-1-hrm/plan-h9-self-service.md` | ⬜ | Employee portal: my profile, my leaves, my payslips, my benefits, my training, career path |
-| H-10 | `phase-1-hrm/plan-h10-analytics.md` | ⬜ | HR analytics dashboard, AI insights, attrition predictions, DEI dashboard, pulse surveys, workforce planning |
-| H-11 | `phase-1-hrm/plan-h11-benefits.md` | ⬜ | Benefits catalog, enrollment periods, open enrollment, employee benefits |
-| H-12 | `phase-1-hrm/plan-h12-disciplinary.md` | ⬜ | Disciplinary cases, warnings, exit interviews, grievances |
-| H-13 | `phase-1-hrm/plan-h13-safety.md` | ⬜ | Incidents, inspections, safety training, workplace safety dashboard |
-| H-14 | `phase-1-hrm/plan-h14-assets.md` | ⬜ | Asset catalog, categories, allocations |
-| H-15 | `phase-1-hrm/plan-h15-expenses.md` | ⬜ | Expense categories, claims (create + approve), my expenses |
-| H-16 | `phase-1-hrm/plan-h16-events.md` | ⬜ | Events, sub-events, registrations, print token, public event pages |
-| H-17 | `phase-1-hrm/plan-h17-succession.md` | ⬜ | Succession planning, career paths, talent mobility, workforce planning |
-| H-18 | `phase-1-hrm/plan-h18-settings.md` | ⬜ | HRM general settings, leave settings, attendance settings, task templates, holidays |
+| H-1 | `phase-1-hrm/plan-h1-employees.md` | 🟡 Written | Employee CRUD (index, create, edit, show), profile photo, documents, bank details (encrypted), emergency contacts, employment history |
+| H-2 | `phase-1-hrm/plan-h2-org-structure.md` | 🟡 Written | Departments (CRUD + org chart), designations, grades, work locations |
+| H-3 | `phase-1-hrm/plan-h3-leave.md` | 🟡 Written | Leave types, apply, admin approval, leave balance, calendar, accrual rules, admin settings |
+| H-4 | `phase-1-hrm/plan-h4-attendance.md` | 🟡 Written | Clock in/out, admin view (daily/monthly), my attendance, overtime requests + approval, timesheets, shift marketplace |
+| H-5 | `phase-1-hrm/plan-h5-payroll.md` | 🟡 Written | Salary structures, pay components, payroll run (immutable payslips), bulk payroll, payslip viewer/print, tax setup |
+| H-6 | `phase-1-hrm/plan-h6-performance.md` | 🟡 Written | Reviews, templates, goals (create/track), 360 feedback, calibration, skill matrix, PIP |
+| H-7 | `phase-1-hrm/plan-h7-recruitment.md` | 🟡 Written | Jobs, application kanban, interviews, offers, onboarding wizard |
+| H-8 | `phase-1-hrm/plan-h8-training.md` | 🟡 Written | Courses, categories, enrollments, sessions, materials, feedback |
+| H-9 | `phase-1-hrm/plan-h9-self-service.md` | 🟡 Written | Employee portal: my profile, my leaves, my payslips, my benefits, my training, career path |
+| H-10 | `phase-1-hrm/plan-h10-analytics.md` | 🟡 Written | HR analytics dashboard, AI insights, attrition predictions, DEI dashboard, pulse surveys, workforce planning |
+| H-11 | `phase-1-hrm/plan-h11-benefits.md` | 🟡 Written | Benefits catalog, enrollment periods, open enrollment, employee benefits |
+| H-12 | `phase-1-hrm/plan-h12-disciplinary.md` | 🟡 Written | Disciplinary cases, warnings, exit interviews, grievances |
+| H-13 | `phase-1-hrm/plan-h13-safety.md` | 🟡 Written | Incidents, inspections, safety training, workplace safety dashboard |
+| H-14 | `phase-1-hrm/plan-h14-assets.md` | 🟡 Written | Asset catalog, categories, allocations |
+| H-15 | `phase-1-hrm/plan-h15-expenses.md` | 🟡 Written | Expense categories, claims (create + approve), my expenses |
+| H-16 | `phase-1-hrm/plan-h16-events.md` | 🟡 Written | Events, sub-events, registrations, print token, public event pages |
+| H-17 | `phase-1-hrm/plan-h17-succession.md` | 🟡 Written | Succession planning, career paths, talent mobility, workforce planning |
+| H-18 | `phase-1-hrm/plan-h18-settings.md` | 🟡 Written | HRM general settings, leave settings, attendance settings, task templates, holidays |
 
 ---
 
