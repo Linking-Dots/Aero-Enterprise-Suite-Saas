@@ -38,6 +38,7 @@ use Aero\HRM\Services\DEIAnalyticsService;
 use Aero\HRM\Services\EmployeeService;
 use Aero\HRM\Services\HRMetricsAggregatorService;
 use Aero\HRM\Services\HrmNotificationChannelResolver;
+use Aero\HRM\Services\LeaveApplicationService;
 use Aero\HRM\Services\LeaveBalanceService;
 use Aero\HRM\Services\PayrollCalculationService;
 use Illuminate\Console\Scheduling\Schedule;
@@ -112,6 +113,12 @@ class HRMServiceProvider extends AbstractModuleProvider
         });
 
         // Register specific services
+        $this->app->singleton(LeaveApplicationService::class, function ($app) {
+            return new LeaveApplicationService(
+                $app->make(\Aero\Contracts\AuditServiceInterface::class)
+            );
+        });
+
         $this->app->singleton('hrm.leave', function ($app) {
             return new LeaveBalanceService;
         });

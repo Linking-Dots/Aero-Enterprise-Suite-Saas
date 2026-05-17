@@ -24,6 +24,7 @@ enum AuditEventType: string
     // HRM
     case LEAVE_APPROVED      = 'hrm.leave.approved';
     case LEAVE_REJECTED      = 'hrm.leave.rejected';
+    case LEAVE_CANCELLED     = 'hrm.leave.cancelled';
     case PAYROLL_RUN         = 'hrm.payroll.run';
     case PAYSLIP_GENERATED   = 'hrm.payroll.payslip_generated';
 
