@@ -2,6 +2,7 @@
 
 namespace Aero\HRM\Database\Factories;
 
+use Aero\Core\Models\User;
 use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\LeaveApplication;
 use Aero\HRM\Models\LeaveType;
@@ -33,15 +34,19 @@ class LeaveApplicationFactory extends Factory
     public function approved(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'approved',
+            'status'      => LeaveApplication::STATUS_APPROVED,
+            'approved_by' => User::factory(),
+            'approved_at' => now(),
         ]);
     }
 
     public function rejected(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'rejected',
-            'rejection_reason' => $this->faker->sentence(),
+            'status'           => LeaveApplication::STATUS_REJECTED,
+            'rejection_reason' => 'Test rejection reason.',
+            'rejected_by'      => User::factory(),
+            'rejected_at'      => now(),
         ]);
     }
 }

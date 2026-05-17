@@ -33,6 +33,8 @@ class LeaveBalance extends TenantModel
         'encashed' => 'decimal:2',
     ];
 
+    protected $appends = ['remaining'];
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -48,6 +50,9 @@ class LeaveBalance extends TenantModel
      */
     public function getRemainingAttribute(): float
     {
-        return (float) ($this->entitled + $this->carried_forward - $this->used - $this->encashed);
+        return (float) $this->entitled
+            + (float) $this->carried_forward
+            - (float) $this->used
+            - (float) $this->encashed;
     }
 }

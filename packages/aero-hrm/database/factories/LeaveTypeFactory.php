@@ -15,14 +15,7 @@ class LeaveTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->randomElement([
-                'Annual Leave',
-                'Sick Leave',
-                'Casual Leave',
-                'Maternity Leave',
-                'Paternity Leave',
-                'Unpaid Leave',
-            ]),
+            'name' => $this->faker->unique()->words(3, true),
             'code' => strtoupper($this->faker->unique()->lexify('LT???')),
             'color' => $this->faker->hexColor(),
             'days_per_year' => $this->faker->randomFloat(2, 5, 30),

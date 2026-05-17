@@ -30,11 +30,6 @@ class LeaveApplication extends TenantModel
         'total_days',
         'status',
         'reason',
-        'rejection_reason',
-        'approved_by',
-        'approved_at',
-        'rejected_by',
-        'rejected_at',
     ];
 
     protected $casts = [
