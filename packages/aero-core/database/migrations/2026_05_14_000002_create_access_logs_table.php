@@ -24,21 +24,24 @@ return new class extends Migration
             $table->index(['resource_type', 'resource_id']);
         });
 
-        DB::unprepared('
-            CREATE TRIGGER access_logs_prevent_update
-            BEFORE UPDATE ON access_logs
-            FOR EACH ROW
-            SIGNAL SQLSTATE "45000"
-            SET MESSAGE_TEXT = "access_logs records are immutable";
-        ');
+        // MySQL-only immutability triggers — skipped on SQLite/testing
+        if (DB::getDriverName() === 'mysql') {
+            DB::unprepared('
+                CREATE TRIGGER access_logs_prevent_update
+                BEFORE UPDATE ON access_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE "45000"
+                SET MESSAGE_TEXT = "access_logs records are immutable";
+            ');
 
-        DB::unprepared('
-            CREATE TRIGGER access_logs_prevent_delete
-            BEFORE DELETE ON access_logs
-            FOR EACH ROW
-            SIGNAL SQLSTATE "45000"
-            SET MESSAGE_TEXT = "access_logs records are immutable";
-        ');
+            DB::unprepared('
+                CREATE TRIGGER access_logs_prevent_delete
+                BEFORE DELETE ON access_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE "45000"
+                SET MESSAGE_TEXT = "access_logs records are immutable";
+            ');
+        }
     }
 
     public function down(): void

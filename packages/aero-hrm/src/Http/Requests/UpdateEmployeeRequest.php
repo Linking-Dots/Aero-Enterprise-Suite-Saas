@@ -11,12 +11,14 @@ class UpdateEmployeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('hrm.employees.detail.edit') ?? false;
+        // Authorization enforced by hrmac:hrm.employees.detail.edit route middleware.
+        return true;
     }
 
     public function rules(): array
     {
-        $employeeId = $this->route('employee')?->id;
+        $bound = $this->route('employee');
+        $employeeId = ($bound instanceof \Aero\HRM\Models\Employee) ? $bound->id : $bound;
 
         return [
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],

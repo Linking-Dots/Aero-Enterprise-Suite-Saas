@@ -14,6 +14,11 @@ class Designation extends TenantModel
 
     protected $table = 'designations';
 
+    protected static function newFactory(): \Aero\HRM\Database\Factories\DesignationFactory
+    {
+        return \Aero\HRM\Database\Factories\DesignationFactory::new();
+    }
+
     protected $fillable = [
         'title',
         'department_id',

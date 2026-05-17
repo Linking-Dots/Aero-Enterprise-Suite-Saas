@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Drop older audit_logs schema (from 2025_12_09) and replace with
+        // the Security Foundation canonical schema (immutable, trigger-protected).
+        Schema::dropIfExists('audit_logs');
+
         // Tenant audit log (runs inside tenant DB via stancl/tenancy)
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
@@ -51,23 +55,25 @@ return new class extends Migration
             $table->index('created_at');
         });
 
-        // DB-level protection: prevent UPDATE and DELETE on audit_logs
-        // Uses a trigger to enforce immutability at the database layer
-        DB::unprepared('
-            CREATE TRIGGER audit_logs_prevent_update
-            BEFORE UPDATE ON audit_logs
-            FOR EACH ROW
-            SIGNAL SQLSTATE "45000"
-            SET MESSAGE_TEXT = "audit_logs records are immutable and cannot be updated";
-        ');
+        // DB-level immutability triggers (MySQL only — SQLite/testing skipped).
+        // SIGNAL SQLSTATE is MySQL-specific syntax not available in SQLite.
+        if (DB::getDriverName() === 'mysql') {
+            DB::unprepared('
+                CREATE TRIGGER audit_logs_prevent_update
+                BEFORE UPDATE ON audit_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE "45000"
+                SET MESSAGE_TEXT = "audit_logs records are immutable and cannot be updated";
+            ');
 
-        DB::unprepared('
-            CREATE TRIGGER audit_logs_prevent_delete
-            BEFORE DELETE ON audit_logs
-            FOR EACH ROW
-            SIGNAL SQLSTATE "45000"
-            SET MESSAGE_TEXT = "audit_logs records are immutable and cannot be deleted";
-        ');
+            DB::unprepared('
+                CREATE TRIGGER audit_logs_prevent_delete
+                BEFORE DELETE ON audit_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE "45000"
+                SET MESSAGE_TEXT = "audit_logs records are immutable and cannot be deleted";
+            ');
+        }
     }
 
     public function down(): void

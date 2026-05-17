@@ -74,9 +74,13 @@ class EmployeeController extends Controller
             ->with('success', "Employee {$employee->employee_code} created.");
     }
 
-    public function show(Request $request, Employee $employee): Response
+    public function show(Request $request, Employee|int|string $employee): Response
     {
         $this->authorize('hrm.employees.detail.view');
+
+        if (! $employee instanceof Employee) {
+            $employee = Employee::findOrFail($employee);
+        }
 
         $employee->load(['user', 'department', 'designation', 'manager.user']);
 
@@ -136,8 +140,11 @@ class EmployeeController extends Controller
         ]));
     }
 
-    public function update(UpdateEmployeeRequest $request, Employee $employee): RedirectResponse
+    public function update(UpdateEmployeeRequest $request, Employee|int|string $employee): RedirectResponse
     {
+        if (! $employee instanceof Employee) {
+            $employee = Employee::findOrFail($employee);
+        }
         $employee = $this->service->update($employee, $request->validated());
 
         return redirect()
@@ -145,9 +152,12 @@ class EmployeeController extends Controller
             ->with('success', 'Employee updated.');
     }
 
-    public function destroy(Employee $employee): RedirectResponse
+    public function destroy(Employee|int|string $employee): RedirectResponse
     {
         $this->authorize('hrm.employees.detail.edit');
+        if (! $employee instanceof Employee) {
+            $employee = Employee::findOrFail($employee);
+        }
         $this->service->delete($employee);
 
         return redirect()

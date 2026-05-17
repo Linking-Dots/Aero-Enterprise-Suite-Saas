@@ -775,10 +775,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/delete-leave-type/{id}', [LeaveSettingController::class, 'destroy'])->name('delete-leave-type');
     });
 
-    // HR Management routes (legacy alias — kept for backward-compatible redirects)
-    Route::middleware(['hrmac:hrm.employees'])->group(function () {
-        Route::get('/employees', [EmployeeController::class, 'index'])->name('employees');
-    });
+    // Legacy alias removed — replaced by hrm.employees.index in the granular HRMAC group above
 
     // Department management routes - Departments is under hrm.employees.departments in navigation
     Route::middleware(['hrmac:hrm.employees.departments'])->get('/departments', [DepartmentController::class, 'index'])->name('departments');

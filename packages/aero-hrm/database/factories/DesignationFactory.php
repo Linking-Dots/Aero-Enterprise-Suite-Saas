@@ -42,7 +42,7 @@ class DesignationFactory extends Factory
             ]),
             'department_id' => Department::factory(),
             'description' => $this->faker->sentence(),
-            'level' => $this->faker->numberBetween(1, 5),
+            'hierarchy_level' => $this->faker->numberBetween(1, 5),
             'parent_id' => null,
         ];
     }

@@ -41,7 +41,7 @@ class DepartmentFactory extends Factory
             'description' => $this->faker->sentence(),
             'parent_id' => null,
             'manager_id' => null,
-            'status' => 'active',
+            'is_active' => true,
         ];
     }
 
@@ -51,7 +51,7 @@ class DepartmentFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'inactive',
+            'is_active' => false,
         ]);
     }
 }

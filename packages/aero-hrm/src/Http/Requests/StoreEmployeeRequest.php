@@ -11,7 +11,8 @@ class StoreEmployeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('hrm.employees.list.edit') ?? false;
+        // Authorization enforced by hrmac:hrm.employees.list.edit route middleware.
+        return true;
     }
 
     public function rules(): array

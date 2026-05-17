@@ -13,8 +13,12 @@ class Department extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
-    // Specify the table name if it's different from the default
     protected $table = 'departments';
+
+    protected static function newFactory(): \Aero\HRM\Database\Factories\DepartmentFactory
+    {
+        return \Aero\HRM\Database\Factories\DepartmentFactory::new();
+    }
 
     // Define the fillable attributes - ISO compliant attributes
     protected $fillable = [

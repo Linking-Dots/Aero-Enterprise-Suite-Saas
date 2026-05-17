@@ -245,7 +245,10 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
 
     protected function isPlatformActive(): bool
     {
-        return class_exists('Aero\\Platform\\AeroPlatformServiceProvider');
+        // Check if the platform provider is actually registered with this app instance,
+        // not just whether the class file exists on disk. This ensures tests that don't
+        // register the platform provider get standalone (no-domain) route registration.
+        return $this->app->providerIsLoaded('Aero\\Platform\\AeroPlatformServiceProvider');
     }
 
     protected function registerNavigation(): void
