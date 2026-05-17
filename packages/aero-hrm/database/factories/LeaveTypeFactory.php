@@ -6,51 +6,35 @@ use Aero\HRM\Models\LeaveType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Aero\HRM\Models\LeaveType>
+ * @extends Factory<LeaveType>
  */
 class LeaveTypeFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = LeaveType::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => $this->faker->randomElement([
+            'name' => $this->faker->unique()->randomElement([
                 'Annual Leave',
                 'Sick Leave',
                 'Casual Leave',
                 'Maternity Leave',
                 'Paternity Leave',
-                'Compensatory Leave',
                 'Unpaid Leave',
             ]),
-            'code' => strtoupper($this->faker->lexify('LT???')),
-            'total_days' => $this->faker->numberBetween(10, 30),
-            'max_consecutive_days' => $this->faker->numberBetween(5, 15),
-            'allow_half_day' => $this->faker->boolean(),
-            'allow_carry_forward' => $this->faker->boolean(),
-            'max_carry_forward' => $this->faker->numberBetween(0, 10),
-            'accrual_type' => $this->faker->randomElement(['yearly', 'monthly', 'none']),
-            'accrual_rate' => $this->faker->randomFloat(2, 0, 5),
-            'requires_approval' => true,
+            'code' => strtoupper($this->faker->unique()->lexify('LT???')),
+            'color' => $this->faker->hexColor(),
+            'days_per_year' => $this->faker->randomFloat(2, 5, 30),
             'is_paid' => $this->faker->boolean(80),
-            'description' => $this->faker->sentence(),
+            'requires_approval' => true,
+            'carry_forward' => $this->faker->boolean(),
+            'encashable' => false,
+            'max_carry_forward' => null,
+            'is_active' => true,
         ];
     }
 
-    /**
-     * Indicate that the leave type is unpaid.
-     */
     public function unpaid(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -58,9 +42,6 @@ class LeaveTypeFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the leave type doesn't require approval.
-     */
     public function noApproval(): static
     {
         return $this->state(fn (array $attributes) => [
