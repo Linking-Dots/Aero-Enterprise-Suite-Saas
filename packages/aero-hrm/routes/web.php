@@ -557,21 +557,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/payroll/reports/statutory', [PayrollController::class, 'statutoryReport'])->name('payroll.reports.statutory');
     });
 
-    // Employee Management - Core CRUD operations
+    // Employee Management - Core CRUD operations (legacy JSON API — broad gate)
     Route::middleware(['hrmac:hrm.employees'])->group(function () {
-        Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
         Route::get('/employees/paginate', [EmployeeController::class, 'paginate'])->name('employees.paginate');
         Route::get('/employees/stats', [EmployeeController::class, 'stats'])->name('employees.stats');
         Route::get('/employees/list', [EmployeeController::class, 'list'])->name('employees.list');
         Route::get('/employees/pending-onboarding', [EmployeeController::class, 'getPendingOnboarding'])->name('employees.pending-onboarding');
         Route::get('/employees/onboarding-analytics', [EmployeeController::class, 'getOnboardingAnalytics'])->name('employees.onboarding-analytics');
-        Route::post('/employees', [EmployeeController::class, 'store'])->middleware('quota:employees')->name('employees.store');
         Route::post('/employees/onboard', [EmployeeController::class, 'onboard'])->name('employees.onboard');
         Route::post('/employees/onboard-bulk', [EmployeeController::class, 'bulkOnboard'])->name('employees.onboard-bulk');
-        Route::get('/employees/{id}', [EmployeeController::class, 'show'])->name('employees.show');
-        Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
-        Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
-        Route::post('/employees/{id}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
+    });
+
+    // Employee Management — Inertia CRUD with granular HRMAC gates
+    Route::prefix('employees')->name('employees.')->group(function () {
+        Route::get('/', [EmployeeController::class, 'index'])
+            ->middleware('hrmac:hrm.employees.list.view')->name('index');
+        Route::get('/create', [EmployeeController::class, 'create'])
+            ->middleware('hrmac:hrm.employees.list.edit')->name('create');
+        Route::post('/', [EmployeeController::class, 'store'])
+            ->middleware('hrmac:hrm.employees.list.edit')->name('store');
+        Route::get('/{employee}', [EmployeeController::class, 'show'])
+            ->middleware('hrmac:hrm.employees.detail.view')->name('show');
+        Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])
+            ->middleware('hrmac:hrm.employees.detail.edit')->name('edit');
+        Route::put('/{employee}', [EmployeeController::class, 'update'])
+            ->middleware('hrmac:hrm.employees.detail.edit')->name('update');
+        Route::delete('/{employee}', [EmployeeController::class, 'destroy'])
+            ->middleware('hrmac:hrm.employees.detail.edit')->name('destroy');
+        Route::post('/{employee}/restore', [EmployeeController::class, 'restore'])
+            ->middleware('hrmac:hrm.employees.detail.edit')->name('restore')->withTrashed();
     });
 
     // Employee Profile Management (Bank Details, Emergency Contacts)
@@ -761,11 +775,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/delete-leave-type/{id}', [LeaveSettingController::class, 'destroy'])->name('delete-leave-type');
     });
 
-    // HR Management routes
+    // HR Management routes (legacy alias — kept for backward-compatible redirects)
     Route::middleware(['hrmac:hrm.employees'])->group(function () {
         Route::get('/employees', [EmployeeController::class, 'index'])->name('employees');
-        Route::get('/employees/paginate', [EmployeeController::class, 'paginate'])->name('employees.paginate');
-        Route::get('/employees/stats', [EmployeeController::class, 'stats'])->name('employees.stats');
     });
 
     // Department management routes - Departments is under hrm.employees.departments in navigation

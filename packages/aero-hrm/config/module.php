@@ -269,6 +269,47 @@ return [
             'route' => '/hrm/employees',
             'priority' => 1,
             'components' => [
+                // HRMAC-scoped components for granular permission enforcement
+                [
+                    'code' => 'list',
+                    'name' => 'Employee List',
+                    'type' => 'page',
+                    'route' => '/hrm/employees',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Create/Edit'],
+                    ],
+                ],
+                [
+                    'code' => 'detail',
+                    'name' => 'Employee Profile',
+                    'type' => 'page',
+                    'route' => '/hrm/employees/{id}',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Edit'],
+                    ],
+                ],
+                [
+                    'code' => 'bank-details',
+                    'name' => 'Bank Details',
+                    'type' => 'feature',
+                    'route' => '/hrm/employees/{id}',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Edit'],
+                    ],
+                ],
+                [
+                    'code' => 'documents',
+                    'name' => 'Documents',
+                    'type' => 'feature',
+                    'route' => '/hrm/employees/{id}/documents',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Upload'],
+                    ],
+                ],
                 [
                     'code' => 'employee-directory',
                     'name' => 'Employee Directory',
