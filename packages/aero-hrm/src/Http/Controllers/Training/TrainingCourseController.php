@@ -11,6 +11,7 @@ use Aero\HRM\Http\Requests\Training\StoreCourseRequest;
 use Aero\HRM\Http\Requests\Training\UpdateCourseRequest;
 use Aero\HRM\Models\TrainingCategory;
 use Aero\HRM\Models\TrainingCourse;
+use Aero\HRM\Models\TrainingSession;
 use Aero\HRM\Services\Training\CourseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,6 +98,15 @@ class TrainingCourseController extends Controller
     public function destroy(TrainingCourse $course): RedirectResponse
     {
         Gate::authorize('hrmac', 'hrm.training.training-programs.delete');
+
+        $hasUpcoming = $course->sessions()
+            ->where('starts_at', '>', now())
+            ->whereNotIn('status', [TrainingSession::STATUS_CANCELLED])
+            ->exists();
+
+        if ($hasUpcoming) {
+            abort(422, 'Cannot delete a course that has upcoming sessions.');
+        }
 
         DB::transaction(function () use ($course): void {
             $course->delete();

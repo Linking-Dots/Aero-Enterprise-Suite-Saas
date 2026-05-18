@@ -116,7 +116,7 @@ class EnrollmentService
 
     public function cancel(TrainingEnrollment $enrollment, mixed $actor): void
     {
-        DB::transaction(function () use ($enrollment): void {
+        DB::transaction(function () use ($enrollment, $actor): void {
             $sessionId = $enrollment->session_id;
 
             $enrollment->status = TrainingEnrollment::STATUS_CANCELLED;
@@ -127,6 +127,7 @@ class EnrollmentService
                 action: 'cancelled',
                 subject: $enrollment,
                 description: "Enrollment #{$enrollment->id} cancelled for session #{$sessionId}.",
+                metadata: ['cancelled_by' => $actor->id],
             );
 
             // Promote first waitlisted enrollment to enrolled
