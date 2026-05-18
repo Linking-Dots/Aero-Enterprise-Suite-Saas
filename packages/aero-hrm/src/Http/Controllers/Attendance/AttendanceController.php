@@ -10,19 +10,30 @@ use Aero\HRM\Exports\AttendanceExport;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\Attendance;
 use Aero\HRM\Models\AttendanceSetting;
+use Aero\HRM\Models\AttendanceType;
 use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\Holiday;
 use Aero\HRM\Models\LeaveSetting;
+use Aero\HRM\Services\Attendance\AttendanceClockService;
 use Aero\HRM\Services\HRMAuthorizationService;
 use App\Exports\AttendanceAdminExport;
+use App\Services\Attendance\AttendancePunchService;
+use App\Services\Attendance\AttendanceValidatorFactory;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
 
 class AttendanceController extends Controller
@@ -34,7 +45,7 @@ class AttendanceController extends Controller
         $this->authService = $authService;
     }
 
-    public function index1(): \Inertia\Response
+    public function index1(): Response
     {
         return Inertia::render('HRM/Attendance/Admin', [
             'allUsers' => Employee::active()->with('user')->get(),
@@ -42,21 +53,21 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function index2(): \Inertia\Response
+    public function index2(): Response
     {
         return Inertia::render('HRM/MyAttendance', [
             'title' => 'My Attendance',
         ]);
     }
 
-    public function index3(): \Inertia\Response
+    public function index3(): Response
     {
         return Inertia::render('HRM/TimeSheet/Index', [
             'title' => 'Time Sheet',
         ]);
     }
 
-    public function paginate(Request $request): \Illuminate\Http\JsonResponse
+    public function paginate(Request $request): JsonResponse
     {
         try {
             $perPage = (int) $request->get('perPage', 30);
@@ -280,7 +291,7 @@ class AttendanceController extends Controller
         return $attendanceData;
     }
 
-    public function updateAttendance(Request $request): \Illuminate\Http\JsonResponse
+    public function updateAttendance(Request $request): JsonResponse
     {
         try {
             // Validate the incoming request data
@@ -348,7 +359,7 @@ class AttendanceController extends Controller
         }
 
         // 3. Process the punch using the service
-        $punchService = new \App\Services\Attendance\AttendancePunchService;
+        $punchService = new AttendancePunchService;
         $result = $punchService->processPunch($user, $request);
 
         if ($result['status'] === 'error') {
@@ -364,7 +375,7 @@ class AttendanceController extends Controller
     private function validateAttendanceType($attendanceType, Request $request)
     {
         try {
-            $validator = \App\Services\Attendance\AttendanceValidatorFactory::create($attendanceType, $request);
+            $validator = AttendanceValidatorFactory::create($attendanceType, $request);
 
             return $validator->validate();
         } catch (\InvalidArgumentException $e) {
@@ -374,7 +385,7 @@ class AttendanceController extends Controller
                 'code' => 422,
             ];
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Attendance validation error: '.$e->getMessage());
+            Log::error('Attendance validation error: '.$e->getMessage());
 
             return [
                 'status' => 'error',
@@ -384,7 +395,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function punchIn(Request $request): \Illuminate\Http\JsonResponse
+    public function punchIn(Request $request): JsonResponse
     {
         try {
             // Validate incoming request data
@@ -457,7 +468,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function punchOut(Request $request): \Illuminate\Http\JsonResponse
+    public function punchOut(Request $request): JsonResponse
     {
         try {
             // Validate incoming request data
@@ -524,7 +535,7 @@ class AttendanceController extends Controller
                 'success' => true,
                 'message' => 'Successfully punched out!',
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             // Handle the case where the attendance record is not found
             return response()->json(['error' => 'Attendance record not found.'], 404);
         } catch (\Exception $e) {
@@ -533,7 +544,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function getUserLocationsForDate(Request $request): \Illuminate\Http\JsonResponse
+    public function getUserLocationsForDate(Request $request): JsonResponse
     {
         try {
             $selectedDate = Carbon::parse($request->query('date'))->format('Y-m-d');
@@ -552,7 +563,7 @@ class AttendanceController extends Controller
 
             // Fetch ALL active attendance types with geo_polygon or route_waypoint configs
             // This ensures boundaries are always shown on the map regardless of who punched in
-            $allAttendanceTypes = \Aero\HRM\Models\AttendanceType::where('is_active', true)
+            $allAttendanceTypes = AttendanceType::where('is_active', true)
                 ->whereNotNull('config')
                 ->get();
 
@@ -626,7 +637,7 @@ class AttendanceController extends Controller
                 'locations' => $locations,
                 'attendance_type_configs' => array_values($attendanceTypeConfigs),
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error fetching user locations: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -639,7 +650,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function getCurrentUserPunch(): \Illuminate\Http\JsonResponse
+    public function getCurrentUserPunch(): JsonResponse
     {
         $today = Carbon::today();
 
@@ -696,7 +707,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function getAllUsersAttendanceForDate(Request $request): \Illuminate\Http\JsonResponse
+    public function getAllUsersAttendanceForDate(Request $request): JsonResponse
     {        // Get the date from the query parameter, defaulting to today's date if none is provided
         $selectedDate = Carbon::parse($request->query('date'))->format('Y-m-d');
         $perPage = (int) $request->get('perPage', 10); // Default to 10 users per page
@@ -855,7 +866,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function getCurrentUserAttendanceForDate(Request $request): \Illuminate\Http\JsonResponse
+    public function getCurrentUserAttendanceForDate(Request $request): JsonResponse
     {
         $perPage = (int) $request->get('perPage', 10); // Default to 10 items per page
         $page = $request->get('employee') != '' ? 1 : (int) $request->get('page', 1);
@@ -972,7 +983,7 @@ class AttendanceController extends Controller
     /**
      * Get the client's IP address
      */
-    public function getClientIp(Request $request): \Illuminate\Http\JsonResponse
+    public function getClientIp(Request $request): JsonResponse
     {
         $ip = $request->ip();
 
@@ -996,7 +1007,7 @@ class AttendanceController extends Controller
     /**
      * Get present users attendance for a specific date
      */
-    public function getPresentUsersForDate(Request $request): \Illuminate\Http\JsonResponse
+    public function getPresentUsersForDate(Request $request): JsonResponse
     {
         $selectedDate = Carbon::parse($request->query('date'))->format('Y-m-d');
         $perPage = (int) $request->get('perPage', 10);
@@ -1129,7 +1140,7 @@ class AttendanceController extends Controller
     /**
      * Get absent users for a specific date
      */
-    public function getAbsentUsersForDate(Request $request): \Illuminate\Http\JsonResponse
+    public function getAbsentUsersForDate(Request $request): JsonResponse
     {
         $selectedDate = Carbon::parse($request->query('date'))->format('Y-m-d');
 
@@ -1177,7 +1188,7 @@ class AttendanceController extends Controller
         }
     }
 
-    public function getMonthlyAttendanceStats(Request $request): \Illuminate\Http\JsonResponse
+    public function getMonthlyAttendanceStats(Request $request): JsonResponse
     {
         try {
             // 1. SETUP & SCOPE DETECTION
@@ -1445,7 +1456,7 @@ class AttendanceController extends Controller
      * Get attendance calendar data for a specific month
      * Returns daily attendance status for calendar view
      */
-    public function getCalendarData(Request $request): \Illuminate\Http\JsonResponse
+    public function getCalendarData(Request $request): JsonResponse
     {
         try {
             $userId = $request->get('user_id') ?? Auth::id();
@@ -1578,7 +1589,7 @@ class AttendanceController extends Controller
      * Check for updates to user locations
      *
      * @param  string  $date  The date to check for updates (Y-m-d format)
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function checkForLocationUpdates($date)
     {
@@ -1597,11 +1608,11 @@ class AttendanceController extends Controller
             }
 
             // Get the most recent update timestamp for locations on the given date
-            $lastUpdate = \Aero\HRM\Models\Attendance::whereDate('date', $date)
+            $lastUpdate = Attendance::whereDate('date', $date)
                 ->max('updated_at');
 
             // Convert the timestamp to a Carbon instance if it exists
-            $lastUpdateTime = $lastUpdate ? \Carbon\Carbon::parse($lastUpdate) : null;
+            $lastUpdateTime = $lastUpdate ? Carbon::parse($lastUpdate) : null;
 
             return response()->json([
                 'success' => true,
@@ -1629,7 +1640,7 @@ class AttendanceController extends Controller
      * Mark user as present for a specific date (Admin function)
      * This creates attendance record with punch in/out for users who were absent
      */
-    public function markAsPresent(Request $request): \Illuminate\Http\JsonResponse
+    public function markAsPresent(Request $request): JsonResponse
     {
         try {
             // Enhanced validation to include punch data for consistency
@@ -1712,7 +1723,7 @@ class AttendanceController extends Controller
                 ],
             ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Validation failed.',
@@ -1735,7 +1746,7 @@ class AttendanceController extends Controller
     /**
      * Mark multiple users as present (Bulk operation)
      */
-    public function bulkMarkAsPresent(Request $request): \Illuminate\Http\JsonResponse
+    public function bulkMarkAsPresent(Request $request): JsonResponse
     {
         try {
             $validatedData = $request->validate([
@@ -1840,7 +1851,7 @@ class AttendanceController extends Controller
                 throw $e;
             }
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Validation failed.',
@@ -1863,7 +1874,7 @@ class AttendanceController extends Controller
      *
      * @param  string  $date  The date to check for updates (Y-m-d format)
      * @param  string  $month  The month to check for updates (YYYY-MM format)
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function checkTimesheetUpdates($date, $month = null)
     {
@@ -1887,7 +1898,7 @@ class AttendanceController extends Controller
                 ], 400);
             }
 
-            $query = \Aero\HRM\Models\Attendance::query();
+            $query = Attendance::query();
 
             // Check for updates on the specific date
             $query->whereDate('date', $date);
@@ -1904,13 +1915,13 @@ class AttendanceController extends Controller
             $lastUpdate = $query->max('updated_at');
 
             // Also check if there are any records for the date
-            $hasRecords = \Aero\HRM\Models\Attendance::whereDate('date', $date)->exists();
+            $hasRecords = Attendance::whereDate('date', $date)->exists();
 
             return response()->json([
                 'success' => true,
                 'has_updates' => $lastUpdate !== null,
                 'has_records' => $hasRecords,
-                'last_updated' => $lastUpdate ? \Carbon\Carbon::parse($lastUpdate)->toIso8601String() : null,
+                'last_updated' => $lastUpdate ? Carbon::parse($lastUpdate)->toIso8601String() : null,
             ]);
         } catch (\Exception $e) {
             Log::error('Error checking for timesheet updates: '.$e->getMessage());
@@ -1927,7 +1938,7 @@ class AttendanceController extends Controller
     {
         $date = $request->input('date');
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new AttendanceExport($date), 'Daily_Timesheet_'.date('Y_m_d', strtotime($date)).'.xlsx');
+        return Excel::download(new AttendanceExport($date), 'Daily_Timesheet_'.date('Y_m_d', strtotime($date)).'.xlsx');
     }
 
     public function exportPdf(Request $request)
@@ -2022,5 +2033,122 @@ class AttendanceController extends Controller
         $fileName = "DBEDC_Attendance_{$monthName}.pdf";
 
         return $pdf->download($fileName);
+    }
+
+    // -------------------------------------------------------------------------
+    // H-4 Attendance: Daily / Monthly views + Clock In/Out + Clock Status
+    // -------------------------------------------------------------------------
+
+    public function daily(Request $request): Response
+    {
+        Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.view');
+
+        $date = $request->date('date', now())->toDateString();
+        $records = Attendance::query()
+            ->with(['employee.user:id,name'])
+            ->whereDate('date', $date)
+            ->when($request->integer('department_id'), fn ($q, $id) => $q->whereHas('employee', fn ($eq) => $eq->where('department_id', $id)))
+            ->paginate(50)
+            ->withQueryString();
+
+        return Inertia::render('HRM/Attendance/Admin/Daily', [
+            'date' => $date,
+            'records' => $records,
+            'filters' => ['date' => $date, 'department_id' => $request->integer('department_id')],
+        ]);
+    }
+
+    public function monthly(Request $request): Response
+    {
+        Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.view');
+
+        $month = $request->date('month', now())->startOfMonth();
+
+        $days = collect();
+        $cursor = $month->copy();
+        $monthEnd = $month->copy()->endOfMonth();
+        while ($cursor <= $monthEnd) {
+            $days->push($cursor->toDateString());
+            $cursor->addDay();
+        }
+
+        $records = Attendance::query()
+            ->with('employee.user:id,name')
+            ->whereBetween('date', [$month->toDateString(), $monthEnd->toDateString()])
+            ->get()
+            ->groupBy('employee_id');
+
+        $employees = Employee::with('user:id,name')->get();
+
+        $grid = [
+            'days' => $days->values(),
+            'rows' => $employees->map(fn ($emp) => [
+                'employee_id' => $emp->id,
+                'name' => $emp->user?->name ?? "#{$emp->id}",
+                'cells' => $days->map(function ($day) use ($records, $emp) {
+                    $rec = $records->get($emp->id)?->firstWhere('date', $day);
+                    if (! $rec) {
+                        return 'A';
+                    }
+                    if ($rec->is_late) {
+                        return 'L';
+                    }
+
+                    return 'P';
+                })->values(),
+            ])->values(),
+        ];
+
+        return Inertia::render('HRM/Attendance/Admin/Monthly', [
+            'month' => $month->toDateString(),
+            'grid' => $grid,
+            'filters' => ['month' => $month->format('Y-m')],
+        ]);
+    }
+
+    public function clockIn(Request $request, AttendanceClockService $clock): RedirectResponse
+    {
+        Gate::authorize('hrmac', 'hrm.attendance.my-attendance.view');
+
+        $employee = $request->user()->employee;
+        abort_unless($employee, 403, 'No employee profile found.');
+
+        $record = $clock->clockIn($employee, $request->input('source', 'web'));
+
+        return back()->with('success', "Clocked in at {$record->punchin->format('H:i')}.");
+    }
+
+    public function clockOut(Request $request, AttendanceClockService $clock): RedirectResponse
+    {
+        Gate::authorize('hrmac', 'hrm.attendance.my-attendance.view');
+
+        $employee = $request->user()->employee;
+        abort_unless($employee, 403, 'No employee profile found.');
+
+        $record = $clock->clockOut($employee);
+
+        return back()->with('success', "Clocked out at {$record->punchout->format('H:i')}.");
+    }
+
+    public function clockStatus(Request $request): Response
+    {
+        Gate::authorize('hrmac', 'hrm.attendance.my-attendance.view');
+
+        $employee = $request->user()->employee;
+
+        $todayRecord = $employee
+            ? Attendance::query()
+                ->where('employee_id', $employee->id)
+                ->whereDate('date', today())
+                ->first()
+            : null;
+
+        return Inertia::render('HRM/Attendance/ClockIn', [
+            'today_record' => $todayRecord,
+            'employee' => $employee
+                ? array_merge($employee->only(['id', 'employee_code']), ['name' => $employee->user?->name])
+                : null,
+            'server_time' => now()->format('H:i:s'),
+        ]);
     }
 }
