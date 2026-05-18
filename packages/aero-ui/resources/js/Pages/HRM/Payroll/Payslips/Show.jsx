@@ -25,8 +25,7 @@ export default function PayslipsShow({ payslip }) {
     {
       key: 'amount', label: 'Amount',
       render: row => (
-        // Dynamic data-driven color: deductions shown in danger/red — inline style IS allowed per spec
-        <span style={{ color: row.kind === 'deduction' ? 'var(--aeos-destructive)' : undefined }}>
+        <span className={row.kind === 'deduction' ? 'text-danger' : ''}>
           {row.kind === 'deduction' ? '−' : ''}
           {Number(row.amount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </span>
@@ -36,29 +35,6 @@ export default function PayslipsShow({ payslip }) {
 
   return (
     <>
-      <style>{`
-        .payslip-header {
-          padding-bottom: 1.25rem;
-          border-bottom: 1px solid var(--aeos-divider);
-          margin-bottom: 1.5rem;
-        }
-        .payslip-meta-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-        .payslip-meta-item {}
-        .payslip-totals {
-          border-top: 2px solid var(--aeos-divider);
-          padding-top: 1rem;
-          margin-top: 0.5rem;
-        }
-        .payslip-bank {
-          padding: 1rem 1.25rem;
-        }
-      `}</style>
-
       <VStack gap={6}>
         {/* Header */}
         <div className="payslip-header">
@@ -79,14 +55,14 @@ export default function PayslipsShow({ payslip }) {
               </VStack>
             </Box>
             <HStack gap={2}>
-              <a
-                className="aeos-btn aeos-btn-soft"
+              <Button
+                as="a"
                 href={route('hrm.payroll.payslips.download', payslip.id)}
+                intent="soft"
                 target="_blank"
-                rel="noreferrer"
               >
                 Download PDF
-              </a>
+              </Button>
               <Button
                 intent="ghost"
                 leftIcon="arrowLeft"
@@ -101,23 +77,23 @@ export default function PayslipsShow({ payslip }) {
         {/* Period / meta */}
         <Card>
           <div className="payslip-meta-grid">
-            <div className="payslip-meta-item">
+            <div>
               <Eyebrow tone="secondary">Period</Eyebrow>
               <Mono>{run.period_start} &rarr; {run.period_end}</Mono>
             </div>
-            <div className="payslip-meta-item">
+            <div>
               <Eyebrow tone="secondary">Gross Pay</Eyebrow>
               <Text size="lg">
                 {Number(payslip.gross ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Text>
             </div>
-            <div className="payslip-meta-item">
+            <div>
               <Eyebrow tone="secondary">Total Deductions</Eyebrow>
               <Text size="lg">
                 {Number(payslip.deductions_total ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Text>
             </div>
-            <div className="payslip-meta-item">
+            <div>
               <Eyebrow tone="secondary">Tax Deducted</Eyebrow>
               <Text>
                 {Number(payslip.tax ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}

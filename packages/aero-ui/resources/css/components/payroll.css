@@ -1,0 +1,129 @@
+/* ── Payroll page layouts ────────────────────────────────────── */
+
+/* Page header */
+.payroll-page-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--aeos-divider);
+  margin-bottom: 1.5rem;
+}
+
+/* Payslip header */
+.payslip-header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--aeos-divider);
+  margin-bottom: 1.5rem;
+}
+
+/* Component grid (auto-fill responsive grid) */
+.payroll-component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+/* Component item (flex, selectable, bordered) */
+.payroll-component-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--aeos-r-md);
+  border: 1px solid var(--aeos-divider);
+  cursor: pointer;
+  background: var(--aeos-bg-surface);
+  transition: all 0.15s ease;
+}
+
+.payroll-component-item:hover {
+  border-color: var(--aeos-primary);
+  background: color-mix(in srgb, var(--aeos-primary) 5%, transparent);
+}
+
+.payroll-component-item.selected {
+  border-color: var(--aeos-primary);
+  background: color-mix(in srgb, var(--aeos-primary) 8%, transparent);
+}
+
+.payroll-component-item input[type="checkbox"] {
+  accent-color: var(--aeos-primary);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Employee list (scrollable, bordered) */
+.payroll-employee-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--aeos-divider);
+  border-radius: var(--aeos-r-md);
+}
+
+.payroll-employee-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--aeos-divider);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.payroll-employee-item:last-child {
+  border-bottom: none;
+}
+
+.payroll-employee-item:hover {
+  background: color-mix(in srgb, var(--aeos-primary) 5%, transparent);
+}
+
+.payroll-employee-item.selected {
+  background: color-mix(in srgb, var(--aeos-primary) 8%, transparent);
+}
+
+.payroll-employee-item input[type="checkbox"] {
+  accent-color: var(--aeos-primary);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Employee select-all row */
+.payroll-select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-bottom: 1px solid var(--aeos-divider);
+  background: var(--aeos-bg-surface);
+}
+
+.payroll-select-all input[type="checkbox"] {
+  accent-color: var(--aeos-primary);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Payslip meta grid */
+.payslip-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Payslip totals */
+.payslip-totals {
+  border-top: 2px solid var(--aeos-divider);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Payslip bank details */
+.payslip-bank {
+  padding: 1rem 1.25rem;
+}

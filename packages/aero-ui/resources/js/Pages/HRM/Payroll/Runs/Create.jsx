@@ -47,63 +47,9 @@ export default function RunsCreate({ employees }) {
 
   return (
     <>
-      <style>{`
-        .pr-create-header {
-          padding-bottom: 1rem;
-          border-bottom: 1px solid var(--aeos-divider);
-          margin-bottom: 1.5rem;
-        }
-        .pr-employee-search {
-          margin-bottom: 0.5rem;
-        }
-        .pr-employee-list {
-          max-height: 320px;
-          overflow-y: auto;
-          border: 1px solid var(--aeos-divider);
-          border-radius: var(--aeos-r-md);
-        }
-        .pr-employee-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.625rem 0.875rem;
-          border-bottom: 1px solid var(--aeos-divider);
-          cursor: pointer;
-        }
-        .pr-employee-item:last-child {
-          border-bottom: none;
-        }
-        .pr-employee-item:hover {
-          background: color-mix(in srgb, var(--aeos-primary) 5%, transparent);
-        }
-        .pr-employee-item.selected {
-          background: color-mix(in srgb, var(--aeos-primary) 8%, transparent);
-        }
-        .pr-employee-item input[type="checkbox"] {
-          accent-color: var(--aeos-primary);
-          width: 1rem;
-          height: 1rem;
-          flex-shrink: 0;
-        }
-        .pr-select-all {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 0.875rem;
-          border-bottom: 1px solid var(--aeos-divider);
-          background: var(--aeos-bg-surface);
-        }
-        .pr-select-all input[type="checkbox"] {
-          accent-color: var(--aeos-primary);
-          width: 1rem;
-          height: 1rem;
-          flex-shrink: 0;
-        }
-      `}</style>
-
       <form onSubmit={submit}>
         <VStack gap={6}>
-          <div className="pr-create-header">
+          <div className="payroll-page-header">
             <HStack gap={2} align="center">
               <Box grow>
                 <Text size="lg">New Payroll Run</Text>
@@ -155,7 +101,7 @@ export default function RunsCreate({ employees }) {
             required
           >
             <VStack gap={2}>
-              <div className="pr-employee-search">
+              <div className="mb-2">
                 <Input
                   type="search"
                   value={search}
@@ -164,8 +110,8 @@ export default function RunsCreate({ employees }) {
                   leftIcon="magnifyingGlass"
                 />
               </div>
-              <div className="pr-employee-list">
-                <div className="pr-select-all">
+              <div className="payroll-employee-list">
+                <div className="payroll-select-all">
                   <input
                     type="checkbox"
                     id="pr-select-all"
@@ -181,7 +127,7 @@ export default function RunsCreate({ employees }) {
                 {filtered.map(emp => (
                   <label
                     key={emp.id}
-                    className={`pr-employee-item${data.employee_ids.includes(emp.id) ? ' selected' : ''}`}
+                    className={`payroll-employee-item${data.employee_ids.includes(emp.id) ? ' selected' : ''}`}
                   >
                     <input
                       type="checkbox"
