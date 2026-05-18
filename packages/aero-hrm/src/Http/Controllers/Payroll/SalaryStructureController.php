@@ -43,7 +43,7 @@ class SalaryStructureController extends Controller
 
     public function create(): Response
     {
-        Gate::authorize('hrmac', 'hrm.payroll.salary-structures.view');
+        Gate::authorize('hrmac', 'hrm.payroll.salary-structures.create');
 
         return Inertia::render('HRM/Payroll/Structures/Create', [
             'components' => PayComponent::where('active', true)

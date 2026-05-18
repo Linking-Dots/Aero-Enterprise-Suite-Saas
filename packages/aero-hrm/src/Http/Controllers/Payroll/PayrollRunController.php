@@ -101,6 +101,13 @@ class PayrollRunController extends Controller
 
         $run->load(['payslips.employee.user:id,name']);
 
+        $this->audit->logAccess(
+            event: AuditEventType::SENSITIVE_VIEWED->value,
+            action: 'viewed',
+            subject: $run,
+            description: "Payroll run #{$run->id} ({$run->label}) viewed — {$run->payslips->count()} payslips exposed",
+        );
+
         return Inertia::render('HRM/Payroll/Runs/Show', [
             'run'      => [
                 'id'           => $run->id,

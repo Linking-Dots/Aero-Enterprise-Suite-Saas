@@ -37,4 +37,9 @@ class TaxBracket extends TenantModel
         'rate'           => 'decimal:4',
         'effective_year' => 'integer',
     ];
+
+    protected static function newFactory(): \Aero\HRM\Database\Factories\TaxBracketFactory
+    {
+        return \Aero\HRM\Database\Factories\TaxBracketFactory::new();
+    }
 }
