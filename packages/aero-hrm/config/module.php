@@ -1006,6 +1006,25 @@ return [
                         ['code' => 'delete', 'name' => 'Delete Improvement Plan'],
                     ],
                 ],
+                [
+                    'code' => 'goals',
+                    'name' => 'Goals',
+                    'type' => 'page',
+                    'route' => '/hrm/performance/goals',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Goals'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete Goals'],
+                    ],
+                ],
+                [
+                    'code' => 'skill-matrix',
+                    'name' => 'Skill Matrix',
+                    'type' => 'page',
+                    'route' => '/hrm/performance/skills',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Skill Matrix'],
+                    ],
+                ],
             ],
         ],
 
@@ -1076,6 +1095,16 @@ return [
                     'actions' => [
                         ['code' => 'generate', 'name' => 'Generate Certificate'],
                         ['code' => 'download', 'name' => 'Download Certificate'],
+                    ],
+                ],
+                [
+                    'code' => 'training-feedback',
+                    'name' => 'Training Feedback',
+                    'type' => 'page',
+                    'route' => '/hrm/training',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Feedback'],
+                        ['code' => 'submit', 'name' => 'Submit Feedback'],
                     ],
                 ],
             ],
@@ -1754,6 +1783,56 @@ return [
                         ['code' => 'update', 'name' => 'Update Settings'],
                     ],
                 ],
+                [
+                    'code' => 'general-settings',
+                    'name' => 'General HR Settings',
+                    'type' => 'page',
+                    'route' => '/hrm/settings/general',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Update'],
+                    ],
+                ],
+                [
+                    'code' => 'leave-settings',
+                    'name' => 'Leave Settings',
+                    'type' => 'page',
+                    'route' => '/hrm/settings/leave',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Update'],
+                    ],
+                ],
+                [
+                    'code' => 'attendance-settings',
+                    'name' => 'Attendance Settings',
+                    'type' => 'page',
+                    'route' => '/hrm/settings/attendance',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Update'],
+                    ],
+                ],
+                [
+                    'code' => 'task-templates',
+                    'name' => 'Task Templates',
+                    'type' => 'page',
+                    'route' => '/hrm/settings/task-templates',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Manage'],
+                    ],
+                ],
+                [
+                    'code' => 'holidays',
+                    'name' => 'Holiday Calendar',
+                    'type' => 'page',
+                    'route' => '/hrm/settings/holidays',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Manage'],
+                    ],
+                ],
             ],
         ],
 
@@ -1820,6 +1899,101 @@ return [
                     'route' => '/hrm/ai-analytics/enps',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View eNPS Dashboard'],
+                    ],
+                ],
+            ],
+        ],
+
+        // 2.28 Benefits
+        [
+            'code' => 'benefits',
+            'name' => 'Benefits',
+            'description' => 'Benefits catalog, enrollment periods, open enrollment, and employee benefits',
+            'icon' => 'GiftIcon',
+            'route' => '/hrm/benefits',
+            'priority' => 26,
+            'components' => [
+                [
+                    'code' => 'benefit-catalog',
+                    'name' => 'Benefits Catalog',
+                    'type' => 'page',
+                    'route' => '/hrm/benefits/catalog',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete'],
+                    ],
+                ],
+                [
+                    'code' => 'enrollment-periods',
+                    'name' => 'Enrollment Periods',
+                    'type' => 'page',
+                    'route' => '/hrm/benefits/enrollment-periods',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Create/Edit'],
+                        ['code' => 'activate', 'name' => 'Activate Period'],
+                    ],
+                ],
+                [
+                    'code' => 'open-enrollment',
+                    'name' => 'Open Enrollment',
+                    'type' => 'page',
+                    'route' => '/hrm/benefits/open-enrollment',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Enroll'],
+                    ],
+                ],
+                [
+                    'code' => 'enrollments',
+                    'name' => 'Employee Enrollments',
+                    'type' => 'page',
+                    'route' => '/hrm/benefits/enrollments',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View All Enrollments'],
+                    ],
+                ],
+            ],
+        ],
+
+        // 2.29 Events & Announcements
+        [
+            'code' => 'events',
+            'name' => 'Events & Announcements',
+            'description' => 'Company events, registrations, and announcements',
+            'icon' => 'CalendarDaysIcon',
+            'route' => '/hrm/events',
+            'priority' => 27,
+            'components' => [
+                [
+                    'code' => 'events-list',
+                    'name' => 'Events',
+                    'type' => 'page',
+                    'route' => '/hrm/events',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Create/Edit/Delete'],
+                        ['code' => 'publish', 'name' => 'Publish'],
+                    ],
+                ],
+                [
+                    'code' => 'registrations',
+                    'name' => 'Event Registrations',
+                    'type' => 'page',
+                    'route' => '/hrm/events/{id}/registrations',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Manage Registrations'],
+                    ],
+                ],
+                [
+                    'code' => 'announcements',
+                    'name' => 'Announcements',
+                    'type' => 'page',
+                    'route' => '/hrm/announcements',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View'],
+                        ['code' => 'edit', 'name' => 'Create/Edit'],
                     ],
                 ],
             ],

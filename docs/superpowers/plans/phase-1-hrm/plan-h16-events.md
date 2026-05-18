@@ -108,16 +108,16 @@ class Event extends TenantModel
 
 ```php
 Route::middleware(['auth','tenant'])->prefix('hrm')->name('hrm.')->group(function () {
-    Route::middleware('hrmac:hrm.events.view')->group(function () {
+    Route::middleware('hrmac:hrm.events.events-list.view')->group(function () {
         Route::get('events',          [EventController::class,'index'])->name('events.index');
         Route::get('events/{event}',  [EventController::class,'show'])->name('events.show');
     });
-    Route::middleware('hrmac:hrm.events.edit')->group(function () {
+    Route::middleware('hrmac:hrm.events.events-list.edit')->group(function () {
         Route::get('events/create', [EventController::class,'create'])->name('events.create');
         Route::post('events',       [EventController::class,'store'])->name('events.store');
         Route::put('events/{event}',[EventController::class,'update'])->name('events.update');
     });
-    Route::middleware('hrmac:hrm.events.publish')->post('events/{event}/publish',
+    Route::middleware('hrmac:hrm.events.events-list.publish')->post('events/{event}/publish',
         [EventController::class,'publish'])->name('events.publish');
 
     Route::middleware('hrmac:hrm.events.registrations.view')->get('events/{event}/registrations',
@@ -128,9 +128,9 @@ Route::middleware(['auth','tenant'])->prefix('hrm')->name('hrm.')->group(functio
         Route::get('events/registrations/{registration}/token',[EventRegistrationController::class,'printToken'])->name('events.registrations.token');
     });
 
-    Route::middleware('hrmac:hrm.announcements.view')->get('announcements',
+    Route::middleware('hrmac:hrm.events.announcements.view')->get('announcements',
         [AnnouncementController::class,'index'])->name('announcements.index');
-    Route::middleware('hrmac:hrm.announcements.edit')->post('announcements',
+    Route::middleware('hrmac:hrm.events.announcements.edit')->post('announcements',
         [AnnouncementController::class,'store'])->name('announcements.store');
     Route::post('announcements/{announcement}/read',
         [AnnouncementController::class,'markRead'])->name('announcements.read');
@@ -321,7 +321,7 @@ import { router } from '@inertiajs/react';
 import { Card, Table, Button, Chip } from '@aero/ui';
 
 export default function EventShow({ event, registrations, can }) {
-    const publish = () => router.post(route('hrm.events.publish', event.slug));
+    const publish = () => router.post(route('hrm.events.events-list.publish', event.slug));
     return (
         <div className="p-6 space-y-4">
             <div className="flex justify-between">
@@ -414,7 +414,7 @@ class EventTest extends TestCase
 
     public function test_can_create_event(): void
     {
-        $this->actingAsTenantUser(['hrm.events.edit']);
+        $this->actingAsTenantUser(['hrm.events.events-list.edit']);
         $this->post(route('hrm.events.store'), [
             'title' => 'Summit',
             'starts_at' => '2026-06-01 09:00',
@@ -425,9 +425,9 @@ class EventTest extends TestCase
 
     public function test_can_publish_event_and_audit_fires(): void
     {
-        $this->actingAsTenantUser(['hrm.events.publish']);
+        $this->actingAsTenantUser(['hrm.events.events-list.publish']);
         $event = Event::factory()->create(['status'=>'draft']);
-        $this->post(route('hrm.events.publish', $event->slug))->assertRedirect();
+        $this->post(route('hrm.events.events-list.publish', $event->slug))->assertRedirect();
         $this->assertSame('published', $event->fresh()->status);
         $this->assertDatabaseHas('audit_logs', ['event' => 'EVENT_PUBLISHED']);
     }

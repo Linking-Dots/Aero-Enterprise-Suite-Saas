@@ -87,32 +87,32 @@ class SafetyIncident extends TenantModel
 ```php
 Route::middleware(['auth','tenant'])->prefix('hrm/safety')->name('hrm.safety.')->group(function () {
     Route::get('dashboard', [SafetyDashboardController::class, 'index'])
-        ->middleware('hrmac:hrm.safety.dashboard.view')->name('dashboard');
+        ->middleware('hrmac:hrm.safety.safety-incidents.view')->name('dashboard');
 
-    Route::middleware('hrmac:hrm.safety.incidents.view')->group(function () {
+    Route::middleware('hrmac:hrm.safety.safety-incidents.view')->group(function () {
         Route::get('incidents',                 [SafetyIncidentController::class, 'index'])->name('incidents.index');
         Route::get('incidents/{incident}',      [SafetyIncidentController::class, 'show'])->name('incidents.show');
     });
-    Route::middleware('hrmac:hrm.safety.incidents.edit')->group(function () {
+    Route::middleware('hrmac:hrm.safety.safety-incidents.update')->group(function () {
         Route::get('incidents/create',          [SafetyIncidentController::class, 'create'])->name('incidents.create');
         Route::post('incidents',                [SafetyIncidentController::class, 'store'])->name('incidents.store');
     });
-    Route::middleware('hrmac:hrm.safety.incidents.investigate')->group(function () {
+    Route::middleware('hrmac:hrm.safety.safety-incidents.resolve')->group(function () {
         Route::post('incidents/{incident}/investigate', [SafetyIncidentController::class, 'investigate'])->name('incidents.investigate');
         Route::post('incidents/{incident}/close',       [SafetyIncidentController::class, 'close'])->name('incidents.close');
     });
 
-    Route::middleware('hrmac:hrm.safety.inspections.view')->group(function () {
+    Route::middleware('hrmac:hrm.safety.safety-inspections.view')->group(function () {
         Route::get('inspections',               [SafetyInspectionController::class, 'index'])->name('inspections.index');
         Route::get('inspections/{inspection}',  [SafetyInspectionController::class, 'show'])->name('inspections.show');
     });
-    Route::middleware('hrmac:hrm.safety.inspections.edit')->group(function () {
+    Route::middleware('hrmac:hrm.safety.safety-inspections.update')->group(function () {
         Route::post('inspections',                              [SafetyInspectionController::class, 'store'])->name('inspections.store');
         Route::post('inspections/{inspection}/findings',        [SafetyInspectionController::class, 'submitFindings'])->name('inspections.findings');
     });
 
-    Route::middleware('hrmac:hrm.safety.training.view')->get('training', [SafetyTrainingController::class, 'index'])->name('training.index');
-    Route::middleware('hrmac:hrm.safety.training.edit')->group(function () {
+    Route::middleware('hrmac:hrm.safety.safety-training.view')->get('training', [SafetyTrainingController::class, 'index'])->name('training.index');
+    Route::middleware('hrmac:hrm.safety.safety-training.update')->group(function () {
         Route::post('training',                       [SafetyTrainingController::class, 'store'])->name('training.store');
         Route::post('training/{assignment}/complete', [SafetyTrainingController::class, 'complete'])->name('training.complete');
     });
@@ -360,7 +360,7 @@ class SafetyIncidentTest extends TestCase
 
     public function test_admin_can_list_incidents(): void
     {
-        $this->actingAsTenantUser(['hrm.safety.incidents.view']);
+        $this->actingAsTenantUser(['hrm.safety.safety-incidents.view']);
         SafetyIncident::factory()->count(3)->create();
         $this->get(route('hrm.safety.incidents.index'))
             ->assertOk()->assertInertia(fn ($p) => $p->component('HRM/Safety/Incidents/Index'));
@@ -374,7 +374,7 @@ class SafetyIncidentTest extends TestCase
 
     public function test_can_report_incident_and_audit_fires(): void
     {
-        $this->actingAsTenantUser(['hrm.safety.incidents.edit']);
+        $this->actingAsTenantUser(['hrm.safety.safety-incidents.update']);
         $payload = [
             'occurred_at' => now()->toDateTimeString(),
             'type' => 'injury', 'severity' => 'high',
@@ -387,7 +387,7 @@ class SafetyIncidentTest extends TestCase
 
     public function test_can_close_incident(): void
     {
-        $this->actingAsTenantUser(['hrm.safety.incidents.investigate']);
+        $this->actingAsTenantUser(['hrm.safety.safety-incidents.resolve']);
         $incident = SafetyIncident::factory()->create(['status' => 'investigating']);
         $this->post(route('hrm.safety.incidents.close', $incident))->assertRedirect();
         $this->assertSame('closed', $incident->fresh()->status);
@@ -395,7 +395,7 @@ class SafetyIncidentTest extends TestCase
 
     public function test_index_filters_by_severity(): void
     {
-        $this->actingAsTenantUser(['hrm.safety.incidents.view']);
+        $this->actingAsTenantUser(['hrm.safety.safety-incidents.view']);
         SafetyIncident::factory()->create(['severity' => 'critical']);
         SafetyIncident::factory()->create(['severity' => 'low']);
         $this->get(route('hrm.safety.incidents.index', ['severity' => 'critical']))

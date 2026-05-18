@@ -528,7 +528,7 @@ class ReviewCycleController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('hrmac', 'hrm.performance.cycles.view');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.view');
 
         $cycles = ReviewCycle::with('template:id,name')
             ->latest('starts_on')
@@ -543,7 +543,7 @@ class ReviewCycleController extends Controller
 
     public function create()
     {
-        Gate::authorize('hrmac', 'hrm.performance.cycles.edit');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.update');
 
         return Inertia::render('HRM/Performance/Cycles/Create', [
             'templates' => ReviewTemplate::where('active', true)->select('id', 'name')->get(),
@@ -553,7 +553,7 @@ class ReviewCycleController extends Controller
 
     public function store(Request $request, ReviewCycleService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.performance.cycles.edit');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.update');
 
         $data = $request->validate([
             'name'         => 'required|string|max:120',
@@ -594,7 +594,7 @@ class PerformanceReviewController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('hrmac', 'hrm.performance.reviews.view');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.view');
 
         $reviews = PerformanceReview::with(['employee:id,first_name,last_name', 'cycle:id,name'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
@@ -610,7 +610,7 @@ class PerformanceReviewController extends Controller
 
     public function show(PerformanceReview $review)
     {
-        Gate::authorize('hrmac', 'hrm.performance.reviews.view');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.view');
 
         return Inertia::render('HRM/Performance/Reviews/Show', [
             'review'   => $review->load('employee', 'cycle.template'),
@@ -620,7 +620,7 @@ class PerformanceReviewController extends Controller
 
     public function submitSelf(Request $request, PerformanceReview $review, ReviewSubmissionService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.performance.reviews.edit');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.update');
         $data = $request->validate(['answers' => 'required|array']);
         $svc->submitSelf($review, $data['answers']);
         return back()->with('success', 'Self-assessment submitted.');
@@ -628,7 +628,7 @@ class PerformanceReviewController extends Controller
 
     public function submitManager(Request $request, PerformanceReview $review, ReviewSubmissionService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.performance.reviews.edit');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.update');
         $data = $request->validate(['answers' => 'required|array']);
         $svc->submitManager($review, $data['answers']);
         return back()->with('success', 'Manager assessment submitted.');
@@ -636,7 +636,7 @@ class PerformanceReviewController extends Controller
 
     public function finalize(Request $request, PerformanceReview $review, ReviewSubmissionService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.performance.reviews.finalize');
+        Gate::authorize('hrmac', 'hrm.performance.appraisal-cycles.update');
         $data = $request->validate([
             'final_rating'  => 'required|numeric|min:1|max:5',
             'final_comment' => 'required|string|max:2000',
@@ -734,29 +734,29 @@ class GoalController extends Controller
 Route::prefix('performance')->name('performance.')->group(function () {
     Route::resource('cycles', ReviewCycleController::class)
         ->only(['index', 'create', 'store'])
-        ->middleware('hrmac:hrm.performance.cycles.view');
+        ->middleware('hrmac:hrm.performance.appraisal-cycles.view');
 
-    Route::get('reviews',                 [PerformanceReviewController::class, 'index'])->middleware('hrmac:hrm.performance.reviews.view')  ->name('reviews.index');
-    Route::get('reviews/{review}',        [PerformanceReviewController::class, 'show'])->middleware('hrmac:hrm.performance.reviews.view')   ->name('reviews.show');
-    Route::post('reviews/{review}/self',  [PerformanceReviewController::class, 'submitSelf'])->middleware('hrmac:hrm.performance.reviews.edit')->name('reviews.self');
-    Route::post('reviews/{review}/manager',[PerformanceReviewController::class, 'submitManager'])->middleware('hrmac:hrm.performance.reviews.edit')->name('reviews.manager');
-    Route::post('reviews/{review}/finalize', [PerformanceReviewController::class, 'finalize'])->middleware('hrmac:hrm.performance.reviews.finalize')->name('reviews.finalize');
+    Route::get('reviews',                 [PerformanceReviewController::class, 'index'])->middleware('hrmac:hrm.performance.appraisal-cycles.view')  ->name('reviews.index');
+    Route::get('reviews/{review}',        [PerformanceReviewController::class, 'show'])->middleware('hrmac:hrm.performance.appraisal-cycles.view')   ->name('reviews.show');
+    Route::post('reviews/{review}/self',  [PerformanceReviewController::class, 'submitSelf'])->middleware('hrmac:hrm.performance.appraisal-cycles.update')->name('reviews.self');
+    Route::post('reviews/{review}/manager',[PerformanceReviewController::class, 'submitManager'])->middleware('hrmac:hrm.performance.appraisal-cycles.update')->name('reviews.manager');
+    Route::post('reviews/{review}/finalize', [PerformanceReviewController::class, 'finalize'])->middleware('hrmac:hrm.performance.appraisal-cycles.update')->name('reviews.finalize');
 
     Route::resource('goals', GoalController::class)->middleware('hrmac:hrm.performance.goals.view');
     Route::post('goals/{goal}/close', [GoalController::class, 'close'])->middleware('hrmac:hrm.performance.goals.edit')->name('goals.close');
 
-    Route::get('feedback-360',  [Feedback360Controller::class, 'index'])->middleware('hrmac:hrm.performance.feedback-360.view')->name('feedback-360.index');
-    Route::post('feedback-360', [Feedback360Controller::class, 'store'])->middleware('hrmac:hrm.performance.feedback-360.edit')->name('feedback-360.store');
-    Route::post('feedback-360/{request}/respond', [Feedback360Controller::class, 'respond'])->middleware('hrmac:hrm.performance.feedback-360.view')->name('feedback-360.respond');
+    Route::get('feedback-360',  [Feedback360Controller::class, 'index'])->middleware('hrmac:hrm.feedback-360.feedback-reviews.view')->name('feedback-360.index');
+    Route::post('feedback-360', [Feedback360Controller::class, 'store'])->middleware('hrmac:hrm.feedback-360.feedback-reviews.update')->name('feedback-360.store');
+    Route::post('feedback-360/{request}/respond', [Feedback360Controller::class, 'respond'])->middleware('hrmac:hrm.feedback-360.feedback-reviews.view')->name('feedback-360.respond');
 
     Route::get('calibration',  [PerformanceCalibrationController::class, 'index'])->middleware('hrmac:hrm.performance.calibration.view')->name('calibration.index');
-    Route::put('calibration/{session}', [PerformanceCalibrationController::class, 'update'])->middleware('hrmac:hrm.performance.calibration.edit')->name('calibration.update');
+    Route::put('calibration/{session}', [PerformanceCalibrationController::class, 'update'])->middleware('hrmac:hrm.performance.calibration.manage')->name('calibration.update');
 
-    Route::get('skills/matrix', [SkillMatrixController::class, 'matrix'])->middleware('hrmac:hrm.performance.skills.view')->name('skills.matrix');
+    Route::get('skills/matrix', [SkillMatrixController::class, 'matrix'])->middleware('hrmac:hrm.performance.skill-matrix.view')->name('skills.matrix');
 
-    Route::get('pip',         [PerformanceImprovementPlanController::class, 'index'])->middleware('hrmac:hrm.performance.pip.view')->name('pip.index');
-    Route::get('pip/create',  [PerformanceImprovementPlanController::class, 'create'])->middleware('hrmac:hrm.performance.pip.edit')->name('pip.create');
-    Route::post('pip',        [PerformanceImprovementPlanController::class, 'store'])->middleware('hrmac:hrm.performance.pip.edit')->name('pip.store');
+    Route::get('pip',         [PerformanceImprovementPlanController::class, 'index'])->middleware('hrmac:hrm.performance.improvement_plans.view')->name('pip.index');
+    Route::get('pip/create',  [PerformanceImprovementPlanController::class, 'create'])->middleware('hrmac:hrm.performance.improvement_plans.update')->name('pip.create');
+    Route::post('pip',        [PerformanceImprovementPlanController::class, 'store'])->middleware('hrmac:hrm.performance.improvement_plans.update')->name('pip.store');
 });
 ```
 
@@ -792,7 +792,7 @@ import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import App from '../../../../App.jsx';
 
 export default function ReviewShow({ review, template }) {
-  const canFinalize = useHRMAC('hrm.performance.reviews.finalize');
+  const canFinalize = useHRMAC('hrm.performance.appraisal-cycles.update');
   const isFinalized = review.status === 'finalized';
 
   const selfForm    = useForm({ answers: review.self_answers    ?? {} });
@@ -1054,7 +1054,7 @@ git commit -m "feat(hrm): Plan H-6 Performance — cycles, reviews, goals, 360 f
 - GoalLifecycleService.close emits GOAL_CLOSED audit event
 - Feedback360Service notifies respondents via Notification
 - PIPService.create emits PIP_CREATED audit event
-- HRMAC paths: hrm.performance.{cycles,reviews,goals,feedback-360,calibration,skills,pip}
+- HRMAC paths: hrm.performance.{appraisal-cycles,goals,calibration,skill-matrix,improvement_plans}, hrm.feedback-360.feedback-reviews
 - 6+ PHPUnit feature tests"
 ```
 

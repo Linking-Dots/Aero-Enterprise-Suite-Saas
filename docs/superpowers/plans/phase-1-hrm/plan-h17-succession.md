@@ -99,26 +99,26 @@ class CareerPath extends TenantModel
 
 ```php
 Route::middleware(['auth','tenant'])->prefix('hrm/succession')->name('hrm.succession.')->group(function () {
-    Route::middleware('hrmac:hrm.succession.career-paths.view')->group(function () {
+    Route::middleware('hrmac:hrm.career-pathing.career-paths.view')->group(function () {
         Route::get('career-paths',         [CareerPathController::class,'index'])->name('career-paths.index');
         Route::get('career-paths/{path}',  [CareerPathController::class,'show'])->name('career-paths.show');
     });
-    Route::middleware('hrmac:hrm.succession.career-paths.edit')->group(function () {
+    Route::middleware('hrmac:hrm.career-pathing.career-paths.update')->group(function () {
         Route::post('career-paths',          [CareerPathController::class,'store'])->name('career-paths.store');
         Route::put('career-paths/{path}',    [CareerPathController::class,'update'])->name('career-paths.update');
     });
 
-    Route::middleware('hrmac:hrm.succession.talent-pool.view')->get('talent-pool', [TalentPoolController::class,'index'])->name('talent-pool.index');
-    Route::middleware('hrmac:hrm.succession.talent-pool.edit')->group(function () {
+    Route::middleware('hrmac:hrm.succession-planning.succession-candidates.view')->get('talent-pool', [TalentPoolController::class,'index'])->name('talent-pool.index');
+    Route::middleware('hrmac:hrm.succession-planning.succession-candidates.manage')->group(function () {
         Route::post('talent-pool',                  [TalentPoolController::class,'add'])->name('talent-pool.add');
         Route::delete('talent-pool/{member}',       [TalentPoolController::class,'remove'])->name('talent-pool.remove');
     });
 
-    Route::middleware('hrmac:hrm.succession.candidates.view')->get('candidates', [SuccessionCandidateController::class,'index'])->name('candidates.index');
-    Route::middleware('hrmac:hrm.succession.candidates.edit')->post('candidates', [SuccessionCandidateController::class,'store'])->name('candidates.store');
+    Route::middleware('hrmac:hrm.succession-planning.succession-candidates.view')->get('candidates', [SuccessionCandidateController::class,'index'])->name('candidates.index');
+    Route::middleware('hrmac:hrm.succession-planning.succession-candidates.manage')->post('candidates', [SuccessionCandidateController::class,'store'])->name('candidates.store');
 
-    Route::middleware('hrmac:hrm.succession.mobility.view')->get('mobility', [TalentMobilityController::class,'index'])->name('mobility.index');
-    Route::middleware('hrmac:hrm.succession.mobility.edit')->post('mobility', [TalentMobilityController::class,'store'])->name('mobility.store');
+    Route::middleware('hrmac:hrm.workforce-planning.talent-marketplace.view')->get('mobility', [TalentMobilityController::class,'index'])->name('mobility.index');
+    Route::middleware('hrmac:hrm.workforce-planning.talent-marketplace.manage')->post('mobility', [TalentMobilityController::class,'store'])->name('mobility.store');
 });
 ```
 
@@ -421,7 +421,7 @@ class SuccessionTest extends TestCase
 
     public function test_can_create_career_path_with_milestones(): void
     {
-        $this->actingAsTenantUser(['hrm.succession.career-paths.edit']);
+        $this->actingAsTenantUser(['hrm.career-pathing.career-paths.update']);
         $this->post(route('hrm.succession.career-paths.store'), [
             'name' => 'Senior Engineer',
             'milestones' => [
@@ -435,7 +435,7 @@ class SuccessionTest extends TestCase
 
     public function test_can_nominate_succession_candidate_and_audit_fires(): void
     {
-        $this->actingAsTenantUser(['hrm.succession.candidates.edit']);
+        $this->actingAsTenantUser(['hrm.succession-planning.succession-candidates.manage']);
         $role = \Aero\Hrm\Models\Designation::factory()->create();
         $emp  = Employee::factory()->create();
         $this->post(route('hrm.succession.candidates.store'), [
@@ -447,7 +447,7 @@ class SuccessionTest extends TestCase
 
     public function test_cannot_nominate_same_employee_twice_for_role(): void
     {
-        $this->actingAsTenantUser(['hrm.succession.candidates.edit']);
+        $this->actingAsTenantUser(['hrm.succession-planning.succession-candidates.manage']);
         $role = \Aero\Hrm\Models\Designation::factory()->create();
         $emp  = Employee::factory()->create();
         SuccessionCandidate::factory()->create([
@@ -460,7 +460,7 @@ class SuccessionTest extends TestCase
 
     public function test_talent_pool_changes_are_audited(): void
     {
-        $this->actingAsTenantUser(['hrm.succession.talent-pool.edit']);
+        $this->actingAsTenantUser(['hrm.succession-planning.succession-candidates.manage']);
         $emp = Employee::factory()->create();
         $this->post(route('hrm.succession.talent-pool.add'), ['employee_id' => $emp->id])
             ->assertRedirect();

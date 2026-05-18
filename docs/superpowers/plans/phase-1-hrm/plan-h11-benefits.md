@@ -40,7 +40,7 @@ Every route is tenant-scoped and HRMAC-gated. Every state transition is audited.
 
 HRMAC paths:
 
-- `hrm.benefits.catalog.view` / `.edit`
+- `hrm.benefits.benefit-catalog.view` / `.edit`
 - `hrm.benefits.enrollment-periods.view` / `.edit` / `.activate`
 - `hrm.benefits.open-enrollment.view` / `.edit`
 - `hrm.benefits.enrollments.view`
@@ -404,11 +404,11 @@ public function index(Request $r): Response
 Route::prefix('hrm/benefits')->name('hrm.benefits.')->middleware(['auth','tenant'])->group(function () {
 
     Route::prefix('catalog')->name('catalog.')->group(function () {
-        Route::get('/',                 [BenefitCatalogController::class,'index'])->middleware('hrmac:hrm.benefits.catalog.view')->name('index');
-        Route::get('create',            [BenefitCatalogController::class,'create'])->middleware('hrmac:hrm.benefits.catalog.edit')->name('create');
-        Route::post('/',                [BenefitCatalogController::class,'store'])->middleware('hrmac:hrm.benefits.catalog.edit')->name('store');
-        Route::put('{benefit}',         [BenefitCatalogController::class,'update'])->middleware('hrmac:hrm.benefits.catalog.edit')->name('update');
-        Route::delete('{benefit}',      [BenefitCatalogController::class,'destroy'])->middleware('hrmac:hrm.benefits.catalog.edit')->name('destroy');
+        Route::get('/',                 [BenefitCatalogController::class,'index'])->middleware('hrmac:hrm.benefits.benefit-catalog.view')->name('index');
+        Route::get('create',            [BenefitCatalogController::class,'create'])->middleware('hrmac:hrm.benefits.benefit-catalog.edit')->name('create');
+        Route::post('/',                [BenefitCatalogController::class,'store'])->middleware('hrmac:hrm.benefits.benefit-catalog.edit')->name('store');
+        Route::put('{benefit}',         [BenefitCatalogController::class,'update'])->middleware('hrmac:hrm.benefits.benefit-catalog.edit')->name('update');
+        Route::delete('{benefit}',      [BenefitCatalogController::class,'destroy'])->middleware('hrmac:hrm.benefits.benefit-catalog.edit')->name('destroy');
     });
 
     Route::prefix('enrollment-periods')->name('enrollment-periods.')->group(function () {
@@ -583,7 +583,7 @@ final class BenefitCatalogTest extends TestCase
 
     public function test_admin_can_create_benefit(): void
     {
-        $this->actingAsUserWithPerms(['hrm.benefits.catalog.edit']);
+        $this->actingAsUserWithPerms(['hrm.benefits.benefit-catalog.edit']);
 
         $this->post(route('hrm.benefits.catalog.store'), [
             'code' => 'HEALTH_PPO',
@@ -601,7 +601,7 @@ final class BenefitCatalogTest extends TestCase
 
     public function test_cannot_delete_benefit_with_enrollments(): void
     {
-        $this->actingAsUserWithPerms(['hrm.benefits.catalog.edit']);
+        $this->actingAsUserWithPerms(['hrm.benefits.benefit-catalog.edit']);
         $b = Benefit::factory()->create();
         BenefitEnrollment::factory()->for($b,'benefit')->create();
 

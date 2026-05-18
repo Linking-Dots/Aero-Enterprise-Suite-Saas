@@ -110,25 +110,25 @@ class Asset extends TenantModel
 
 ```php
 Route::middleware(['auth','tenant'])->prefix('hrm/assets')->name('hrm.assets.')->group(function () {
-    Route::middleware('hrmac:hrm.assets.categories.view')->get('categories', [AssetCategoryController::class,'index'])->name('categories.index');
-    Route::middleware('hrmac:hrm.assets.categories.edit')->group(function () {
+    Route::middleware('hrmac:hrm.assets.asset-categories.view')->get('categories', [AssetCategoryController::class,'index'])->name('categories.index');
+    Route::middleware('hrmac:hrm.assets.asset-categories.manage')->group(function () {
         Route::post('categories',                    [AssetCategoryController::class,'store'])->name('categories.store');
         Route::put('categories/{category}',          [AssetCategoryController::class,'update'])->name('categories.update');
         Route::delete('categories/{category}',       [AssetCategoryController::class,'destroy'])->name('categories.destroy');
     });
 
-    Route::middleware('hrmac:hrm.assets.catalog.view')->group(function () {
+    Route::middleware('hrmac:hrm.assets.asset-inventory.view')->group(function () {
         Route::get('/',           [AssetController::class,'index'])->name('index');
         Route::get('{asset}',     [AssetController::class,'show'])->name('show');
     });
-    Route::middleware('hrmac:hrm.assets.catalog.edit')->group(function () {
+    Route::middleware('hrmac:hrm.assets.asset-inventory.update')->group(function () {
         Route::get('create',           [AssetController::class,'create'])->name('create');
         Route::post('/',               [AssetController::class,'store'])->name('store');
         Route::put('{asset}',          [AssetController::class,'update'])->name('update');
         Route::delete('{asset}',       [AssetController::class,'destroy'])->name('destroy');
     });
 
-    Route::middleware('hrmac:hrm.assets.allocations.edit')->group(function () {
+    Route::middleware('hrmac:hrm.assets.asset-allocations.assign')->group(function () {
         Route::post('{asset}/allocate', [AssetAllocationController::class,'store'])->name('allocations.store');
         Route::post('allocations/{allocation}/return', [AssetAllocationController::class,'returnAsset'])->name('allocations.return');
     });
@@ -372,7 +372,7 @@ class AssetAllocationTest extends TestCase
 
     public function test_can_create_asset(): void
     {
-        $this->actingAsTenantUser(['hrm.assets.catalog.edit']);
+        $this->actingAsTenantUser(['hrm.assets.asset-inventory.update']);
         $cat = AssetCategory::factory()->create();
         $this->post(route('hrm.assets.store'), [
             'tag'=>'LAP-001','name'=>'MacBook Pro','category_id'=>$cat->id,
@@ -382,7 +382,7 @@ class AssetAllocationTest extends TestCase
 
     public function test_can_allocate_asset_and_audit_fires(): void
     {
-        $this->actingAsTenantUser(['hrm.assets.allocations.edit']);
+        $this->actingAsTenantUser(['hrm.assets.asset-allocations.assign']);
         $asset = Asset::factory()->create(['status' => 'available']);
         $emp   = Employee::factory()->create();
 
@@ -396,7 +396,7 @@ class AssetAllocationTest extends TestCase
 
     public function test_cannot_allocate_already_allocated_asset(): void
     {
-        $this->actingAsTenantUser(['hrm.assets.allocations.edit']);
+        $this->actingAsTenantUser(['hrm.assets.asset-allocations.assign']);
         $asset = Asset::factory()->create(['status' => 'allocated']);
         $emp   = Employee::factory()->create();
         $this->post(route('hrm.assets.allocations.store', $asset->id), [
@@ -406,7 +406,7 @@ class AssetAllocationTest extends TestCase
 
     public function test_can_return_asset(): void
     {
-        $this->actingAsTenantUser(['hrm.assets.allocations.edit']);
+        $this->actingAsTenantUser(['hrm.assets.asset-allocations.assign']);
         $asset = Asset::factory()->create(['status'=>'allocated']);
         $alloc = $asset->allocations()->create([
             'employee_id' => Employee::factory()->create()->id,

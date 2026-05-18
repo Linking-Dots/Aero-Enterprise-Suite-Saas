@@ -44,7 +44,7 @@ Every state-mutating action calls `AuditServiceInterface`. Payslip access is log
 
 - All routes live under `prefix('hrm/self-service')->name('hrm.self-service.')`.
 - Middleware stack: `['web', 'auth', 'employee.required']` — `employee.required` ensures `auth()->user()->employee` is non-null. Routes failing this redirect to `hrm.self-service.no-profile`.
-- Each route additionally has `hrmac:hrm.self-service.<section>.<action>` middleware.
+- Each route additionally has `hrmac:hrm.employee-self-service.<component>.<action>` middleware.
 
 ### 3.2 Controller pattern
 
@@ -557,37 +557,37 @@ Route::middleware(['web', 'auth', 'employee.required'])
     ->prefix('hrm/self-service')
     ->name('hrm.self-service.')
     ->group(function () {
-        Route::middleware('hrmac:hrm.self-service.dashboard.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-dashboard.view')
             ->get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-        Route::middleware('hrmac:hrm.self-service.profile.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-dashboard.view')
             ->get('profile', [ProfileController::class, 'show'])->name('profile');
-        Route::middleware('hrmac:hrm.self-service.profile.edit')
+        Route::middleware('hrmac:hrm.employee-self-service.my-dashboard.view')
             ->patch('profile', [ProfileController::class, 'update'])->name('profile.update');
 
-        Route::middleware('hrmac:hrm.self-service.leaves.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-leaves.view')
             ->get('leaves', [LeaveController::class, 'index'])->name('leaves');
-        Route::middleware('hrmac:hrm.self-service.leaves.edit')->group(function () {
+        Route::middleware('hrmac:hrm.employee-self-service.my-leaves.apply')->group(function () {
             Route::post('leaves',                  [LeaveController::class, 'store'])->name('leaves.store');
             Route::post('leaves/{leave}/cancel',   [LeaveController::class, 'cancel'])->name('leaves.cancel');
         });
 
-        Route::middleware('hrmac:hrm.self-service.payslips.view')->group(function () {
+        Route::middleware('hrmac:hrm.employee-self-service.my-payslips.view')->group(function () {
             Route::get('payslips',                     [PayslipController::class, 'index'])->name('payslips');
             Route::get('payslips/{payslip}',           [PayslipController::class, 'show'])->name('payslips.show');
             Route::get('payslips/{payslip}/download', [PayslipController::class, 'download'])->name('payslips.download');
         });
 
-        Route::middleware('hrmac:hrm.self-service.benefits.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-benefits.view')
             ->get('benefits', [BenefitController::class, 'index'])->name('benefits');
 
-        Route::middleware('hrmac:hrm.self-service.training.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-trainings.view')
             ->get('training', [TrainingController::class, 'index'])->name('training');
 
-        Route::middleware('hrmac:hrm.self-service.performance.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-performance.view')
             ->get('performance', [PerformanceController::class, 'index'])->name('performance');
 
-        Route::middleware('hrmac:hrm.self-service.career-path.view')
+        Route::middleware('hrmac:hrm.employee-self-service.my-career-path.view')
             ->get('career-path', [CareerPathController::class, 'index'])->name('career-path');
 
         Route::view('no-profile', 'aero-hrm::self-service.no-profile')->name('no-profile');

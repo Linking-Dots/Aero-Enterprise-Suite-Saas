@@ -680,20 +680,20 @@ Route::middleware(['web', 'auth'])
     ->name('hrm.training.')
     ->group(function () {
         // Categories
-        Route::middleware('hrmac:hrm.training.categories.view')
+        Route::middleware('hrmac:hrm.training.training-programs.view')
             ->get('categories', [TrainingCategoryController::class, 'index'])->name('categories.index');
-        Route::middleware('hrmac:hrm.training.categories.edit')->group(function () {
+        Route::middleware('hrmac:hrm.training.training-programs.update')->group(function () {
             Route::post('categories',                  [TrainingCategoryController::class, 'store'])->name('categories.store');
             Route::patch('categories/{category}',      [TrainingCategoryController::class, 'update'])->name('categories.update');
             Route::delete('categories/{category}',     [TrainingCategoryController::class, 'destroy'])->name('categories.destroy');
         });
 
         // Courses
-        Route::middleware('hrmac:hrm.training.courses.view')->group(function () {
+        Route::middleware('hrmac:hrm.training.training-programs.view')->group(function () {
             Route::get('courses',                  [TrainingCourseController::class, 'index'])->name('courses.index');
             Route::get('courses/{course}',         [TrainingCourseController::class, 'show'])->name('courses.show');
         });
-        Route::middleware('hrmac:hrm.training.courses.edit')->group(function () {
+        Route::middleware('hrmac:hrm.training.training-programs.update')->group(function () {
             Route::get('courses/create',           [TrainingCourseController::class, 'create'])->name('courses.create');
             Route::post('courses',                 [TrainingCourseController::class, 'store'])->name('courses.store');
             Route::patch('courses/{course}',       [TrainingCourseController::class, 'update'])->name('courses.update');
@@ -701,23 +701,23 @@ Route::middleware(['web', 'auth'])
         });
 
         // Sessions
-        Route::middleware('hrmac:hrm.training.sessions.edit')->group(function () {
+        Route::middleware('hrmac:hrm.training.training-sessions.update')->group(function () {
             Route::get('courses/{course}/sessions/create', [TrainingSessionController::class, 'create'])->name('sessions.create');
             Route::post('courses/{course}/sessions',       [TrainingSessionController::class, 'store'])->name('sessions.store');
             Route::patch('sessions/{session}',             [TrainingSessionController::class, 'update'])->name('sessions.update');
         });
 
         // Enrollments
-        Route::middleware('hrmac:hrm.training.enrollments.view')
+        Route::middleware('hrmac:hrm.training.enrollment.manage')
             ->get('enrollments', [TrainingEnrollmentController::class, 'index'])->name('enrollments.index');
-        Route::middleware('hrmac:hrm.training.enrollments.edit')->group(function () {
+        Route::middleware('hrmac:hrm.training.enrollment.manage')->group(function () {
             Route::post('enrollments',                              [TrainingEnrollmentController::class, 'store'])->name('enrollments.store');
             Route::post('sessions/{session}/attendance',            [TrainingEnrollmentController::class, 'markAttendance'])->name('enrollments.attendance');
             Route::delete('enrollments/{enrollment}',               [TrainingEnrollmentController::class, 'cancel'])->name('enrollments.cancel');
         });
 
         // Feedback (employee scope, route still HRMAC-gated)
-        Route::middleware('hrmac:hrm.training.feedback.edit')->group(function () {
+        Route::middleware('hrmac:hrm.training.training-feedback.submit')->group(function () {
             Route::get('feedback/{enrollment}/create', [TrainingFeedbackController::class, 'create'])->name('feedback.create');
             Route::post('feedback/{enrollment}',       [TrainingFeedbackController::class, 'store'])->name('feedback.store');
         });
@@ -751,7 +751,7 @@ import { useHRMAC } from '@aero/hrmac';
 import App from '../../../App.jsx';
 
 export default function CoursesIndex({ courses, filters, categories }) {
-    const { canEdit } = useHRMAC('hrm.training.courses');
+    const { canEdit } = useHRMAC('hrm.training.training-programs');
     const apply = (next) => router.get(route('hrm.training.courses.index'), { ...filters, ...next }, { preserveState: true, replace: true });
 
     return (

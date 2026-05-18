@@ -445,7 +445,7 @@ class LeaveTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('hrm.leave.types.edit') ?? false;
+        return $this->user()?->can('hrm.leaves.leave-types.edit') ?? false;
     }
 
     public function rules(): array
@@ -507,7 +507,7 @@ class RejectLeaveRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('hrm.leave.applications.approve') ?? false;
+        return $this->user()?->can('hrm.leaves.leave-requests.approve') ?? false;
     }
 
     public function rules(): array
@@ -529,7 +529,7 @@ class LeaveSettingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('hrm.leave.settings.edit') ?? false;
+        return $this->user()?->can('hrm.leaves.leave-policies.manage') ?? false;
     }
 
     public function rules(): array
@@ -582,7 +582,7 @@ class LeaveTypeController extends Controller
 
     public function index(): Response
     {
-        $this->authorize('hrm.leave.types.view');
+        $this->authorize('hrm.leaves.leave-types.view');
 
         return Inertia::render('HRM/Leave/Types/Index', [
             'types' => LeaveType::query()->orderBy('name')->paginate(20),
@@ -622,7 +622,7 @@ class LeaveTypeController extends Controller
 
     public function destroy(LeaveType $type): RedirectResponse
     {
-        $this->authorize('hrm.leave.types.edit');
+        $this->authorize('hrm.leaves.leave-types.edit');
         $type->delete();
 
         $this->audit->log(
@@ -660,7 +660,7 @@ class LeaveApplicationController extends Controller
 
     public function index(Request $request): Response
     {
-        $this->authorize('hrm.leave.applications.view');
+        $this->authorize('hrm.leaves.leave-requests.view');
 
         $filters = $request->only(['search', 'status', 'leave_type_id', 'from', 'to']);
 
@@ -701,21 +701,21 @@ class LeaveApplicationController extends Controller
 
     public function show(LeaveApplication $application): Response
     {
-        $this->authorize('hrm.leave.applications.view');
+        $this->authorize('hrm.leaves.leave-requests.view');
 
         $application->load(['employee.user', 'leaveType', 'approver', 'rejector']);
 
         return Inertia::render('HRM/Leave/Applications/Show', [
             'application' => $application,
             'permissions' => [
-                'canApprove' => request()->user()->can('hrm.leave.applications.approve'),
+                'canApprove' => request()->user()->can('hrm.leaves.leave-requests.approve'),
             ],
         ]);
     }
 
     public function approve(LeaveApplication $application): RedirectResponse
     {
-        abort_unless(request()->user()->can('hrm.leave.applications.approve'), 403);
+        abort_unless(request()->user()->can('hrm.leaves.leave-requests.approve'), 403);
         $this->service->approve($application);
 
         return back()->with('success', 'Leave approved.');
@@ -732,7 +732,7 @@ class LeaveApplicationController extends Controller
     {
         abort_unless(
             $application->employee->user_id === request()->user()->id
-                || request()->user()->can('hrm.leave.applications.edit'),
+                || request()->user()->can('hrm.leaves.leave-requests.update'),
             403,
         );
         $this->service->cancel($application);
@@ -758,7 +758,7 @@ class LeaveBalanceController extends Controller
 {
     public function index(Request $request): Response
     {
-        $this->authorize('hrm.leave.balance.view');
+        $this->authorize('hrm.leaves.leave-balances.view');
 
         $year = (int) $request->integer('year', now()->year);
 
@@ -803,7 +803,7 @@ class LeaveCalendarController extends Controller
 {
     public function index(Request $request): Response
     {
-        $this->authorize('hrm.leave.calendar.view');
+        $this->authorize('hrm.leaves.holiday-calendar.view');
 
         $from = $request->date('from', now()->startOfMonth());
         $to   = $request->date('to',   now()->endOfMonth());
@@ -849,7 +849,7 @@ class LeaveSettingController extends Controller
 
     public function index(): Response
     {
-        $this->authorize('hrm.leave.settings.view');
+        $this->authorize('hrm.leaves.leave-policies.view');
 
         return Inertia::render('HRM/Leave/Settings/Index', [
             'settings' => LeaveSetting::firstOrCreate([]),
@@ -901,27 +901,27 @@ use Aero\HRM\Http\Controllers\Leave\LeaveSettingController;
 Route::middleware(['auth', 'tenant'])->prefix('hrm/leave')->name('hrm.leave.')->group(function () {
 
     Route::prefix('types')->name('types.')->group(function () {
-        Route::get('/',    [LeaveTypeController::class, 'index'])->middleware('hrmac:hrm.leave.types.view')->name('index');
-        Route::post('/',   [LeaveTypeController::class, 'store'])->middleware('hrmac:hrm.leave.types.edit')->name('store');
-        Route::put('/{type}',    [LeaveTypeController::class, 'update'])->middleware('hrmac:hrm.leave.types.edit')->name('update');
-        Route::delete('/{type}', [LeaveTypeController::class, 'destroy'])->middleware('hrmac:hrm.leave.types.edit')->name('destroy');
+        Route::get('/',    [LeaveTypeController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-types.view')->name('index');
+        Route::post('/',   [LeaveTypeController::class, 'store'])->middleware('hrmac:hrm.leaves.leave-types.edit')->name('store');
+        Route::put('/{type}',    [LeaveTypeController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-types.edit')->name('update');
+        Route::delete('/{type}', [LeaveTypeController::class, 'destroy'])->middleware('hrmac:hrm.leaves.leave-types.edit')->name('destroy');
     });
 
     Route::prefix('applications')->name('applications.')->group(function () {
-        Route::get('/',         [LeaveApplicationController::class, 'index'])->middleware('hrmac:hrm.leave.applications.view')->name('index');
+        Route::get('/',         [LeaveApplicationController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('index');
         Route::get('/create',   [LeaveApplicationController::class, 'create'])->name('create');
         Route::post('/',        [LeaveApplicationController::class, 'store'])->name('store');
-        Route::get('/{application}',          [LeaveApplicationController::class, 'show'])->middleware('hrmac:hrm.leave.applications.view')->name('show');
-        Route::post('/{application}/approve', [LeaveApplicationController::class, 'approve'])->middleware('hrmac:hrm.leave.applications.approve')->name('approve');
-        Route::post('/{application}/reject',  [LeaveApplicationController::class, 'reject'])->middleware('hrmac:hrm.leave.applications.approve')->name('reject');
+        Route::get('/{application}',          [LeaveApplicationController::class, 'show'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('show');
+        Route::post('/{application}/approve', [LeaveApplicationController::class, 'approve'])->middleware('hrmac:hrm.leaves.leave-requests.approve')->name('approve');
+        Route::post('/{application}/reject',  [LeaveApplicationController::class, 'reject'])->middleware('hrmac:hrm.leaves.leave-requests.approve')->name('reject');
         Route::post('/{application}/cancel',  [LeaveApplicationController::class, 'cancel'])->name('cancel');
     });
 
-    Route::get('balance',  [LeaveBalanceController::class, 'index'])->middleware('hrmac:hrm.leave.balance.view')->name('balance.index');
-    Route::get('calendar', [LeaveCalendarController::class, 'index'])->middleware('hrmac:hrm.leave.calendar.view')->name('calendar.index');
+    Route::get('balance',  [LeaveBalanceController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-balances.view')->name('balance.index');
+    Route::get('calendar', [LeaveCalendarController::class, 'index'])->middleware('hrmac:hrm.leaves.holiday-calendar.view')->name('calendar.index');
 
-    Route::get('settings', [LeaveSettingController::class, 'index'])->middleware('hrmac:hrm.leave.settings.view')->name('settings.index');
-    Route::put('settings', [LeaveSettingController::class, 'update'])->middleware('hrmac:hrm.leave.settings.edit')->name('settings.update');
+    Route::get('settings', [LeaveSettingController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-policies.view')->name('settings.index');
+    Route::put('settings', [LeaveSettingController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-policies.edit')->name('settings.update');
 });
 ```
 
@@ -1482,9 +1482,9 @@ class LeaveApplicationControllerTest extends TestCase
     {
         $user = User::factory()->create();
         foreach ([
-            'hrm.leave.applications.view',
-            'hrm.leave.applications.edit',
-            'hrm.leave.applications.approve',
+            'hrm.leaves.leave-requests.view',
+            'hrm.leaves.leave-requests.update',
+            'hrm.leaves.leave-requests.approve',
         ] as $a) {
             $user->givePermissionTo($a);
         }
@@ -1636,7 +1636,7 @@ git commit -m "test(aero-hrm): LeaveApplicationController feature tests (8 metho
 - [ ] All four leave migrations applied.
 - [ ] Service-driven state transitions (create/approve/reject/cancel) emit audit events.
 - [ ] Balance row is created/incremented on approval, decremented on cancellation of approved leave.
-- [ ] Every route guarded with `hrmac:hrm.leave.*` middleware.
+- [ ] Every route guarded with `hrmac:hrm.leaves.*` middleware.
 - [ ] React pages live under `Pages/HRM/Leave/` and use `App` layout.
 - [ ] Team calendar renders approved leaves within range with type colors.
 - [ ] LeaveApplicationControllerTest has 8 passing methods.

@@ -42,10 +42,10 @@ All operations are tenant-scoped, HRMAC-gated, fully audited, and produce immuta
 HRMAC paths:
 
 - `hrm.disciplinary.action-types.view` / `.edit`
-- `hrm.disciplinary.cases.view` / `.edit` / `.close`
+- `hrm.disciplinary.disciplinary-cases.view` / `.update` / `.close`
 - `hrm.disciplinary.warnings.view` / `.edit`
-- `hrm.disciplinary.exit-interviews.view` / `.edit`
-- `hrm.disciplinary.grievances.view` / `.edit` / `.investigate`
+- `hrm.exit-interviews.exit-interview-list.view` / `.update`
+- `hrm.grievances.grievance-list.view` / `.update` / `.investigate`
 
 ---
 
@@ -557,12 +557,12 @@ Route::prefix('hrm/disciplinary')->name('hrm.disciplinary.')->middleware(['auth'
     });
 
     Route::prefix('cases')->name('cases.')->group(function () {
-        Route::get('/',                  [DisciplinaryCaseController::class,'index'])->middleware('hrmac:hrm.disciplinary.cases.view')->name('index');
-        Route::get('create',             [DisciplinaryCaseController::class,'create'])->middleware('hrmac:hrm.disciplinary.cases.edit')->name('create');
-        Route::post('/',                 [DisciplinaryCaseController::class,'store'])->middleware('hrmac:hrm.disciplinary.cases.edit')->name('store');
-        Route::get('{case}',             [DisciplinaryCaseController::class,'show'])->middleware('hrmac:hrm.disciplinary.cases.view')->name('show');
-        Route::post('{case}/respond',    [DisciplinaryCaseController::class,'respond'])->middleware('hrmac:hrm.disciplinary.cases.edit')->name('respond');
-        Route::post('{case}/close',      [DisciplinaryCaseController::class,'close'])->middleware('hrmac:hrm.disciplinary.cases.close')->name('close');
+        Route::get('/',                  [DisciplinaryCaseController::class,'index'])->middleware('hrmac:hrm.disciplinary.disciplinary-cases.view')->name('index');
+        Route::get('create',             [DisciplinaryCaseController::class,'create'])->middleware('hrmac:hrm.disciplinary.disciplinary-cases.update')->name('create');
+        Route::post('/',                 [DisciplinaryCaseController::class,'store'])->middleware('hrmac:hrm.disciplinary.disciplinary-cases.update')->name('store');
+        Route::get('{case}',             [DisciplinaryCaseController::class,'show'])->middleware('hrmac:hrm.disciplinary.disciplinary-cases.view')->name('show');
+        Route::post('{case}/respond',    [DisciplinaryCaseController::class,'respond'])->middleware('hrmac:hrm.disciplinary.disciplinary-cases.update')->name('respond');
+        Route::post('{case}/close',      [DisciplinaryCaseController::class,'close'])->middleware('hrmac:hrm.disciplinary.disciplinary-cases.close')->name('close');
     });
 
     Route::prefix('warnings')->name('warnings.')->group(function () {
@@ -573,18 +573,18 @@ Route::prefix('hrm/disciplinary')->name('hrm.disciplinary.')->middleware(['auth'
     });
 
     Route::prefix('exit-interviews')->name('exit-interviews.')->group(function () {
-        Route::get('/',                  [ExitInterviewController::class,'index'])->middleware('hrmac:hrm.disciplinary.exit-interviews.view')->name('index');
-        Route::get('{interview}',        [ExitInterviewController::class,'show'])->middleware('hrmac:hrm.disciplinary.exit-interviews.view')->name('show');
-        Route::post('{interview}',       [ExitInterviewController::class,'store'])->middleware('hrmac:hrm.disciplinary.exit-interviews.edit')->name('store');
+        Route::get('/',                  [ExitInterviewController::class,'index'])->middleware('hrmac:hrm.exit-interviews.exit-interview-list.view')->name('index');
+        Route::get('{interview}',        [ExitInterviewController::class,'show'])->middleware('hrmac:hrm.exit-interviews.exit-interview-list.view')->name('show');
+        Route::post('{interview}',       [ExitInterviewController::class,'store'])->middleware('hrmac:hrm.exit-interviews.exit-interview-list.update')->name('store');
     });
 
     Route::prefix('grievances')->name('grievances.')->group(function () {
-        Route::get('/',                  [GrievanceController::class,'index'])->middleware('hrmac:hrm.disciplinary.grievances.view')->name('index');
-        Route::get('create',             [GrievanceController::class,'create'])->middleware('hrmac:hrm.disciplinary.grievances.edit')->name('create');
-        Route::post('/',                 [GrievanceController::class,'store'])->middleware('hrmac:hrm.disciplinary.grievances.edit')->name('store');
-        Route::get('{grievance}',        [GrievanceController::class,'show'])->middleware('hrmac:hrm.disciplinary.grievances.view')->name('show');
-        Route::post('{grievance}/investigate', [GrievanceController::class,'investigate'])->middleware('hrmac:hrm.disciplinary.grievances.investigate')->name('investigate');
-        Route::post('{grievance}/resolve',     [GrievanceController::class,'resolve'])->middleware('hrmac:hrm.disciplinary.grievances.investigate')->name('resolve');
+        Route::get('/',                  [GrievanceController::class,'index'])->middleware('hrmac:hrm.grievances.grievance-list.view')->name('index');
+        Route::get('create',             [GrievanceController::class,'create'])->middleware('hrmac:hrm.grievances.grievance-list.update')->name('create');
+        Route::post('/',                 [GrievanceController::class,'store'])->middleware('hrmac:hrm.grievances.grievance-list.update')->name('store');
+        Route::get('{grievance}',        [GrievanceController::class,'show'])->middleware('hrmac:hrm.grievances.grievance-list.view')->name('show');
+        Route::post('{grievance}/investigate', [GrievanceController::class,'investigate'])->middleware('hrmac:hrm.grievances.grievance-list.investigate')->name('investigate');
+        Route::post('{grievance}/resolve',     [GrievanceController::class,'resolve'])->middleware('hrmac:hrm.grievances.grievance-list.investigate')->name('resolve');
     });
 });
 ```
@@ -717,7 +717,7 @@ export default function CaseShow({ case: c, timeline, documents }) {
                 {['none','verbal','written','pip','suspension','termination'].map(o => <SelectItem key={o}>{o}</SelectItem>)}
               </Select>
               <Textarea value={close.data.closure_notes} onValueChange={v => close.setData('closure_notes', v)} />
-              <Button color="danger" onPress={() => close.post(route('hrm.disciplinary.cases.close', c.id))}>Close</Button>
+              <Button color="danger" onPress={() => close.post(route('hrm.disciplinary.disciplinary-cases.close', c.id))}>Close</Button>
             </CardBody>
           </Card>
         )}
@@ -766,7 +766,7 @@ final class DisciplinaryCaseTest extends TestCase
 
     public function test_admin_can_open_a_case(): void
     {
-        $this->actingAsUserWithPerms(['hrm.disciplinary.cases.edit']);
+        $this->actingAsUserWithPerms(['hrm.disciplinary.disciplinary-cases.update']);
         $type = DisciplinaryActionType::factory()->create();
         $emp  = Employee::factory()->create();
 
@@ -784,10 +784,10 @@ final class DisciplinaryCaseTest extends TestCase
 
     public function test_case_can_be_closed_with_outcome(): void
     {
-        $this->actingAsUserWithPerms(['hrm.disciplinary.cases.close']);
+        $this->actingAsUserWithPerms(['hrm.disciplinary.disciplinary-cases.close']);
         $c = DisciplinaryCase::factory()->open()->create();
 
-        $this->post(route('hrm.disciplinary.cases.close', $c), [
+        $this->post(route('hrm.disciplinary.disciplinary-cases.close', $c), [
             'outcome' => 'written',
             'closure_notes' => 'Final written warning issued.',
         ])->assertRedirect();
@@ -799,10 +799,10 @@ final class DisciplinaryCaseTest extends TestCase
 
     public function test_closing_a_closed_case_fails(): void
     {
-        $this->actingAsUserWithPerms(['hrm.disciplinary.cases.close']);
+        $this->actingAsUserWithPerms(['hrm.disciplinary.disciplinary-cases.close']);
         $c = DisciplinaryCase::factory()->create(['status'=>'closed','closed_at'=>now()]);
 
-        $this->post(route('hrm.disciplinary.cases.close', $c), [
+        $this->post(route('hrm.disciplinary.disciplinary-cases.close', $c), [
             'outcome'=>'verbal','closure_notes'=>'x',
         ])->assertStatus(422);
     }
@@ -858,7 +858,7 @@ final class GrievanceTest extends TestCase
     public function test_employee_can_file_grievance(): void
     {
         $emp = Employee::factory()->create();
-        $emp->user->givePermissionTo('hrm.disciplinary.grievances.edit');
+        $emp->user->givePermissionTo('hrm.grievances.grievance-list.update');
 
         $this->actingAs($emp->user)->post(route('hrm.disciplinary.grievances.store'), [
             'category'    => 'harassment',
@@ -874,11 +874,11 @@ final class GrievanceTest extends TestCase
 
     public function test_grievance_can_be_assigned_and_resolved(): void
     {
-        $admin = $this->actingAsUserWithPerms(['hrm.disciplinary.grievances.investigate']);
+        $admin = $this->actingAsUserWithPerms(['hrm.grievances.grievance-list.investigate']);
         $investigator = User::factory()->create();
         $g = Grievance::factory()->create(['status'=>'filed']);
 
-        $this->post(route('hrm.disciplinary.grievances.investigate', $g), [
+        $this->post(route('hrm.grievances.grievance-list.investigate', $g), [
             'investigator_id'=>$investigator->id,
         ])->assertRedirect();
         $this->assertDatabaseHas('hrm_grievances', ['id'=>$g->id,'status'=>'under_investigation']);
@@ -891,7 +891,7 @@ final class GrievanceTest extends TestCase
 
     public function test_grievance_dismissal_path(): void
     {
-        $this->actingAsUserWithPerms(['hrm.disciplinary.grievances.investigate']);
+        $this->actingAsUserWithPerms(['hrm.grievances.grievance-list.investigate']);
         $g = Grievance::factory()->create(['status'=>'under_investigation']);
 
         $this->post(route('hrm.disciplinary.grievances.resolve', $g), [

@@ -41,11 +41,11 @@ All routes are tenant-scoped, HRMAC-gated, and audited. Heavy aggregations are c
 
 Resulting HRMAC paths:
 
-- `hrm.analytics.dashboard.view`
-- `hrm.analytics.attrition.view` / `.export`
-- `hrm.analytics.dei.view` / `.export`
-- `hrm.analytics.pulse-surveys.view` / `.edit` / `.send` / `.results`
-- `hrm.analytics.workforce-planning.view` / `.edit`
+- `hrm.hr-analytics.workforce-overview.view`
+- `hrm.ai-analytics.attrition-predictions.view` / `.run`
+- `hrm.workforce-planning.dei-analytics.view` / `.manage`
+- `hrm.pulse-surveys.survey-list.view` / `.create` / `.publish` / `.analyze`
+- `hrm.workforce-planning.workforce-plans.view` / `.update`
 
 ---
 
@@ -387,24 +387,24 @@ public function update(UpdateWorkforcePlanRequest $r): RedirectResponse
 ```php
 Route::prefix('hrm/analytics')->name('hrm.analytics.')->middleware(['auth','tenant'])->group(function () {
     Route::get('dashboard', [AnalyticsDashboardController::class,'index'])
-        ->middleware('hrmac:hrm.analytics.dashboard.view')->name('dashboard');
+        ->middleware('hrmac:hrm.hr-analytics.workforce-overview.view')->name('dashboard');
 
     Route::get('attrition', [AttritionController::class,'index'])
-        ->middleware('hrmac:hrm.analytics.attrition.view')->name('attrition.index');
+        ->middleware('hrmac:hrm.ai-analytics.attrition-predictions.view')->name('attrition.index');
 
     Route::get('dei', [DEIController::class,'index'])
-        ->middleware('hrmac:hrm.analytics.dei.view')->name('dei.index');
+        ->middleware('hrmac:hrm.workforce-planning.dei-analytics.view')->name('dei.index');
 
     Route::prefix('pulse-surveys')->name('pulse-surveys.')->group(function () {
-        Route::get('/',              [PulseSurveyController::class,'index'])->middleware('hrmac:hrm.analytics.pulse-surveys.view')->name('index');
-        Route::get('create',         [PulseSurveyController::class,'create'])->middleware('hrmac:hrm.analytics.pulse-surveys.edit')->name('create');
-        Route::post('/',             [PulseSurveyController::class,'store'])->middleware('hrmac:hrm.analytics.pulse-surveys.edit')->name('store');
-        Route::post('{survey}/send', [PulseSurveyController::class,'send'])->middleware('hrmac:hrm.analytics.pulse-surveys.send')->name('send');
-        Route::get('{survey}/results',[PulseSurveyController::class,'results'])->middleware('hrmac:hrm.analytics.pulse-surveys.results')->name('results');
+        Route::get('/',              [PulseSurveyController::class,'index'])->middleware('hrmac:hrm.pulse-surveys.survey-list.view')->name('index');
+        Route::get('create',         [PulseSurveyController::class,'create'])->middleware('hrmac:hrm.pulse-surveys.survey-list.create')->name('create');
+        Route::post('/',             [PulseSurveyController::class,'store'])->middleware('hrmac:hrm.pulse-surveys.survey-list.create')->name('store');
+        Route::post('{survey}/send', [PulseSurveyController::class,'send'])->middleware('hrmac:hrm.pulse-surveys.survey-list.publish')->name('send');
+        Route::get('{survey}/results',[PulseSurveyController::class,'results'])->middleware('hrmac:hrm.pulse-surveys.survey-list.analyze')->name('results');
     });
 
-    Route::get('workforce-planning',  [WorkforcePlanningController::class,'index'])->middleware('hrmac:hrm.analytics.workforce-planning.view')->name('workforce-planning.index');
-    Route::put('workforce-planning',  [WorkforcePlanningController::class,'update'])->middleware('hrmac:hrm.analytics.workforce-planning.edit')->name('workforce-planning.update');
+    Route::get('workforce-planning',  [WorkforcePlanningController::class,'index'])->middleware('hrmac:hrm.workforce-planning.workforce-plans.view')->name('workforce-planning.index');
+    Route::put('workforce-planning',  [WorkforcePlanningController::class,'update'])->middleware('hrmac:hrm.workforce-planning.workforce-plans.update')->name('workforce-planning.update');
 });
 ```
 
@@ -538,7 +538,7 @@ final class AnalyticsDashboardTest extends TestCase
 
     public function test_dashboard_returns_kpis(): void
     {
-        $user = $this->actingAsUserWithPerms(['hrm.analytics.dashboard.view']);
+        $user = $this->actingAsUserWithPerms(['hrm.hr-analytics.workforce-overview.view']);
         Employee::factory()->count(10)->active()->create();
 
         $this->get(route('hrm.analytics.dashboard'))
@@ -556,7 +556,7 @@ final class PulseSurveyTest extends TestCase
 
     public function test_admin_can_create_pulse_survey(): void
     {
-        $user = $this->actingAsUserWithPerms(['hrm.analytics.pulse-surveys.edit']);
+        $user = $this->actingAsUserWithPerms(['hrm.pulse-surveys.survey-list.create']);
 
         $this->post(route('hrm.analytics.pulse-surveys.store'), [
             'title' => 'May Pulse',
@@ -570,17 +570,17 @@ final class PulseSurveyTest extends TestCase
 
     public function test_results_are_suppressed_below_threshold(): void
     {
-        $user = $this->actingAsUserWithPerms(['hrm.analytics.pulse-surveys.results']);
+        $user = $this->actingAsUserWithPerms(['hrm.pulse-surveys.survey-list.analyze']);
         $s = PulseSurvey::factory()->active()->create();
         PulseResponse::factory()->count(3)->for($s,'survey')->create();
 
-        $this->get(route('hrm.analytics.pulse-surveys.results', $s))
+        $this->get(route('hrm.pulse-surveys.survey-list.analyze', $s))
             ->assertInertia(fn (Assert $p) => $p->where('suppressed', true));
     }
 
     public function test_results_aggregate_when_threshold_met(): void
     {
-        $user = $this->actingAsUserWithPerms(['hrm.analytics.pulse-surveys.results']);
+        $user = $this->actingAsUserWithPerms(['hrm.pulse-surveys.survey-list.analyze']);
         $s = PulseSurvey::factory()->active()->create([
             'questions' => [['id'=>'q1','type'=>'scale','text'=>'Score']],
         ]);
@@ -593,7 +593,7 @@ final class PulseSurveyTest extends TestCase
             ['answers'=>[['question_id'=>'q1','value'=>5]]],
         ))->create();
 
-        $this->get(route('hrm.analytics.pulse-surveys.results', $s))
+        $this->get(route('hrm.pulse-surveys.survey-list.analyze', $s))
             ->assertInertia(fn (Assert $p) => $p
                 ->where('suppressed', false)
                 ->where('aggregates.q1.average', 4.33)
@@ -607,7 +607,7 @@ final class WorkforcePlanningTest extends TestCase
 
     public function test_planning_returns_actual_vs_target(): void
     {
-        $user = $this->actingAsUserWithPerms(['hrm.analytics.workforce-planning.view']);
+        $user = $this->actingAsUserWithPerms(['hrm.workforce-planning.workforce-plans.view']);
         $d = Department::factory()->create(['name'=>'Engineering']);
         Employee::factory()->count(7)->active()->for($d,'department')->create();
         WorkforcePlan::factory()->for($d,'department')->create([

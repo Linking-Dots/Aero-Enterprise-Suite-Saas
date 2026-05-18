@@ -45,19 +45,19 @@
 ```php
 Route::prefix('settings')->name('settings.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/general',    [HrmGeneralSettingController::class,    'show'])->name('general')
-        ->middleware('hrmac:hrm.settings.general.view');
+        ->middleware('hrmac:hrm.settings.general-settings.view');
     Route::put('/general',    [HrmGeneralSettingController::class,    'update'])->name('general.update')
-        ->middleware('hrmac:hrm.settings.general.edit');
+        ->middleware('hrmac:hrm.settings.general-settings.edit');
 
     Route::get('/leave',      [HrmLeaveSettingController::class,      'show'])->name('leave')
-        ->middleware('hrmac:hrm.settings.leave.view');
+        ->middleware('hrmac:hrm.settings.leave-settings.view');
     Route::put('/leave',      [HrmLeaveSettingController::class,      'update'])->name('leave.update')
-        ->middleware('hrmac:hrm.settings.leave.edit');
+        ->middleware('hrmac:hrm.settings.leave-settings.edit');
 
     Route::get('/attendance', [HrmAttendanceSettingController::class, 'show'])->name('attendance')
-        ->middleware('hrmac:hrm.settings.attendance.view');
+        ->middleware('hrmac:hrm.settings.attendance-settings.view');
     Route::put('/attendance', [HrmAttendanceSettingController::class, 'update'])->name('attendance.update')
-        ->middleware('hrmac:hrm.settings.attendance.edit');
+        ->middleware('hrmac:hrm.settings.attendance-settings.edit');
 
     Route::apiResource('task-templates', TaskTemplateController::class)
         ->middleware(['hrmac:hrm.settings.task-templates.view', 'hrmac:hrm.settings.task-templates.edit']);

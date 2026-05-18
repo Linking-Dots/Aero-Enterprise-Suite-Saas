@@ -539,7 +539,7 @@ class PayrollRunController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('hrmac', 'hrm.payroll.runs.view');
+        Gate::authorize('hrmac', 'hrm.payroll.payroll-run.view');
 
         $runs = PayrollRun::query()
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
@@ -555,7 +555,7 @@ class PayrollRunController extends Controller
 
     public function create()
     {
-        Gate::authorize('hrmac', 'hrm.payroll.runs.edit');
+        Gate::authorize('hrmac', 'hrm.payroll.payroll-run.execute');
         return Inertia::render('HRM/Payroll/Runs/Create', [
             'employees' => Employee::select('id', 'first_name', 'last_name')->where('status', 'active')->get(),
         ]);
@@ -563,7 +563,7 @@ class PayrollRunController extends Controller
 
     public function store(Request $request, PayrollRunGenerator $gen)
     {
-        Gate::authorize('hrmac', 'hrm.payroll.runs.edit');
+        Gate::authorize('hrmac', 'hrm.payroll.payroll-run.execute');
 
         $data = $request->validate([
             'label'        => 'required|string|max:100',
@@ -580,7 +580,7 @@ class PayrollRunController extends Controller
 
     public function show(PayrollRun $run)
     {
-        Gate::authorize('hrmac', 'hrm.payroll.runs.view');
+        Gate::authorize('hrmac', 'hrm.payroll.payroll-run.view');
 
         $run->load('payslips.employee:id,first_name,last_name');
 
@@ -589,7 +589,7 @@ class PayrollRunController extends Controller
 
     public function update(Request $request, PayrollRun $run)
     {
-        Gate::authorize('hrmac', 'hrm.payroll.runs.edit');
+        Gate::authorize('hrmac', 'hrm.payroll.payroll-run.execute');
 
         // Defence-in-depth: re-check at controller layer
         if ($run->isLocked()) {
@@ -602,7 +602,7 @@ class PayrollRunController extends Controller
 
     public function approve(PayrollRun $run, PayrollApprovalService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.payroll.runs.approve');
+        Gate::authorize('hrmac', 'hrm.payroll.payroll-run.lock');
         $svc->approve($run);
         return back()->with('success', 'Payroll run approved and locked.');
     }
@@ -629,7 +629,7 @@ class PayslipController extends Controller
     public function show(Request $request, Payslip $payslip, AuditServiceInterface $audit)
     {
         $isSelf = $request->user()->employee?->id === $payslip->employee_id;
-        Gate::authorize('hrmac', $isSelf ? 'hrm.payroll.my-payslips.view' : 'hrm.payroll.payslips.view');
+        Gate::authorize('hrmac', $isSelf ? 'hrm.employee-self-service.my-payslips.view' : 'hrm.payroll.payslips.view');
 
         $audit->record('PAYROLL_PAYSLIP_VIEWED', 'hrm', 'payroll', [
             'payslip_id'  => $payslip->id,
@@ -643,7 +643,7 @@ class PayslipController extends Controller
     public function download(Request $request, Payslip $payslip, PayslipPdfRenderer $pdf, AuditServiceInterface $audit)
     {
         $isSelf = $request->user()->employee?->id === $payslip->employee_id;
-        Gate::authorize('hrmac', $isSelf ? 'hrm.payroll.my-payslips.view' : 'hrm.payroll.payslips.view');
+        Gate::authorize('hrmac', $isSelf ? 'hrm.employee-self-service.my-payslips.view' : 'hrm.payroll.payslips.view');
 
         $audit->record('PAYROLL_PAYSLIP_VIEWED', 'hrm', 'payroll', [
             'payslip_id' => $payslip->id, 'download' => true,
@@ -666,21 +666,21 @@ class PayslipController extends Controller
 
 ```php
 Route::prefix('payroll')->name('payroll.')->group(function () {
-    Route::resource('components', PayComponentController::class)->middleware('hrmac:hrm.payroll.structures.edit');
-    Route::resource('structures', SalaryStructureController::class)->middleware('hrmac:hrm.payroll.structures.edit');
+    Route::resource('components', PayComponentController::class)->middleware('hrmac:hrm.payroll.salary-structures.update');
+    Route::resource('structures', SalaryStructureController::class)->middleware('hrmac:hrm.payroll.salary-structures.update');
 
-    Route::get('runs',           [PayrollRunController::class, 'index'])  ->middleware('hrmac:hrm.payroll.runs.view')  ->name('runs.index');
-    Route::get('runs/create',    [PayrollRunController::class, 'create']) ->middleware('hrmac:hrm.payroll.runs.edit')  ->name('runs.create');
-    Route::post('runs',          [PayrollRunController::class, 'store'])  ->middleware('hrmac:hrm.payroll.runs.edit')  ->name('runs.store');
-    Route::get('runs/{run}',     [PayrollRunController::class, 'show'])   ->middleware('hrmac:hrm.payroll.runs.view')  ->name('runs.show');
-    Route::put('runs/{run}',     [PayrollRunController::class, 'update']) ->middleware('hrmac:hrm.payroll.runs.edit')  ->name('runs.update');
-    Route::post('runs/{run}/approve', [PayrollRunController::class, 'approve'])->middleware('hrmac:hrm.payroll.runs.approve')->name('runs.approve');
+    Route::get('runs',           [PayrollRunController::class, 'index'])  ->middleware('hrmac:hrm.payroll.payroll-run.view')  ->name('runs.index');
+    Route::get('runs/create',    [PayrollRunController::class, 'create']) ->middleware('hrmac:hrm.payroll.payroll-run.execute')  ->name('runs.create');
+    Route::post('runs',          [PayrollRunController::class, 'store'])  ->middleware('hrmac:hrm.payroll.payroll-run.execute')  ->name('runs.store');
+    Route::get('runs/{run}',     [PayrollRunController::class, 'show'])   ->middleware('hrmac:hrm.payroll.payroll-run.view')  ->name('runs.show');
+    Route::put('runs/{run}',     [PayrollRunController::class, 'update']) ->middleware('hrmac:hrm.payroll.payroll-run.execute')  ->name('runs.update');
+    Route::post('runs/{run}/approve', [PayrollRunController::class, 'approve'])->middleware('hrmac:hrm.payroll.payroll-run.lock')->name('runs.approve');
 
     Route::get('payslips/{payslip}',           [PayslipController::class, 'show'])    ->name('payslips.show');
     Route::get('payslips/{payslip}/download',  [PayslipController::class, 'download'])->name('payslips.download');
 
-    Route::get('settings/tax',  [TaxSettingController::class, 'index']) ->middleware('hrmac:hrm.payroll.structures.edit')->name('settings.tax');
-    Route::post('settings/tax', [TaxSettingController::class, 'store']) ->middleware('hrmac:hrm.payroll.structures.edit')->name('settings.tax.store');
+    Route::get('settings/tax',  [TaxSettingController::class, 'index']) ->middleware('hrmac:hrm.payroll.salary-structures.update')->name('settings.tax');
+    Route::post('settings/tax', [TaxSettingController::class, 'store']) ->middleware('hrmac:hrm.payroll.salary-structures.update')->name('settings.tax.store');
 });
 ```
 
@@ -713,7 +713,7 @@ import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import App from '../../../../App.jsx';
 
 export default function RunsIndex({ runs, filters }) {
-  const canCreate = useHRMAC('hrm.payroll.runs.edit');
+  const canCreate = useHRMAC('hrm.payroll.payroll-run.execute');
   const setStatus = (v) => router.get(route('hrm.payroll.runs.index'), { status: v });
 
   const columns = [
@@ -753,7 +753,7 @@ import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import App from '../../../../App.jsx';
 
 export default function RunShow({ run }) {
-  const canApprove = useHRMAC('hrm.payroll.runs.approve');
+  const canApprove = useHRMAC('hrm.payroll.payroll-run.lock');
   const locked = !!run.locked_at;
 
   const approve = () => {
@@ -1019,5 +1019,5 @@ git commit -m "feat(hrm): Plan H-5 Payroll — runs, payslips, immutability law,
 - `PUT /hrm/payroll/runs/{run}` on a locked run returns HTTP 403
 - `payslips.bank_account_number` is ciphertext at rest (raw DB query proves it)
 - Every payslip view fires `PAYROLL_PAYSLIP_VIEWED` audit event
-- Self-service path `hrm.payroll.my-payslips.view` works for the owning employee only
+- Self-service path `hrm.employee-self-service.my-payslips.view` works for the owning employee only
 - 7+ PHPUnit tests green

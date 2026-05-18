@@ -493,7 +493,7 @@ class ShiftSwapService
 ```php
 public function daily(Request $request)
 {
-    Gate::authorize('hrmac', 'hrm.attendance.admin-view.view');
+    Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.view');
 
     $date = $request->date('date', now())->toDateString();
 
@@ -512,7 +512,7 @@ public function daily(Request $request)
 
 public function monthly(Request $request)
 {
-    Gate::authorize('hrmac', 'hrm.attendance.admin-view.view');
+    Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.view');
 
     $month = $request->date('month', now())->startOfMonth();
     $grid = app(\Aero\Hrm\Services\Attendance\MonthlyGridBuilder::class)->build($month);
@@ -526,7 +526,7 @@ public function monthly(Request $request)
 
 public function clockIn(Request $request, AttendanceClockService $clock)
 {
-    Gate::authorize('hrmac', 'hrm.attendance.clock-in-out.view');
+    Gate::authorize('hrmac', 'hrm.attendance.my-attendance.view');
 
     $employee = $request->user()->employee;
     $record = $clock->clockIn($employee, $request->input('source', 'web'));
@@ -536,7 +536,7 @@ public function clockIn(Request $request, AttendanceClockService $clock)
 
 public function clockOut(Request $request, AttendanceClockService $clock)
 {
-    Gate::authorize('hrmac', 'hrm.attendance.clock-in-out.view');
+    Gate::authorize('hrmac', 'hrm.attendance.my-attendance.view');
 
     $employee = $request->user()->employee;
     $record = $clock->clockOut($employee);
@@ -563,7 +563,7 @@ class OvertimeController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('hrmac', 'hrm.attendance.overtime.view');
+        Gate::authorize('hrmac', 'hrm.overtime.overtime-records.view');
 
         $requests = OvertimeRequest::query()
             ->with('employee:id,first_name,last_name')
@@ -580,13 +580,13 @@ class OvertimeController extends Controller
 
     public function create()
     {
-        Gate::authorize('hrmac', 'hrm.attendance.overtime.view');
+        Gate::authorize('hrmac', 'hrm.overtime.overtime-records.view');
         return Inertia::render('HRM/Attendance/Overtime/Create');
     }
 
     public function store(Request $request)
     {
-        Gate::authorize('hrmac', 'hrm.attendance.overtime.view');
+        Gate::authorize('hrmac', 'hrm.overtime.overtime-records.view');
 
         $data = $request->validate([
             'work_date' => 'required|date|before_or_equal:today',
@@ -603,14 +603,14 @@ class OvertimeController extends Controller
 
     public function approve(OvertimeRequest $overtime, OvertimeApprovalService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.attendance.overtime.approve');
+        Gate::authorize('hrmac', 'hrm.overtime.overtime-records.approve');
         $svc->approve($overtime);
         return back()->with('success', 'Overtime approved.');
     }
 
     public function reject(Request $request, OvertimeRequest $overtime, OvertimeApprovalService $svc)
     {
-        Gate::authorize('hrmac', 'hrm.attendance.overtime.approve');
+        Gate::authorize('hrmac', 'hrm.overtime.overtime-records.approve');
         $data = $request->validate(['reason' => 'required|string|max:500']);
         $svc->reject($overtime, $data['reason']);
         return back()->with('success', 'Overtime rejected.');
@@ -637,7 +637,7 @@ class TimesheetController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('hrmac', 'hrm.attendance.timesheets.view');
+        Gate::authorize('hrmac', 'hrm.attendance.attendance-logs.view');
 
         $weekStart = $request->date('week', Carbon::now()->startOfWeek())->toDateString();
         $employee = $request->user()->employee;
@@ -657,7 +657,7 @@ class TimesheetController extends Controller
 
     public function update(Request $request, Timesheet $timesheet, TimesheetAggregator $agg)
     {
-        Gate::authorize('hrmac', 'hrm.attendance.timesheets.edit');
+        Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.update');
 
         $data = $request->validate([
             'entries'              => 'required|array',
@@ -678,7 +678,7 @@ class TimesheetController extends Controller
 }
 ```
 
-- [ ] Extend `ShiftMarketplaceController` with `index` (paginated `ShiftSwapRequest::open()`), `store` (validate `shift_date`, `shift_label`, `note`), and `approve` (delegates to `ShiftSwapService::approve`). Each method calls `Gate::authorize('hrmac', 'hrm.attendance.shifts.view|edit')`.
+- [ ] Extend `ShiftMarketplaceController` with `index` (paginated `ShiftSwapRequest::open()`), `store` (validate `shift_date`, `shift_label`, `note`), and `approve` (delegates to `ShiftSwapService::approve`). Each method calls `Gate::authorize('hrmac', 'hrm.attendance.shift-marketplace.view|create')`.
 
 ---
 
@@ -689,31 +689,31 @@ class TimesheetController extends Controller
 ```php
 Route::prefix('attendance')->name('attendance.')->group(function () {
     Route::get('/daily', [AttendanceController::class, 'daily'])
-        ->middleware('hrmac:hrm.attendance.admin-view.view')->name('daily');
+        ->middleware('hrmac:hrm.attendance.daily-attendance.view')->name('daily');
     Route::get('/monthly', [AttendanceController::class, 'monthly'])
-        ->middleware('hrmac:hrm.attendance.admin-view.view')->name('monthly');
+        ->middleware('hrmac:hrm.attendance.daily-attendance.view')->name('monthly');
     Route::post('/clock-in', [AttendanceController::class, 'clockIn'])
-        ->middleware('hrmac:hrm.attendance.clock-in-out.view')->name('clock-in');
+        ->middleware('hrmac:hrm.attendance.my-attendance.view')->name('clock-in');
     Route::post('/clock-out', [AttendanceController::class, 'clockOut'])
-        ->middleware('hrmac:hrm.attendance.clock-in-out.view')->name('clock-out');
+        ->middleware('hrmac:hrm.attendance.my-attendance.view')->name('clock-out');
 
     Route::prefix('overtime')->name('overtime.')->group(function () {
-        Route::get('/',           [OvertimeController::class, 'index'])->middleware('hrmac:hrm.attendance.overtime.view')->name('index');
-        Route::get('/create',     [OvertimeController::class, 'create'])->middleware('hrmac:hrm.attendance.overtime.view')->name('create');
-        Route::post('/',          [OvertimeController::class, 'store'])->middleware('hrmac:hrm.attendance.overtime.view')->name('store');
-        Route::post('/{overtime}/approve', [OvertimeController::class, 'approve'])->middleware('hrmac:hrm.attendance.overtime.approve')->name('approve');
-        Route::post('/{overtime}/reject',  [OvertimeController::class, 'reject'])->middleware('hrmac:hrm.attendance.overtime.approve')->name('reject');
+        Route::get('/',           [OvertimeController::class, 'index'])->middleware('hrmac:hrm.overtime.overtime-records.view')->name('index');
+        Route::get('/create',     [OvertimeController::class, 'create'])->middleware('hrmac:hrm.overtime.overtime-records.view')->name('create');
+        Route::post('/',          [OvertimeController::class, 'store'])->middleware('hrmac:hrm.overtime.overtime-records.view')->name('store');
+        Route::post('/{overtime}/approve', [OvertimeController::class, 'approve'])->middleware('hrmac:hrm.overtime.overtime-records.approve')->name('approve');
+        Route::post('/{overtime}/reject',  [OvertimeController::class, 'reject'])->middleware('hrmac:hrm.overtime.overtime-records.approve')->name('reject');
     });
 
     Route::prefix('timesheets')->name('timesheets.')->group(function () {
-        Route::get('/',           [TimesheetController::class, 'index'])->middleware('hrmac:hrm.attendance.timesheets.view')->name('index');
-        Route::put('/{timesheet}', [TimesheetController::class, 'update'])->middleware('hrmac:hrm.attendance.timesheets.edit')->name('update');
+        Route::get('/',           [TimesheetController::class, 'index'])->middleware('hrmac:hrm.attendance.attendance-logs.view')->name('index');
+        Route::put('/{timesheet}', [TimesheetController::class, 'update'])->middleware('hrmac:hrm.attendance.daily-attendance.update')->name('update');
     });
 
     Route::prefix('shifts')->name('shifts.')->group(function () {
-        Route::get('/marketplace', [ShiftMarketplaceController::class, 'index'])->middleware('hrmac:hrm.attendance.shifts.view')->name('marketplace');
-        Route::post('/marketplace', [ShiftMarketplaceController::class, 'store'])->middleware('hrmac:hrm.attendance.shifts.edit')->name('marketplace.store');
-        Route::post('/marketplace/{swap}/approve', [ShiftMarketplaceController::class, 'approve'])->middleware('hrmac:hrm.attendance.shifts.edit')->name('marketplace.approve');
+        Route::get('/marketplace', [ShiftMarketplaceController::class, 'index'])->middleware('hrmac:hrm.attendance.shift-marketplace.view')->name('marketplace');
+        Route::post('/marketplace', [ShiftMarketplaceController::class, 'store'])->middleware('hrmac:hrm.attendance.shift-marketplace.create')->name('marketplace.store');
+        Route::post('/marketplace/{swap}/approve', [ShiftMarketplaceController::class, 'approve'])->middleware('hrmac:hrm.attendance.shift-marketplace.create')->name('marketplace.approve');
     });
 });
 ```
@@ -748,7 +748,7 @@ import { useHRMAC } from '../../../hooks/useHRMAC.js';
 import App from '../../../App.jsx';
 
 export default function ClockIn({ today_record, employee, server_time }) {
-  const canClock = useHRMAC('hrm.attendance.clock-in-out.view');
+  const canClock = useHRMAC('hrm.attendance.my-attendance.view');
   const clockIn  = () => router.post(route('hrm.attendance.clock-in'),  { source: 'web' });
   const clockOut = () => router.post(route('hrm.attendance.clock-out'), {});
 
@@ -793,7 +793,7 @@ import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import App from '../../../../App.jsx';
 
 export default function Daily({ date, records, filters }) {
-  useHRMAC('hrm.attendance.admin-view.view');
+  useHRMAC('hrm.attendance.daily-attendance.view');
 
   const setDate = (e) => router.get(route('hrm.attendance.daily'), { date: e.target.value }, { preserveState: true });
 
@@ -827,7 +827,7 @@ import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import App from '../../../../App.jsx';
 
 export default function Monthly({ month, grid, filters }) {
-  useHRMAC('hrm.attendance.admin-view.view');
+  useHRMAC('hrm.attendance.daily-attendance.view');
   const setMonth = (e) => router.get(route('hrm.attendance.monthly'), { month: e.target.value });
 
   return (
@@ -873,7 +873,7 @@ import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import App from '../../../../App.jsx';
 
 export default function OvertimeIndex({ requests, filters }) {
-  const canApprove = useHRMAC('hrm.attendance.overtime.approve');
+  const canApprove = useHRMAC('hrm.overtime.overtime-records.approve');
   const setStatus = (v) => router.get(route('hrm.attendance.overtime.index'), { status: v });
 
   const columns = [
@@ -1071,7 +1071,7 @@ git commit -m "feat(hrm): Plan H-4 Attendance — clock in/out, daily/monthly vi
 - Timesheet aggregator + weekly grid page
 - Shift swap marketplace page + approval endpoint
 - 6 PHPUnit feature tests
-- HRMAC paths: hrm.attendance.{admin-view,clock-in-out,overtime,timesheets,shifts}"
+- HRMAC paths: hrm.attendance.{daily-attendance,my-attendance,attendance-logs,shift-marketplace}, hrm.overtime.overtime-records"
 ```
 
 ---

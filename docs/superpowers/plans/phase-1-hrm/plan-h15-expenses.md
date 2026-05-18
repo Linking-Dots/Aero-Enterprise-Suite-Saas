@@ -100,27 +100,27 @@ class ExpenseClaim extends TenantModel
 
 ```php
 Route::middleware(['auth','tenant'])->prefix('hrm/expenses')->name('hrm.expenses.')->group(function () {
-    Route::middleware('hrmac:hrm.expenses.categories.view')->get('categories', [ExpenseCategoryController::class,'index'])->name('categories.index');
-    Route::middleware('hrmac:hrm.expenses.categories.edit')->group(function () {
+    Route::middleware('hrmac:hrm.expenses.expense-categories.view')->get('categories', [ExpenseCategoryController::class,'index'])->name('categories.index');
+    Route::middleware('hrmac:hrm.expenses.expense-categories.manage')->group(function () {
         Route::post('categories',              [ExpenseCategoryController::class,'store'])->name('categories.store');
         Route::put('categories/{category}',    [ExpenseCategoryController::class,'update'])->name('categories.update');
         Route::delete('categories/{category}', [ExpenseCategoryController::class,'destroy'])->name('categories.destroy');
     });
 
-    Route::middleware('hrmac:hrm.expenses.claims.view')->group(function () {
+    Route::middleware('hrmac:hrm.expenses.expense-claims.view')->group(function () {
         Route::get('claims',         [ExpenseClaimController::class,'index'])->name('claims.index');
         Route::get('claims/{claim}', [ExpenseClaimController::class,'show'])->name('claims.show');
     });
-    Route::middleware('hrmac:hrm.expenses.claims.edit')->group(function () {
+    Route::middleware('hrmac:hrm.expenses.expense-claims.update')->group(function () {
         Route::get('claims/create', [ExpenseClaimController::class,'create'])->name('claims.create');
         Route::post('claims',       [ExpenseClaimController::class,'store'])->name('claims.store');
     });
-    Route::middleware('hrmac:hrm.expenses.claims.approve')->group(function () {
+    Route::middleware('hrmac:hrm.expenses.expense-claims.approve')->group(function () {
         Route::post('claims/{claim}/approve', [ExpenseClaimController::class,'approve'])->name('claims.approve');
         Route::post('claims/{claim}/reject',  [ExpenseClaimController::class,'reject'])->name('claims.reject');
     });
 
-    Route::middleware('hrmac:hrm.expenses.my-claims.view')->get('my', [MyExpenseController::class,'index'])->name('my.index');
+    Route::middleware('hrmac:hrm.expenses.my-expense-claims.view')->get('my', [MyExpenseController::class,'index'])->name('my.index');
 });
 ```
 
@@ -334,7 +334,7 @@ import { router } from '@inertiajs/react';
 import { Card, Button, Chip, Table } from '@aero/ui';
 
 export default function ClaimShow({ claim, can }) {
-    const approve = () => router.post(route('hrm.expenses.claims.approve', claim.id));
+    const approve = () => router.post(route('hrm.expenses.expense-claims.approve', claim.id));
     const reject  = () => {
         const reason = window.prompt('Rejection reason');
         if (reason) router.post(route('hrm.expenses.claims.reject', claim.id), { reason });
@@ -396,7 +396,7 @@ class ExpenseClaimTest extends TestCase
 
     public function test_employee_can_submit_claim(): void
     {
-        $this->actingAsTenantUser(['hrm.expenses.claims.edit']);
+        $this->actingAsTenantUser(['hrm.expenses.expense-claims.update']);
         $cat = ExpenseCategory::factory()->create();
         $this->post(route('hrm.expenses.claims.store'), [
             'title' => 'Client Lunch',
@@ -411,16 +411,16 @@ class ExpenseClaimTest extends TestCase
 
     public function test_admin_can_approve_claim(): void
     {
-        $this->actingAsTenantUser(['hrm.expenses.claims.approve']);
+        $this->actingAsTenantUser(['hrm.expenses.expense-claims.approve']);
         $claim = ExpenseClaim::factory()->create(['status' => 'submitted']);
-        $this->post(route('hrm.expenses.claims.approve', $claim))->assertRedirect();
+        $this->post(route('hrm.expenses.expense-claims.approve', $claim))->assertRedirect();
         $this->assertSame('approved', $claim->fresh()->status);
         $this->assertDatabaseHas('audit_logs', ['event' => 'EXPENSE_CLAIM_APPROVED']);
     }
 
     public function test_admin_can_reject_claim_with_reason(): void
     {
-        $this->actingAsTenantUser(['hrm.expenses.claims.approve']);
+        $this->actingAsTenantUser(['hrm.expenses.expense-claims.approve']);
         $claim = ExpenseClaim::factory()->create(['status' => 'submitted']);
         $this->post(route('hrm.expenses.claims.reject', $claim), ['reason' => 'Insufficient docs'])
             ->assertRedirect();
@@ -430,21 +430,21 @@ class ExpenseClaimTest extends TestCase
 
     public function test_cannot_approve_already_approved_claim(): void
     {
-        $this->actingAsTenantUser(['hrm.expenses.claims.approve']);
+        $this->actingAsTenantUser(['hrm.expenses.expense-claims.approve']);
         $claim = ExpenseClaim::factory()->create(['status' => 'approved']);
-        $this->post(route('hrm.expenses.claims.approve', $claim))->assertSessionHasErrors();
+        $this->post(route('hrm.expenses.expense-claims.approve', $claim))->assertSessionHasErrors();
     }
 
     public function test_unauthorized_user_cannot_approve(): void
     {
-        $this->actingAsTenantUser(['hrm.expenses.claims.view']);
+        $this->actingAsTenantUser(['hrm.expenses.expense-claims.view']);
         $claim = ExpenseClaim::factory()->create(['status' => 'submitted']);
-        $this->post(route('hrm.expenses.claims.approve', $claim))->assertForbidden();
+        $this->post(route('hrm.expenses.expense-claims.approve', $claim))->assertForbidden();
     }
 
     public function test_index_filters_by_status(): void
     {
-        $this->actingAsTenantUser(['hrm.expenses.claims.view']);
+        $this->actingAsTenantUser(['hrm.expenses.expense-claims.view']);
         ExpenseClaim::factory()->create(['status'=>'submitted']);
         ExpenseClaim::factory()->create(['status'=>'approved']);
         $this->get(route('hrm.expenses.claims.index', ['status' => 'submitted']))

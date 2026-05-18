@@ -112,7 +112,7 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 | H-2 | `phase-1-hrm/plan-h2-org-structure.md` | ✅ Done | Departments (CRUD + org chart), designations, grades, work locations |
 | H-3 | `phase-1-hrm/plan-h3-leave.md` | ✅ Done | Leave types, apply, admin approval, leave balance, calendar, accrual rules, admin settings |
 | H-4 | `phase-1-hrm/plan-h4-attendance.md` | ✅ Done | Clock in/out, admin view (daily/monthly), my attendance, overtime requests + approval, timesheets, shift marketplace |
-| H-5 | `phase-1-hrm/plan-h5-payroll.md` | 🟡 Written | Salary structures, pay components, payroll run (immutable payslips), bulk payroll, payslip viewer/print, tax setup |
+| H-5 | `phase-1-hrm/plan-h5-payroll.md` | ✅ Done | Salary structures, pay components, payroll run (immutable payslips), bulk payroll, payslip viewer/print, tax setup |
 | H-6 | `phase-1-hrm/plan-h6-performance.md` | 🟡 Written | Reviews, templates, goals (create/track), 360 feedback, calibration, skill matrix, PIP |
 | H-7 | `phase-1-hrm/plan-h7-recruitment.md` | 🟡 Written | Jobs, application kanban, interviews, offers, onboarding wizard |
 | H-8 | `phase-1-hrm/plan-h8-training.md` | 🟡 Written | Courses, categories, enrollments, sessions, materials, feedback |

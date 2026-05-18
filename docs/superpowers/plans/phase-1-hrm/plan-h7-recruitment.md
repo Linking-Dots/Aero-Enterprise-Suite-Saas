@@ -68,7 +68,7 @@ Register in `packages/aero-hrm/config/hrmac.php` under `modules.hrm.submodules.r
 Middleware on every route, e.g.:
 
 ```php
-Route::middleware('hrmac:hrm.recruitment.jobs.view')
+Route::middleware('hrmac:hrm.recruitment.job-openings.view')
     ->get('/recruitment/jobs', [JobController::class, 'index'])
     ->name('hrm.recruitment.jobs.index');
 ```
@@ -620,51 +620,51 @@ Route::middleware(['web', 'auth'])
     ->prefix('hrm/recruitment')
     ->name('hrm.recruitment.')
     ->group(function () {
-        Route::middleware('hrmac:hrm.recruitment.jobs.view')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.job-openings.view')->group(function () {
             Route::get('jobs',              [JobController::class, 'index'])->name('jobs.index');
             Route::get('jobs/{job}',        [JobController::class, 'show'])->name('jobs.show');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.jobs.edit')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.job-openings.update')->group(function () {
             Route::get('jobs/create',       [JobController::class, 'create'])->name('jobs.create');
             Route::post('jobs',             [JobController::class, 'store'])->name('jobs.store');
             Route::patch('jobs/{job}',      [JobController::class, 'update'])->name('jobs.update');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.jobs.publish')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.job-openings.update')->group(function () {
             Route::post('jobs/{job}/publish', [JobController::class, 'publish'])->name('jobs.publish');
             Route::post('jobs/{job}/close',   [JobController::class, 'close'])->name('jobs.close');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.applications.view')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.applicants.view')->group(function () {
             Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.applications.edit')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.applicants.update')->group(function () {
             Route::post('applications/{application}/stage',  [ApplicationController::class, 'moveStage'])->name('applications.stage');
             Route::post('applications/{application}/reject', [ApplicationController::class, 'reject'])->name('applications.reject');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.interviews.view')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.interview-scheduling.view')->group(function () {
             Route::get('interviews', [InterviewController::class, 'index'])->name('interviews.index');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.interviews.edit')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.interview-scheduling.update')->group(function () {
             Route::get('interviews/create',         [InterviewController::class, 'create'])->name('interviews.create');
             Route::post('interviews',               [InterviewController::class, 'store'])->name('interviews.store');
             Route::patch('interviews/{interview}',  [InterviewController::class, 'update'])->name('interviews.update');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.offers.view')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.offer-letters.view')->group(function () {
             Route::get('offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.offers.edit')->group(function () {
+        Route::middleware('hrmac:hrm.recruitment.offer-letters.send')->group(function () {
             Route::get('offers/create', [OfferController::class, 'create'])->name('offers.create');
             Route::post('offers',       [OfferController::class, 'store'])->name('offers.store');
         });
 
-        Route::middleware('hrmac:hrm.recruitment.onboarding.edit')->group(function () {
+        Route::middleware('hrmac:hrm.onboarding.onboarding-list.create')->group(function () {
             Route::get('onboarding/{application}', [OnboardingController::class, 'create'])->name('onboarding.create');
             Route::post('onboarding/{application}', [OnboardingController::class, 'store'])->name('onboarding.store');
             Route::post('onboarding/{run}/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
@@ -693,7 +693,7 @@ import { useHRMAC } from '@aero/hrmac';
 import App from '../../../App.jsx';
 
 export default function JobsIndex({ jobs, filters, departments, statuses, types }) {
-    const { canEdit } = useHRMAC('hrm.recruitment.jobs');
+    const { canEdit } = useHRMAC('hrm.recruitment.job-openings');
     const [search, setSearch] = React.useState(filters.search ?? '');
 
     const apply = (next) => router.get(route('hrm.recruitment.jobs.index'), { ...filters, ...next }, { preserveState: true, replace: true });
@@ -787,7 +787,7 @@ import { useHRMAC } from '@aero/hrmac';
 import App from '../../../App.jsx';
 
 export default function JobShow({ job, hiringStages, applicationsByStage, metrics }) {
-    const { canEdit, canPublish } = useHRMAC('hrm.recruitment.jobs');
+    const { canEdit, canPublish } = useHRMAC('hrm.recruitment.job-openings');
 
     const onDragEnd = (result) => {
         if (!result.destination) return;
