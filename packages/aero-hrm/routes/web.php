@@ -1340,8 +1340,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('leave/applications')->name('leave.applications.')->group(function () {
         Route::get('/', [LeaveApplicationController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('index');
-        Route::get('/create', [LeaveApplicationController::class, 'create'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('create');
-        Route::post('/', [LeaveApplicationController::class, 'store'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('store');
+        Route::get('/create', [LeaveApplicationController::class, 'create'])->middleware('hrmac:hrm.leaves.leave-requests.create')->name('create');
+        Route::post('/', [LeaveApplicationController::class, 'store'])->middleware('hrmac:hrm.leaves.leave-requests.create')->name('store');
         Route::get('/{application}', [LeaveApplicationController::class, 'show'])->middleware('hrmac:hrm.leaves.leave-requests.view')->name('show');
         Route::post('/{application}/approve', [LeaveApplicationController::class, 'approve'])->middleware('hrmac:hrm.leaves.leave-requests.approve')->name('approve');
         Route::post('/{application}/reject', [LeaveApplicationController::class, 'reject'])->middleware('hrmac:hrm.leaves.leave-requests.approve')->name('reject');

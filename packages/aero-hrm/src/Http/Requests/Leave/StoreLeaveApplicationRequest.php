@@ -8,7 +8,7 @@ class StoreLeaveApplicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('hrm.leaves.leave-requests.view') ?? false;
+        return $this->user()?->can('hrm.leaves.leave-requests.create') ?? false;
     }
 
     public function rules(): array
