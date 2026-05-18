@@ -102,7 +102,7 @@ Schema::create('hrm_benefit_enrollment_period_benefits', function (Blueprint $t)
 ```php
 Schema::create('hrm_benefit_enrollments', function (Blueprint $t) {
     $t->id();
-    $t->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+    $t->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
     $t->foreignId('period_id')->constrained('hrm_benefit_enrollment_periods');
     $t->foreignId('benefit_id')->constrained('hrm_benefits');
     $t->enum('status', ['enrolled','waived'])->default('enrolled');

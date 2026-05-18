@@ -46,7 +46,7 @@ Schema::create('career_milestones', function (Blueprint $table) {
 Schema::create('succession_candidates', function (Blueprint $table) {
     $table->id();
     $table->foreignId('role_id')->constrained('hrm_designations')->cascadeOnDelete();
-    $table->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+    $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
     $table->string('readiness', 32); // ready_now, 1_2_years, 3_5_years
     $table->text('notes')->nullable();
     $table->foreignId('nominated_by')->constrained('users');

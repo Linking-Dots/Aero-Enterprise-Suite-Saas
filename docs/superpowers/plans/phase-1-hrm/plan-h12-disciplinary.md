@@ -72,7 +72,7 @@ Schema::create('hrm_disciplinary_action_types', function (Blueprint $t) {
 Schema::create('hrm_disciplinary_cases', function (Blueprint $t) {
     $t->id();
     $t->string('reference')->unique();   // CASE-2026-000123
-    $t->foreignId('employee_id')->constrained('hrm_employees');
+    $t->foreignId('employee_id')->constrained('employees');
     $t->foreignId('action_type_id')->constrained('hrm_disciplinary_action_types');
     $t->foreignId('opened_by')->constrained('users');
     $t->date('incident_date');
@@ -113,7 +113,7 @@ Schema::create('hrm_disciplinary_case_documents', function (Blueprint $t) {
 ```php
 Schema::create('hrm_warnings', function (Blueprint $t) {
     $t->id();
-    $t->foreignId('employee_id')->constrained('hrm_employees');
+    $t->foreignId('employee_id')->constrained('employees');
     $t->foreignId('issued_by')->constrained('users');
     $t->foreignId('action_type_id')->nullable()->constrained('hrm_disciplinary_action_types');
     $t->string('subject');
@@ -132,7 +132,7 @@ Schema::create('hrm_warnings', function (Blueprint $t) {
 ```php
 Schema::create('hrm_exit_interviews', function (Blueprint $t) {
     $t->id();
-    $t->foreignId('employee_id')->constrained('hrm_employees');
+    $t->foreignId('employee_id')->constrained('employees');
     $t->date('scheduled_for');
     $t->foreignId('interviewer_id')->nullable()->constrained('users');
     $t->enum('status', ['scheduled','completed','no_show'])->default('scheduled');
@@ -150,8 +150,8 @@ Schema::create('hrm_exit_interviews', function (Blueprint $t) {
 Schema::create('hrm_grievances', function (Blueprint $t) {
     $t->id();
     $t->string('reference')->unique();   // GRV-2026-000045
-    $t->foreignId('filed_by')->constrained('hrm_employees'); // employee
-    $t->foreignId('against_employee_id')->nullable()->constrained('hrm_employees');
+    $t->foreignId('filed_by')->constrained('employees'); // employee
+    $t->foreignId('against_employee_id')->nullable()->constrained('employees');
     $t->enum('category', ['harassment','discrimination','workplace_safety','policy_violation','interpersonal','other']);
     $t->string('subject');
     $t->text('description');

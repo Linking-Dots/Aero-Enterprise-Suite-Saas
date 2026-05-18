@@ -45,7 +45,7 @@ Schema::create('event_registrations', function (Blueprint $table) {
     $table->id();
     $table->foreignId('event_id')->constrained()->cascadeOnDelete();
     $table->foreignId('session_id')->nullable()->constrained('event_sessions')->nullOnDelete();
-    $table->foreignId('employee_id')->nullable()->constrained('hrm_employees')->nullOnDelete();
+    $table->foreignId('employee_id')->nullable()->constrained('employees')->nullOnDelete();
     $table->string('attendee_name');
     $table->string('attendee_email');
     $table->string('token', 64)->unique();

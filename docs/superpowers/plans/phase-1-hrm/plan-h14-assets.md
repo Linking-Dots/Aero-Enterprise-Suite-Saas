@@ -48,7 +48,7 @@ return new class extends Migration {
 Schema::create('asset_allocations', function (Blueprint $table) {
     $table->id();
     $table->foreignId('asset_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+    $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
     $table->dateTime('allocated_at');
     $table->dateTime('returned_at')->nullable();
     $table->string('condition_on_allocation', 32)->nullable();

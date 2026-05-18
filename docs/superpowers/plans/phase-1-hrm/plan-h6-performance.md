@@ -81,8 +81,8 @@ return new class extends Migration {
         Schema::create('hrm_performance_reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cycle_id')->constrained('hrm_review_cycles')->cascadeOnDelete();
-            $table->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
-            $table->foreignId('manager_id')->nullable()->constrained('hrm_employees')->nullOnDelete();
+            $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
+            $table->foreignId('manager_id')->nullable()->constrained('employees')->nullOnDelete();
             $table->enum('status', ['draft', 'self_submitted', 'manager_submitted', 'finalized'])->default('draft');
             $table->json('self_answers')->nullable();
             $table->json('manager_answers')->nullable();
@@ -97,7 +97,7 @@ return new class extends Migration {
 
         Schema::create('hrm_goals', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+            $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->string('title', 200);
             $table->string('specific', 500);
             $table->string('measurable', 500);
@@ -113,7 +113,7 @@ return new class extends Migration {
 
         Schema::create('hrm_feedback_360_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subject_employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+            $table->foreignId('subject_employee_id')->constrained('employees')->cascadeOnDelete();
             $table->foreignId('requester_id')->constrained('users')->cascadeOnDelete();
             $table->json('respondent_ids'); // employee ids invited
             $table->date('due_on');
@@ -561,7 +561,7 @@ class ReviewCycleController extends Controller
             'starts_on'    => 'required|date',
             'ends_on'      => 'required|date|after_or_equal:starts_on',
             'employee_ids' => 'required|array|min:1',
-            'employee_ids.*' => 'integer|exists:hrm_employees,id',
+            'employee_ids.*' => 'integer|exists:employees,id',
             'activate_now' => 'boolean',
         ]);
 

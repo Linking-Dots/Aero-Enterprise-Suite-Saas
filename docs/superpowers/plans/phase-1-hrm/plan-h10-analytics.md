@@ -109,7 +109,7 @@ Schema::create('hrm_workforce_plans', function (Blueprint $t) {
 ```php
 Schema::create('hrm_attrition_risk_scores', function (Blueprint $t) {
     $t->id();
-    $t->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+    $t->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
     $t->decimal('score', 5, 4); // 0.0000 - 1.0000
     $t->enum('band', ['low','medium','high','critical']);
     $t->json('factors'); // [{name, weight, value}]
@@ -141,21 +141,21 @@ Schema::create('hrm_attrition_risk_scores', function (Blueprint $t) {
 
 ```php
 // HeadcountAnalyticsService::kpis()
-$active = DB::table('hrm_employees')
+$active = DB::table('employees')
     ->where('employment_status', 'active')
     ->count();
 
-$avgTenureDays = DB::table('hrm_employees')
+$avgTenureDays = DB::table('employees')
     ->where('employment_status', 'active')
     ->selectRaw('AVG(julianday("now") - julianday(hire_date)) as d')
     ->value('d');
 
-$genderRatio = DB::table('hrm_employees')
+$genderRatio = DB::table('employees')
     ->where('employment_status','active')
     ->selectRaw('gender, COUNT(*) as c')
     ->groupBy('gender')->pluck('c','gender'); // ['male'=>120,'female'=>98,'other'=>4]
 
-$byDept = DB::table('hrm_employees as e')
+$byDept = DB::table('employees as e')
     ->join('hrm_departments as d', 'd.id', '=', 'e.department_id')
     ->where('e.employment_status','active')
     ->selectRaw('d.id, d.name, COUNT(e.id) as headcount')
@@ -170,7 +170,7 @@ return compact('active','avgTenureDays','genderRatio','byDept');
 
 ```php
 // TurnoverAnalyticsService::monthlyTrend()
-return DB::table('hrm_employees')
+return DB::table('employees')
     ->selectRaw("strftime('%Y-%m', terminated_at) as month, COUNT(*) as leavers")
     ->whereNotNull('terminated_at')
     ->where('terminated_at', '>=', now()->subMonths(12))

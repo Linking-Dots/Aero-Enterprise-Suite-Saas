@@ -23,7 +23,7 @@
 Schema::create('expense_claims', function (Blueprint $table) {
     $table->id();
     $table->string('reference', 40)->unique();
-    $table->foreignId('employee_id')->constrained('hrm_employees')->cascadeOnDelete();
+    $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
     $table->date('claim_date');
     $table->string('title');
     $table->text('description')->nullable();
