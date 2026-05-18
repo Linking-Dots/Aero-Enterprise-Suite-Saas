@@ -18,6 +18,26 @@ final class OvertimeApprovalService
     ) {}
 
     /**
+     * Create and persist a new overtime request.
+     */
+    public function create(array $data): OvertimeRequest
+    {
+        return DB::transaction(function () use ($data): OvertimeRequest {
+            $request = OvertimeRequest::create($data);
+
+            $this->audit->log(
+                event: AuditEventType::RECORD_CREATED->value,
+                action: 'created',
+                subject: $request,
+                description: "Overtime request #{$request->id} submitted for {$request->work_date}",
+                after: $request->only(['employee_id', 'work_date', 'hours', 'reason', 'status']),
+            );
+
+            return $request;
+        });
+    }
+
+    /**
      * Approve a pending overtime request.
      *
      * @throws AttendanceException

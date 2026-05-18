@@ -2,6 +2,8 @@
 
 namespace Aero\HRM\Http\Controllers\Attendance;
 
+use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\Timesheet;
 use Aero\HRM\Services\Attendance\TimesheetAggregator;
@@ -14,6 +16,10 @@ use Inertia\Response;
 
 class TimesheetController extends Controller
 {
+    public function __construct(
+        private readonly AuditServiceInterface $audit,
+    ) {}
+
     public function index(Request $request): Response
     {
         Gate::authorize('hrmac', 'hrm.attendance.attendance-logs.view');
@@ -51,6 +57,13 @@ class TimesheetController extends Controller
             $timesheet->entries()->create($entry);
         }
         $agg->recompute($timesheet);
+
+        $this->audit->log(
+            event: AuditEventType::RECORD_UPDATED->value,
+            action: 'updated',
+            subject: $timesheet,
+            description: "Timesheet #{$timesheet->id} saved ({$timesheet->total_hours}h for week {$timesheet->week_start})",
+        );
 
         return back()->with('success', 'Timesheet saved.');
     }

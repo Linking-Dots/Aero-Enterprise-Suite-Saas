@@ -18,6 +18,26 @@ final class ShiftSwapService
     ) {}
 
     /**
+     * Create and persist a new shift swap request.
+     */
+    public function create(array $data): ShiftSwapRequest
+    {
+        return DB::transaction(function () use ($data): ShiftSwapRequest {
+            $swap = ShiftSwapRequest::create($data);
+
+            $this->audit->log(
+                event: AuditEventType::RECORD_CREATED->value,
+                action: 'created',
+                subject: $swap,
+                description: "Shift swap #{$swap->id} posted for {$swap->shift_date}",
+                after: $swap->only(['requester_employee_id', 'shift_date', 'shift_label', 'status']),
+            );
+
+            return $swap;
+        });
+    }
+
+    /**
      * Approve a shift swap request that is in 'open' or 'matched' status.
      *
      * @throws AttendanceException

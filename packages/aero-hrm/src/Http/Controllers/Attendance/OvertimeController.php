@@ -37,7 +37,7 @@ class OvertimeController extends Controller
         return Inertia::render('HRM/Attendance/Overtime/Create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, OvertimeApprovalService $svc): RedirectResponse
     {
         Gate::authorize('hrmac', 'hrm.overtime.overtime-records.view');
 
@@ -50,7 +50,7 @@ class OvertimeController extends Controller
         $employee = $request->user()->employee;
         abort_unless($employee, 403, 'No employee profile.');
 
-        OvertimeRequest::create([...$data, 'employee_id' => $employee->id]);
+        $svc->create([...$data, 'employee_id' => $employee->id]);
 
         return redirect()->route('hrm.attendance.overtime.index')
             ->with('success', 'Overtime request submitted.');

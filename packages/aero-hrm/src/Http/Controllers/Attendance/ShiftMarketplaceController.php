@@ -59,7 +59,7 @@ class ShiftMarketplaceController extends Controller
     /**
      * Store a new shift swap request.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ShiftSwapService $svc): RedirectResponse
     {
         Gate::authorize('hrmac', 'hrm.attendance.shift-marketplace.create');
 
@@ -72,7 +72,7 @@ class ShiftMarketplaceController extends Controller
         $employee = $request->user()->employee;
         abort_unless($employee, 403, 'No employee profile found.');
 
-        ShiftSwapRequest::create([
+        $svc->create([
             ...$data,
             'requester_employee_id' => $employee->id,
             'status' => 'open',
@@ -141,7 +141,7 @@ class ShiftMarketplaceController extends Controller
      */
     public function approve(ShiftSwapRequest $swap, ShiftSwapService $svc): RedirectResponse
     {
-        Gate::authorize('hrmac', 'hrm.attendance.shift-marketplace.create');
+        Gate::authorize('hrmac', 'hrm.attendance.shift-marketplace.approve');
         $svc->approve($swap);
 
         return back()->with('success', 'Shift swap approved successfully.');

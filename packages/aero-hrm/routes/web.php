@@ -1384,7 +1384,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('attendance/shifts')->name('attendance.shifts.')->group(function () {
         Route::get('/marketplace',              [ShiftMarketplaceController::class, 'index'])  ->middleware('hrmac:hrm.attendance.shift-marketplace.view')  ->name('marketplace');
         Route::post('/marketplace',             [ShiftMarketplaceController::class, 'store'])  ->middleware('hrmac:hrm.attendance.shift-marketplace.create')->name('marketplace.store');
-        Route::post('/marketplace/{swap}/approve',[ShiftMarketplaceController::class, 'approve'])->middleware('hrmac:hrm.attendance.shift-marketplace.create')->name('marketplace.approve');
+        Route::post('/marketplace/{swap}/approve',[ShiftMarketplaceController::class, 'approve'])->middleware('hrmac:hrm.attendance.shift-marketplace.approve')->name('marketplace.approve');
     });
 
 });
