@@ -79,11 +79,11 @@ function SessionCalibration({ session, employees, onSave }) {
           </HStack>
 
           {/* Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '6rem repeat(3, 1fr)', gap: '0.25rem' }}>
+          <div className="grid gap-1" style={{ gridTemplateColumns: '6rem repeat(3, 1fr)' }}>
             {/* Column headers */}
-            <div style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+            <div className="p-2 flex items-center justify-center" />
             {cols.map(x => (
-              <div key={x} style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div key={x} className="p-2 flex items-center justify-center">
                 <Text tone="secondary">Perf: {PERF_LABELS[x - 1]}</Text>
               </div>
             ))}
@@ -91,16 +91,16 @@ function SessionCalibration({ session, employees, onSave }) {
             {/* Rows */}
             {rows.map(y => (
               <>
-                <div key={`row-${y}`} style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={`row-${y}`} className="p-2 flex items-center justify-center">
                   <Text tone="secondary">Pot: {POT_LABELS[y - 1]}</Text>
                 </div>
                 {cols.map(x => {
                   const key  = cellKey(x, y);
                   const emps = cellMap[key] ?? [];
                   return (
-                    <div key={`${x}-${y}`} style={{ minHeight: '5rem', border: '1px solid var(--aeos-divider)', borderRadius: 'var(--aeos-r-md)', padding: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignContent: 'flex-start' }}>
+                    <div key={`${x}-${y}`} className="min-h-[5rem] border border-gray-200 rounded-lg p-2 flex flex-wrap gap-1 content-start" style={{ borderColor: 'var(--aeos-divider)', borderRadius: 'var(--aeos-r-md)' }}>
                       {emps.map(empId => (
-                        <div key={empId} style={{ background: 'var(--aeos-bg-surface)', border: '1px solid var(--aeos-divider)', borderRadius: 'var(--aeos-r-sm)', padding: '0.125rem 0.5rem', fontSize: '0.75rem' }}>
+                        <div key={empId} className="rounded-sm px-2 py-0.5 text-xs" style={{ background: 'var(--aeos-bg-surface)', border: '1px solid var(--aeos-divider)', borderRadius: 'var(--aeos-r-sm)' }}>
                           <Text>{employeeMap[empId] ?? `#${empId}`}</Text>
                         </div>
                       ))}

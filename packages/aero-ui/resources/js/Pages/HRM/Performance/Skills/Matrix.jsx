@@ -43,13 +43,13 @@ export default function SkillsMatrix({ employees, skills }) {
         )}
 
         {employees && employees.length > 0 && (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', minWidth: '100%', fontFamily: 'var(--aeos-font-body)', fontSize: '0.875rem' }}>
+          <div className="overflow-x-auto">
+            <table className="border-collapse w-full text-sm" style={{ fontFamily: 'var(--aeos-font-body)' }}>
               <thead>
                 <tr>
-                  <th style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', background: 'var(--aeos-bg-surface)', fontWeight: '600', color: 'var(--aeos-text-secondary)', textAlign: 'left' }}>Employee</th>
+                  <th className="border px-3 py-2 whitespace-nowrap font-semibold text-left" style={{ borderColor: 'var(--aeos-divider)', background: 'var(--aeos-bg-surface)', color: 'var(--aeos-text-secondary)' }}>Employee</th>
                   {(skills ?? []).map(skill => (
-                    <th key={skill} style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', background: 'var(--aeos-bg-surface)', fontWeight: '600', color: 'var(--aeos-text-secondary)', textAlign: 'left' }}>{skill}</th>
+                    <th key={skill} className="border px-3 py-2 whitespace-nowrap font-semibold text-left" style={{ borderColor: 'var(--aeos-divider)', background: 'var(--aeos-bg-surface)', color: 'var(--aeos-text-secondary)' }}>{skill}</th>
                   ))}
                 </tr>
               </thead>
@@ -61,9 +61,9 @@ export default function SkillsMatrix({ employees, skills }) {
 
                   return (
                     <tr key={emp.id}>
-                      <td style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', fontWeight: '500', color: 'var(--aeos-text-primary)' }}>{emp.name}</td>
+                      <td className="border px-3 py-2 whitespace-nowrap font-medium" style={{ borderColor: 'var(--aeos-divider)', color: 'var(--aeos-text-primary)' }}>{emp.name}</td>
                       {(skills ?? []).map(skill => (
-                        <td key={skill} style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                        <td key={skill} className="border px-3 py-2 whitespace-nowrap text-center" style={{ borderColor: 'var(--aeos-divider)' }}>
                           <LevelChip level={skillMap[skill] ?? 0} />
                         </td>
                       ))}
