@@ -54,6 +54,8 @@ use Aero\HRM\Http\Controllers\Leave\LeaveTypeController;
 use Aero\HRM\Http\Controllers\OrgStructure\GradeController;
 use Aero\HRM\Http\Controllers\OrgStructure\WorkLocationController;
 use Aero\HRM\Http\Controllers\OvertimeController;
+use Aero\HRM\Http\Controllers\Attendance\OvertimeController as AttendanceOvertimeController;
+use Aero\HRM\Http\Controllers\Attendance\TimesheetController;
 use Aero\HRM\Http\Controllers\Performance\GoalController;
 use Aero\HRM\Http\Controllers\Performance\PerformanceCalibrationController;
 use Aero\HRM\Http\Controllers\Performance\PerformanceImprovementPlanController;
@@ -1352,5 +1354,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('leave/calendar', [LeaveCalendarController::class, 'index'])->middleware('hrmac:hrm.leaves.holiday-calendar.view')->name('leave.calendar.index');
     Route::get('leave/settings', [LeaveLeaveSettingController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-policies.view')->name('leave.settings.index');
     Route::put('leave/settings', [LeaveLeaveSettingController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-policies.edit')->name('leave.settings.update');
+
+    // ── Attendance ──────────────────────────────────────────────────────────────
+    // Clock in/out + my status
+    Route::get('attendance/clock',    [AttendanceController::class, 'clockStatus'])->middleware('hrmac:hrm.attendance.my-attendance.view')->name('attendance.clock');
+    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])   ->middleware('hrmac:hrm.attendance.my-attendance.view')->name('attendance.clock-in');
+    Route::post('attendance/clock-out',[AttendanceController::class, 'clockOut'])  ->middleware('hrmac:hrm.attendance.my-attendance.view')->name('attendance.clock-out');
+
+    // Admin daily + monthly
+    Route::get('attendance/daily',   [AttendanceController::class, 'daily'])  ->middleware('hrmac:hrm.attendance.daily-attendance.view')->name('attendance.daily');
+    Route::get('attendance/monthly', [AttendanceController::class, 'monthly'])->middleware('hrmac:hrm.attendance.daily-attendance.view')->name('attendance.monthly');
+
+    // Overtime
+    Route::prefix('attendance/overtime')->name('attendance.overtime.')->group(function () {
+        Route::get('/',                                [AttendanceOvertimeController::class, 'index']) ->middleware('hrmac:hrm.overtime.overtime-records.view')   ->name('index');
+        Route::get('/create',                          [AttendanceOvertimeController::class, 'create'])->middleware('hrmac:hrm.overtime.overtime-records.view')   ->name('create');
+        Route::post('/',                               [AttendanceOvertimeController::class, 'store']) ->middleware('hrmac:hrm.overtime.overtime-records.view')   ->name('store');
+        Route::post('/{overtime}/approve',             [AttendanceOvertimeController::class, 'approve'])->middleware('hrmac:hrm.overtime.overtime-records.approve')->name('approve');
+        Route::post('/{overtime}/reject',              [AttendanceOvertimeController::class, 'reject']) ->middleware('hrmac:hrm.overtime.overtime-records.approve')->name('reject');
+    });
+
+    // Timesheets
+    Route::prefix('attendance/timesheets')->name('attendance.timesheets.')->group(function () {
+        Route::get('/',              [TimesheetController::class, 'index']) ->middleware('hrmac:hrm.attendance.attendance-logs.view')->name('index');
+        Route::put('/{timesheet}',   [TimesheetController::class, 'update'])->middleware('hrmac:hrm.attendance.attendance-logs.view')->name('update');
+    });
+
+    // Shift Marketplace
+    Route::prefix('attendance/shifts')->name('attendance.shifts.')->group(function () {
+        Route::get('/marketplace',              [ShiftMarketplaceController::class, 'index'])  ->middleware('hrmac:hrm.attendance.shift-marketplace.view')  ->name('marketplace');
+        Route::post('/marketplace',             [ShiftMarketplaceController::class, 'store'])  ->middleware('hrmac:hrm.attendance.shift-marketplace.create')->name('marketplace.store');
+        Route::post('/marketplace/{swap}/approve',[ShiftMarketplaceController::class, 'approve'])->middleware('hrmac:hrm.attendance.shift-marketplace.create')->name('marketplace.approve');
+    });
 
 });
