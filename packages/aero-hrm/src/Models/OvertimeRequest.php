@@ -1,50 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use App\Models\User;
+use Aero\Core\Models\User;
+use Aero\HRM\Database\Factories\OvertimeRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Overtime Request Model
- *
- * Manages overtime requests and approvals.
- */
 class OvertimeRequest extends TenantModel
 {
     use HasFactory;
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_APPROVED = 'approved';
+
+    public const STATUS_REJECTED = 'rejected';
+
+    protected $table = 'hrm_overtime_requests';
+
     protected $fillable = [
         'employee_id',
-        'request_date',
-        'start_time',
-        'end_time',
-        'planned_hours',
-        'actual_hours',
-        'overtime_type',
+        'work_date',
+        'hours',
         'reason',
-        'project_task_reference',
-        'rate_multiplier',
         'status',
-        'approved_by',
-        'approved_at',
-        'rejection_reason',
-        'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'request_date' => 'date',
-            'start_time' => 'datetime',
-            'end_time' => 'datetime',
-            'planned_hours' => 'decimal:2',
-            'actual_hours' => 'decimal:2',
-            'rate_multiplier' => 'decimal:2',
+            'work_date' => 'date',
+            'hours' => 'decimal:2',
             'approved_at' => 'datetime',
         ];
     }
@@ -54,26 +44,13 @@ class OvertimeRequest extends TenantModel
         return $this->belongsTo(Employee::class);
     }
 
-    public function approvedBy(): BelongsTo
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    /**
-     * Check if request is pending
-     */
-    public function isPending(): bool
+    protected static function newFactory(): OvertimeRequestFactory
     {
-        return $this->status === 'pending';
-    }
-
-    /**
-     * Calculate overtime pay
-     */
-    public function calculateOvertimePay(float $hourlyRate): float
-    {
-        $hours = $this->actual_hours ?? $this->planned_hours;
-
-        return $hours * $hourlyRate * $this->rate_multiplier;
+        return OvertimeRequestFactory::new();
     }
 }

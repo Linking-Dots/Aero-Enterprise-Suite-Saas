@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Database\Factories;
 
+use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\OvertimeRequest;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,28 +18,11 @@ class OvertimeRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'employee_id' => null,
-            'requested_date' => $this->faker->dateTimeBetween('now', '+1 week'),
-            'estimated_hours' => $this->faker->randomFloat(1, 1, 6),
-            'reason' => $this->faker->paragraph(),
-            'status' => $this->faker->randomElement(['pending', 'approved', 'rejected']),
-            'approved_by' => null,
-            'approved_at' => $this->faker->optional()->dateTime(),
+            'employee_id' => Employee::factory(),
+            'work_date' => today(),
+            'hours' => 2.0,
+            'reason' => 'Test overtime',
+            'status' => OvertimeRequest::STATUS_PENDING,
         ];
-    }
-
-    public function approved(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'approved',
-            'approved_at' => now(),
-        ]);
-    }
-
-    public function rejected(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'rejected',
-        ]);
     }
 }
