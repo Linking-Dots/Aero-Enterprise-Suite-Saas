@@ -75,28 +75,9 @@ export default function RunsShow({ run }) {
 
   return (
     <>
-      <style>{`
-        .run-show-header {
-          padding-bottom: 1.25rem;
-          border-bottom: 1px solid var(--aeos-divider);
-          margin-bottom: 1.5rem;
-        }
-        .run-summary-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-          gap: 1rem;
-        }
-        .run-summary-item {
-          padding: 1rem 1.25rem;
-        }
-        .run-summary-label {
-          margin-bottom: 0.25rem;
-        }
-      `}</style>
-
       <VStack gap={6}>
         {/* Header */}
-        <div className="run-show-header">
+        <div className="flex items-center justify-between pb-5 border-b border-aeos-divider mb-6">
           <HStack gap={2} align="center">
             <Box grow>
               <VStack gap={1}>
@@ -104,9 +85,6 @@ export default function RunsShow({ run }) {
                 <HStack gap={2} align="center">
                   <Text size="lg">{run.label}</Text>
                   <Badge intent={statusIntent(run)}>{statusLabel(run)}</Badge>
-                  {run.locked_at && (
-                    <Badge intent="neutral">Locked</Badge>
-                  )}
                 </HStack>
               </VStack>
             </Box>
@@ -129,23 +107,23 @@ export default function RunsShow({ run }) {
 
         {/* Summary cards */}
         <Card>
-          <div className="run-summary-grid">
-            <div className="run-summary-item">
-              <div className="run-summary-label">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="flex flex-col gap-1 p-4 md:p-5">
+              <div className="text-xs text-default-500 mb-1">
                 <Eyebrow tone="secondary">Period</Eyebrow>
               </div>
               <Mono>{run.period_start} &rarr; {run.period_end}</Mono>
             </div>
-            <div className="run-summary-item">
-              <div className="run-summary-label">
+            <div className="flex flex-col gap-1 p-4 md:p-5">
+              <div className="text-xs text-default-500 mb-1">
                 <Eyebrow tone="secondary">Total Gross</Eyebrow>
               </div>
               <Text size="lg">
                 {Number(run.total_gross ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </Text>
             </div>
-            <div className="run-summary-item">
-              <div className="run-summary-label">
+            <div className="flex flex-col gap-1 p-4 md:p-5">
+              <div className="text-xs text-default-500 mb-1">
                 <Eyebrow tone="secondary">Total Net</Eyebrow>
               </div>
               <Text size="lg">
