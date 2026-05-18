@@ -2,7 +2,15 @@
 
 namespace Aero\HRM;
 
+use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
+use Aero\Core\Services\DashboardRegistry;
+use Aero\HRM\Providers\HRMServiceProvider;
 use Aero\HRM\Providers\HRMServiceProvider as ModuleServiceProvider;
+use Aero\HRM\Services\Attendance\AttendanceClockService;
+use Aero\HRM\Services\Attendance\OvertimeApprovalService;
+use Aero\HRM\Services\Attendance\ShiftSwapService;
+use Aero\HRM\Services\Attendance\TimesheetAggregator;
+use Aero\Platform\AeroPlatformServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +37,12 @@ class AeroHrmServiceProvider extends ServiceProvider
         );
 
         // Module definitions are in config/module.php and loaded by ModuleDiscoveryService
+
+        // Attendance services
+        $this->app->singleton(AttendanceClockService::class);
+        $this->app->singleton(OvertimeApprovalService::class);
+        $this->app->singleton(TimesheetAggregator::class);
+        $this->app->singleton(ShiftSwapService::class);
     }
 
     /**
@@ -79,7 +93,7 @@ class AeroHrmServiceProvider extends ServiceProvider
     {
         // HRMServiceProvider (via AbstractModuleProvider) already loads routes
         // with proper domain constraints. Skip here to prevent duplicate registration.
-        if ($this->app->providerIsLoaded(\Aero\HRM\Providers\HRMServiceProvider::class)) {
+        if ($this->app->providerIsLoaded(HRMServiceProvider::class)) {
             return;
         }
 
@@ -91,7 +105,7 @@ class AeroHrmServiceProvider extends ServiceProvider
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([
                     'web',
-                    \Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral::class,
+                    InitializeTenancyIfNotCentral::class,
                     'tenant',
                 ])
                 ->prefix('hrm')
@@ -110,7 +124,7 @@ class AeroHrmServiceProvider extends ServiceProvider
      */
     protected function isPlatformActive(): bool
     {
-        return class_exists(\Aero\Platform\AeroPlatformServiceProvider::class);
+        return class_exists(AeroPlatformServiceProvider::class);
     }
 
     /**
@@ -127,11 +141,11 @@ class AeroHrmServiceProvider extends ServiceProvider
     protected function registerDashboards(): void
     {
         // Only register if DashboardRegistry is available
-        if (! $this->app->bound(\Aero\Core\Services\DashboardRegistry::class)) {
+        if (! $this->app->bound(DashboardRegistry::class)) {
             return;
         }
 
-        $registry = $this->app->make(\Aero\Core\Services\DashboardRegistry::class);
+        $registry = $this->app->make(DashboardRegistry::class);
 
         // Register HRM Dashboard (for HR Managers and Staff)
         $registry->register(
