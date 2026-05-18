@@ -114,7 +114,7 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 | H-4 | `phase-1-hrm/plan-h4-attendance.md` | ✅ Done | Clock in/out, admin view (daily/monthly), my attendance, overtime requests + approval, timesheets, shift marketplace |
 | H-5 | `phase-1-hrm/plan-h5-payroll.md` | ✅ Done | Salary structures, pay components, payroll run (immutable payslips), bulk payroll, payslip viewer/print, tax setup |
 | H-6 | `phase-1-hrm/plan-h6-performance.md` | ✅ Done | Reviews, templates, goals (create/track), 360 feedback, calibration, skill matrix, PIP |
-| H-7 | `phase-1-hrm/plan-h7-recruitment.md` | 🟡 Written | Jobs, application kanban, interviews, offers, onboarding wizard |
+| H-7 | `phase-1-hrm/plan-h7-recruitment.md` | ✅ Done | Jobs, application kanban, interviews, offers, onboarding wizard |
 | H-8 | `phase-1-hrm/plan-h8-training.md` | 🟡 Written | Courses, categories, enrollments, sessions, materials, feedback |
 | H-9 | `phase-1-hrm/plan-h9-self-service.md` | 🟡 Written | Employee portal: my profile, my leaves, my payslips, my benefits, my training, career path |
 | H-10 | `phase-1-hrm/plan-h10-analytics.md` | 🟡 Written | HR analytics dashboard, AI insights, attrition predictions, DEI dashboard, pulse surveys, workforce planning |
