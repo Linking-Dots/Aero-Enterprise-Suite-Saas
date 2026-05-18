@@ -62,9 +62,12 @@ use Aero\HRM\Http\Controllers\Payroll\PayslipController as PayrollPayslipControl
 use Aero\HRM\Http\Controllers\Payroll\SalaryStructureController as PayrollSalaryStructureController;
 use Aero\HRM\Http\Controllers\Payroll\TaxSettingController as PayrollTaxSettingController;
 use Aero\HRM\Http\Controllers\Performance\GoalController;
+use Aero\HRM\Http\Controllers\Performance\HrmGoalController;
+use Aero\HRM\Http\Controllers\Performance\HrmPerformanceReviewController;
 use Aero\HRM\Http\Controllers\Performance\PerformanceCalibrationController;
 use Aero\HRM\Http\Controllers\Performance\PerformanceImprovementPlanController;
 use Aero\HRM\Http\Controllers\Performance\PerformanceReviewController;
+use Aero\HRM\Http\Controllers\Performance\ReviewCycleController;
 use Aero\HRM\Http\Controllers\Performance\SkillMatrixController;
 use Aero\HRM\Http\Controllers\PulseSurveyController;
 use Aero\HRM\Http\Controllers\Recruitment\RecruitmentController;
@@ -1467,6 +1470,102 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/tax', [PayrollTaxSettingController::class, 'store'])
             ->middleware('hrmac:hrm.payroll.tax-setup.manage')
             ->name('tax.store');
+    });
+
+    // =========================================================================
+    // Performance Management v2 (H6)
+    // =========================================================================
+
+    // Review Cycles
+    Route::prefix('performance/cycles')->name('performance.cycles.')->group(function () {
+        Route::get('/', [ReviewCycleController::class, 'index'])
+            ->middleware('hrmac:hrm.performance.appraisal-cycles.view')
+            ->name('index');
+        Route::get('/create', [ReviewCycleController::class, 'create'])
+            ->middleware('hrmac:hrm.performance.appraisal-cycles.create')
+            ->name('create');
+        Route::post('/', [ReviewCycleController::class, 'store'])
+            ->middleware('hrmac:hrm.performance.appraisal-cycles.create')
+            ->name('store');
+        Route::post('/{cycle}/activate', [ReviewCycleController::class, 'activate'])
+            ->middleware('hrmac:hrm.performance.appraisal-cycles.update')
+            ->name('activate');
+    });
+
+    // Performance Reviews (v2)
+    Route::prefix('performance/reviews')->name('performance.reviews.')->group(function () {
+        Route::get('/', [HrmPerformanceReviewController::class, 'index'])
+            ->middleware('hrmac:hrm.performance.reviews-360.view')
+            ->name('index');
+        Route::get('/{review}', [HrmPerformanceReviewController::class, 'show'])
+            ->middleware('hrmac:hrm.performance.reviews-360.view')
+            ->name('show');
+        Route::post('/{review}/submit-self', [HrmPerformanceReviewController::class, 'submitSelf'])
+            ->middleware('hrmac:hrm.performance.reviews-360.submit')
+            ->name('self');
+        Route::post('/{review}/submit-manager', [HrmPerformanceReviewController::class, 'submitManager'])
+            ->middleware('hrmac:hrm.performance.reviews-360.approve')
+            ->name('manager');
+        Route::post('/{review}/finalize', [HrmPerformanceReviewController::class, 'finalize'])
+            ->middleware('hrmac:hrm.performance.reviews-360.approve')
+            ->name('finalize');
+    });
+
+    // Goals (SMART / v2)
+    Route::prefix('performance/goals')->name('performance.goals.')->group(function () {
+        Route::get('/', [HrmGoalController::class, 'index'])
+            ->middleware('hrmac:hrm.performance.goals.view')
+            ->name('index');
+        Route::post('/', [HrmGoalController::class, 'store'])
+            ->middleware('hrmac:hrm.performance.goals.edit')
+            ->name('store');
+        Route::put('/{goal}', [HrmGoalController::class, 'update'])
+            ->middleware('hrmac:hrm.performance.goals.edit')
+            ->name('update');
+        Route::post('/{goal}/close', [HrmGoalController::class, 'close'])
+            ->middleware('hrmac:hrm.performance.goals.edit')
+            ->name('close');
+    });
+
+    // 360° Feedback (performance submodule — new Feedback360Request model)
+    Route::prefix('performance/feedback-360')->name('performance.feedback-360.')->group(function () {
+        Route::get('/', [Feedback360Controller::class, 'index'])
+            ->middleware('hrmac:hrm.feedback-360.feedback-reviews.view')
+            ->name('index');
+        Route::post('/', [Feedback360Controller::class, 'store'])
+            ->middleware('hrmac:hrm.feedback-360.feedback-reviews.create')
+            ->name('store');
+        Route::post('/{feedback360request}/respond', [Feedback360Controller::class, 'respond'])
+            ->middleware('hrmac:hrm.feedback-360.feedback-reviews.submit')
+            ->name('respond');
+    });
+
+    // Performance Calibration (v2)
+    Route::prefix('performance/calibration')->name('performance.calibration.')->group(function () {
+        Route::get('/', [PerformanceCalibrationController::class, 'index'])
+            ->middleware('hrmac:hrm.performance.calibration.view')
+            ->name('index');
+        Route::put('/{session}', [PerformanceCalibrationController::class, 'update'])
+            ->middleware('hrmac:hrm.performance.calibration.manage')
+            ->name('update');
+    });
+
+    // Skill Matrix (v2)
+    Route::get('performance/skills/matrix', [SkillMatrixController::class, 'matrix'])
+        ->middleware('hrmac:hrm.performance.skill-matrix.view')
+        ->name('performance.skill-matrix');
+
+    // Performance Improvement Plans (v2)
+    Route::prefix('performance/pip')->name('performance.pip.')->group(function () {
+        Route::get('/', [PerformanceImprovementPlanController::class, 'index'])
+            ->middleware('hrmac:hrm.performance.improvement_plans.view')
+            ->name('index');
+        Route::get('/create', [PerformanceImprovementPlanController::class, 'create'])
+            ->middleware('hrmac:hrm.performance.improvement_plans.create')
+            ->name('create');
+        Route::post('/', [PerformanceImprovementPlanController::class, 'store'])
+            ->middleware('hrmac:hrm.performance.improvement_plans.create')
+            ->name('store');
     });
 
 });
