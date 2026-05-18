@@ -7,8 +7,8 @@ namespace Aero\HRM\Services\Payroll;
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\HRM\Models\Employee;
-use Aero\HRM\Models\Payslip;
 use Aero\HRM\Models\PayrollRun;
+use Aero\HRM\Models\Payslip;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,43 +35,25 @@ final class PayrollRunGenerator
     {
         return DB::transaction(function () use ($payload, $employeeIds): PayrollRun {
             $run = PayrollRun::create([
-                'label'        => $payload['label'],
+                'label' => $payload['label'],
                 'period_start' => $payload['period_start'],
-                'period_end'   => $payload['period_end'],
-                'status'       => PayrollRun::STATUS_DRAFT,
+                'period_end' => $payload['period_end'],
+                'status' => PayrollRun::STATUS_DRAFT,
             ]);
 
-            $year       = (int) date('Y', strtotime($payload['period_end']));
+            $year = (int) date('Y', strtotime($payload['period_end']));
             $totalGross = 0.0;
-            $totalNet   = 0.0;
+            $totalNet = 0.0;
 
-            $employees = Employee::with(['salaryStructure', 'bankDetail'])
+            $employees = Employee::with(['payrollStructure', 'bankDetail'])
                 ->whereIn('id', $employeeIds)
                 ->get();
 
             foreach ($employees as $employee) {
-                // Use the first active salary structure on the employee.
-                $struct = $employee->salaryStructure
-                    ->where('is_active', true)
-                    ->first();
-
-                if ($struct === null) {
-                    // Skip employees without an active structure.
-                    continue;
-                }
-
-                // Resolve the SalaryStructure (v2) linked by the EmployeeSalaryStructure junction.
-                // The salary_component_id on the junction is used as the structure id in v2 context.
-                // Prefer a direct salary_structure_id if it exists, otherwise use component_id.
-                $salaryStructureId = $struct->salary_structure_id ?? $struct->salary_component_id ?? null;
-
-                if ($salaryStructureId === null) {
-                    continue;
-                }
-
-                $salaryStructure = \Aero\HRM\Models\SalaryStructure::find($salaryStructureId);
+                $salaryStructure = $employee->payrollStructure;
 
                 if ($salaryStructure === null || ! $salaryStructure->active) {
+                    // Skip employees without an assigned active salary structure.
                     continue;
                 }
 
@@ -80,26 +62,26 @@ final class PayrollRunGenerator
                 $bankDetail = $employee->bankDetail;
 
                 Payslip::create([
-                    'payroll_run_id'      => $run->id,
-                    'employee_id'         => $employee->id,
-                    'gross'               => $breakdown['gross'],
-                    'tax'                 => $breakdown['tax'],
-                    'deductions_total'    => $breakdown['deductions'],
-                    'net'                 => $breakdown['net'],
-                    'line_items'          => $breakdown['lines'],
-                    'employee_snapshot'   => $this->buildSnapshot($employee),
+                    'payroll_run_id' => $run->id,
+                    'employee_id' => $employee->id,
+                    'gross' => $breakdown['gross'],
+                    'tax' => $breakdown['tax'],
+                    'deductions_total' => $breakdown['deductions'],
+                    'net' => $breakdown['net'],
+                    'line_items' => $breakdown['lines'],
+                    'employee_snapshot' => $this->buildSnapshot($employee),
                     'bank_account_number' => $bankDetail?->account_number,
-                    'bank_name'           => $bankDetail?->bank_name,
+                    'bank_name' => $bankDetail?->bank_name,
                     'bank_routing_number' => $bankDetail?->routing_number,
                 ]);
 
                 $totalGross += $breakdown['gross'];
-                $totalNet   += $breakdown['net'];
+                $totalNet += $breakdown['net'];
             }
 
             // Update run totals (allowed — run is not yet locked).
             $run->total_gross = round($totalGross, 2);
-            $run->total_net   = round($totalNet, 2);
+            $run->total_net = round($totalNet, 2);
             $run->save();
 
             $this->audit->log(
@@ -109,9 +91,9 @@ final class PayrollRunGenerator
                 description: "Payroll run '{$run->label}' created with ".count($employeeIds).' employee(s).',
                 after: [
                     'period_start' => $run->period_start->toDateString(),
-                    'period_end'   => $run->period_end->toDateString(),
-                    'total_gross'  => $run->total_gross,
-                    'total_net'    => $run->total_net,
+                    'period_end' => $run->period_end->toDateString(),
+                    'total_gross' => $run->total_gross,
+                    'total_net' => $run->total_net,
                 ],
             );
 
@@ -124,11 +106,11 @@ final class PayrollRunGenerator
     private function buildSnapshot(Employee $employee): array
     {
         return [
-            'id'              => $employee->id,
-            'employee_code'   => $employee->employee_code,
-            'name'            => $employee->user?->name,
-            'department'      => $employee->department?->name,
-            'designation'     => $employee->designation?->title,
+            'id' => $employee->id,
+            'employee_code' => $employee->employee_code,
+            'name' => $employee->user?->name,
+            'department' => $employee->department?->name,
+            'designation' => $employee->designation?->title,
             'employment_type' => $employee->employment_type,
         ];
     }

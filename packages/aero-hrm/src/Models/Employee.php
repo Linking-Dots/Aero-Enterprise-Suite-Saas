@@ -117,6 +117,7 @@ class Employee extends TenantModel implements HasMedia
         'user_id',
         'department_id',
         'designation_id',
+        'salary_structure_id',
         'manager_id',
 
         // ── Employee identifiers ───────────────────────────────────────────────
@@ -310,11 +311,20 @@ class Employee extends TenantModel implements HasMedia
     }
 
     /**
-     * Get salary structure for this employee.
+     * Get the legacy pivot salary-structure rows for this employee.
      */
     public function salaryStructure(): HasMany
     {
-        return $this->hasMany(EmployeeSalaryStructure::class, 'user_id', 'user_id');
+        return $this->hasMany(EmployeeSalaryStructure::class, 'employee_id');
+    }
+
+    /**
+     * Get the v2 SalaryStructure template directly assigned to this employee.
+     * Used by PayrollRunGenerator to determine payroll computation template.
+     */
+    public function payrollStructure(): BelongsTo
+    {
+        return $this->belongsTo(SalaryStructure::class, 'salary_structure_id');
     }
 
     // =========================================================================
