@@ -1,90 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use Aero\Core\Models\User;
+use Aero\HRM\Database\Factories\TrainingFeedbackFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TrainingFeedback extends TenantModel
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+
+    protected $table = 'training_feedbacks';
 
     protected $fillable = [
-        'training_id',
-        'user_id',
-        'rating',
-        'feedback',
-        'instructor_rating',
+        'enrollment_id',
         'content_rating',
-        'materials_rating',
-        'organization_rating',
-        'relevance_rating',
-        'recommendation_likelihood',
+        'instructor_rating',
+        'overall_rating',
+        'would_recommend',
+        'what_worked',
+        'what_didnt_work',
+        'suggestions',
         'submitted_at',
-        'is_anonymous',
     ];
 
-    protected $casts = [
-        'rating' => 'float',
-        'instructor_rating' => 'float',
-        'content_rating' => 'float',
-        'materials_rating' => 'float',
-        'organization_rating' => 'float',
-        'relevance_rating' => 'float',
-        'recommendation_likelihood' => 'float',
-        'submitted_at' => 'datetime',
-        'is_anonymous' => 'boolean',
-    ];
-
-    /**
-     * Get the training this feedback is for.
-     */
-    public function training()
+    protected function casts(): array
     {
-        return $this->belongsTo(Training::class);
-    }
-
-    /**
-     * Get the user who submitted the feedback.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    /**
-     * Determine if the feedback is anonymous.
-     */
-    public function isAnonymous()
-    {
-        return $this->is_anonymous;
-    }
-
-    /**
-     * Get the average rating across all categories.
-     */
-    public function getAverageRating()
-    {
-        $ratings = [
-            $this->instructor_rating,
-            $this->content_rating,
-            $this->materials_rating,
-            $this->organization_rating,
-            $this->relevance_rating,
+        return [
+            'would_recommend' => 'bool',
+            'submitted_at' => 'datetime',
         ];
+    }
 
-        $validRatings = array_filter($ratings, function ($rating) {
-            return $rating !== null;
-        });
+    protected static function newFactory(): TrainingFeedbackFactory
+    {
+        return TrainingFeedbackFactory::new();
+    }
 
-        if (empty($validRatings)) {
-            return null;
-        }
-
-        return array_sum($validRatings) / count($validRatings);
+    public function enrollment(): BelongsTo
+    {
+        return $this->belongsTo(TrainingEnrollment::class, 'enrollment_id');
     }
 }

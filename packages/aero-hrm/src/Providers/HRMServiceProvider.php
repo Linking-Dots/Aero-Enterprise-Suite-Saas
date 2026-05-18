@@ -46,6 +46,18 @@ use Aero\HRM\Services\Payroll\PayrollCalculator;
 use Aero\HRM\Services\Payroll\PayrollRunGenerator;
 use Aero\HRM\Services\Payroll\PayslipPdfRenderer;
 use Aero\HRM\Services\PayrollCalculationService;
+use Aero\HRM\Services\Performance\Feedback360Service;
+use Aero\HRM\Services\Performance\GoalLifecycleService;
+use Aero\HRM\Services\Performance\PIPService;
+use Aero\HRM\Services\Performance\ReviewCycleService;
+use Aero\HRM\Services\Performance\ReviewSubmissionService;
+use Aero\HRM\Services\Recruitment\ApplicationPipelineService;
+use Aero\HRM\Services\Recruitment\InterviewScheduler;
+use Aero\HRM\Services\Recruitment\JobLifecycleService;
+use Aero\HRM\Services\Recruitment\OfferService;
+use Aero\HRM\Services\Recruitment\OnboardingService;
+use Aero\HRM\Services\Training\CourseService;
+use Aero\HRM\Services\Training\EnrollmentService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 
@@ -153,6 +165,81 @@ class HRMServiceProvider extends AbstractModuleProvider
         });
 
         $this->app->singleton(PayslipPdfRenderer::class);
+
+        // Register Performance Management Services (H6)
+        $this->app->singleton(ReviewCycleService::class, function ($app) {
+            return new ReviewCycleService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(ReviewSubmissionService::class, function ($app) {
+            return new ReviewSubmissionService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(GoalLifecycleService::class, function ($app) {
+            return new GoalLifecycleService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(Feedback360Service::class, function ($app) {
+            return new Feedback360Service(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(PIPService::class, function ($app) {
+            return new PIPService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        // Register Recruitment Services (H7)
+        $this->app->singleton(JobLifecycleService::class, function ($app) {
+            return new JobLifecycleService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(ApplicationPipelineService::class, function ($app) {
+            return new ApplicationPipelineService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(InterviewScheduler::class, function ($app) {
+            return new InterviewScheduler(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(OfferService::class, function ($app) {
+            return new OfferService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(OnboardingService::class, function ($app) {
+            return new OnboardingService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        // Register Training Services (H8)
+        $this->app->singleton(CourseService::class, function ($app) {
+            return new CourseService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(EnrollmentService::class, function ($app) {
+            return new EnrollmentService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
 
         // Register DEI Analytics Service
         $this->app->singleton(DEIAnalyticsService::class);

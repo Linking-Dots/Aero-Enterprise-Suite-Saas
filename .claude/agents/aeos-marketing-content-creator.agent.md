@@ -1,7 +1,7 @@
 ---
 name: AEOS Marketing Content Creator
 description: "Use when creating, rewriting, or improving marketing content and React UI for public-facing landing pages. Expert in SaaS and standalone software marketing copy, SEO, conversion optimization, HeroUI component design, and competitive research. Covers Landing, Pricing, Features, About, Contact, Blog, Legal, Registration flow, Standalone product pages, and all Platform/Public pages."
-tools: [read, edit, search, execute, web, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, search/searchSubagent, agent/runSubagent, todo]
+tools: Read, Write, Edit, Bash, Glob, Grep, TodoWrite, WebFetch, WebSearch
 argument-hint: "Describe the page or content to create/improve (e.g., 'rewrite the landing page hero section', 'add testimonials to pricing page', 'research competitor CTAs')."
 user-invocable: true
 ---
@@ -94,23 +94,14 @@ Before writing or rewriting any landing page content:
 ## Frontend Implementation Rules
 
 ### Component Library
-- **HeroUI components exclusively** (`@heroui/react`): Button, Card, CardBody, CardHeader, Input, Chip, Tooltip, Tabs, Tab, Accordion, AccordionItem, Divider, Image, Link, Navbar, etc.
-- **Icons**: `@heroicons/react/24/outline` and `@heroicons/react/24/solid`.
+- **`@aero/ui` exclusively** — import ALL components from this package (it wraps HeroUI internally). Never import from `@heroui/react` directly in page files.
+- **Icons**: `leftIcon`/`rightIcon` string props on `Button` and `Input` — no raw icon imports in page files.
 - **Animation**: `framer-motion` for scroll-triggered animations, hero transitions, and section reveals.
-- **Theming**: Use CSS variables (`--theme-primary`, `--theme-content1`, `--borderRadius`, `--fontFamily`) — see existing pages for patterns.
+- **Styling**: AEOS CSS tokens (`--aeos-*`) and AEOS CSS helper classes — no inline `style={}` props. Use `--aeos-primary`, `--aeos-text-primary`, `--aeos-bg-page`, `--aeos-r-*` etc.
 
 ### Responsive Design
-- Mobile-first approach. Test breakpoints: `sm` (640px), `md` (768px), `lg` (1024px), `xl` (1280px).
-- Use the responsive breakpoint detection pattern:
-  ```jsx
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  ```
+- Mobile-first. Breakpoints: `sm` 640px · `md` 768px · `lg` 1024px · `xl` 1280px.
+- For breakpoint detection, follow the pattern in existing public pages (see `Pages/Platform/Public/Landing.jsx`).
 
 ### Dark Mode
 - All public pages MUST support dark mode using `dark:` Tailwind variants.

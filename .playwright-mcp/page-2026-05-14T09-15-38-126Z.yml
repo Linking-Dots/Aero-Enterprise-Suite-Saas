@@ -1,0 +1,55 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic "Toggle dark / light mode" [ref=e12] [cursor=pointer]:
+      - checkbox "Toggle dark mode" [checked]
+      - img [ref=e14]
+      - img [ref=e17]
+  - navigation "Signup progress" [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e260]: "1"
+      - generic [ref=e24]: Account Type
+    - generic [ref=e25]:
+      - generic [ref=e261]: "2"
+      - generic [ref=e30]: Company Details
+    - generic [ref=e31]:
+      - generic [ref=e262]: "3"
+      - generic [ref=e36]: Verify Email
+    - generic [ref=e37]:
+      - generic [ref=e263]: "4"
+      - generic [ref=e42]: Verify Phone
+    - generic [ref=e43]:
+      - generic [ref=e46]: "5"
+      - generic [ref=e47]: Modules & Plan
+    - generic [ref=e48]:
+      - generic [ref=e51]: "6"
+      - generic [ref=e52]: Database Setup
+    - generic [ref=e53]:
+      - generic [ref=e56]: "7"
+      - generic [ref=e57]: Review
+    - generic [ref=e58]:
+      - generic [ref=e61]: "8"
+      - generic [ref=e62]: Setting Up
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - heading "Create your account" [level=1] [ref=e264]
+      - generic [ref=e265]:
+        - paragraph [ref=e266]: Start your 14-day free trial. No credit card required.
+        - generic [ref=e267]:
+          - button "Company For teams and businesses. Includes multi-user access and roles." [pressed] [ref=e268]:
+            - generic [ref=e269]:
+              - img [ref=e271]
+              - generic [ref=e279]:
+                - paragraph [ref=e280]: Company
+                - generic [ref=e281]: For teams and businesses. Includes multi-user access and roles.
+          - button "Individual For freelancers and solo operators. Full platform access." [ref=e282]:
+            - generic [ref=e283]:
+              - img [ref=e285]
+              - generic [ref=e288]:
+                - paragraph [ref=e289]: Individual
+                - generic [ref=e290]: For freelancers and solo operators. Full platform access.
+  - contentinfo [ref=e250]:
+    - paragraph [ref=e251]: © 2026 AEOS365 · Enterprise Edition

@@ -1,0 +1,60 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic "Toggle dark / light mode" [ref=e12] [cursor=pointer]:
+      - checkbox "Toggle dark mode" [checked]
+      - img [ref=e14]
+      - img [ref=e17]
+  - navigation "Signup progress" [ref=e19]:
+    - generic [ref=e20]:
+      - img [ref=e90]
+      - generic [ref=e23]: Account Type
+    - generic [ref=e24]:
+      - img [ref=e117]
+      - generic [ref=e28]: Company Details
+    - generic [ref=e29]:
+      - generic [ref=e32]: "3"
+      - generic [ref=e33]: Verify Email
+    - generic [ref=e34]:
+      - generic [ref=e37]: "4"
+      - generic [ref=e38]: Verify Phone
+    - generic [ref=e39]:
+      - generic [ref=e42]: "5"
+      - generic [ref=e43]: Modules & Plan
+    - generic [ref=e44]:
+      - generic [ref=e47]: "6"
+      - generic [ref=e48]: Database Setup
+    - generic [ref=e49]:
+      - generic [ref=e52]: "7"
+      - generic [ref=e53]: Review
+    - generic [ref=e54]:
+      - generic [ref=e57]: "8"
+      - generic [ref=e58]: Setting Up
+  - main [ref=e59]:
+    - generic [ref=e60]:
+      - heading "Verify your email" [level=1] [ref=e119]
+      - generic [ref=e121]:
+        - paragraph [ref=e122]:
+          - text: We sent a 6-digit code to
+          - strong [ref=e123]: admin@testcompany.com
+          - text: . Enter it below to verify your email address.
+        - generic [ref=e124]:
+          - generic [ref=e125]: Verification Code
+          - generic [ref=e126]:
+            - textbox "Digit 1 of 6" [active] [ref=e127]
+            - textbox "Digit 2 of 6" [ref=e128]
+            - textbox "Digit 3 of 6" [ref=e129]
+            - textbox "Digit 4 of 6" [ref=e130]
+            - textbox "Digit 5 of 6" [ref=e131]
+            - textbox "Digit 6 of 6" [ref=e132]
+        - button "Verify Email" [disabled]:
+          - generic: Verify Email
+        - generic [ref=e133]:
+          - generic [ref=e134]: Didn't receive it?
+          - button "Resend code" [ref=e135] [cursor=pointer]:
+            - generic [ref=e136]: Resend code
+  - contentinfo [ref=e88]:
+    - paragraph [ref=e89]: © 2026 AEOS365 · Enterprise Edition

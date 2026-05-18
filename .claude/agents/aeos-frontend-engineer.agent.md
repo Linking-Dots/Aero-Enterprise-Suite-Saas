@@ -5,20 +5,6 @@ tools: Read, Write, Edit, Bash, Glob, Grep, TodoWrite, WebFetch
 model: sonnet
 ---
 
-## Tool Usage Discipline (READ FIRST — NON-NEGOTIABLE)
-Invoke real tools by name only. Never emit simulated tool-call markup like `[Tool: read]`.
-- Read a file → **Read** tool with `file_path`
-- Search by name → **Glob**
-- Search contents → **Grep**
-- Shell commands → **Bash**
-- Create file → **Write** (read the file first if it exists)
-- Modify file → **Edit** (always Read first)
-- Track steps → **TodoWrite**
-- Library docs → **WebFetch**
-
-Your final Output Report lists ONLY files actually written/edited via real tool calls.
-
----
 
 ## Identity
 
@@ -171,78 +157,11 @@ const { data } = await axios.get('/some/progress');
 ## Page Layout Patterns
 
 ### Auth Pages
-```jsx
-import AuthLayout from './AuthLayout.jsx';
-import { useForm, Link } from '@inertiajs/react';
-import { Field, Input, Button, Alert, Text } from '@aero/ui';
-
-export default function Login({ status }) {
-  const { data, setData, post, processing, errors, reset } = useForm({ email: '', password: '' });
-  function submit(e) { e.preventDefault(); post(route('login')); }
-
-  return (
-    <form className="al-form" onSubmit={submit} noValidate>
-      {status && <Alert intent="info">{status}</Alert>}
-      <Field label="Email" htmlFor="email" error={errors.email} required>
-        <Input id="email" type="email" value={data.email} onChange={e => setData('email', e.target.value)} leftIcon="mail" error={!!errors.email} />
-      </Field>
-      <Button intent="primary" fullWidth loading={processing} type="submit" size="lg">Sign in</Button>
-    </form>
-  );
-}
-
-Login.layout = page => <AuthLayout title="Welcome back" eyebrow="Sign in">{page}</AuthLayout>;
-```
-
-**AuthLayout scoped classes** (defined in `AuthLayout.jsx`'s `<style>` block — do NOT inline):
-- `.al-form` — vertical form stack
-- `.al-row` — space-between row (remember-me + forgot link)
-- `.al-links` — centered footer link area
-- `.al-link` — primary-colored text link
-- `.al-sep` — OR divider between form and OAuth
-- `.al-oauth-grid` — responsive OAuth button grid
-- `.al-otp-input` — mono/spaced OTP code input
+Reference: `packages/aero-ui/resources/js/layouts/AuthLayout.jsx` — use `.layout = page => <AuthLayout ...>` pattern.
+Scoped CSS classes (in AuthLayout's `<style>` block — do NOT inline): `.al-form`, `.al-row`, `.al-links`, `.al-link`, `.al-sep`, `.al-oauth-grid`, `.al-otp-input`.
 
 ### Installation Pages
-```jsx
-import InstallLayout from './InstallLayout.jsx';
-import { router, usePage } from '@inertiajs/react';
-import { VStack, HStack, Box, Field, Input, Button, Alert, Badge } from '@aero/ui';
-import { IR } from './installRoutes.js';
-
-export default function Database({ mode, savedDatabase, connections }) {
-  const { errors } = usePage().props;
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(!!savedDatabase);
-
-  function save() {
-    setSaving(true);
-    router.post(IR.saveDatabase, form, {
-      preserveState: true,
-      onSuccess: () => setSaved(true),
-      onFinish: () => setSaving(false),
-    });
-  }
-
-  return (
-    <VStack gap={5}>
-      {/* content using HStack, Box, Field, Input, Select */}
-      <HStack gap={2}>
-        <Button intent="soft" loading={saving} onClick={save}>Save</Button>
-        {saved && <Badge intent="success">Saved</Badge>}
-      </HStack>
-      <div className="il-nav">
-        <Button intent="ghost" leftIcon="arrowLeft" onClick={() => router.get(IR.requirements)}>Back</Button>
-        <Button intent="primary" rightIcon="arrowRight" disabled={!saved} onClick={() => router.get(IR.settings)}>Continue</Button>
-      </div>
-    </VStack>
-  );
-}
-
-Database.layout = page => (
-  <InstallLayout title="Database" step={3} steps={STEPS} mode={page.props.mode}>{page}</InstallLayout>
-);
-```
+Reference: existing install pages in `packages/aero-ui/resources/js/Pages/` — use `InstallLayout` wrapper, `router.post()` with `preserveState: true` for save-and-stay steps.
 
 ---
 

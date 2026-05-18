@@ -80,6 +80,11 @@ use Aero\HRM\Http\Controllers\Settings\HrmSettingController;
 use Aero\HRM\Http\Controllers\Settings\LeaveSettingController;
 use Aero\HRM\Http\Controllers\SuccessionPlanningController;
 use Aero\HRM\Http\Controllers\TalentMarketplaceController;
+use Aero\HRM\Http\Controllers\Training\TrainingCategoryController;
+use Aero\HRM\Http\Controllers\Training\TrainingCourseController;
+use Aero\HRM\Http\Controllers\Training\TrainingEnrollmentController;
+use Aero\HRM\Http\Controllers\Training\TrainingFeedbackController;
+use Aero\HRM\Http\Controllers\Training\TrainingSessionController;
 use Aero\HRM\Http\Controllers\WellbeingController;
 use Aero\HRM\Http\Controllers\WorkforcePlanningController;
 use Aero\HRM\Models\Department;
@@ -1643,6 +1648,77 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/', [PerformanceImprovementPlanController::class, 'store'])
             ->middleware('hrmac:hrm.performance.improvement_plans.create')
             ->name('store');
+    });
+
+    // ── Training (H8) ────────────────────────────────────────────────────────────
+    Route::middleware(['auth', 'verified'])->prefix('training')->name('training.')->group(function () {
+
+        // Categories (inline modal CRUD, no dedicated show page)
+        Route::get('categories', [TrainingCategoryController::class, 'index'])
+            ->middleware('hrmac:hrm.training.training-programs.view')
+            ->name('categories.index');
+        Route::post('categories', [TrainingCategoryController::class, 'store'])
+            ->middleware('hrmac:hrm.training.training-programs.create')
+            ->name('categories.store');
+        Route::patch('categories/{category}', [TrainingCategoryController::class, 'update'])
+            ->middleware('hrmac:hrm.training.training-programs.update')
+            ->name('categories.update');
+        Route::delete('categories/{category}', [TrainingCategoryController::class, 'destroy'])
+            ->middleware('hrmac:hrm.training.training-programs.delete')
+            ->name('categories.destroy');
+
+        // Courses — create BEFORE {course} to avoid wildcard capture
+        Route::get('courses', [TrainingCourseController::class, 'index'])
+            ->middleware('hrmac:hrm.training.training-programs.view')
+            ->name('courses.index');
+        Route::get('courses/create', [TrainingCourseController::class, 'create'])
+            ->middleware('hrmac:hrm.training.training-programs.create')
+            ->name('courses.create');
+        Route::post('courses', [TrainingCourseController::class, 'store'])
+            ->middleware('hrmac:hrm.training.training-programs.create')
+            ->name('courses.store');
+        Route::get('courses/{course}', [TrainingCourseController::class, 'show'])
+            ->middleware('hrmac:hrm.training.training-programs.view')
+            ->name('courses.show');
+        Route::patch('courses/{course}', [TrainingCourseController::class, 'update'])
+            ->middleware('hrmac:hrm.training.training-programs.update')
+            ->name('courses.update');
+        Route::delete('courses/{course}', [TrainingCourseController::class, 'destroy'])
+            ->middleware('hrmac:hrm.training.training-programs.delete')
+            ->name('courses.destroy');
+
+        // Sessions (nested under courses)
+        Route::get('courses/{course}/sessions/create', [TrainingSessionController::class, 'create'])
+            ->middleware('hrmac:hrm.training.training-sessions.create')
+            ->name('sessions.create');
+        Route::post('courses/{course}/sessions', [TrainingSessionController::class, 'store'])
+            ->middleware('hrmac:hrm.training.training-sessions.create')
+            ->name('sessions.store');
+        Route::patch('sessions/{session}', [TrainingSessionController::class, 'update'])
+            ->middleware('hrmac:hrm.training.training-sessions.update')
+            ->name('sessions.update');
+
+        // Enrollments
+        Route::get('enrollments', [TrainingEnrollmentController::class, 'index'])
+            ->middleware('hrmac:hrm.training.enrollment.manage')
+            ->name('enrollments.index');
+        Route::post('enrollments', [TrainingEnrollmentController::class, 'store'])
+            ->middleware('hrmac:hrm.training.enrollment.manage')
+            ->name('enrollments.store');
+        Route::post('sessions/{session}/attendance', [TrainingEnrollmentController::class, 'markAttendance'])
+            ->middleware('hrmac:hrm.training.training-attendance.mark')
+            ->name('enrollments.attendance');
+        Route::delete('enrollments/{enrollment}', [TrainingEnrollmentController::class, 'cancel'])
+            ->middleware('hrmac:hrm.training.enrollment.manage')
+            ->name('enrollments.cancel');
+
+        // Feedback
+        Route::get('feedback/{enrollment}/create', [TrainingFeedbackController::class, 'create'])
+            ->middleware('hrmac:hrm.training.training-feedback.submit')
+            ->name('feedback.create');
+        Route::post('feedback/{enrollment}', [TrainingFeedbackController::class, 'store'])
+            ->middleware('hrmac:hrm.training.training-feedback.submit')
+            ->name('feedback.store');
     });
 
 });

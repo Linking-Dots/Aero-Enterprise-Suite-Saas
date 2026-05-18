@@ -1,76 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use Aero\Core\Models\User;
+use Aero\HRM\Database\Factories\TrainingEnrollmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TrainingEnrollment extends TenantModel
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+
+    public const STATUS_ENROLLED = 'enrolled';
+
+    public const STATUS_WAITLISTED = 'waitlisted';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public const STATUS_ATTENDED = 'attended';
+
+    public const STATUS_NO_SHOW = 'no_show';
+
+    protected $table = 'training_enrollments';
 
     protected $fillable = [
-        'training_id',
-        'user_id',
+        'session_id',
+        'employee_id',
         'status',
-        'enrollment_date',
-        'completion_date',
-        'score',
-        'feedback',
-        'certificate_issued',
-        'approved_by',
-        'rejected_reason',
+        'source',
+        'enrolled_by',
     ];
 
-    protected $casts = [
-        'enrollment_date' => 'date',
-        'completion_date' => 'date',
-        'score' => 'float',
-        'certificate_issued' => 'boolean',
-    ];
-
-    /**
-     * Get the training that the user is enrolled in.
-     */
-    public function training()
+    protected static function newFactory(): TrainingEnrollmentFactory
     {
-        return $this->belongsTo(Training::class);
+        return TrainingEnrollmentFactory::new();
     }
 
-    /**
-     * Get the user who is enrolled in the training.
-     */
-    public function user()
+    public function session(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(TrainingSession::class, 'session_id');
     }
 
-    /**
-     * Get the user who approved the enrollment.
-     */
-    public function approver()
+    public function employee(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
-    /**
-     * Check if the user has completed the training.
-     */
-    public function isCompleted()
+    public function feedback(): HasOne
     {
-        return $this->status === 'completed' && $this->completion_date !== null;
-    }
-
-    /**
-     * Check if the user has a passing score.
-     */
-    public function hasPassed()
-    {
-        // Consider a score of 70% or higher as passing
-        return $this->score !== null && $this->score >= 70;
+        return $this->hasOne(TrainingFeedback::class, 'enrollment_id');
     }
 }

@@ -56,4 +56,11 @@ enum AuditEventType: string
     case DATA_ANONYMIZED = 'gdpr.anonymized';
     case CONSENT_GIVEN = 'gdpr.consent_given';
     case CONSENT_WITHDRAWN = 'gdpr.consent_withdrawn';
+
+    // HRM — Performance Management
+    case REVIEW_CYCLE_ACTIVATED = 'hrm.performance.cycle_activated';
+    case PERFORMANCE_REVIEW_FINALIZED = 'hrm.performance.review_finalized';
+    case GOAL_CLOSED = 'hrm.performance.goal_closed';
+    case FEEDBACK_360_OPENED = 'hrm.performance.feedback_360_opened';
+    case PIP_CREATED = 'hrm.performance.pip_created';
 }

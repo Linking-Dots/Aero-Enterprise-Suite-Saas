@@ -1,0 +1,73 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic "Toggle dark / light mode" [ref=e12] [cursor=pointer]:
+      - checkbox "Toggle dark mode" [checked]
+      - img [ref=e14]
+      - img [ref=e17]
+  - navigation "Signup progress" [ref=e19]:
+    - generic [ref=e20]:
+      - img [ref=e90]
+      - generic [ref=e23]: Account Type
+    - generic [ref=e24]:
+      - generic [ref=e27]: "2"
+      - generic [ref=e28]: Company Details
+    - generic [ref=e29]:
+      - generic [ref=e32]: "3"
+      - generic [ref=e33]: Verify Email
+    - generic [ref=e34]:
+      - generic [ref=e37]: "4"
+      - generic [ref=e38]: Verify Phone
+    - generic [ref=e39]:
+      - generic [ref=e42]: "5"
+      - generic [ref=e43]: Modules & Plan
+    - generic [ref=e44]:
+      - generic [ref=e47]: "6"
+      - generic [ref=e48]: Database Setup
+    - generic [ref=e49]:
+      - generic [ref=e52]: "7"
+      - generic [ref=e53]: Review
+    - generic [ref=e54]:
+      - generic [ref=e57]: "8"
+      - generic [ref=e58]: Setting Up
+  - main [ref=e59]:
+    - generic [ref=e60]:
+      - heading "Company details" [level=1] [ref=e92]
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]: Company Name *
+          - generic [ref=e97]:
+            - generic:
+              - img
+            - textbox "Company Name *" [ref=e98]:
+              - /placeholder: Acme Corp
+        - generic [ref=e99]:
+          - generic [ref=e100]: Work Email *
+          - generic [ref=e101]:
+            - generic:
+              - img
+            - textbox "Work Email *" [ref=e102]:
+              - /placeholder: you@company.com
+        - generic [ref=e103]:
+          - generic [ref=e104]: Phone
+          - generic [ref=e105]:
+            - generic:
+              - img
+            - textbox "Phone" [ref=e106]:
+              - /placeholder: +1 555 000 0000
+          - generic [ref=e107]: Optional, used for SMS verification
+        - generic [ref=e108]:
+          - generic [ref=e109]: Subdomain *
+          - generic [ref=e110]:
+            - generic:
+              - img
+            - textbox "Subdomain *" [ref=e111]:
+              - /placeholder: acme
+        - button "Continue" [ref=e112] [cursor=pointer]:
+          - generic [ref=e113]: Continue
+          - img [ref=e114]
+  - contentinfo [ref=e88]:
+    - paragraph [ref=e89]: © 2026 AEOS365 · Enterprise Edition

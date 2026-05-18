@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Database\Factories;
 
+use Aero\Core\Models\User;
 use Aero\HRM\Models\TrainingCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<TrainingCategory>
@@ -14,10 +18,15 @@ class TrainingCategoryFactory extends Factory
 
     public function definition(): array
     {
+        $name = $this->faker->words(2, true);
+
         return [
-            'name' => $this->faker->randomElement(['Technical', 'Soft Skills', 'Compliance', 'Leadership', 'Safety', 'Product']),
+            'name' => $name,
+            'slug' => Str::slug($name),
             'description' => $this->faker->optional()->sentence(),
-            'status' => 'active',
+            'color' => null,
+            'is_active' => true,
+            'created_by' => User::factory(),
         ];
     }
 }

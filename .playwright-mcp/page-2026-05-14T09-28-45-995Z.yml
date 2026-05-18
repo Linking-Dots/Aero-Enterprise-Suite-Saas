@@ -1,0 +1,81 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic [ref=e11]: SaaS Mode
+  - generic [ref=e78]:
+    - generic [ref=e79]:
+      - generic [ref=e81]:
+        - img [ref=e263]
+        - generic [ref=e83]: Requirements
+      - generic [ref=e86]:
+        - img [ref=e338]
+        - generic [ref=e88]: Database
+      - generic [ref=e91]:
+        - img [ref=e378]
+        - generic [ref=e93]: Settings
+      - generic [ref=e96]:
+        - generic [ref=e97]: "4"
+        - generic [ref=e98]: Admin
+      - generic [ref=e101]:
+        - generic [ref=e102]: "5"
+        - generic [ref=e103]: Review
+      - generic [ref=e106]:
+        - generic [ref=e107]: "6"
+        - generic [ref=e108]: Install
+      - generic [ref=e111]:
+        - generic [ref=e112]: "7"
+        - generic [ref=e113]: Complete
+    - progressbar [ref=e114]
+  - generic [ref=e380]:
+    - generic [ref=e381]:
+      - heading "Administrator Account" [level=1] [ref=e382]
+      - paragraph [ref=e383]: Create the super-administrator account with full access to all system settings.
+    - generic [ref=e384]:
+      - generic [ref=e386]:
+        - generic [ref=e387]: First Name *
+        - generic [ref=e388]:
+          - generic:
+            - img
+          - textbox "First Name *" [ref=e389]: Platform
+      - generic [ref=e391]:
+        - generic [ref=e392]: Last Name *
+        - generic [ref=e393]:
+          - generic:
+            - img
+          - textbox "Last Name *" [ref=e394]: Admin
+    - generic [ref=e395]:
+      - generic [ref=e396]: Email Address *
+      - generic [ref=e397]:
+        - generic:
+          - img
+        - textbox "Email Address *" [ref=e398]:
+          - /placeholder: admin@company.com
+          - text: admin@aeos365.test
+    - generic [ref=e399]:
+      - generic [ref=e400]: Password *
+      - generic [ref=e401]:
+        - generic:
+          - img
+        - textbox "Password *" [ref=e402]: Admin@12345!
+      - generic [ref=e403]: Min. 8 characters, mixed case, numbers, and symbols.
+    - generic [ref=e404]:
+      - generic [ref=e405]: Confirm Password *
+      - generic [ref=e406]:
+        - generic:
+          - img
+        - textbox "Confirm Password *" [ref=e407]: Admin@12345!
+    - generic [ref=e408]:
+      - button "Save Account" [ref=e409] [cursor=pointer]:
+        - generic [ref=e410]: Save Account
+      - generic [ref=e416]: Saved
+    - generic [ref=e411]:
+      - button "Back" [ref=e412] [cursor=pointer]:
+        - img [ref=e413]
+        - generic [ref=e415]: Back
+      - button "Continue" [ref=e417] [cursor=pointer]:
+        - generic [ref=e418]: Continue
+        - img [ref=e419]
+  - paragraph [ref=e77]: AEOS365 Enterprise Suite · Setup Wizard

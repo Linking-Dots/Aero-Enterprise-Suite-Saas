@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Database\Factories;
 
+use Aero\Core\Models\User;
+use Aero\HRM\Models\TrainingCourse;
 use Aero\HRM\Models\TrainingSession;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,14 +19,16 @@ class TrainingSessionFactory extends Factory
     public function definition(): array
     {
         return [
-            'training_id' => null,
-            'title' => $this->faker->sentence(3),
-            'scheduled_date' => $this->faker->dateTimeBetween('+1 day', '+1 month'),
-            'start_time' => $this->faker->time(),
-            'end_time' => $this->faker->time(),
+            'course_id' => TrainingCourse::factory(),
+            'starts_at' => now()->addDays(7),
+            'ends_at' => now()->addDays(7)->addHours(2),
             'location' => $this->faker->optional()->city(),
-            'max_participants' => $this->faker->numberBetween(10, 50),
-            'status' => $this->faker->randomElement(['scheduled', 'completed', 'cancelled']),
+            'meeting_link' => null,
+            'capacity' => 20,
+            'instructor_id' => null,
+            'status' => TrainingSession::STATUS_SCHEDULED,
+            'notes' => null,
+            'created_by' => User::factory(),
         ];
     }
 }

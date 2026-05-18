@@ -1,0 +1,87 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic "Toggle dark / light mode" [ref=e12] [cursor=pointer]:
+      - checkbox "Toggle dark mode" [checked]
+      - img [ref=e14]
+      - img [ref=e17]
+  - navigation "Signup progress" [ref=e19]:
+    - generic [ref=e20]:
+      - img [ref=e22]
+      - generic [ref=e24]: Account Type
+    - generic [ref=e25]:
+      - img [ref=e28]
+      - generic [ref=e30]: Company Details
+    - generic [ref=e31]:
+      - img [ref=e34]
+      - generic [ref=e36]: Verify Email
+    - generic [ref=e37]:
+      - img [ref=e40]
+      - generic [ref=e42]: Verify Phone
+    - generic [ref=e43]:
+      - img [ref=e46]
+      - generic [ref=e48]: Modules & Plan
+    - generic [ref=e49]:
+      - img [ref=e52]
+      - generic [ref=e54]: Database Setup
+    - generic [ref=e55]:
+      - generic [ref=e58]: "7"
+      - generic [ref=e59]: Review
+    - generic [ref=e60]:
+      - generic [ref=e63]: "8"
+      - generic [ref=e64]: Setting Up
+  - main [ref=e65]:
+    - generic [ref=e66]:
+      - heading "Review & activate" [level=1] [ref=e67]
+      - generic [ref=e68]:
+        - alert [ref=e69]:
+          - img [ref=e71]
+          - generic [ref=e73]:
+            - paragraph [ref=e74]: No credit card required
+            - generic [ref=e75]: Your 14-day free trial starts today. You won't be charged until your trial ends.
+        - generic [ref=e77]:
+          - generic [ref=e78]: Workspace
+          - generic [ref=e79]:
+            - generic [ref=e80]: Company
+            - generic [ref=e81]: Test Company
+          - generic [ref=e82]:
+            - generic [ref=e83]: Email
+            - generic [ref=e84]: admin@testcompany.com
+          - generic [ref=e85]:
+            - generic [ref=e86]: URL
+            - generic [ref=e87]: testco.aeos365.test
+          - generic [ref=e88]: Plan
+          - generic [ref=e89]:
+            - generic [ref=e90]: Plan
+            - generic [ref=e91]: Starter
+          - generic [ref=e92]:
+            - generic [ref=e93]: Billing
+            - generic [ref=e94]: Monthly
+          - generic [ref=e95]:
+            - generic [ref=e96]: Plan price
+            - generic [ref=e97]: 29.00/mo
+          - generic [ref=e98]: Add-ons
+          - generic [ref=e99]:
+            - generic [ref=e100]: Human Resources
+            - generic [ref=e101]: +[object Object]/mo
+          - generic [ref=e102]: Trial
+          - generic [ref=e103]:
+            - generic [ref=e104]: Free trial
+            - generic [ref=e105]: 14 days
+          - generic [ref=e106]:
+            - generic [ref=e107]: Trial ends
+            - generic [ref=e108]: May 28, 2026
+          - generic [ref=e109]:
+            - generic [ref=e110]: After trial
+            - generic [ref=e111]: 29.000[object Object]/mo
+        - button "Start Free Trial" [ref=e112] [cursor=pointer]:
+          - generic [ref=e113]: Start Free Trial
+          - img [ref=e114]
+        - button "Back to plans" [ref=e117] [cursor=pointer]:
+          - img [ref=e118]
+          - generic [ref=e120]: Back to plans
+  - contentinfo [ref=e121]:
+    - paragraph [ref=e122]: © 2026 AEOS365 · Enterprise Edition

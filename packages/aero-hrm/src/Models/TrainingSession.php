@@ -1,96 +1,78 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use Aero\Core\Models\User;
+use Aero\HRM\Database\Factories\TrainingSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TrainingSession extends TenantModel
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+
+    public const STATUS_SCHEDULED = 'scheduled';
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    protected $table = 'training_sessions';
 
     protected $fillable = [
-        'training_id',
-        'title',
-        'description',
-        'start_time',
-        'end_time',
+        'course_id',
+        'starts_at',
+        'ends_at',
         'location',
-        'is_online',
         'meeting_link',
+        'capacity',
         'instructor_id',
         'status',
-        'max_participants',
         'notes',
+        'created_by',
     ];
 
-    protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-        'is_online' => 'boolean',
-    ];
-
-    /**
-     * Get the training that this session belongs to.
-     */
-    public function training()
+    protected function casts(): array
     {
-        return $this->belongsTo(Training::class);
+        return [
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
+            'capacity' => 'int',
+        ];
     }
 
-    /**
-     * Get the instructor for the session.
-     */
-    public function instructor()
+    protected static function newFactory(): TrainingSessionFactory
     {
-        return $this->belongsTo(User::class, 'instructor_id');
+        return TrainingSessionFactory::new();
     }
 
-    /**
-     * Get the participants for this session.
-     */
-    public function participants()
+    public function course(): BelongsTo
     {
-        return $this->belongsToMany(User::class, 'training_session_attendances')
-            ->withPivot('attendance_status', 'check_in_time', 'check_out_time', 'notes')
-            ->withTimestamps();
+        return $this->belongsTo(TrainingCourse::class, 'course_id');
     }
 
-    /**
-     * Check if the session is upcoming.
-     */
-    public function isUpcoming()
+    public function enrollments(): HasMany
     {
-        return now()->lt($this->start_time);
+        return $this->hasMany(TrainingEnrollment::class, 'session_id');
     }
 
-    /**
-     * Check if the session is in progress.
-     */
-    public function isInProgress()
+    public function enrolledCount(): int
     {
-        $now = now();
-
-        return $now->gte($this->start_time) && $now->lte($this->end_time);
+        return $this->enrollments()
+            ->whereNotIn('status', [
+                TrainingEnrollment::STATUS_WAITLISTED,
+                TrainingEnrollment::STATUS_CANCELLED,
+            ])
+            ->count();
     }
 
-    /**
-     * Check if the session has ended.
-     */
-    public function hasEnded()
+    public function hasCapacity(): bool
     {
-        return now()->gt($this->end_time);
-    }
-
-    /**
-     * Get the duration in minutes.
-     */
-    public function getDurationInMinutes()
-    {
-        return $this->start_time->diffInMinutes($this->end_time);
+        return $this->enrolledCount() < $this->capacity;
     }
 }

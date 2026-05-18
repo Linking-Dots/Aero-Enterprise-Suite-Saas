@@ -1,0 +1,96 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - link "AEOS365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic [ref=e11]: SaaS Mode
+  - generic [ref=e78]:
+    - generic [ref=e79]:
+      - generic [ref=e81]:
+        - img [ref=e263]
+        - generic [ref=e83]: Requirements
+      - generic [ref=e86]:
+        - generic [ref=e87]: "2"
+        - generic [ref=e88]: Database
+      - generic [ref=e91]:
+        - generic [ref=e92]: "3"
+        - generic [ref=e93]: Settings
+      - generic [ref=e96]:
+        - generic [ref=e97]: "4"
+        - generic [ref=e98]: Admin
+      - generic [ref=e101]:
+        - generic [ref=e102]: "5"
+        - generic [ref=e103]: Review
+      - generic [ref=e106]:
+        - generic [ref=e107]: "6"
+        - generic [ref=e108]: Install
+      - generic [ref=e111]:
+        - generic [ref=e112]: "7"
+        - generic [ref=e113]: Complete
+    - progressbar [ref=e114]
+  - generic [ref=e265]:
+    - generic [ref=e266]:
+      - heading "Database Configuration" [level=1] [ref=e267]
+      - paragraph [ref=e268]: Configure the database connection for your AEOS365 installation.
+    - alert [ref=e313]:
+      - img [ref=e315]
+      - generic [ref=e318]: "Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'aeos365'"
+    - alert [ref=e320]:
+      - img [ref=e322]
+      - generic [ref=e325]: Database server connection successful.
+    - generic [ref=e269]:
+      - generic [ref=e270]: Database Driver *
+      - combobox "Database Driver *" [ref=e271] [cursor=pointer]:
+        - option "MYSQL" [selected]
+        - option "PGSQL"
+        - option "SQLITE"
+        - option "SQLSRV"
+    - generic [ref=e272]:
+      - generic [ref=e274]:
+        - generic [ref=e275]: Host *
+        - generic [ref=e276]:
+          - generic:
+            - img
+          - textbox "Host *" [ref=e277]:
+            - /placeholder: 127.0.0.1
+            - text: 127.0.0.1
+      - generic [ref=e279]:
+        - generic [ref=e280]: Port *
+        - spinbutton "Port *" [ref=e281]: "3306"
+    - generic [ref=e282]:
+      - generic [ref=e283]: Database Name *
+      - generic [ref=e284]:
+        - generic:
+          - img
+        - textbox "Database Name *" [ref=e285]:
+          - /placeholder: aeos365
+          - text: eos365
+      - alert [ref=e319]: "Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'aeos365'"
+    - generic [ref=e286]:
+      - generic [ref=e288]:
+        - generic [ref=e289]: Username *
+        - generic [ref=e290]:
+          - generic:
+            - img
+          - textbox "Username *" [ref=e291]: root
+      - generic [ref=e293]:
+        - generic [ref=e294]: Password
+        - generic [ref=e295]:
+          - generic:
+            - img
+          - textbox "Password" [ref=e296]:
+            - /placeholder: Optional
+    - generic [ref=e297]:
+      - button "Test Connection" [ref=e298] [cursor=pointer]:
+        - generic [ref=e299]: Test Connection
+      - button "Save Configuration" [ref=e300] [cursor=pointer]:
+        - generic [ref=e301]: Save Configuration
+    - generic [ref=e302]:
+      - button "Back" [ref=e303] [cursor=pointer]:
+        - img [ref=e304]
+        - generic [ref=e306]: Back
+      - button "Continue" [disabled]:
+        - generic: Continue
+        - img
+  - paragraph [ref=e77]: AEOS365 Enterprise Suite · Setup Wizard

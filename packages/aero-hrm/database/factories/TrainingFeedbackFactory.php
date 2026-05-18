@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Database\Factories;
 
+use Aero\HRM\Models\TrainingEnrollment;
 use Aero\HRM\Models\TrainingFeedback;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,13 +18,15 @@ class TrainingFeedbackFactory extends Factory
     public function definition(): array
     {
         return [
-            'training_id' => null,
-            'employee_id' => null,
-            'overall_rating' => $this->faker->numberBetween(1, 5),
+            'enrollment_id' => TrainingEnrollment::factory(),
             'content_rating' => $this->faker->numberBetween(1, 5),
-            'trainer_rating' => $this->faker->numberBetween(1, 5),
-            'comments' => $this->faker->optional()->paragraph(),
-            'suggestions' => $this->faker->optional()->sentence(),
+            'instructor_rating' => $this->faker->numberBetween(1, 5),
+            'overall_rating' => $this->faker->numberBetween(1, 5),
+            'would_recommend' => $this->faker->boolean(70),
+            'what_worked' => $this->faker->optional()->sentence(),
+            'what_didnt_work' => null,
+            'suggestions' => null,
+            'submitted_at' => now(),
         ];
     }
 }

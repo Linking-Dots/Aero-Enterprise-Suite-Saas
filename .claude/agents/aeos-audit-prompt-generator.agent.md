@@ -1,7 +1,7 @@
 ---
 name: AEOS Audit Prompt Generator
 description: "Use when generating comprehensive audit prompts for any aero-* package or module. Deeply scans backend (controllers, models, services, routes, policies, migrations, config/module.php) and frontend (pages, components, forms, tables, hooks, HRMAC usage) to identify gaps in HRMAC compliance, validation, security, tests, UI consistency, and architecture. Produces a ready-to-use prompt with optional implementation instructions. Use for: audit prompt, gap analysis, compliance check, module review, code audit, generate audit, find gaps, missing features, DSOP compliance."
-tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/resolveMemoryFileUri, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, vscode/reviewPlan, execute/runNotebookCell, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/readNotebookCellOutput, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, web/fetch, web/githubRepo, browser/openBrowserPage, browser/readPage, browser/screenshotPage, browser/navigatePage, browser/clickElement, browser/dragElement, browser/hoverElement, browser/typeInPage, browser/runPlaywrightCode, browser/handleDialog, todo]
+tools: Read, Glob, Grep, Bash, TodoWrite, Agent, WebFetch
 argument-hint: "Name the target package or module (e.g., aero-hrm, aero-crm) and whether you want implementation included in the output prompt."
 user-invocable: true
 ---
@@ -45,18 +45,19 @@ Scan `packages/aero-ui/resources/js/Pages/{Module}/` and related files:
 
 | Layer | Files to Inspect | What to Check |
 |-------|-----------------|---------------|
-| **Pages** | `Pages/{Module}/*.jsx` | Follows LeavesAdmin.jsx full-page layout pattern (motion.div, Card, CardHeader, CardBody, StatsCards, Filters, Table, Pagination) |
+| **Pages** | `Pages/{Module}/*.jsx` | Uses `@aero/ui` engine components (VStack, HStack, Box, Text, Card, Table, Button, etc.) — no raw HTML where engine components exist |
 | **HRMAC Usage** | All `.jsx` files | Uses `useHRMAC()` hook — never `auth.permissions?.includes()` |
 | **SaaS Gating** | All `.jsx` files | Uses `useSaaSAccess()` / `<ModuleGate>` where module-level gating is needed |
-| **Forms** | `Forms/{Module}/*.jsx` or inline | Uses HeroUI Input/Select with validation, `showToast.promise()` for submissions, theme radius helper |
-| **Tables** | `Tables/{Module}*.jsx` or inline | HeroUI Table with `isHeaderSticky`, proper classNames, renderCell pattern, action dropdowns |
-| **Modals** | Modal components | HeroUI Modal with standard classNames (base, header, body, footer), size="2xl", scrollBehavior="inside" |
-| **Components** | Shared components | Uses ThemedCard/getThemedCardStyle, StatsCards, PageHeader, existing shared components before creating new ones |
-| **Theme** | Inline styles | Uses CSS variables (--theme-content1, --borderRadius, --fontFamily, --theme-primary, etc.) |
-| **Icons** | Import statements | `@heroicons/react/24/outline` only — no other icon libraries |
-| **Tailwind** | Class names | v4 utilities only (no deprecated bg-opacity-*, flex-shrink-*, etc.), dark: variants present |
-| **Loading** | Loading states | Section-level Skeleton components, never full-page loading spinners |
-| **Responsive** | Breakpoints | `isMobile`/`isTablet` state with window resize listener, responsive class switching |
+| **Forms** | All `.jsx` files | Uses `useForm()` from `@inertiajs/react`, `Field`+`Input`+`Select` from `@aero/ui`, errors passed as strings (not `errors.field?.[0]`) |
+| **Tables** | All `.jsx` files | Uses `Table` from `@aero/ui`, no raw `<table>` elements |
+| **Modals** | Modal components | Uses modal components from `@aero/ui`, standard size + scroll behavior |
+| **Inline styles** | All `.jsx` files | Zero `style={{ ... }}` props on any JSX element — all styling via AEOS CSS tokens or component semantic props |
+| **Imports** | Import statements | All components from `@aero/ui` — never `@heroui/react` directly in page files |
+| **CSS tokens** | CSS variables | Uses `--aeos-*` tokens (not `--theme-*`) — `--aeos-primary`, `--aeos-text-*`, `--aeos-bg-*`, `--aeos-r-*` |
+| **Navigation** | router usage | `router.get()` for navigation — never `window.location.href` |
+| **CSRF** | axios/fetch calls | No manual CSRF headers — Inertia/axios handle automatically |
+| **Loading** | Loading states | Section-level Skeleton, never full-page spinners |
+| **Responsive** | Breakpoints | Mobile (375px), tablet (768px), desktop (1280px) tested |
 
 ### Phase 3 — Cross-Reference Validation
 

@@ -3,8 +3,9 @@
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
+use Aero\Core\Encryption\EncryptedField;
 use Aero\Core\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $last_name
  * @property string $email
  * @property string|null $phone
- * @property \Carbon\Carbon|null $date_of_birth
+ * @property Carbon|null $date_of_birth
  * @property string|null $address
  * @property string|null $city
  * @property string|null $country
@@ -34,14 +35,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $linkedin_url
  * @property float|null $expected_salary
  * @property int $years_of_experience
- * @property \Carbon\Carbon|null $available_from
+ * @property Carbon|null $available_from
  * @property string $status
  * @property int|null $overall_score
  * @property int|null $assigned_to
  * @property string|null $notes
- * @property \Carbon\Carbon|null $created_at
- * @property \Carbon\Carbon|null $updated_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read string $candidate_name
  * @property-read string $candidate_email
  * @property-read int $job_posting_id Alias for job_id
@@ -78,12 +79,15 @@ class JobApplication extends TenantModel
         'overall_score',
         'assigned_to',
         'notes',
+        'rejection_reason',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'available_from' => 'date',
-        'expected_salary' => 'decimal:2',
+        'expected_salary' => EncryptedField::class,
+        'phone' => EncryptedField::class,
+        'address' => EncryptedField::class,
         'years_of_experience' => 'integer',
         'overall_score' => 'integer',
     ];

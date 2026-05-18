@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use App\Models\User;
+use Aero\Core\Models\User;
+use Aero\HRM\Database\Factories\Feedback360ResponseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -61,25 +62,24 @@ class Feedback360Response extends TenantModel
         return $this->belongsTo(User::class, 'reviewer_id');
     }
 
-    /**
-     * Check if submitted
-     */
     public function isSubmitted(): bool
     {
         return $this->submitted_at !== null;
     }
 
-    /**
-     * Calculate average competency rating
-     */
     public function getAverageCompetencyRating(): float
     {
         if (empty($this->competency_ratings)) {
-            return 0;
+            return 0.0;
         }
 
         $ratings = array_values($this->competency_ratings);
 
-        return count($ratings) > 0 ? array_sum($ratings) / count($ratings) : 0;
+        return count($ratings) > 0 ? array_sum($ratings) / count($ratings) : 0.0;
+    }
+
+    protected static function newFactory(): Feedback360ResponseFactory
+    {
+        return Feedback360ResponseFactory::new();
     }
 }

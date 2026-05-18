@@ -1,59 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use Aero\Core\Models\User;
+use Aero\HRM\Database\Factories\TrainingCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TrainingCategory extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'training_categories';
+
     protected $fillable = [
         'name',
+        'slug',
         'description',
+        'color',
         'is_active',
         'created_by',
-        'parent_id',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
-
-    /**
-     * Get the trainings in this category.
-     */
-    public function trainings()
+    protected function casts(): array
     {
-        return $this->hasMany(Training::class, 'category_id');
+        return [
+            'is_active' => 'bool',
+        ];
     }
 
-    /**
-     * Get the user who created the category.
-     */
-    public function creator()
+    protected static function newFactory(): TrainingCategoryFactory
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return TrainingCategoryFactory::new();
     }
 
-    /**
-     * Get the parent category.
-     */
-    public function parent()
+    public function courses(): HasMany
     {
-        return $this->belongsTo(TrainingCategory::class, 'parent_id');
-    }
-
-    /**
-     * Get the subcategories of this category.
-     */
-    public function subcategories()
-    {
-        return $this->hasMany(TrainingCategory::class, 'parent_id');
+        return $this->hasMany(TrainingCourse::class, 'category_id');
     }
 }
