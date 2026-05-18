@@ -8,6 +8,7 @@ use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\HRM\Console\Commands\SendOnboardingRemindersCommand;
+use Aero\HRM\Http\Middleware\EnsureEmployeeProfile;
 use Aero\HRM\Jobs\CheckBirthdaysJob;
 use Aero\HRM\Jobs\CheckExpiringContractsJob;
 use Aero\HRM\Jobs\CheckExpiringDocumentsJob;
@@ -59,6 +60,7 @@ use Aero\HRM\Services\Recruitment\OnboardingService;
 use Aero\HRM\Services\Training\CourseService;
 use Aero\HRM\Services\Training\EnrollmentService;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -263,6 +265,11 @@ class HRMServiceProvider extends AbstractModuleProvider
      */
     protected function bootModule(): void
     {
+        // Register middleware alias for self-service employee guard
+        /** @var Router $router */
+        $router = $this->app->make(Router::class);
+        $router->aliasMiddleware('employee.required', EnsureEmployeeProfile::class);
+
         // Register policies
         $this->registerPolicies();
 
@@ -377,7 +384,12 @@ class HRMServiceProvider extends AbstractModuleProvider
 
         $registry = $this->app->make(UserRelationshipRegistry::class);
 
-        // Register employee relationship
+        // Register employee relationship via both registry and resolveRelationUsing
+        // resolveRelationUsing enables property access ($user->employee) via Eloquent __get
+        \Aero\Core\Models\User::resolveRelationUsing('employee', function ($user) {
+            return $user->hasOne(Employee::class);
+        });
+
         $registry->registerRelationship('employee', function ($user) {
             return $user->hasOne(Employee::class);
         });
