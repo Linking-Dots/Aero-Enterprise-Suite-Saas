@@ -79,11 +79,11 @@ function SessionCalibration({ session, employees, onSave }) {
           </HStack>
 
           {/* Grid */}
-          <div className="calibration-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: '6rem repeat(3, 1fr)', gap: '0.25rem' }}>
             {/* Column headers */}
-            <div className="calibration-corner" />
+            <div style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
             {cols.map(x => (
-              <div key={x} className="calibration-col-header">
+              <div key={x} style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Text tone="secondary">Perf: {PERF_LABELS[x - 1]}</Text>
               </div>
             ))}
@@ -91,16 +91,16 @@ function SessionCalibration({ session, employees, onSave }) {
             {/* Rows */}
             {rows.map(y => (
               <>
-                <div key={`row-${y}`} className="calibration-row-header">
+                <div key={`row-${y}`} style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Text tone="secondary">Pot: {POT_LABELS[y - 1]}</Text>
                 </div>
                 {cols.map(x => {
                   const key  = cellKey(x, y);
                   const emps = cellMap[key] ?? [];
                   return (
-                    <div key={`${x}-${y}`} className="calibration-cell">
+                    <div key={`${x}-${y}`} style={{ minHeight: '5rem', border: '1px solid var(--aeos-divider)', borderRadius: 'var(--aeos-r-md)', padding: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignContent: 'flex-start' }}>
                       {emps.map(empId => (
-                        <div key={empId} className="calibration-chip">
+                        <div key={empId} style={{ background: 'var(--aeos-bg-surface)', border: '1px solid var(--aeos-divider)', borderRadius: 'var(--aeos-r-sm)', padding: '0.125rem 0.5rem', fontSize: '0.75rem' }}>
                           <Text>{employeeMap[empId] ?? `#${empId}`}</Text>
                         </div>
                       ))}
@@ -154,41 +154,7 @@ function SessionCalibration({ session, employees, onSave }) {
 
 export default function CalibrationIndex({ sessions, employees, cycle }) {
   return (
-    <>
-      <style>{`
-        .calibration-grid {
-          display: grid;
-          grid-template-columns: 6rem repeat(3, 1fr);
-          gap: var(--aeos-r-sm, 4px);
-        }
-        .calibration-corner,
-        .calibration-col-header,
-        .calibration-row-header {
-          padding: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .calibration-cell {
-          min-height: 5rem;
-          border: 1px solid var(--aeos-divider);
-          border-radius: var(--aeos-r-md);
-          padding: 0.5rem;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.25rem;
-          align-content: flex-start;
-        }
-        .calibration-chip {
-          background: var(--aeos-bg-surface);
-          border: 1px solid var(--aeos-divider);
-          border-radius: var(--aeos-r-sm);
-          padding: 0.125rem 0.5rem;
-          font-size: 0.75rem;
-        }
-      `}</style>
-
-      <VStack gap={6}>
+    <VStack gap={6}>
         <HStack gap={2} align="center">
           <Box grow>
             <VStack gap={1}>
@@ -217,7 +183,6 @@ export default function CalibrationIndex({ sessions, employees, cycle }) {
           />
         ))}
       </VStack>
-    </>
   );
 }
 

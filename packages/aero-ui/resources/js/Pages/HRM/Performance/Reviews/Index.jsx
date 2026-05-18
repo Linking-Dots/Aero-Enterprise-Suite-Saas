@@ -97,7 +97,11 @@ export default function ReviewsIndex({ reviews, filters }) {
           <Pagination
             page={currentPage}
             total={totalPages}
-            onChange={page => applyFilter({ status: status || undefined, page })}
+            onChange={page => router.get(
+              route('hrm.performance.reviews.index'),
+              { status: status || undefined, page },
+              { preserveState: true, replace: true }
+            )}
           />
         )
       }

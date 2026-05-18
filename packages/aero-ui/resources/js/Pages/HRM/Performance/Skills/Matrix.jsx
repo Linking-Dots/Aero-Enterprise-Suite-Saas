@@ -28,39 +28,7 @@ function LevelChip({ level }) {
 
 export default function SkillsMatrix({ employees, skills }) {
   return (
-    <>
-      <style>{`
-        .skills-matrix-wrap {
-          overflow-x: auto;
-        }
-        .skills-matrix {
-          border-collapse: collapse;
-          min-width: 100%;
-          font-family: var(--aeos-font-body);
-          font-size: 0.875rem;
-        }
-        .skills-matrix th,
-        .skills-matrix td {
-          border: 1px solid var(--aeos-divider);
-          padding: 0.5rem 0.75rem;
-          white-space: nowrap;
-        }
-        .skills-matrix thead th {
-          background: var(--aeos-bg-surface);
-          font-weight: 600;
-          color: var(--aeos-text-secondary);
-          text-align: left;
-        }
-        .skills-matrix tbody tr:hover td {
-          background: var(--aeos-bg-surface);
-        }
-        .skills-matrix td.skills-employee {
-          font-weight: 500;
-          color: var(--aeos-text-primary);
-        }
-      `}</style>
-
-      <VStack gap={6}>
+    <VStack gap={6}>
         <HStack gap={2} align="center">
           <Box grow>
             <VStack gap={1}>
@@ -75,13 +43,13 @@ export default function SkillsMatrix({ employees, skills }) {
         )}
 
         {employees && employees.length > 0 && (
-          <div className="skills-matrix-wrap">
-            <table className="skills-matrix">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', minWidth: '100%', fontFamily: 'var(--aeos-font-body)', fontSize: '0.875rem' }}>
               <thead>
                 <tr>
-                  <th>Employee</th>
+                  <th style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', background: 'var(--aeos-bg-surface)', fontWeight: '600', color: 'var(--aeos-text-secondary)', textAlign: 'left' }}>Employee</th>
                   {(skills ?? []).map(skill => (
-                    <th key={skill}>{skill}</th>
+                    <th key={skill} style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', background: 'var(--aeos-bg-surface)', fontWeight: '600', color: 'var(--aeos-text-secondary)', textAlign: 'left' }}>{skill}</th>
                   ))}
                 </tr>
               </thead>
@@ -93,9 +61,9 @@ export default function SkillsMatrix({ employees, skills }) {
 
                   return (
                     <tr key={emp.id}>
-                      <td className="skills-employee">{emp.name}</td>
+                      <td style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', fontWeight: '500', color: 'var(--aeos-text-primary)' }}>{emp.name}</td>
                       {(skills ?? []).map(skill => (
-                        <td key={skill}>
+                        <td key={skill} style={{ border: '1px solid var(--aeos-divider)', padding: '0.5rem 0.75rem', whiteSpace: 'nowrap', textAlign: 'center' }}>
                           <LevelChip level={skillMap[skill] ?? 0} />
                         </td>
                       ))}
@@ -117,7 +85,6 @@ export default function SkillsMatrix({ employees, skills }) {
           ))}
         </HStack>
       </VStack>
-    </>
   );
 }
 
