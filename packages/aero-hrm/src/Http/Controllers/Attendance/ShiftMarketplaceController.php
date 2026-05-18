@@ -61,7 +61,7 @@ class ShiftMarketplaceController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        Gate::authorize('hrmac', 'hrm.attendance.shift-marketplace.view');
+        Gate::authorize('hrmac', 'hrm.attendance.shift-marketplace.create');
 
         $data = $request->validate([
             'shift_date' => ['required', 'date'],
