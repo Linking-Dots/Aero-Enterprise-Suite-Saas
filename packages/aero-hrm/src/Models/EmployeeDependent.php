@@ -3,10 +3,9 @@
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
 use Aero\Core\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -24,6 +23,7 @@ class EmployeeDependent extends TenantModel
 
     protected $fillable = [
         'user_id',
+        'employee_id',
         'name',
         'relationship',
         'date_of_birth',
@@ -46,9 +46,17 @@ class EmployeeDependent extends TenantModel
     // RELATIONSHIPS
     // =========================================================================
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the employee record associated with this dependent (via employee_id).
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     // =========================================================================

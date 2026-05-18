@@ -326,7 +326,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function bankDetail(): HasOne
     {
-        return $this->hasOne(EmployeeBankDetail::class, 'user_id', 'user_id');
+        return $this->hasOne(EmployeeBankDetail::class, 'employee_id');
     }
 
     /**
@@ -334,7 +334,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function personalDocuments(): HasMany
     {
-        return $this->hasMany(EmployeePersonalDocument::class, 'user_id', 'user_id');
+        return $this->hasMany(EmployeePersonalDocument::class, 'employee_id');
     }
 
     /**
@@ -342,7 +342,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function emergencyContacts(): HasMany
     {
-        return $this->hasMany(EmergencyContact::class, 'user_id', 'user_id')->orderBy('priority');
+        return $this->hasMany(EmergencyContact::class, 'employee_id')->orderBy('priority');
     }
 
     /**
@@ -350,7 +350,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function primaryEmergencyContact(): HasOne
     {
-        return $this->hasOne(EmergencyContact::class, 'user_id', 'user_id')->where('is_primary', true);
+        return $this->hasOne(EmergencyContact::class, 'employee_id')->where('is_primary', true);
     }
 
     /**
@@ -358,7 +358,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function addresses(): HasMany
     {
-        return $this->hasMany(EmployeeAddress::class, 'user_id', 'user_id');
+        return $this->hasMany(EmployeeAddress::class, 'employee_id');
     }
 
     /**
@@ -366,7 +366,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function currentAddress(): HasOne
     {
-        return $this->hasOne(EmployeeAddress::class, 'user_id', 'user_id')->where('address_type', 'current');
+        return $this->hasOne(EmployeeAddress::class, 'employee_id')->where('address_type', 'current');
     }
 
     /**
@@ -374,7 +374,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function permanentAddress(): HasOne
     {
-        return $this->hasOne(EmployeeAddress::class, 'user_id', 'user_id')->where('address_type', 'permanent');
+        return $this->hasOne(EmployeeAddress::class, 'employee_id')->where('address_type', 'permanent');
     }
 
     /**
@@ -382,7 +382,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function education(): HasMany
     {
-        return $this->hasMany(EmployeeEducation::class, 'user_id', 'user_id')->latest('end_date');
+        return $this->hasMany(EmployeeEducation::class, 'employee_id')->latest('end_date');
     }
 
     /**
@@ -390,7 +390,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function workExperience(): HasMany
     {
-        return $this->hasMany(EmployeeWorkExperience::class, 'user_id', 'user_id')->latest('end_date');
+        return $this->hasMany(EmployeeWorkExperience::class, 'employee_id')->latest('end_date');
     }
 
     /**
@@ -398,7 +398,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function certifications(): HasMany
     {
-        return $this->hasMany(EmployeeCertification::class, 'user_id', 'user_id');
+        return $this->hasMany(EmployeeCertification::class, 'employee_id');
     }
 
     /**
@@ -406,7 +406,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function validCertifications(): HasMany
     {
-        return $this->hasMany(EmployeeCertification::class, 'user_id', 'user_id')
+        return $this->hasMany(EmployeeCertification::class, 'employee_id')
             ->where(function ($query) {
                 $query->whereNull('expiry_date')
                     ->orWhere('expiry_date', '>', now());
@@ -418,7 +418,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function dependents(): HasMany
     {
-        return $this->hasMany(EmployeeDependent::class, 'user_id', 'user_id');
+        return $this->hasMany(EmployeeDependent::class, 'employee_id');
     }
 
     /**
@@ -426,7 +426,7 @@ class Employee extends TenantModel implements HasMedia
      */
     public function beneficiaries(): HasMany
     {
-        return $this->hasMany(EmployeeDependent::class, 'user_id', 'user_id')->where('is_beneficiary', true);
+        return $this->hasMany(EmployeeDependent::class, 'employee_id')->where('is_beneficiary', true);
     }
 
     // =========================================================================

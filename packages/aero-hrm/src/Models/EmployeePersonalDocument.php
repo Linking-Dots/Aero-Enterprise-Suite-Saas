@@ -3,10 +3,9 @@
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
 use Aero\Core\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -60,6 +59,7 @@ class EmployeePersonalDocument extends TenantModel
 
     protected $fillable = [
         'user_id',
+        'employee_id',
         'name',
         'document_type',
         'document_number',
@@ -91,20 +91,20 @@ class EmployeePersonalDocument extends TenantModel
     // RELATIONSHIPS
     // =========================================================================
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     /**
-     * Get the employee record associated with this document (via user_id).
+     * Get the employee record associated with this document (via employee_id).
      */
-    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function employee(): BelongsTo
     {
-        return $this->hasOne(Employee::class, 'user_id', 'user_id');
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
-    public function verifier(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
