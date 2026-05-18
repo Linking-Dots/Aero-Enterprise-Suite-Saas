@@ -2,6 +2,7 @@
 
 namespace Aero\HRM\Providers;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Contracts\EmployeeServiceContract;
 use Aero\Contracts\Providers\AbstractModuleProvider;
 use Aero\Core\Services\DashboardRegistry;
@@ -40,6 +41,10 @@ use Aero\HRM\Services\HRMetricsAggregatorService;
 use Aero\HRM\Services\HrmNotificationChannelResolver;
 use Aero\HRM\Services\LeaveApplicationService;
 use Aero\HRM\Services\LeaveBalanceService;
+use Aero\HRM\Services\Payroll\PayrollApprovalService;
+use Aero\HRM\Services\Payroll\PayrollCalculator;
+use Aero\HRM\Services\Payroll\PayrollRunGenerator;
+use Aero\HRM\Services\Payroll\PayslipPdfRenderer;
 use Aero\HRM\Services\PayrollCalculationService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
@@ -115,7 +120,7 @@ class HRMServiceProvider extends AbstractModuleProvider
         // Register specific services
         $this->app->singleton(LeaveApplicationService::class, function ($app) {
             return new LeaveApplicationService(
-                $app->make(\Aero\Contracts\AuditServiceInterface::class)
+                $app->make(AuditServiceInterface::class)
             );
         });
 
@@ -130,6 +135,24 @@ class HRMServiceProvider extends AbstractModuleProvider
         $this->app->singleton('hrm.payroll', function ($app) {
             return new PayrollCalculationService;
         });
+
+        // Payroll v2 services
+        $this->app->singleton(PayrollCalculator::class);
+
+        $this->app->singleton(PayrollRunGenerator::class, function ($app) {
+            return new PayrollRunGenerator(
+                $app->make(PayrollCalculator::class),
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(PayrollApprovalService::class, function ($app) {
+            return new PayrollApprovalService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(PayslipPdfRenderer::class);
 
         // Register DEI Analytics Service
         $this->app->singleton(DEIAnalyticsService::class);
@@ -389,4 +412,5 @@ class HRMServiceProvider extends AbstractModuleProvider
                 SendOnboardingRemindersCommand::class,
             ]);
         }
-    }}
+    }
+}

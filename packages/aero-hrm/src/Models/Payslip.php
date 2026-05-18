@@ -1,121 +1,118 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-
-use Aero\Core\Models\User;
+use Aero\Core\Encryption\EncryptedField;
+use Aero\HRM\Database\Factories\PayslipFactory;
+use Aero\HRM\Exceptions\PayrollLockedException;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * A single employee payslip generated as part of a PayrollRun.
+ *
+ * Security requirements:
+ *  - bank_account_number / bank_name / bank_routing_number are encrypted at rest via EncryptedField.
+ *  - LogsActivity trait tracks all mutations for GDPR/audit purposes.
+ *  - Immutability: once the parent PayrollRun is locked, no updates or deletes are allowed.
+ *
+ * @property int         $id
+ * @property int         $payroll_run_id
+ * @property int         $employee_id
+ * @property string      $gross
+ * @property string      $tax
+ * @property string      $deductions_total
+ * @property string      $net
+ * @property array       $line_items
+ * @property array       $employee_snapshot
+ * @property string|null $bank_account_number  (encrypted)
+ * @property string|null $bank_name            (encrypted)
+ * @property string|null $bank_routing_number  (encrypted)
+ */
 class Payslip extends TenantModel
 {
     use HasFactory;
+    use LogsActivity;
 
-    protected $table = 'payslips';
+    protected $table = 'hrm_payslips';
 
     protected $fillable = [
-        'payroll_id',
-        'user_id',
-        'payslip_number',
-        'pay_period_start',
-        'pay_period_end',
-        'basic_salary',
-        'gross_salary',
-        'total_allowances',
-        'total_deductions',
-        'net_salary',
-        'generated_at',
-        'sent_at',
-        'pdf_path',
-        'email_sent',
-        'status',
+        'payroll_run_id',
+        'employee_id',
+        'gross',
+        'tax',
+        'deductions_total',
+        'net',
+        'line_items',
+        'employee_snapshot',
+        'bank_account_number',
+        'bank_name',
+        'bank_routing_number',
     ];
 
     protected $casts = [
-        'pay_period_start' => 'date',
-        'pay_period_end' => 'date',
-        'basic_salary' => 'decimal:2',
-        'gross_salary' => 'decimal:2',
-        'total_allowances' => 'decimal:2',
-        'total_deductions' => 'decimal:2',
-        'net_salary' => 'decimal:2',
-        'generated_at' => 'datetime',
-        'sent_at' => 'datetime',
-        'email_sent' => 'boolean',
+        'bank_account_number' => EncryptedField::class,
+        'bank_name'           => EncryptedField::class,
+        'bank_routing_number' => EncryptedField::class,
+        'line_items'          => 'array',
+        'employee_snapshot'   => 'array',
+        'gross'               => 'decimal:2',
+        'tax'                 => 'decimal:2',
+        'deductions_total'    => 'decimal:2',
+        'net'                 => 'decimal:2',
     ];
 
-    /**
-     * Get the payroll that owns the payslip.
-     */
-    public function payroll()
+    protected static function newFactory(): Factory
     {
-        return $this->belongsTo(Payroll::class);
+        return PayslipFactory::new();
     }
 
-    /**
-     * Get the employee that owns the payslip.
-     */
-    public function employee()
+    protected static function booted(): void
     {
-        return $this->belongsTo(User::class, 'user_id');
+        // Block updates when the parent run is locked.
+        static::updating(function (Payslip $slip): void {
+            if ($slip->run?->isLocked()) {
+                throw new PayrollLockedException(
+                    "Payslip #{$slip->id} belongs to a locked payroll run and cannot be modified."
+                );
+            }
+        });
+
+        // Block deletion when the parent run is locked.
+        static::deleting(function (Payslip $slip): void {
+            if ($slip->run?->isLocked()) {
+                throw new PayrollLockedException(
+                    "Payslip #{$slip->id} belongs to a locked payroll run and cannot be deleted."
+                );
+            }
+        });
     }
 
-    /**
-     * Get formatted pay period.
-     */
-    public function getPayPeriodAttribute()
+    // ── Relationships ─────────────────────────────────────────────────────────
+
+    public function run(): BelongsTo
     {
-        return $this->pay_period_start->format('M Y');
+        return $this->belongsTo(PayrollRun::class, 'payroll_run_id');
     }
 
-    /**
-     * Get formatted payslip number.
-     */
-    public function getFormattedPayslipNumberAttribute()
+    public function employee(): BelongsTo
     {
-        return 'PAY-'.str_pad($this->payslip_number, 6, '0', STR_PAD_LEFT);
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
-    /**
-     * Check if payslip is generated.
-     */
-    public function isGenerated()
-    {
-        return $this->status === 'generated';
-    }
+    // ── Spatie LogsActivity ───────────────────────────────────────────────────
 
-    /**
-     * Check if payslip is sent.
-     */
-    public function isSent()
+    public function getActivitylogOptions(): LogOptions
     {
-        return $this->email_sent;
-    }
-
-    /**
-     * Generate payslip number.
-     */
-    public static function generatePayslipNumber()
-    {
-        $lastPayslip = self::orderBy('id', 'desc')->first();
-
-        return $lastPayslip ? $lastPayslip->payslip_number + 1 : 1;
-    }
-
-    /**
-     * Scope for filtering by status.
-     */
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Scope for filtering by pay period.
-     */
-    public function scopeByPayPeriod($query, $start, $end)
-    {
-        return $query->whereBetween('pay_period_start', [$start, $end]);
+        return LogOptions::defaults()
+            ->logFillable()
+            ->dontLogIfAttributesChangedOnly(['updated_at'])
+            ->setDescriptionForEvent(fn (string $eventName) => "Payslip {$eventName}");
     }
 }

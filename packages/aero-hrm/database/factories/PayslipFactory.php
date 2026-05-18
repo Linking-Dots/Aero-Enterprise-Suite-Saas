@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\HRM\Database\Factories;
 
+use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\Payslip;
+use Aero\HRM\Models\PayrollRun;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,27 +18,23 @@ class PayslipFactory extends Factory
 
     public function definition(): array
     {
+        $gross      = (float) $this->faker->randomFloat(2, 30000, 200000);
+        $tax        = round($gross * 0.1, 2);
+        $deductions = round($gross * 0.05, 2);
+        $net        = $gross - $tax - $deductions;
+
         return [
-            'payroll_id' => null,
-            'employee_id' => null,
-            'basic_salary' => $this->faker->numberBetween(20000, 100000),
-            'gross_salary' => $this->faker->numberBetween(25000, 120000),
-            'total_deductions' => $this->faker->numberBetween(2000, 20000),
-            'net_salary' => $this->faker->numberBetween(18000, 100000),
-            'month' => $this->faker->numberBetween(1, 12),
-            'year' => now()->year,
-            'generated_at' => now(),
-            'status' => $this->faker->randomElement(['generated', 'sent', 'acknowledged']),
+            'payroll_run_id'      => PayrollRun::factory(),
+            'employee_id'         => Employee::factory(),
+            'gross'               => $gross,
+            'tax'                 => $tax,
+            'deductions_total'    => $deductions,
+            'net'                 => $net,
+            'line_items'          => [],
+            'employee_snapshot'   => [],
+            'bank_account_number' => null,
+            'bank_name'           => null,
+            'bank_routing_number' => null,
         ];
-    }
-
-    public function sent(): static
-    {
-        return $this->state(fn (array $attributes) => ['status' => 'sent']);
-    }
-
-    public function acknowledged(): static
-    {
-        return $this->state(fn (array $attributes) => ['status' => 'acknowledged']);
     }
 }
