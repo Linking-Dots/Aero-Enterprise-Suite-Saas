@@ -70,6 +70,10 @@ use Aero\HRM\Http\Controllers\Performance\PerformanceReviewController;
 use Aero\HRM\Http\Controllers\Performance\ReviewCycleController;
 use Aero\HRM\Http\Controllers\Performance\SkillMatrixController;
 use Aero\HRM\Http\Controllers\PulseSurveyController;
+use Aero\HRM\Http\Controllers\Recruitment\ApplicationController;
+use Aero\HRM\Http\Controllers\Recruitment\InterviewController;
+use Aero\HRM\Http\Controllers\Recruitment\JobController;
+use Aero\HRM\Http\Controllers\Recruitment\OfferController;
 use Aero\HRM\Http\Controllers\Recruitment\RecruitmentController;
 use Aero\HRM\Http\Controllers\Settings\AttendanceSettingController;
 use Aero\HRM\Http\Controllers\Settings\HrmSettingController;
@@ -241,6 +245,79 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/training/{id}/enrollments', [TrainingController::class, 'storeEnrollment'])->name('training.enrollments.store');
         Route::put('/training/{id}/enrollments/{enrollmentId}', [TrainingController::class, 'updateEnrollment'])->name('training.enrollments.update');
         Route::delete('/training/{id}/enrollments/{enrollmentId}', [TrainingController::class, 'destroyEnrollment'])->name('training.enrollments.destroy');
+    });
+
+    // ── Recruitment ──────────────────────────────────────────────────────────
+    Route::prefix('recruitment')->name('recruitment.')->group(function () {
+        // Job Openings
+        Route::get('jobs', [JobController::class, 'index'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.view')
+            ->name('jobs.index');
+        Route::get('jobs/create', [JobController::class, 'create'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.create')
+            ->name('jobs.create');
+        Route::post('jobs', [JobController::class, 'store'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.create')
+            ->name('jobs.store');
+        Route::get('jobs/{job}', [JobController::class, 'show'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.view')
+            ->name('jobs.show');
+        Route::patch('jobs/{job}', [JobController::class, 'update'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.update')
+            ->name('jobs.update');
+        Route::post('jobs/{job}/publish', [JobController::class, 'publish'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.update')
+            ->name('jobs.publish');
+        Route::post('jobs/{job}/close', [JobController::class, 'close'])
+            ->middleware('hrmac:hrm.recruitment.job-openings.update')
+            ->name('jobs.close');
+
+        // Applicants
+        Route::get('applications/{application}', [ApplicationController::class, 'show'])
+            ->middleware('hrmac:hrm.recruitment.applicants.view')
+            ->name('applications.show');
+        Route::post('applications/{application}/stage', [ApplicationController::class, 'moveStage'])
+            ->middleware('hrmac:hrm.recruitment.applicants.update')
+            ->name('applications.stage');
+        Route::post('applications/{application}/reject', [ApplicationController::class, 'reject'])
+            ->middleware('hrmac:hrm.recruitment.applicants.update')
+            ->name('applications.reject');
+
+        // Interviews
+        Route::get('interviews', [InterviewController::class, 'index'])
+            ->middleware('hrmac:hrm.recruitment.interview-scheduling.view')
+            ->name('interviews.index');
+        Route::get('interviews/create', [InterviewController::class, 'create'])
+            ->middleware('hrmac:hrm.recruitment.interview-scheduling.create')
+            ->name('interviews.create');
+        Route::post('interviews', [InterviewController::class, 'store'])
+            ->middleware('hrmac:hrm.recruitment.interview-scheduling.create')
+            ->name('interviews.store');
+        Route::patch('interviews/{interview}', [InterviewController::class, 'update'])
+            ->middleware('hrmac:hrm.recruitment.interview-scheduling.update')
+            ->name('interviews.update');
+
+        // Offer Letters
+        Route::get('offers/create', [OfferController::class, 'create'])
+            ->middleware('hrmac:hrm.recruitment.offer-letters.send')
+            ->name('offers.create');
+        Route::post('offers', [OfferController::class, 'store'])
+            ->middleware('hrmac:hrm.recruitment.offer-letters.send')
+            ->name('offers.store');
+        Route::get('offers/{offer}', [OfferController::class, 'show'])
+            ->middleware('hrmac:hrm.recruitment.offer-letters.view')
+            ->name('offers.show');
+
+        // Onboarding
+        Route::get('onboarding/{application}/create', [Aero\HRM\Http\Controllers\Recruitment\OnboardingController::class, 'create'])
+            ->middleware('hrmac:hrm.onboarding.onboarding-list.create')
+            ->name('onboarding.create');
+        Route::post('onboarding/{application}', [Aero\HRM\Http\Controllers\Recruitment\OnboardingController::class, 'store'])
+            ->middleware('hrmac:hrm.onboarding.onboarding-list.create')
+            ->name('onboarding.store');
+        Route::post('onboarding-runs/{run}/complete', [Aero\HRM\Http\Controllers\Recruitment\OnboardingController::class, 'complete'])
+            ->middleware('hrmac:hrm.onboarding.onboarding-list.create')
+            ->name('onboarding.complete');
     });
 
     // Recruitment Management
