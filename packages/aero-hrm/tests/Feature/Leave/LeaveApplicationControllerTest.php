@@ -61,6 +61,14 @@ class LeaveApplicationControllerTest extends TestCase
     }
 
     /**
+     * Helper to approve a leave application via HTTP request.
+     */
+    private function approveApplication(LeaveApplication $app, User $user): void
+    {
+        $this->asUserWithBinding($user)->post(route('hrm.leave.applications.approve', $app));
+    }
+
+    /**
      * Act as a user with ALL middleware disabled and X-Inertia headers set.
      * Use for routes that do NOT use route model binding (index, store).
      */
@@ -231,6 +239,7 @@ class LeaveApplicationControllerTest extends TestCase
             'days_per_year'     => 15,
         ]);
         $employee = Employee::factory()->create();
+        $user     = User::factory()->create(['email_verified_at' => now()]);
 
         $app = LeaveApplication::factory()->create([
             'employee_id'   => $employee->id,
@@ -241,10 +250,8 @@ class LeaveApplicationControllerTest extends TestCase
             'total_days'    => 3,
         ]);
 
-        // Uses asUserWithBinding so route model binding resolves the pending model.
-        $this->asUserWithBinding()
-            ->post(route('hrm.leave.applications.approve', $app))
-            ->assertRedirect();
+        // Uses approveApplication helper for consistent HTTP isolation.
+        $this->approveApplication($app, $user);
 
         // Status must be approved.
         $this->assertEquals(
@@ -305,11 +312,8 @@ class LeaveApplicationControllerTest extends TestCase
             'total_days'    => 3,
         ]);
 
-        // Approve via HTTP (binding-aware, HRMAC disabled, Gate open).
-        $this->actingAs($user)
-            ->withoutMiddleware([CheckRoleModuleAccess::class])
-            ->post(route('hrm.leave.applications.approve', $app))
-            ->assertRedirect();
+        // Approve via helper (binding-aware, HRMAC disabled, Gate open).
+        $this->approveApplication($app, $user);
 
         $this->assertEquals(
             LeaveApplication::STATUS_APPROVED,
@@ -317,10 +321,8 @@ class LeaveApplicationControllerTest extends TestCase
             'Application must be approved before testing cancel.',
         );
 
-        // Cancel — Gate::before returns true so the update-permission path succeeds.
-        $this->actingAs($user)
-            ->withoutMiddleware([CheckRoleModuleAccess::class])
-            ->withHeaders(['X-Inertia' => 'true', 'X-Inertia-Version' => '1'])
+        // Cancel via asUserWithBinding helper for consistent isolation.
+        $this->asUserWithBinding($user)
             ->post(route('hrm.leave.applications.cancel', $app))
             ->assertRedirect();
 

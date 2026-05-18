@@ -14,16 +14,14 @@ class LeaveBalanceFactory extends Factory
 
     public function definition(): array
     {
-        $totalDays = $this->faker->randomElement([12, 15, 21]);
-        $usedDays = $this->faker->numberBetween(0, 10);
-
         return [
-            'user_id' => null,
-            'leave_type_id' => null,
-            'total_days' => $totalDays,
-            'used_days' => $usedDays,
-            'remaining_days' => $totalDays - $usedDays,
-            'year' => date('Y'),
+            'employee_id'      => \Aero\HRM\Models\Employee::factory(),
+            'leave_type_id'    => \Aero\HRM\Models\LeaveType::factory(),
+            'year'             => now()->year,
+            'entitled'         => 20.00,
+            'used'             => 0.00,
+            'carried_forward'  => 0.00,
+            'encashed'         => 0.00,
         ];
     }
 }
