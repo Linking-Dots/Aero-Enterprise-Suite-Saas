@@ -17,6 +17,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @property int $id
  * @property int $user_id
+ * @property int|null $employee_id
  * @property int|null $attendance_type_id
  * @property \Carbon\Carbon $date
  * @property \Carbon\Carbon|null $punchin
@@ -37,6 +38,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
  * @property-read User $user
+ * @property-read Employee $employee
  */
 class Attendance extends TenantModel implements HasMedia
 {
@@ -49,6 +51,7 @@ class Attendance extends TenantModel implements HasMedia
 
     protected $fillable = [
         'user_id',
+        'employee_id',
         'attendance_type_id',
         'date',
         'punchin',
@@ -89,31 +92,9 @@ class Attendance extends TenantModel implements HasMedia
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Get the employee associated with this attendance record.
-     * This is a convenience accessor that goes through the User relationship.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough|null
-     */
-    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->hasOneThrough(
-            Employee::class,
-            User::class,
-            'id',          // Foreign key on users table
-            'user_id',     // Foreign key on employees table
-            'user_id',     // Local key on attendances table
-            'id'           // Local key on users table
-        );
-    }
-
-    /**
-     * Get the employee_id attribute for convenience.
-     * Returns the employee ID associated with the attendance's user.
-     */
-    public function getEmployeeIdAttribute(): ?int
-    {
-        return $this->user?->employee?->id;
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     /**
