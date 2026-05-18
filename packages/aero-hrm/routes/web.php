@@ -75,6 +75,10 @@ use Aero\HRM\Http\Controllers\Recruitment\InterviewController;
 use Aero\HRM\Http\Controllers\Recruitment\JobController;
 use Aero\HRM\Http\Controllers\Recruitment\OfferController;
 use Aero\HRM\Http\Controllers\Recruitment\RecruitmentController;
+use Aero\HRM\Http\Controllers\SelfService\BenefitController;
+use Aero\HRM\Http\Controllers\SelfService\DashboardController;
+use Aero\HRM\Http\Controllers\SelfService\PayslipController;
+use Aero\HRM\Http\Controllers\SelfService\PerformanceController;
 use Aero\HRM\Http\Controllers\Settings\AttendanceSettingController;
 use Aero\HRM\Http\Controllers\Settings\HrmSettingController;
 use Aero\HRM\Http\Controllers\Settings\LeaveSettingController;
@@ -90,6 +94,7 @@ use Aero\HRM\Http\Controllers\WorkforcePlanningController;
 use Aero\HRM\Models\Department;
 use Aero\HRM\Models\Designation;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -1720,5 +1725,69 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.training.training-feedback.submit')
             ->name('feedback.store');
     });
+
+    // ── Self-Service ──────────────────────────────────────────────────────────
+
+    Route::middleware(['auth', 'verified', 'employee.required'])
+        ->prefix('self-service')
+        ->name('self-service.')
+        ->group(function () {
+            Route::get('/', [DashboardController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-dashboard.view')
+                ->name('dashboard');
+
+            Route::get('profile', [Aero\HRM\Http\Controllers\SelfService\ProfileController::class, 'show'])
+                ->middleware('hrmac:hrm.employee-self-service.my-dashboard.view')
+                ->name('profile');
+
+            Route::patch('profile', [Aero\HRM\Http\Controllers\SelfService\ProfileController::class, 'update'])
+                ->middleware('hrmac:hrm.employee-self-service.my-dashboard.view')
+                ->name('profile.update');
+
+            Route::get('leaves', [Aero\HRM\Http\Controllers\SelfService\LeaveController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-leaves.view')
+                ->name('leaves');
+
+            Route::post('leaves', [Aero\HRM\Http\Controllers\SelfService\LeaveController::class, 'store'])
+                ->middleware('hrmac:hrm.employee-self-service.my-leaves.apply')
+                ->name('leaves.store');
+
+            Route::post('leaves/{leave}/cancel', [Aero\HRM\Http\Controllers\SelfService\LeaveController::class, 'cancel'])
+                ->middleware('hrmac:hrm.employee-self-service.my-leaves.apply')
+                ->name('leaves.cancel');
+
+            Route::get('payslips', [PayslipController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-payslips.view')
+                ->name('payslips');
+
+            Route::get('payslips/{payslip}', [PayslipController::class, 'show'])
+                ->middleware('hrmac:hrm.employee-self-service.my-payslips.view')
+                ->name('payslips.show');
+
+            Route::get('payslips/{payslip}/download', [PayslipController::class, 'download'])
+                ->middleware('hrmac:hrm.employee-self-service.my-payslips.download')
+                ->name('payslips.download');
+
+            Route::get('benefits', [BenefitController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-benefits.view')
+                ->name('benefits');
+
+            Route::get('training', [Aero\HRM\Http\Controllers\SelfService\TrainingController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-trainings.view')
+                ->name('training');
+
+            Route::get('performance', [PerformanceController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-performance.view')
+                ->name('performance');
+
+            Route::get('career-path', [Aero\HRM\Http\Controllers\SelfService\CareerPathController::class, 'index'])
+                ->middleware('hrmac:hrm.employee-self-service.my-career-path.view')
+                ->name('career-path');
+        });
+
+    // No-profile fallback (public within auth)
+    Route::middleware(['auth', 'verified'])
+        ->get('self-service/no-profile', fn () => Inertia::render('HRM/SelfService/NoProfile'))
+        ->name('self-service.no-profile');
 
 });
