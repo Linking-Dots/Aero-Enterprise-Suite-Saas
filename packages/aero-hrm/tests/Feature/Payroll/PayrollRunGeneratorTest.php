@@ -114,8 +114,10 @@ class PayrollRunGeneratorTest extends TestCase
             'active'        => true,
         ]);
 
-        // Create 2 employees, each with an active salary structure record
-        $employees = Employee::factory()->count(2)->create();
+        // Create 2 employees linked to the salary structure via the new direct FK
+        $employees = Employee::factory()->count(2)->create([
+            'salary_structure_id' => $structure->id,
+        ]);
 
         foreach ($employees as $employee) {
             DB::table('employee_salary_structures')->insert([
