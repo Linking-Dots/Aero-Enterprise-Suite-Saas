@@ -16,61 +16,37 @@ export default function SelfServiceSidebar() {
   const { url } = usePage();
 
   return (
-    <aside className="ss-sidebar">
+    <aside
+      className="flex flex-col gap-1 py-2 self-start rounded-lg border p-4"
+      style={{ background: 'var(--aeos-bg-surface)', borderColor: 'var(--aeos-divider)' }}
+    >
       <VStack gap={1}>
-        <Text tone="tertiary" size="sm" className="ss-sidebar-label">My Workspace</Text>
+        <Text tone="tertiary" size="sm" className="text-xs font-semibold uppercase px-2 pb-2 tracking-wider">
+          My Workspace
+        </Text>
         {navItems.map(item => {
-          const href    = route(item.route);
-          const active  = url.startsWith(href);
+          const href   = route(item.route);
+          const active = url.startsWith(href);
           return (
             <Link
               key={item.route}
               href={href}
-              className={`ss-sidebar-link${active ? ' ss-sidebar-link--active' : ''}`}
+              className={`block px-3 py-2 rounded-md text-sm no-underline transition-colors ${
+                active
+                  ? 'font-semibold text-white'
+                  : 'hover:bg-default-100'
+              }`}
+              style={
+                active
+                  ? { background: 'var(--aeos-primary)', color: '#fff' }
+                  : { color: 'var(--aeos-text-secondary)' }
+              }
             >
               {item.label}
             </Link>
           );
         })}
       </VStack>
-
-      <style>{`
-        .ss-sidebar {
-          background: var(--aeos-bg-surface);
-          border: 1px solid var(--aeos-divider);
-          border-radius: var(--aeos-r-lg);
-          padding: 1rem;
-          align-self: flex-start;
-        }
-        .ss-sidebar-label {
-          padding: 0 0.5rem 0.5rem;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          font-size: 0.7rem;
-        }
-        .ss-sidebar-link {
-          display: block;
-          padding: 0.5rem 0.75rem;
-          border-radius: var(--aeos-r-md);
-          color: var(--aeos-text-secondary);
-          text-decoration: none;
-          font-size: 0.875rem;
-          transition: background 0.15s, color 0.15s;
-        }
-        .ss-sidebar-link:hover {
-          background: var(--aeos-bg-page);
-          color: var(--aeos-text-primary);
-        }
-        .ss-sidebar-link--active {
-          background: var(--aeos-primary);
-          color: #fff;
-          font-weight: 600;
-        }
-        .ss-sidebar-link--active:hover {
-          background: var(--aeos-primary);
-          color: #fff;
-        }
-      `}</style>
     </aside>
   );
 }

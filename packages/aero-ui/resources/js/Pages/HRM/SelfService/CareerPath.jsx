@@ -4,7 +4,7 @@ import SelfServiceSidebar from './components/SelfServiceSidebar.jsx';
 
 export default function SelfServiceCareerPath() {
   return (
-    <div className="ss-layout">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 p-6">
       <SelfServiceSidebar />
 
       <VStack gap={5}>
@@ -24,18 +24,6 @@ export default function SelfServiceCareerPath() {
           </CardBody>
         </Card>
       </VStack>
-
-      <style>{`
-        .ss-layout {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 1.5rem;
-          padding: 1.5rem;
-        }
-        @media (max-width: 1023px) {
-          .ss-layout { grid-template-columns: 1fr; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default function SelfServiceProfile({ employee }) {
   }
 
   return (
-    <div className="ss-layout">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 p-6">
       <SelfServiceSidebar />
 
       <VStack gap={5}>
@@ -38,7 +38,7 @@ export default function SelfServiceProfile({ employee }) {
           <Text size="lg">My Profile</Text>
         </VStack>
 
-        <div className="ss-profile-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           {/* Employment info — read-only */}
           <Card>
             <CardBody>
@@ -165,24 +165,6 @@ export default function SelfServiceProfile({ employee }) {
           </Card>
         </div>
       </VStack>
-
-      <style>{`
-        .ss-layout {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 1.5rem;
-          padding: 1.5rem;
-        }
-        @media (max-width: 1023px) {
-          .ss-layout { grid-template-columns: 1fr; }
-        }
-        .ss-profile-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 1.25rem;
-          align-items: start;
-        }
-      `}</style>
     </div>
   );
 }

@@ -40,7 +40,7 @@ export default function SelfServicePayslipShow({ payslip }) {
   ];
 
   return (
-    <div className="ss-layout">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 p-6">
       <SelfServiceSidebar />
 
       <VStack gap={5}>
@@ -83,7 +83,7 @@ export default function SelfServicePayslipShow({ payslip }) {
         {/* Period / summary */}
         <Card>
           <CardBody>
-            <div className="ss-payslip-meta-grid">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <VStack gap={1}>
                 <Eyebrow tone="secondary">Period</Eyebrow>
                 <Mono>{fmt(payslip.period_start)} &rarr; {fmt(payslip.period_end)}</Mono>
@@ -113,7 +113,10 @@ export default function SelfServicePayslipShow({ payslip }) {
             empty="No line items."
           />
 
-          <div className="ss-payslip-totals">
+          <div
+            className="flex flex-col gap-2 pt-4 mt-4 border-t"
+            style={{ borderColor: 'var(--aeos-divider)' }}
+          >
             <HStack gap={4} align="center">
               <Box grow />
               <VStack gap={1} align="end">
@@ -130,27 +133,6 @@ export default function SelfServicePayslipShow({ payslip }) {
           </div>
         </VStack>
       </VStack>
-
-      <style>{`
-        .ss-layout {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 1.5rem;
-          padding: 1.5rem;
-        }
-        @media (max-width: 1023px) {
-          .ss-layout { grid-template-columns: 1fr; }
-        }
-        .ss-payslip-meta-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          gap: 1.25rem;
-        }
-        .ss-payslip-totals {
-          padding: 1rem 0 0;
-          border-top: 1px solid var(--aeos-divider);
-        }
-      `}</style>
     </div>
   );
 }

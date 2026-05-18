@@ -24,7 +24,7 @@ export default function SelfServiceDashboard({
   const name = `${employee?.first_name ?? ''} ${employee?.last_name ?? ''}`.trim();
 
   return (
-    <div className="ss-layout">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 p-6">
       <SelfServiceSidebar />
 
       <VStack gap={5}>
@@ -34,7 +34,7 @@ export default function SelfServiceDashboard({
           <Text tone="secondary">{employee?.employee_code}</Text>
         </VStack>
 
-        <div className="ss-card-grid">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Leave Balance card */}
           <Card>
             <CardBody>
@@ -121,23 +121,6 @@ export default function SelfServiceDashboard({
           </Card>
         </div>
       </VStack>
-
-      <style>{`
-        .ss-layout {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 1.5rem;
-          padding: 1.5rem;
-        }
-        @media (max-width: 1023px) {
-          .ss-layout { grid-template-columns: 1fr; }
-        }
-        .ss-card-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 1.25rem;
-        }
-      `}</style>
     </div>
   );
 }

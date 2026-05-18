@@ -19,7 +19,7 @@ export default function SelfServicePayslips({ payslips }) {
   const currentPage = payslips.current_page ?? 1;
 
   return (
-    <div className="ss-layout">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 p-6">
       <SelfServiceSidebar />
 
       <VStack gap={5}>
@@ -35,7 +35,7 @@ export default function SelfServicePayslips({ payslips }) {
             </CardBody>
           </Card>
         ) : (
-          <div className="ss-payslip-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {(payslips.data ?? []).map(p => (
               <Card key={p.id}>
                 <CardBody>
@@ -78,23 +78,6 @@ export default function SelfServicePayslips({ payslips }) {
           />
         )}
       </VStack>
-
-      <style>{`
-        .ss-layout {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 1.5rem;
-          padding: 1.5rem;
-        }
-        @media (max-width: 1023px) {
-          .ss-layout { grid-template-columns: 1fr; }
-        }
-        .ss-payslip-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 1.25rem;
-        }
-      `}</style>
     </div>
   );
 }

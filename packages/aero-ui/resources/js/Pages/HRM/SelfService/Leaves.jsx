@@ -105,7 +105,7 @@ export default function SelfServiceLeaves({ leaves, leaveBalances, leaveTypes })
   ];
 
   return (
-    <div className="ss-layout">
+    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 p-6">
       <SelfServiceSidebar />
 
       <VStack gap={5}>
@@ -127,16 +127,16 @@ export default function SelfServiceLeaves({ leaves, leaveBalances, leaveTypes })
             <CardBody>
               <VStack gap={2}>
                 <Eyebrow>Leave Balances</Eyebrow>
-                <div className="ss-balance-grid">
+                <div className="flex flex-wrap gap-6">
                   {(leaveBalances ?? []).map((b, i) => (
-                    <VStack key={i} gap={1} className="ss-balance-item">
+                    <div key={i} className="flex flex-col gap-1">
                       <Text tone="secondary" size="sm">{b.leaveType?.name ?? '—'}</Text>
                       <HStack gap={1} align="center">
                         <Text size="lg">{b.remaining ?? 0}</Text>
                         <Text tone="tertiary">/ {b.entitled ?? 0}</Text>
                       </HStack>
                       <Text tone="tertiary" size="sm">{b.used ?? 0} used</Text>
-                    </VStack>
+                    </div>
                   ))}
                 </div>
               </VStack>
@@ -232,26 +232,6 @@ export default function SelfServiceLeaves({ leaves, leaveBalances, leaveTypes })
           </VStack>
         </form>
       </Modal>
-
-      <style>{`
-        .ss-layout {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 1.5rem;
-          padding: 1.5rem;
-        }
-        @media (max-width: 1023px) {
-          .ss-layout { grid-template-columns: 1fr; }
-        }
-        .ss-balance-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 1.5rem;
-        }
-        .ss-balance-item {
-          min-width: 100px;
-        }
-      `}</style>
     </div>
   );
 }
