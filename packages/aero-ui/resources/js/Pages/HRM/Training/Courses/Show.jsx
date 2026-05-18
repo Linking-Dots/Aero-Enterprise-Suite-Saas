@@ -166,7 +166,7 @@ export default function CoursesShow({ course }) {
                   <CardBody>
                     <VStack gap={2}>
                       <Eyebrow>Learning Objectives</Eyebrow>
-                      <ul className="training-list">
+                      <ul className="list-disc list-inside space-y-1 text-sm">
                         {course.learning_objectives.map((obj, i) => (
                           <li key={i}><Text>{obj}</Text></li>
                         ))}
@@ -181,7 +181,7 @@ export default function CoursesShow({ course }) {
                   <CardBody>
                     <VStack gap={2}>
                       <Eyebrow>Prerequisites</Eyebrow>
-                      <ul className="training-list">
+                      <ul className="list-disc list-inside space-y-1 text-sm">
                         {course.prerequisites.map((pre, i) => (
                           <li key={i}><Text>{pre}</Text></li>
                         ))}
@@ -279,17 +279,6 @@ export default function CoursesShow({ course }) {
           )}
         </Tabs>
       </VStack>
-
-      <style>{`
-        .training-list {
-          margin: 0;
-          padding-left: 1.25rem;
-          list-style: disc;
-        }
-        .training-list li + li {
-          margin-top: 0.25rem;
-        }
-      `}</style>
     </DetailPageLayout>
   );
 }

@@ -17,7 +17,7 @@ const EMPTY_FORM = {
 
 function CategoryDot({ color }) {
   return (
-    <span className="training-cat-dot" style={{ background: color }} />
+    <span className="inline-block w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ background: color }} />
   );
 }
 
@@ -129,16 +129,6 @@ export default function CategoriesIndex({ categories, filters }) {
 
   return (
     <>
-      <style>{`
-        .training-cat-dot {
-          display: inline-block;
-          width: 0.625rem;
-          height: 0.625rem;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-      `}</style>
-
       <IndexPageLayout
         title="Training Categories"
         breadcrumb={[{ label: 'HRM' }, { label: 'Training' }, { label: 'Categories' }]}
