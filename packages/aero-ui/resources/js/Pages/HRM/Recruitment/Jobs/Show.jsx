@@ -35,7 +35,9 @@ function StageColumn({ stage, applications }) {
   return (
     <div
       ref={setNodeRef}
-      className={`recruitment-kanban-col${isOver ? ' recruitment-kanban-col--over' : ''}`}
+      className={`min-w-[220px] flex-1 bg-surface rounded-md border border-divider p-3 flex flex-col gap-2 transition-colors ${
+        isOver ? 'border-primary' : ''
+      }`}
     >
       <HStack gap={2} align="center">
         <Eyebrow>{stage.name}</Eyebrow>
@@ -68,7 +70,9 @@ function DraggableCard({ application }) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`recruitment-app-card${isDragging ? ' recruitment-app-card--dragging' : ''}`}
+      className={`bg-page rounded-sm border border-divider px-3 py-2.5 cursor-grab transition-shadow ${
+        isDragging ? 'opacity-60 cursor-grabbing' : 'hover:shadow-md'
+      }`}
       style={dragStyle}
       onClick={() => router.get(route('hrm.recruitment.applications.show', application.id))}
     >
@@ -125,65 +129,9 @@ export default function JobsShow({ job, hiringStages, applicationsByStage, metri
 
   return (
     <>
-      <style>{`
-        .recruitment-job-header {
-          padding-bottom: 1.25rem;
-          border-bottom: 1px solid var(--aeos-divider);
-          margin-bottom: 1.5rem;
-        }
-        .recruitment-metrics {
-          display: flex;
-          gap: 1.5rem;
-          margin-bottom: 1.5rem;
-        }
-        .recruitment-metric-card {
-          flex: 1;
-          padding: 1rem 1.25rem;
-          background: var(--aeos-bg-surface);
-          border-radius: var(--aeos-r-md);
-          border: 1px solid var(--aeos-divider);
-        }
-        .recruitment-kanban {
-          display: flex;
-          gap: 1rem;
-          overflow-x: auto;
-          padding-bottom: 0.5rem;
-        }
-        .recruitment-kanban-col {
-          min-width: 220px;
-          flex: 1;
-          background: var(--aeos-bg-surface);
-          border-radius: var(--aeos-r-md);
-          border: 1px solid var(--aeos-divider);
-          padding: 0.75rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          transition: border-color 0.15s;
-        }
-        .recruitment-kanban-col--over {
-          border-color: var(--aeos-primary);
-        }
-        .recruitment-app-card {
-          background: var(--aeos-bg-page);
-          border-radius: var(--aeos-r-sm);
-          border: 1px solid var(--aeos-divider);
-          padding: 0.625rem 0.75rem;
-          cursor: grab;
-          transition: box-shadow 0.15s;
-        }
-        .recruitment-app-card:hover {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .recruitment-app-card--dragging {
-          opacity: 0.6;
-          cursor: grabbing;
-        }
-      `}</style>
-
       <VStack gap={5}>
         {/* Header */}
-        <div className="recruitment-job-header">
+        <div className="border-b border-divider pb-5 mb-6">
           <HStack gap={3} align="center">
             <Box grow>
               <VStack gap={1}>
@@ -228,16 +176,16 @@ export default function JobsShow({ job, hiringStages, applicationsByStage, metri
 
         {/* Metrics */}
         {metrics && (
-          <div className="recruitment-metrics">
-            <div className="recruitment-metric-card">
+          <div className="flex gap-6 mb-6">
+            <div className="flex-1 bg-surface rounded-md border border-divider p-4 px-5">
               <Text tone="secondary">Total</Text>
               <Text size="lg">{metrics.total ?? 0}</Text>
             </div>
-            <div className="recruitment-metric-card">
+            <div className="flex-1 bg-surface rounded-md border border-divider p-4 px-5">
               <Text tone="secondary">Hired</Text>
               <Text size="lg">{metrics.hired ?? 0}</Text>
             </div>
-            <div className="recruitment-metric-card">
+            <div className="flex-1 bg-surface rounded-md border border-divider p-4 px-5">
               <Text tone="secondary">Rejected</Text>
               <Text size="lg">{metrics.rejected ?? 0}</Text>
             </div>
@@ -251,7 +199,7 @@ export default function JobsShow({ job, hiringStages, applicationsByStage, metri
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <div className="recruitment-kanban">
+          <div className="flex gap-4 overflow-x-auto pb-2">
             {stagesWithApps.map(({ stage, applications }) => (
               <StageColumn
                 key={stage.id}
