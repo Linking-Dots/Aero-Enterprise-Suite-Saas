@@ -1,6 +1,11 @@
 <?php
 
 use Aero\HRM\Http\Controllers\AIAnalyticsController;
+use Aero\HRM\Http\Controllers\Analytics\AnalyticsDashboardController;
+use Aero\HRM\Http\Controllers\Analytics\AttritionController;
+use Aero\HRM\Http\Controllers\Analytics\DEIController;
+use Aero\HRM\Http\Controllers\Analytics\PulseSurveyController as AnalyticsPulseSurveyController;
+use Aero\HRM\Http\Controllers\Analytics\WorkforcePlanningController as AnalyticsWorkforcePlanningController;
 use Aero\HRM\Http\Controllers\Asset\AssetCategoryController;
 use Aero\HRM\Http\Controllers\Asset\AssetController;
 use Aero\HRM\Http\Controllers\Attendance\AttendanceController;
@@ -1789,5 +1794,50 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['auth', 'verified'])
         ->get('self-service/no-profile', fn () => Inertia::render('HRM/SelfService/NoProfile'))
         ->name('self-service.no-profile');
+
+    // =========================================================================
+    // H10: HR Analytics
+    // =========================================================================
+    Route::middleware(['auth', 'verified'])->prefix('analytics')->name('analytics.')->group(function () {
+        Route::get('dashboard', [AnalyticsDashboardController::class, 'index'])
+            ->middleware('hrmac:hrm.hr-analytics.workforce-overview.view')
+            ->name('dashboard');
+
+        Route::get('attrition', [AttritionController::class, 'index'])
+            ->middleware('hrmac:hrm.ai-analytics.attrition-predictions.view')
+            ->name('attrition.index');
+
+        Route::get('dei', [DEIController::class, 'index'])
+            ->middleware('hrmac:hrm.workforce-planning.dei-analytics.view')
+            ->name('dei.index');
+
+        Route::get('pulse-surveys', [AnalyticsPulseSurveyController::class, 'index'])
+            ->middleware('hrmac:hrm.pulse-surveys.survey-list.view')
+            ->name('pulse-surveys.index');
+
+        Route::get('pulse-surveys/create', [AnalyticsPulseSurveyController::class, 'create'])
+            ->middleware('hrmac:hrm.pulse-surveys.survey-list.create')
+            ->name('pulse-surveys.create');
+
+        Route::post('pulse-surveys', [AnalyticsPulseSurveyController::class, 'store'])
+            ->middleware('hrmac:hrm.pulse-surveys.survey-list.create')
+            ->name('pulse-surveys.store');
+
+        Route::post('pulse-surveys/{survey}/send', [AnalyticsPulseSurveyController::class, 'send'])
+            ->middleware('hrmac:hrm.pulse-surveys.survey-list.publish')
+            ->name('pulse-surveys.send');
+
+        Route::get('pulse-surveys/{survey}/results', [AnalyticsPulseSurveyController::class, 'results'])
+            ->middleware('hrmac:hrm.pulse-surveys.survey-list.analyze')
+            ->name('pulse-surveys.results');
+
+        Route::get('workforce-planning', [AnalyticsWorkforcePlanningController::class, 'index'])
+            ->middleware('hrmac:hrm.workforce-planning.workforce-plans.view')
+            ->name('workforce-planning.index');
+
+        Route::put('workforce-planning', [AnalyticsWorkforcePlanningController::class, 'update'])
+            ->middleware('hrmac:hrm.workforce-planning.workforce-plans.update')
+            ->name('workforce-planning.update');
+    });
 
 });

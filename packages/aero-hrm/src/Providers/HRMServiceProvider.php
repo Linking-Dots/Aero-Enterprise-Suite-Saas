@@ -5,6 +5,7 @@ namespace Aero\HRM\Providers;
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Contracts\EmployeeServiceContract;
 use Aero\Contracts\Providers\AbstractModuleProvider;
+use Aero\Core\Models\User;
 use Aero\Core\Services\DashboardRegistry;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\HRM\Console\Commands\SendOnboardingRemindersCommand;
@@ -35,6 +36,12 @@ use Aero\HRM\Services\AIAnalytics\BurnoutRiskService;
 use Aero\HRM\Services\AIAnalytics\PerformancePredictionService;
 use Aero\HRM\Services\AIAnalytics\RecruitmentAnalyticsService;
 use Aero\HRM\Services\AIAnalytics\WorkforceAnalyticsService;
+use Aero\HRM\Services\Analytics\AttritionRiskService;
+use Aero\HRM\Services\Analytics\DEIService;
+use Aero\HRM\Services\Analytics\HeadcountAnalyticsService;
+use Aero\HRM\Services\Analytics\PulseSurveyService;
+use Aero\HRM\Services\Analytics\TurnoverAnalyticsService;
+use Aero\HRM\Services\Analytics\WorkforcePlanService;
 use Aero\HRM\Services\AttendanceCalculationService;
 use Aero\HRM\Services\DEIAnalyticsService;
 use Aero\HRM\Services\EmployeeService;
@@ -246,6 +253,14 @@ class HRMServiceProvider extends AbstractModuleProvider
         // Register DEI Analytics Service
         $this->app->singleton(DEIAnalyticsService::class);
 
+        // Register H10 Analytics Services
+        $this->app->singleton(HeadcountAnalyticsService::class);
+        $this->app->singleton(TurnoverAnalyticsService::class);
+        $this->app->singleton(AttritionRiskService::class);
+        $this->app->singleton(DEIService::class);
+        $this->app->singleton(PulseSurveyService::class);
+        $this->app->singleton(WorkforcePlanService::class);
+
         // Register AI Analytics Services
         $this->app->singleton(AttritionPredictionService::class);
         $this->app->singleton(BurnoutRiskService::class);
@@ -386,7 +401,7 @@ class HRMServiceProvider extends AbstractModuleProvider
 
         // Register employee relationship via both registry and resolveRelationUsing
         // resolveRelationUsing enables property access ($user->employee) via Eloquent __get
-        \Aero\Core\Models\User::resolveRelationUsing('employee', function ($user) {
+        User::resolveRelationUsing('employee', function ($user) {
             return $user->hasOne(Employee::class);
         });
 
