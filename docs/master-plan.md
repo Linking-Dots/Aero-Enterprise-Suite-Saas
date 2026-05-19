@@ -124,7 +124,7 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 | H-14 | `phase-1-hrm/plan-h14-assets.md` | ✅ Done | Asset catalog, categories, allocations |
 | H-15 | `phase-1-hrm/plan-h15-expenses.md` | ✅ Done | Expense categories, claims (create + approve), my expenses |
 | H-16 | `phase-1-hrm/plan-h16-events.md` | ✅ Done | Events, sub-events, registrations, print token, public event pages |
-| H-17 | `phase-1-hrm/plan-h17-succession.md` | 🟡 Written | Succession planning, career paths, talent mobility, workforce planning |
+| H-17 | `phase-1-hrm/plan-h17-succession.md` | ✅ Done | Succession planning, career paths, talent mobility, workforce planning |
 | H-18 | `phase-1-hrm/plan-h18-settings.md` | 🟡 Written | HRM general settings, leave settings, attendance settings, task templates, holidays |
 
 ---
