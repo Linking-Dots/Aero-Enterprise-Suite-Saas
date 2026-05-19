@@ -28,10 +28,10 @@ final class SafetyKpiService
             ->values();
 
         return [
-            'ltifr' => $ltifr,
+            'ltifr'        => $ltifr,
             'openFindings' => HrmSafetyInspectionFinding::where('status', 'open')->count(),
-            'incidentTrend' => $trend,
-            'totalThisYear' => HrmSafetyIncident::whereYear('occurred_at', now()->year)->count(),
+            'incidentTrend'=> $trend,
+            'totalThisYear'=> $trend->sum('total'),
         ];
     }
 }

@@ -2022,7 +2022,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{incident}', [HrmSafetyIncidentController::class, 'show'])
                 ->middleware('hrmac:hrm.safety.safety-incidents.view')->name('show');
             Route::post('{incident}/investigate', [HrmSafetyIncidentController::class, 'investigate'])
-                ->middleware('hrmac:hrm.safety.safety-incidents.update')->name('investigate');
+                ->middleware('hrmac:hrm.safety.safety-incidents.update')->name('investigate'); // update = add investigation to existing incident
             Route::post('{incident}/close', [HrmSafetyIncidentController::class, 'close'])
                 ->middleware('hrmac:hrm.safety.safety-incidents.resolve')->name('close');
         });
