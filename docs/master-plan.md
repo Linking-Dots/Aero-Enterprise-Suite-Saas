@@ -121,7 +121,7 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 | H-11 | `phase-1-hrm/plan-h11-benefits.md` | ✅ Done | Benefits catalog, enrollment periods, open enrollment, employee benefits |
 | H-12 | `phase-1-hrm/plan-h12-disciplinary.md` | ✅ Done | Disciplinary cases, warnings, exit interviews, grievances |
 | H-13 | `phase-1-hrm/plan-h13-safety.md` | ✅ Done | Incidents, inspections, safety training, workplace safety dashboard |
-| H-14 | `phase-1-hrm/plan-h14-assets.md` | 🟡 Written | Asset catalog, categories, allocations |
+| H-14 | `phase-1-hrm/plan-h14-assets.md` | ✅ Done | Asset catalog, categories, allocations |
 | H-15 | `phase-1-hrm/plan-h15-expenses.md` | 🟡 Written | Expense categories, claims (create + approve), my expenses |
 | H-16 | `phase-1-hrm/plan-h16-events.md` | 🟡 Written | Events, sub-events, registrations, print token, public event pages |
 | H-17 | `phase-1-hrm/plan-h17-succession.md` | 🟡 Written | Succession planning, career paths, talent mobility, workforce planning |
