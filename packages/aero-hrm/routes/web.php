@@ -12,6 +12,10 @@ use Aero\HRM\Http\Controllers\Attendance\AttendanceController;
 use Aero\HRM\Http\Controllers\Attendance\OvertimeController as AttendanceOvertimeController;
 use Aero\HRM\Http\Controllers\Attendance\ShiftMarketplaceController;
 use Aero\HRM\Http\Controllers\Attendance\TimesheetController;
+use Aero\HRM\Http\Controllers\Benefits\BenefitCatalogController;
+use Aero\HRM\Http\Controllers\Benefits\BenefitEnrollmentController;
+use Aero\HRM\Http\Controllers\Benefits\EnrollmentPeriodController;
+use Aero\HRM\Http\Controllers\Benefits\OpenEnrollmentController;
 use Aero\HRM\Http\Controllers\CareerPathController;
 use Aero\HRM\Http\Controllers\CompensationPlanningController;
 use Aero\HRM\Http\Controllers\DEIAnalyticsController;
@@ -1838,6 +1842,61 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('workforce-planning', [AnalyticsWorkforcePlanningController::class, 'update'])
             ->middleware('hrmac:hrm.workforce-planning.workforce-plans.update')
             ->name('workforce-planning.update');
+    });
+
+    // ============================================================================
+    // H-11 Benefits Management
+    // ============================================================================
+    Route::prefix('benefits')->name('benefits.')->group(function () {
+
+        Route::prefix('catalog')->name('catalog.')->group(function () {
+            Route::get('/', [BenefitCatalogController::class, 'index'])
+                ->middleware('hrmac:hrm.benefits.benefit-catalog.view')
+                ->name('index');
+            Route::get('create', [BenefitCatalogController::class, 'create'])
+                ->middleware('hrmac:hrm.benefits.benefit-catalog.edit')
+                ->name('create');
+            Route::post('/', [BenefitCatalogController::class, 'store'])
+                ->middleware('hrmac:hrm.benefits.benefit-catalog.edit')
+                ->name('store');
+            Route::put('{benefit}', [BenefitCatalogController::class, 'update'])
+                ->middleware('hrmac:hrm.benefits.benefit-catalog.edit')
+                ->name('update');
+            Route::delete('{benefit}', [BenefitCatalogController::class, 'destroy'])
+                ->middleware('hrmac:hrm.benefits.benefit-catalog.edit')
+                ->name('destroy');
+        });
+
+        Route::prefix('enrollment-periods')->name('enrollment-periods.')->group(function () {
+            Route::get('/', [EnrollmentPeriodController::class, 'index'])
+                ->middleware('hrmac:hrm.benefits.enrollment-periods.view')
+                ->name('index');
+            Route::get('create', [EnrollmentPeriodController::class, 'create'])
+                ->middleware('hrmac:hrm.benefits.enrollment-periods.edit')
+                ->name('create');
+            Route::post('/', [EnrollmentPeriodController::class, 'store'])
+                ->middleware('hrmac:hrm.benefits.enrollment-periods.edit')
+                ->name('store');
+            Route::get('{period}', [EnrollmentPeriodController::class, 'show'])
+                ->middleware('hrmac:hrm.benefits.enrollment-periods.view')
+                ->name('show');
+            Route::post('{period}/activate', [EnrollmentPeriodController::class, 'activate'])
+                ->middleware('hrmac:hrm.benefits.enrollment-periods.activate')
+                ->name('activate');
+        });
+
+        Route::prefix('open-enrollment')->name('open-enrollment.')->group(function () {
+            Route::get('/', [OpenEnrollmentController::class, 'index'])
+                ->middleware('hrmac:hrm.benefits.open-enrollment.view')
+                ->name('index');
+            Route::post('enroll', [OpenEnrollmentController::class, 'enroll'])
+                ->middleware('hrmac:hrm.benefits.open-enrollment.edit')
+                ->name('enroll');
+        });
+
+        Route::get('enrollments', [BenefitEnrollmentController::class, 'index'])
+            ->middleware('hrmac:hrm.benefits.enrollments.view')
+            ->name('enrollments.index');
     });
 
 });

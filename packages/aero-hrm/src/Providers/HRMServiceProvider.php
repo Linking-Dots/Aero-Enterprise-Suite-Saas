@@ -43,6 +43,10 @@ use Aero\HRM\Services\Analytics\PulseSurveyService;
 use Aero\HRM\Services\Analytics\TurnoverAnalyticsService;
 use Aero\HRM\Services\Analytics\WorkforcePlanService;
 use Aero\HRM\Services\AttendanceCalculationService;
+use Aero\HRM\Services\Benefits\BenefitCatalogService;
+use Aero\HRM\Services\Benefits\EligibilityService;
+use Aero\HRM\Services\Benefits\EnrollmentPeriodService;
+use Aero\HRM\Services\Benefits\OpenEnrollmentService;
 use Aero\HRM\Services\DEIAnalyticsService;
 use Aero\HRM\Services\EmployeeService;
 use Aero\HRM\Services\HRMetricsAggregatorService;
@@ -267,6 +271,28 @@ class HRMServiceProvider extends AbstractModuleProvider
         $this->app->singleton(PerformancePredictionService::class);
         $this->app->singleton(RecruitmentAnalyticsService::class);
         $this->app->singleton(WorkforceAnalyticsService::class);
+
+        // Register Benefits Services (H11)
+        $this->app->singleton(EligibilityService::class);
+
+        $this->app->singleton(BenefitCatalogService::class, function ($app) {
+            return new BenefitCatalogService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(EnrollmentPeriodService::class, function ($app) {
+            return new EnrollmentPeriodService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(OpenEnrollmentService::class, function ($app) {
+            return new OpenEnrollmentService(
+                $app->make(EligibilityService::class),
+                $app->make(AuditServiceInterface::class),
+            );
+        });
 
         // Merge HRM-specific configuration
         $hrmConfigPath = $this->getModulePath('config/hrm.php');
