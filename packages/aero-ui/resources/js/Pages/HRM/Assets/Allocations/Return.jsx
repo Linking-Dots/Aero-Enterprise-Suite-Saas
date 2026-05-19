@@ -2,8 +2,9 @@ import { router, useForm } from '@inertiajs/react';
 import App from '../../../App.jsx';
 import {
   FormPageLayout, VStack, HStack, Field, Select, Textarea, Button,
-  Card, CardBody, Eyebrow, Text,
+  Card, CardBody, Eyebrow, Text, Alert,
 } from '@aero/ui';
+import useHRMAC from '../../../../hooks/useHRMAC.js';
 
 const CONDITION_OPTIONS = [
   { value: 'good', label: 'Good' },
@@ -17,6 +18,7 @@ function fmtDate(val) {
 }
 
 export default function AllocationsReturn({ allocation }) {
+  const canReturn = useHRMAC('hrm.assets.asset-allocations.return');
   const { data, setData, post, processing, errors } = useForm({
     condition:    'good',
     return_notes: '',
@@ -45,12 +47,15 @@ export default function AllocationsReturn({ allocation }) {
           >
             Cancel
           </Button>
-          <Button type="submit" intent="primary" loading={processing} onClick={submit}>
+          <Button type="submit" intent="primary" loading={processing} disabled={!canReturn || processing} onClick={submit}>
             Confirm Return
           </Button>
         </HStack>
       }
     >
+      {!canReturn && (
+        <Alert intent="warning" title="You do not have permission to return assets." />
+      )}
       <form onSubmit={submit}>
         <VStack gap={6}>
 

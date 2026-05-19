@@ -2,8 +2,9 @@ import { router, useForm } from '@inertiajs/react';
 import App from '../../App.jsx';
 import {
   FormPageLayout, VStack, HStack, Field, Input, Select,
-  Textarea, Button, Eyebrow,
+  Textarea, Button, Eyebrow, Alert,
 } from '@aero/ui';
+import useHRMAC from '../../../hooks/useHRMAC.js';
 
 const STATUS_OPTIONS = [
   { value: 'available',   label: 'Available' },
@@ -12,6 +13,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AssetsCreate({ categories }) {
+  const canCreate = useHRMAC('hrm.assets.asset-inventory.create');
   const categoryOptions = [
     { value: '', label: 'Select category' },
     ...(categories ?? []).map(c => ({ value: String(c.id), label: c.name })),
@@ -48,12 +50,15 @@ export default function AssetsCreate({ categories }) {
           <Button type="button" intent="ghost" onClick={() => router.get(route('hrm.assets.index'))}>
             Cancel
           </Button>
-          <Button type="submit" intent="primary" loading={processing} onClick={submit}>
+          <Button type="submit" intent="primary" loading={processing} disabled={!canCreate || processing} onClick={submit}>
             Create Asset
           </Button>
         </HStack>
       }
     >
+      {!canCreate && (
+        <Alert intent="warning" title="You do not have permission to create assets." />
+      )}
       <form onSubmit={submit}>
         <VStack gap={6}>
 
