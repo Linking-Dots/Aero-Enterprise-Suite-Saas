@@ -89,6 +89,10 @@ use Aero\HRM\Http\Controllers\Recruitment\InterviewController;
 use Aero\HRM\Http\Controllers\Recruitment\JobController;
 use Aero\HRM\Http\Controllers\Recruitment\OfferController;
 use Aero\HRM\Http\Controllers\Recruitment\RecruitmentController;
+use Aero\HRM\Http\Controllers\Safety\HrmSafetyDashboardController;
+use Aero\HRM\Http\Controllers\Safety\HrmSafetyIncidentController;
+use Aero\HRM\Http\Controllers\Safety\HrmSafetyInspectionController;
+use Aero\HRM\Http\Controllers\Safety\HrmSafetyTrainingController;
 use Aero\HRM\Http\Controllers\SelfService\BenefitController;
 use Aero\HRM\Http\Controllers\SelfService\DashboardController;
 use Aero\HRM\Http\Controllers\SelfService\PayslipController;
@@ -1997,6 +2001,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('{grievance}/resolve', [HrmGrievanceController::class, 'resolve'])
             ->middleware('hrmac:hrm.grievances.grievance-list.investigate')
             ->name('resolve');
+    });
+
+    // ============================================================================
+    // H-13 Workplace Safety
+    // ============================================================================
+    Route::prefix('safety')->name('safety.')->group(function () {
+
+        Route::get('dashboard', [HrmSafetyDashboardController::class, 'index'])
+            ->middleware('hrmac:hrm.safety.safety-incidents.view')
+            ->name('dashboard');
+
+        Route::prefix('incidents')->name('incidents.')->group(function () {
+            Route::get('/', [HrmSafetyIncidentController::class, 'index'])
+                ->middleware('hrmac:hrm.safety.safety-incidents.view')->name('index');
+            Route::get('create', [HrmSafetyIncidentController::class, 'create'])
+                ->middleware('hrmac:hrm.safety.safety-incidents.create')->name('create');
+            Route::post('/', [HrmSafetyIncidentController::class, 'store'])
+                ->middleware('hrmac:hrm.safety.safety-incidents.create')->name('store');
+            Route::get('{incident}', [HrmSafetyIncidentController::class, 'show'])
+                ->middleware('hrmac:hrm.safety.safety-incidents.view')->name('show');
+            Route::post('{incident}/investigate', [HrmSafetyIncidentController::class, 'investigate'])
+                ->middleware('hrmac:hrm.safety.safety-incidents.update')->name('investigate');
+            Route::post('{incident}/close', [HrmSafetyIncidentController::class, 'close'])
+                ->middleware('hrmac:hrm.safety.safety-incidents.resolve')->name('close');
+        });
+
+        Route::prefix('inspections')->name('inspections.')->group(function () {
+            Route::get('/', [HrmSafetyInspectionController::class, 'index'])
+                ->middleware('hrmac:hrm.safety.safety-inspections.view')->name('index');
+            Route::get('create', [HrmSafetyInspectionController::class, 'create'])
+                ->middleware('hrmac:hrm.safety.safety-inspections.create')->name('create');
+            Route::post('/', [HrmSafetyInspectionController::class, 'store'])
+                ->middleware('hrmac:hrm.safety.safety-inspections.create')->name('store');
+            Route::get('{inspection}', [HrmSafetyInspectionController::class, 'show'])
+                ->middleware('hrmac:hrm.safety.safety-inspections.view')->name('show');
+            Route::post('{inspection}/findings', [HrmSafetyInspectionController::class, 'submitFindings'])
+                ->middleware('hrmac:hrm.safety.safety-inspections.update')->name('findings');
+        });
+
+        Route::prefix('training')->name('training.')->group(function () {
+            Route::get('/', [HrmSafetyTrainingController::class, 'index'])
+                ->middleware('hrmac:hrm.safety.safety-training.view')->name('index');
+            Route::post('/', [HrmSafetyTrainingController::class, 'store'])
+                ->middleware('hrmac:hrm.safety.safety-training.create')->name('store');
+            Route::post('{assignment}/complete', [HrmSafetyTrainingController::class, 'complete'])
+                ->middleware('hrmac:hrm.safety.safety-training.update')->name('complete');
+        });
     });
 
 });

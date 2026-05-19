@@ -73,6 +73,10 @@ use Aero\HRM\Services\Recruitment\InterviewScheduler;
 use Aero\HRM\Services\Recruitment\JobLifecycleService;
 use Aero\HRM\Services\Recruitment\OfferService;
 use Aero\HRM\Services\Recruitment\OnboardingService;
+use Aero\HRM\Services\Safety\SafetyIncidentService;
+use Aero\HRM\Services\Safety\SafetyInspectionService;
+use Aero\HRM\Services\Safety\SafetyKpiService;
+use Aero\HRM\Services\Safety\SafetyTrainingService;
 use Aero\HRM\Services\Training\CourseService;
 use Aero\HRM\Services\Training\EnrollmentService;
 use Illuminate\Console\Scheduling\Schedule;
@@ -327,6 +331,21 @@ class HRMServiceProvider extends AbstractModuleProvider
                 $app->make(ReferenceGenerator::class),
                 $app->make(AuditServiceInterface::class),
             );
+        });
+
+        // Register Safety Services (H13)
+        $this->app->singleton(SafetyKpiService::class);
+
+        $this->app->singleton(SafetyIncidentService::class, function ($app) {
+            return new SafetyIncidentService($app->make(AuditServiceInterface::class));
+        });
+
+        $this->app->singleton(SafetyInspectionService::class, function ($app) {
+            return new SafetyInspectionService($app->make(AuditServiceInterface::class));
+        });
+
+        $this->app->singleton(SafetyTrainingService::class, function ($app) {
+            return new SafetyTrainingService($app->make(AuditServiceInterface::class));
         });
 
         // Merge HRM-specific configuration
