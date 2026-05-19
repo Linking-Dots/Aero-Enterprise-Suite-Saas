@@ -21,6 +21,11 @@ use Aero\HRM\Http\Controllers\CompensationPlanningController;
 use Aero\HRM\Http\Controllers\DEIAnalyticsController;
 use Aero\HRM\Http\Controllers\Disciplinary\ActionTypeController;
 use Aero\HRM\Http\Controllers\Disciplinary\DisciplinaryCaseController;
+use Aero\HRM\Http\Controllers\Disciplinary\HrmActionTypeController;
+use Aero\HRM\Http\Controllers\Disciplinary\HrmDisciplinaryCaseController;
+use Aero\HRM\Http\Controllers\Disciplinary\HrmExitInterviewController;
+use Aero\HRM\Http\Controllers\Disciplinary\HrmGrievanceController;
+use Aero\HRM\Http\Controllers\Disciplinary\HrmWarningController;
 use Aero\HRM\Http\Controllers\Disciplinary\WarningController;
 use Aero\HRM\Http\Controllers\Employee\BenefitsController;
 use Aero\HRM\Http\Controllers\Employee\DepartmentController;
@@ -1897,6 +1902,101 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('enrollments', [BenefitEnrollmentController::class, 'index'])
             ->middleware('hrmac:hrm.benefits.enrollments.view')
             ->name('enrollments.index');
+    });
+
+    // ========================================================================
+    // H-12 Disciplinary & Employee Relations
+    // ========================================================================
+    Route::prefix('disciplinary')->name('disciplinary.')->group(function () {
+        Route::prefix('action-types')->name('action-types.')->group(function () {
+            Route::get('/', [HrmActionTypeController::class, 'index'])
+                ->middleware('hrmac:hrm.disciplinary.action-types.view')
+                ->name('index');
+            Route::post('/', [HrmActionTypeController::class, 'store'])
+                ->middleware('hrmac:hrm.disciplinary.action-types.manage')
+                ->name('store');
+            Route::put('{type}', [HrmActionTypeController::class, 'update'])
+                ->middleware('hrmac:hrm.disciplinary.action-types.manage')
+                ->name('update');
+            Route::delete('{type}', [HrmActionTypeController::class, 'destroy'])
+                ->middleware('hrmac:hrm.disciplinary.action-types.manage')
+                ->name('destroy');
+        });
+
+        Route::prefix('cases')->name('cases.')->group(function () {
+            Route::get('/', [HrmDisciplinaryCaseController::class, 'index'])
+                ->middleware('hrmac:hrm.disciplinary.disciplinary-cases.view')
+                ->name('index');
+            Route::get('create', [HrmDisciplinaryCaseController::class, 'create'])
+                ->middleware('hrmac:hrm.disciplinary.disciplinary-cases.create')
+                ->name('create');
+            Route::post('/', [HrmDisciplinaryCaseController::class, 'store'])
+                ->middleware('hrmac:hrm.disciplinary.disciplinary-cases.create')
+                ->name('store');
+            Route::get('{case}', [HrmDisciplinaryCaseController::class, 'show'])
+                ->middleware('hrmac:hrm.disciplinary.disciplinary-cases.view')
+                ->name('show');
+            Route::post('{case}/respond', [HrmDisciplinaryCaseController::class, 'respond'])
+                ->middleware('hrmac:hrm.disciplinary.disciplinary-cases.update')
+                ->name('respond');
+            Route::post('{case}/close', [HrmDisciplinaryCaseController::class, 'close'])
+                ->middleware('hrmac:hrm.disciplinary.disciplinary-cases.close')
+                ->name('close');
+        });
+
+        Route::prefix('warnings')->name('warnings.')->group(function () {
+            Route::get('/', [HrmWarningController::class, 'index'])
+                ->middleware('hrmac:hrm.disciplinary.warnings.view')
+                ->name('index');
+            Route::get('create', [HrmWarningController::class, 'create'])
+                ->middleware('hrmac:hrm.disciplinary.warnings.issue')
+                ->name('create');
+            Route::post('/', [HrmWarningController::class, 'store'])
+                ->middleware('hrmac:hrm.disciplinary.warnings.issue')
+                ->name('store');
+            Route::post('{warning}/acknowledge', [HrmWarningController::class, 'acknowledge'])
+                ->middleware('hrmac:hrm.disciplinary.warnings.view')
+                ->name('acknowledge');
+        });
+    });
+
+    Route::prefix('exit-interviews')->name('exit-interviews.')->group(function () {
+        Route::get('/', [HrmExitInterviewController::class, 'index'])
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.view')
+            ->name('index');
+        Route::get('create', [HrmExitInterviewController::class, 'create'])
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.update')
+            ->name('create');
+        Route::post('/', [HrmExitInterviewController::class, 'store'])
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.update')
+            ->name('store');
+        Route::get('{interview}', [HrmExitInterviewController::class, 'show'])
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.view')
+            ->name('show');
+        Route::post('{interview}/record', [HrmExitInterviewController::class, 'record'])
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.update')
+            ->name('record');
+    });
+
+    Route::prefix('grievances')->name('grievances.')->group(function () {
+        Route::get('/', [HrmGrievanceController::class, 'index'])
+            ->middleware('hrmac:hrm.grievances.grievance-list.view')
+            ->name('index');
+        Route::get('create', [HrmGrievanceController::class, 'create'])
+            ->middleware('hrmac:hrm.grievances.grievance-list.update')
+            ->name('create');
+        Route::post('/', [HrmGrievanceController::class, 'store'])
+            ->middleware('hrmac:hrm.grievances.grievance-list.update')
+            ->name('store');
+        Route::get('{grievance}', [HrmGrievanceController::class, 'show'])
+            ->middleware('hrmac:hrm.grievances.grievance-list.view')
+            ->name('show');
+        Route::post('{grievance}/investigate', [HrmGrievanceController::class, 'investigate'])
+            ->middleware('hrmac:hrm.grievances.grievance-list.investigate')
+            ->name('investigate');
+        Route::post('{grievance}/resolve', [HrmGrievanceController::class, 'resolve'])
+            ->middleware('hrmac:hrm.grievances.grievance-list.investigate')
+            ->name('resolve');
     });
 
 });

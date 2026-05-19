@@ -48,6 +48,11 @@ use Aero\HRM\Services\Benefits\EligibilityService;
 use Aero\HRM\Services\Benefits\EnrollmentPeriodService;
 use Aero\HRM\Services\Benefits\OpenEnrollmentService;
 use Aero\HRM\Services\DEIAnalyticsService;
+use Aero\HRM\Services\Disciplinary\DisciplinaryCaseService;
+use Aero\HRM\Services\Disciplinary\ExitInterviewService;
+use Aero\HRM\Services\Disciplinary\GrievanceService;
+use Aero\HRM\Services\Disciplinary\ReferenceGenerator;
+use Aero\HRM\Services\Disciplinary\WarningService;
 use Aero\HRM\Services\EmployeeService;
 use Aero\HRM\Services\HRMetricsAggregatorService;
 use Aero\HRM\Services\HrmNotificationChannelResolver;
@@ -290,6 +295,36 @@ class HRMServiceProvider extends AbstractModuleProvider
         $this->app->singleton(OpenEnrollmentService::class, function ($app) {
             return new OpenEnrollmentService(
                 $app->make(EligibilityService::class),
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        // Register Disciplinary Services (H12)
+        $this->app->singleton(ReferenceGenerator::class);
+
+        $this->app->singleton(DisciplinaryCaseService::class, function ($app) {
+            return new DisciplinaryCaseService(
+                $app->make(ReferenceGenerator::class),
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(WarningService::class, function ($app) {
+            return new WarningService(
+                $app->make(DisciplinaryCaseService::class),
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(ExitInterviewService::class, function ($app) {
+            return new ExitInterviewService(
+                $app->make(AuditServiceInterface::class),
+            );
+        });
+
+        $this->app->singleton(GrievanceService::class, function ($app) {
+            return new GrievanceService(
+                $app->make(ReferenceGenerator::class),
                 $app->make(AuditServiceInterface::class),
             );
         });
