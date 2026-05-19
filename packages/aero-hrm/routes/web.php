@@ -89,6 +89,9 @@ use Aero\HRM\Http\Controllers\Recruitment\InterviewController;
 use Aero\HRM\Http\Controllers\Recruitment\JobController;
 use Aero\HRM\Http\Controllers\Recruitment\OfferController;
 use Aero\HRM\Http\Controllers\Recruitment\RecruitmentController;
+use Aero\HRM\Http\Controllers\Asset\HrmAssetAllocationController;
+use Aero\HRM\Http\Controllers\Asset\HrmAssetCategoryController;
+use Aero\HRM\Http\Controllers\Asset\HrmAssetController;
 use Aero\HRM\Http\Controllers\Safety\HrmSafetyDashboardController;
 use Aero\HRM\Http\Controllers\Safety\HrmSafetyIncidentController;
 use Aero\HRM\Http\Controllers\Safety\HrmSafetyInspectionController;
@@ -2048,6 +2051,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('{assignment}/complete', [HrmSafetyTrainingController::class, 'complete'])
                 ->middleware('hrmac:hrm.safety.safety-training.update')->name('complete');
         });
+    });
+
+    // ============================================================================
+    // H-14 Asset Management
+    // ============================================================================
+    Route::prefix('assets')->name('assets.')->group(function () {
+
+        // Categories
+        Route::prefix('categories')->name('categories.')->group(function () {
+            Route::get('/', [HrmAssetCategoryController::class, 'index'])
+                ->middleware('hrmac:hrm.assets.asset-categories.view')->name('index');
+            Route::post('/', [HrmAssetCategoryController::class, 'store'])
+                ->middleware('hrmac:hrm.assets.asset-categories.manage')->name('store');
+            Route::put('{category}', [HrmAssetCategoryController::class, 'update'])
+                ->middleware('hrmac:hrm.assets.asset-categories.manage')->name('update');
+            Route::delete('{category}', [HrmAssetCategoryController::class, 'destroy'])
+                ->middleware('hrmac:hrm.assets.asset-categories.manage')->name('destroy');
+        });
+
+        // Asset inventory
+        Route::get('/', [HrmAssetController::class, 'index'])
+            ->middleware('hrmac:hrm.assets.asset-inventory.view')->name('index');
+        Route::get('create', [HrmAssetController::class, 'create'])
+            ->middleware('hrmac:hrm.assets.asset-inventory.create')->name('create');
+        Route::post('/', [HrmAssetController::class, 'store'])
+            ->middleware('hrmac:hrm.assets.asset-inventory.create')->name('store');
+        Route::get('{asset}', [HrmAssetController::class, 'show'])
+            ->middleware('hrmac:hrm.assets.asset-inventory.view')->name('show');
+        Route::put('{asset}', [HrmAssetController::class, 'update'])
+            ->middleware('hrmac:hrm.assets.asset-inventory.update')->name('update');
+        Route::delete('{asset}', [HrmAssetController::class, 'destroy'])
+            ->middleware('hrmac:hrm.assets.asset-inventory.delete')->name('destroy');
+
+        // Allocations
+        Route::post('{asset}/allocate', [HrmAssetAllocationController::class, 'store'])
+            ->middleware('hrmac:hrm.assets.asset-allocations.assign')->name('allocations.store');
+        Route::post('allocations/{allocation}/return', [HrmAssetAllocationController::class, 'returnAsset'])
+            ->middleware('hrmac:hrm.assets.asset-allocations.return')->name('allocations.return');
     });
 
 });

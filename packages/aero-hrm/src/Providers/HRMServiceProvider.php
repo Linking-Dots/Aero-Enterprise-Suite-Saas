@@ -42,6 +42,7 @@ use Aero\HRM\Services\Analytics\HeadcountAnalyticsService;
 use Aero\HRM\Services\Analytics\PulseSurveyService;
 use Aero\HRM\Services\Analytics\TurnoverAnalyticsService;
 use Aero\HRM\Services\Analytics\WorkforcePlanService;
+use Aero\HRM\Services\Asset\AssetAllocationService;
 use Aero\HRM\Services\AttendanceCalculationService;
 use Aero\HRM\Services\Benefits\BenefitCatalogService;
 use Aero\HRM\Services\Benefits\EligibilityService;
@@ -331,6 +332,11 @@ class HRMServiceProvider extends AbstractModuleProvider
                 $app->make(ReferenceGenerator::class),
                 $app->make(AuditServiceInterface::class),
             );
+        });
+
+        // Register Asset Services (H14)
+        $this->app->singleton(AssetAllocationService::class, function ($app) {
+            return new AssetAllocationService($app->make(AuditServiceInterface::class));
         });
 
         // Register Safety Services (H13)
