@@ -122,8 +122,8 @@ export default function CasesShow({ case: caseData, timeline, documents }) {
             <CardBody>
               <VStack gap={4}>
                 <Text size="sm" tone="secondary">Activity Timeline</Text>
-                {timeline.map((event, idx) => (
-                  <VStack key={idx} gap={1}>
+                {timeline.map((event) => (
+                  <VStack key={event.id} gap={1}>
                     <HStack gap={2} align="center">
                       <Mono size="xs" tone="tertiary">{event.created_at}</Mono>
                       <Badge intent="neutral">{event.type ?? 'event'}</Badge>
@@ -143,8 +143,8 @@ export default function CasesShow({ case: caseData, timeline, documents }) {
             <CardBody>
               <VStack gap={3}>
                 <Text size="sm" tone="secondary">Documents</Text>
-                {documents.map((doc, idx) => (
-                  <HStack key={idx} gap={3} align="center">
+                {documents.map((doc) => (
+                  <HStack key={doc.id} gap={3} align="center">
                     <Text>{doc.name ?? doc.filename}</Text>
                     <Text size="xs" tone="tertiary">
                       Uploaded by {doc.uploader?.name ?? '—'} on {doc.created_at}

@@ -13,10 +13,6 @@ const STATUS_INTENT = {
   dismissed:           'neutral',
 };
 
-const INVESTIGATOR_OPTIONS_PLACEHOLDER = [
-  { value: '', label: 'Select investigator' },
-];
-
 function statusLabel(s) {
   return s ? s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—';
 }
@@ -30,7 +26,7 @@ function InfoRow({ label, value }) {
   );
 }
 
-export default function GrievancesShow({ grievance, timeline }) {
+export default function GrievancesShow({ grievance, timeline, investigators }) {
   const canInvestigate = useHRMAC('hrm.grievances.grievance-list.investigate');
 
   const isFiledOrInvestigating = ['filed', 'under_investigation'].includes(grievance.status);
@@ -121,8 +117,8 @@ export default function GrievancesShow({ grievance, timeline }) {
             <CardBody>
               <VStack gap={4}>
                 <Text size="sm" tone="secondary">Activity Timeline</Text>
-                {timeline.map((event, idx) => (
-                  <VStack key={idx} gap={1}>
+                {timeline.map((event) => (
+                  <VStack key={event.id} gap={1}>
                     <HStack gap={2} align="center">
                       <Mono size="xs" tone="tertiary">{event.created_at}</Mono>
                       <Badge intent="neutral">{event.type ?? 'event'}</Badge>
@@ -148,8 +144,11 @@ export default function GrievancesShow({ grievance, timeline }) {
                   )}
                   <Field label="Investigator" error={assignForm.errors.investigator_id} required>
                     <Select
-                      options={INVESTIGATOR_OPTIONS_PLACEHOLDER}
-                      value={assignForm.data.investigator_id}
+                      options={[
+                        { value: '', label: 'Select investigator' },
+                        ...(investigators ?? []).map(u => ({ value: String(u.id), label: u.name })),
+                      ]}
+                      value={String(assignForm.data.investigator_id ?? '')}
                       onChange={e => assignForm.setData('investigator_id', e.target.value)}
                     />
                   </Field>

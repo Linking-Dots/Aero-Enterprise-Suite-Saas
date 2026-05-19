@@ -25,7 +25,7 @@ function statusLabel(s) {
   return s ? s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—';
 }
 
-export default function CasesIndex({ cases, filters, actionTypes, statuses }) {
+export default function CasesIndex({ cases, filters, actionTypes }) {
   const canCreate = useHRMAC('hrm.disciplinary.disciplinary-cases.create');
 
   const actionTypeOptions = [

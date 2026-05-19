@@ -8,6 +8,8 @@ use Aero\HRM\Http\Requests\Disciplinary\StoreGrievanceRequest;
 use Aero\HRM\Models\HrmGrievance;
 use Aero\HRM\Services\Disciplinary\GrievanceService;
 use Illuminate\Http\RedirectResponse;
+use Aero\Core\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -50,20 +52,19 @@ final class HrmGrievanceController extends Controller
         return redirect()->route('hrm.grievances.index')->with('success', 'Grievance filed.');
     }
 
-    public function show(HrmGrievance $grievance): Response
+    public function show(Request $r, HrmGrievance $grievance): Response
     {
-        $user = request()->user();
+        $user = $r->user();
         $isAdmin = $user->can('hrm.grievances.grievance-list.view');
-        $isOwner = $user->employee?->id === $grievance->filed_by;
-
-        abort_unless($isAdmin || $isOwner, 403);
-
-        $grievance->load(['filedBy', 'againstEmployee', 'investigator']);
-        $timeline = $grievance->events()->with('actor')->orderBy('occurred_at')->get();
+        // Scope: admin sees all; employee sees only their own
+        if (! $isAdmin && $user->employee?->id !== $grievance->filed_by) {
+            abort(403);
+        }
 
         return Inertia::render('HRM/Disciplinary/Grievances/Show', [
-            'grievance' => $grievance,
-            'timeline' => $timeline,
+            'grievance'     => $grievance->load('filedBy', 'againstEmployee', 'investigator:id,name'),
+            'timeline'      => $grievance->events()->with('actor:id,name')->orderBy('occurred_at')->get(),
+            'investigators' => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
