@@ -118,7 +118,7 @@ Every HRM plan includes: HRMAC guards on all CRUD, `AuditService::log()` on all 
 | H-8 | `phase-1-hrm/plan-h8-training.md` | ✅ Done | Courses, categories, enrollments, sessions, materials, feedback |
 | H-9 | `phase-1-hrm/plan-h9-self-service.md` | ✅ Done | Employee portal: my profile, my leaves, my payslips, my benefits, my training, career path |
 | H-10 | `phase-1-hrm/plan-h10-analytics.md` | ✅ Done | HR analytics dashboard, AI insights, attrition predictions, DEI dashboard, pulse surveys, workforce planning |
-| H-11 | `phase-1-hrm/plan-h11-benefits.md` | 🟡 Written | Benefits catalog, enrollment periods, open enrollment, employee benefits |
+| H-11 | `phase-1-hrm/plan-h11-benefits.md` | ✅ Done | Benefits catalog, enrollment periods, open enrollment, employee benefits |
 | H-12 | `phase-1-hrm/plan-h12-disciplinary.md` | 🟡 Written | Disciplinary cases, warnings, exit interviews, grievances |
 | H-13 | `phase-1-hrm/plan-h13-safety.md` | 🟡 Written | Incidents, inspections, safety training, workplace safety dashboard |
 | H-14 | `phase-1-hrm/plan-h14-assets.md` | 🟡 Written | Asset catalog, categories, allocations |
