@@ -50,18 +50,11 @@ export default function TaskTemplatesCreate() {
 
   return (
     <>
-      <style>{`
-        .ttc-page     { padding: 1.5rem; max-width: 48rem; }
-        .ttc-title    { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 700; color: var(--aeos-text-primary); margin-bottom: 0.25rem; }
-        .ttc-section  { padding: 1.5rem; background: var(--aeos-bg-surface); border: 1px solid var(--aeos-divider); border-radius: var(--aeos-r-lg); }
-        .ttc-task-row { padding: 0.75rem; background: var(--aeos-bg-page); border: 1px solid var(--aeos-divider); border-radius: var(--aeos-r-md); }
-      `}</style>
-
-      <div className="ttc-page">
+      <div className="p-6 max-w-3xl">
         <VStack gap={5}>
           <HStack gap={2} align="center">
             <Box grow>
-              <div className="ttc-title">New Task Template</div>
+              <div className="text-2xl font-bold mb-1">New Task Template</div>
               <Text tone="secondary">Create a reusable onboarding or offboarding task checklist.</Text>
             </Box>
             <Button
@@ -80,7 +73,7 @@ export default function TaskTemplatesCreate() {
           <form onSubmit={submit}>
             <VStack gap={5}>
               {/* Template Info */}
-              <div className="ttc-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Template Details</Eyebrow>
 
@@ -105,7 +98,7 @@ export default function TaskTemplatesCreate() {
               </div>
 
               {/* Tasks */}
-              <div className="ttc-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <HStack gap={2} align="center">
                     <Box grow>
@@ -121,7 +114,7 @@ export default function TaskTemplatesCreate() {
                   )}
 
                   {data.tasks.map((task, i) => (
-                    <div key={i} className="ttc-task-row">
+                    <div key={i} className="p-3 bg-default-50 border border-divider rounded-md">
                       <VStack gap={3}>
                         <HStack gap={3}>
                           <Box grow>

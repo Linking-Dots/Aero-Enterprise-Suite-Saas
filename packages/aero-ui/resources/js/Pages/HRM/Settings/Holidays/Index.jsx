@@ -99,17 +99,12 @@ export default function HolidaysIndex({ holidays, currentYear, availableYears })
 
   return (
     <>
-      <style>{`
-        .hol-page    { padding: 1.5rem; max-width: 56rem; }
-        .hol-title   { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 700; color: var(--aeos-text-primary); margin-bottom: 0.25rem; }
-      `}</style>
-
-      <div className="hol-page">
+      <div className="p-6 max-w-4xl">
         <VStack gap={5}>
           {/* Header */}
           <HStack gap={3} align="center">
             <Box grow>
-              <div className="hol-title">Public Holidays</div>
+              <div className="text-2xl font-bold mb-1">Public Holidays</div>
               <Text tone="secondary">Manage company holidays for each calendar year.</Text>
             </Box>
             {canManage && (

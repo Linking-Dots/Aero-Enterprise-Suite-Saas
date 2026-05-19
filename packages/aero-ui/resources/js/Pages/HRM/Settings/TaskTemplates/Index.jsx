@@ -117,17 +117,11 @@ export default function TaskTemplatesIndex({ templates }) {
 
   return (
     <>
-      <style>{`
-        .tt-page    { padding: 1.5rem; }
-        .tt-title   { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 700; color: var(--aeos-text-primary); margin-bottom: 0.25rem; }
-        .tt-task-row { padding: 0.75rem; background: var(--aeos-bg-page); border: 1px solid var(--aeos-divider); border-radius: var(--aeos-r-md); }
-      `}</style>
-
-      <div className="tt-page">
+      <div className="p-6">
         <VStack gap={5}>
           <HStack gap={2} align="center">
             <Box grow>
-              <div className="tt-title">Task Templates</div>
+              <div className="text-2xl font-bold mb-1">Task Templates</div>
               <Text tone="secondary">Reusable onboarding and offboarding task checklists.</Text>
             </Box>
             {canManage && (
@@ -210,7 +204,7 @@ export default function TaskTemplatesIndex({ templates }) {
               </HStack>
 
               {data.tasks.map((task, i) => (
-                <div key={i} className="tt-task-row">
+                <div key={i} className="p-3 bg-default-50 border border-divider rounded-md">
                   <VStack gap={3}>
                     <HStack gap={3}>
                       <Box grow>

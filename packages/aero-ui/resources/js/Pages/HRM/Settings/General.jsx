@@ -51,17 +51,10 @@ export default function GeneralSettings({ settings }) {
   }
 
   return (
-    <>
-      <style>{`
-        .gs-page    { padding: 1.5rem; max-width: 44rem; }
-        .gs-title   { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 700; color: var(--aeos-text-primary); margin-bottom: 0.25rem; }
-        .gs-section { padding: 1.5rem; background: var(--aeos-bg-surface); border: 1px solid var(--aeos-divider); border-radius: var(--aeos-r-lg); }
-      `}</style>
-
-      <div className="gs-page">
+    <div className="p-6 max-w-2xl">
         <VStack gap={5}>
           <div>
-            <div className="gs-title">HRM General Settings</div>
+            <div className="text-2xl font-bold text-foreground mb-1">HRM General Settings</div>
             <Text tone="secondary">Core configuration for working hours, employee IDs, and HR policies.</Text>
           </div>
 
@@ -72,7 +65,7 @@ export default function GeneralSettings({ settings }) {
             <VStack gap={5}>
 
               {/* Working Hours */}
-              <div className="gs-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Working Hours</Eyebrow>
 
@@ -111,7 +104,7 @@ export default function GeneralSettings({ settings }) {
               </div>
 
               {/* Employee IDs */}
-              <div className="gs-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Employee IDs</Eyebrow>
 
@@ -152,7 +145,7 @@ export default function GeneralSettings({ settings }) {
               </div>
 
               {/* Fiscal / HR Policies */}
-              <div className="gs-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Fiscal &amp; HR Policies</Eyebrow>
 
@@ -237,7 +230,7 @@ export default function GeneralSettings({ settings }) {
           </form>
         </VStack>
       </div>
-    </>
+    </div>
   );
 }
 

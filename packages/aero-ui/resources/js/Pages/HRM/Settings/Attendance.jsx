@@ -24,17 +24,10 @@ export default function AttendanceSettings({ settings }) {
   }
 
   return (
-    <>
-      <style>{`
-        .as-page    { padding: 1.5rem; max-width: 44rem; }
-        .as-title   { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 700; color: var(--aeos-text-primary); margin-bottom: 0.25rem; }
-        .as-section { padding: 1.5rem; background: var(--aeos-bg-surface); border: 1px solid var(--aeos-divider); border-radius: var(--aeos-r-lg); }
-      `}</style>
-
-      <div className="as-page">
+    <div className="p-6 max-w-2xl">
         <VStack gap={5}>
           <div>
-            <div className="as-title">Attendance Settings</div>
+            <div className="text-2xl font-bold mb-1">Attendance Settings</div>
             <Text tone="secondary">Configure grace periods, overtime thresholds, and clock-in requirements.</Text>
           </div>
 
@@ -45,7 +38,7 @@ export default function AttendanceSettings({ settings }) {
             <VStack gap={5}>
 
               {/* Grace Periods */}
-              <div className="as-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Grace Periods</Eyebrow>
 
@@ -87,7 +80,7 @@ export default function AttendanceSettings({ settings }) {
               </div>
 
               {/* Overtime */}
-              <div className="as-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Overtime</Eyebrow>
 
@@ -129,7 +122,7 @@ export default function AttendanceSettings({ settings }) {
               </div>
 
               {/* Auto Clock-Out */}
-              <div className="as-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Auto Clock-Out</Eyebrow>
 
@@ -151,7 +144,7 @@ export default function AttendanceSettings({ settings }) {
               </div>
 
               {/* Clock-In Requirements */}
-              <div className="as-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Clock-In Requirements</Eyebrow>
 
@@ -178,7 +171,6 @@ export default function AttendanceSettings({ settings }) {
           </form>
         </VStack>
       </div>
-    </>
   );
 }
 

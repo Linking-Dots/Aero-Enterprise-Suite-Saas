@@ -50,18 +50,10 @@ export default function LeaveSettings({ settings }) {
   }
 
   return (
-    <>
-      <style>{`
-        .ls-page    { padding: 1.5rem; max-width: 44rem; }
-        .ls-title   { font-family: var(--aeos-font-display); font-size: 1.5rem; font-weight: 700; color: var(--aeos-text-primary); margin-bottom: 0.25rem; }
-        .ls-section { padding: 1.5rem; background: var(--aeos-bg-surface); border: 1px solid var(--aeos-divider); border-radius: var(--aeos-r-lg); }
-        .ls-day-btn { cursor: pointer; user-select: none; }
-      `}</style>
-
-      <div className="ls-page">
+    <div className="p-6 max-w-2xl">
         <VStack gap={5}>
           <div>
-            <div className="ls-title">Leave Settings</div>
+            <div className="text-2xl font-bold mb-1">Leave Settings</div>
             <Text tone="secondary">Configure working days, accrual, carry-forward, and encashment policies.</Text>
           </div>
 
@@ -72,7 +64,7 @@ export default function LeaveSettings({ settings }) {
             <VStack gap={5}>
 
               {/* Working Days */}
-              <div className="ls-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Working Days</Eyebrow>
                   <Text tone="secondary">Select which days of the week are considered working days.</Text>
@@ -83,7 +75,7 @@ export default function LeaveSettings({ settings }) {
                       return (
                         <span
                           key={day}
-                          className="ls-day-btn"
+                          className="cursor-pointer select-none"
                           onClick={() => toggleDay(day)}
                           role="button"
                           tabIndex={0}
@@ -100,7 +92,7 @@ export default function LeaveSettings({ settings }) {
               </div>
 
               {/* Accrual */}
-              <div className="ls-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Accrual</Eyebrow>
 
@@ -129,7 +121,7 @@ export default function LeaveSettings({ settings }) {
               </div>
 
               {/* Carry Forward */}
-              <div className="ls-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Carry Forward</Eyebrow>
 
@@ -158,7 +150,7 @@ export default function LeaveSettings({ settings }) {
               </div>
 
               {/* Encashment */}
-              <div className="ls-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Encashment</Eyebrow>
 
@@ -187,7 +179,7 @@ export default function LeaveSettings({ settings }) {
               </div>
 
               {/* Approval & Notice */}
-              <div className="ls-section">
+              <div className="p-6 bg-content1 border border-divider rounded-xl">
                 <VStack gap={4}>
                   <Eyebrow>Approval &amp; Notice</Eyebrow>
 
@@ -230,7 +222,6 @@ export default function LeaveSettings({ settings }) {
           </form>
         </VStack>
       </div>
-    </>
   );
 }
 
