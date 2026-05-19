@@ -56,6 +56,10 @@ use Aero\HRM\Http\Controllers\Employee\TimeOffManagementController;
 use Aero\HRM\Http\Controllers\Employee\TrainingController;
 use Aero\HRM\Http\Controllers\Employee\WorkplaceSafetyController;
 use Aero\HRM\Http\Controllers\EmployeeHistoryController;
+use Aero\HRM\Http\Controllers\Events\HrmAnnouncementController;
+use Aero\HRM\Http\Controllers\Events\HrmEventController;
+use Aero\HRM\Http\Controllers\Events\HrmEventRegistrationController;
+use Aero\HRM\Http\Controllers\Events\HrmPublicEventController;
 use Aero\HRM\Http\Controllers\ExitInterviewController;
 use Aero\HRM\Http\Controllers\Expense\ExpenseCategoryController;
 use Aero\HRM\Http\Controllers\Expense\ExpenseClaimController;
@@ -2136,6 +2140,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/', [HrmExpenseClaimController::class, 'store'])
                 ->middleware('hrmac:hrm.expenses.my-expense-claims.create')->name('store');
         });
+    });
+
+    // ============================================================================
+    // H-16 Events & Announcements
+    // ============================================================================
+
+    // Public event page — no auth required
+    Route::get('events/{event:slug}/public', [HrmPublicEventController::class, 'show'])
+        ->withoutMiddleware(['auth', 'verified', 'tenant'])
+        ->name('events.public.show');
+
+    Route::prefix('events')->name('events.')->group(function () {
+        Route::get('/', [HrmEventController::class, 'index'])
+            ->middleware('hrmac:hrm.events.events-list.view')->name('index');
+        Route::get('create', [HrmEventController::class, 'create'])
+            ->middleware('hrmac:hrm.events.events-list.edit')->name('create');
+        Route::post('/', [HrmEventController::class, 'store'])
+            ->middleware('hrmac:hrm.events.events-list.edit')->name('store');
+        Route::get('{event:slug}', [HrmEventController::class, 'show'])
+            ->middleware('hrmac:hrm.events.events-list.view')->name('show');
+        Route::put('{event:slug}', [HrmEventController::class, 'update'])
+            ->middleware('hrmac:hrm.events.events-list.edit')->name('update');
+        Route::post('{event:slug}/publish', [HrmEventController::class, 'publish'])
+            ->middleware('hrmac:hrm.events.events-list.publish')->name('publish');
+
+        Route::get('{event:slug}/registrations', [HrmEventRegistrationController::class, 'index'])
+            ->middleware('hrmac:hrm.events.registrations.view')->name('registrations.index');
+        Route::post('{event:slug}/register', [HrmEventRegistrationController::class, 'store'])
+            ->middleware('hrmac:hrm.events.registrations.edit')->name('registrations.store');
+        Route::post('registrations/{registration}/cancel', [HrmEventRegistrationController::class, 'cancel'])
+            ->middleware('hrmac:hrm.events.registrations.edit')->name('registrations.cancel');
+        Route::get('registrations/{registration}/token', [HrmEventRegistrationController::class, 'printToken'])
+            ->middleware('hrmac:hrm.events.registrations.view')->name('registrations.token');
+    });
+
+    Route::prefix('announcements')->name('announcements.')->group(function () {
+        Route::get('/', [HrmAnnouncementController::class, 'index'])
+            ->middleware('hrmac:hrm.events.announcements.view')->name('index');
+        Route::post('/', [HrmAnnouncementController::class, 'store'])
+            ->middleware('hrmac:hrm.events.announcements.edit')->name('store');
+        Route::post('{announcement}/read', [HrmAnnouncementController::class, 'markRead'])
+            ->name('read');
     });
 
 });
