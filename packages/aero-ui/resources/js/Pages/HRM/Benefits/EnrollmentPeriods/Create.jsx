@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import App from '../../../../App.jsx';
 import {
   FormPageLayout, Card, CardBody, Field, Input, Button,
@@ -103,7 +103,7 @@ export default function EnrollmentPeriodsCreate({ benefits, departments }) {
                 <Button type="submit" intent="primary" loading={processing}>
                   Create Period
                 </Button>
-                <Button intent="ghost" onClick={() => window.history.back()}>
+                <Button intent="neutral" onClick={() => router.visit(route('hrm.benefits.enrollment-periods.index'))}>
                   Cancel
                 </Button>
               </HStack>

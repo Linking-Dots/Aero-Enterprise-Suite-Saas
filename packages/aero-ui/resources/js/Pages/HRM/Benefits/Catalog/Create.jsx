@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import App from '../../../../App.jsx';
 import {
   FormPageLayout, Card, CardBody, Field, Input, Select, Textarea,
@@ -144,7 +144,7 @@ export default function CatalogCreate({ categories, frequencies }) {
                 <Button type="submit" intent="primary" loading={processing}>
                   Create Benefit
                 </Button>
-                <Button intent="ghost" onClick={() => window.history.back()}>
+                <Button intent="neutral" onClick={() => router.visit(route('hrm.benefits.catalog.index'))}>
                   Cancel
                 </Button>
               </HStack>
