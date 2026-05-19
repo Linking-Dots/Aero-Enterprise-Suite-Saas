@@ -1168,9 +1168,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats', [SuccessionPlanningController::class, 'stats'])->name('stats');
         Route::post('/', [SuccessionPlanningController::class, 'store'])->name('store');
         Route::get('/pipeline-report', [SuccessionPlanningController::class, 'pipelineReport'])->name('pipeline-report');
-        Route::get('/{id}', [SuccessionPlanningController::class, 'show'])->name('show');
-        Route::put('/{id}', [SuccessionPlanningController::class, 'update'])->name('update');
-        Route::delete('/{id}', [SuccessionPlanningController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}', [SuccessionPlanningController::class, 'show'])->name('show')->whereNumber('id');
+        Route::put('/{id}', [SuccessionPlanningController::class, 'update'])->name('update')->whereNumber('id');
+        Route::delete('/{id}', [SuccessionPlanningController::class, 'destroy'])->name('destroy')->whereNumber('id');
 
         // Candidates
         Route::get('/{planId}/potential-candidates', [SuccessionPlanningController::class, 'getPotentialCandidates'])->name('potential-candidates');
