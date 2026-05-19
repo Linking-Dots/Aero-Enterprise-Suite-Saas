@@ -2,7 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import App from '../../../App.jsx';
 import {
   FormPageLayout, VStack, HStack, Field, Input,
-  Button, Text, Eyebrow, Toggle, Select,
+  Button, Text, Eyebrow, Toggle,
 } from '@aero/ui';
 
 export default function AnnouncementsCreate({ departments }) {

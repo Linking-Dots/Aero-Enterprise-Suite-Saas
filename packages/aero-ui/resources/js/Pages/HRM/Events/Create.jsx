@@ -1,12 +1,14 @@
 import { router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
 import App from '../../App.jsx';
+import useHRMAC from '../../../hooks/useHRMAC.js';
 import {
   FormPageLayout, VStack, HStack, Field, Input,
   Button, Text, Eyebrow, Toggle, DataTable,
 } from '@aero/ui';
 
 export default function EventsCreate() {
+  const canCreate = useHRMAC('hrm.events.events-list.edit');
+
   const { data, setData, post, processing, errors } = useForm({
     title:       '',
     description: '',
@@ -126,6 +128,7 @@ export default function EventsCreate() {
             type="submit"
             intent="primary"
             loading={processing}
+            disabled={!canCreate}
             onClick={submit}
           >
             Create Event

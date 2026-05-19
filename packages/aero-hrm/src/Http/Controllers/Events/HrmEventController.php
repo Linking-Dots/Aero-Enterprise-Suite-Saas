@@ -23,6 +23,7 @@ final class HrmEventController extends Controller
 
         return Inertia::render('HRM/Events/Index', [
             'events' => HrmEvent::query()
+                ->withCount('registrations')
                 ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
                 ->when($filters['q'] ?? null, fn ($q, $v) => $q->where('title', 'like', "%$v%"))
                 ->latest('starts_at')
@@ -82,8 +83,8 @@ final class HrmEventController extends Controller
         return Inertia::render('HRM/Events/Show', [
             'event' => $event,
             'can' => [
-                'publish' => request()->user()->can('hrmac', 'hrm.events.events-list.publish'),
-                'edit' => request()->user()->can('hrmac', 'hrm.events.events-list.edit'),
+                'publish' => request()->user()->can('hrm.events.events-list.publish'),
+                'edit' => request()->user()->can('hrm.events.events-list.edit'),
             ],
         ]);
     }

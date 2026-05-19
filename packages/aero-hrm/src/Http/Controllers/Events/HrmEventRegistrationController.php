@@ -36,14 +36,14 @@ final class HrmEventRegistrationController extends Controller
         ]);
 
         abort_unless($event->status === HrmEvent::STATUS_PUBLISHED, 422, 'Event is not open for registration.');
-        abort_if(
-            $event->capacity !== null &&
-            $event->registrations()->where('status', HrmEventRegistration::STATUS_REGISTERED)->count() >= $event->capacity,
-            422,
-            'Event is at capacity.'
-        );
 
         DB::transaction(function () use ($event, $data, $r) {
+            if ($event->capacity !== null &&
+                $event->registrations()->where('status', HrmEventRegistration::STATUS_REGISTERED)->lockForUpdate()->count() >= $event->capacity
+            ) {
+                abort(422, 'Event is at capacity.');
+            }
+
             $registration = $event->registrations()->create([
                 ...$data,
                 'employee_id' => $r->user()?->employee?->id,
@@ -76,7 +76,7 @@ final class HrmEventRegistrationController extends Controller
         return Inertia::render('HRM/Events/Registrations/Token', [
             'registration' => $registration->only(['id', 'attendee_name', 'attendee_email', 'token', 'status', 'registered_at']),
             'event' => $registration->event->only(['id', 'slug', 'title', 'starts_at', 'ends_at', 'location']),
-            'tokenUrl' => url(route('hrm.events.public.show', $registration->event->slug)).'?t='.$registration->token,
+            'tokenUrl' => route('hrm.events.public.show', $registration->event->slug).'?t='.$registration->token,
         ]);
     }
 }

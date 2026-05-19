@@ -55,10 +55,12 @@ final class HrmAnnouncementController extends Controller
 
     public function markRead(Request $r, HrmAnnouncement $announcement): RedirectResponse
     {
-        HrmAnnouncementRead::updateOrCreate(
-            ['announcement_id' => $announcement->id, 'user_id' => $r->user()->id],
-            ['read_at' => now()]
-        );
+        DB::transaction(function () use ($r, $announcement) {
+            HrmAnnouncementRead::updateOrCreate(
+                ['announcement_id' => $announcement->id, 'user_id' => $r->user()->id],
+                ['read_at' => now()]
+            );
+        });
 
         return back();
     }
