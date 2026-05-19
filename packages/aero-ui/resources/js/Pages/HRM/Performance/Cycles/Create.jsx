@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import {
   FormPageLayout, VStack, HStack, Field, Input, Select, Toggle, Button, Text, Checkbox,
 } from '@aero/ui';

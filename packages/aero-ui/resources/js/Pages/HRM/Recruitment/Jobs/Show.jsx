@@ -9,7 +9,7 @@ import {
   useDroppable,
   useDraggable,
 } from '@dnd-kit/core';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   VStack, HStack, Box, Text, Eyebrow, Badge, Button, Card,

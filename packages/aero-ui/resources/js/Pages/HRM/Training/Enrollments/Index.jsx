@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import {
   IndexPageLayout, DataTable, Button, HStack, VStack,
   Field, Input, Select, Toggle, RadioGroup,

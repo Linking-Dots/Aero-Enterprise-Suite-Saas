@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   VStack, HStack, Box, Text, Eyebrow, Badge, Button, Field, Select,

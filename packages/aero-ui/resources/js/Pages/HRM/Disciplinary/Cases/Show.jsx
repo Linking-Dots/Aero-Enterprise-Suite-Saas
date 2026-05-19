@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   DetailPageLayout, Card, CardBody, VStack, HStack,

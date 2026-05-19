@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import {
   VStack, HStack, Box, Text, Mono, Eyebrow, Button, Badge, Card, DataTable,
 } from '@aero/ui';

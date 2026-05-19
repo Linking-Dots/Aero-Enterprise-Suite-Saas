@@ -1,5 +1,5 @@
 import { router, Link } from '@inertiajs/react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import {
   IndexPageLayout, DataTable, Badge, Button, HStack, Progress, Pagination,
 } from '@aero/ui';

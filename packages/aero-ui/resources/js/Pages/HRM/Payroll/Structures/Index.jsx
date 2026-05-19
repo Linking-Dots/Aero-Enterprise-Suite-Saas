@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import App from '../../../../App.jsx';
+import App from '../../../App.jsx';
 import {
   IndexPageLayout, DataTable, Button, HStack, Badge, Pagination, Modal, Text,
 } from '@aero/ui';
