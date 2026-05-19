@@ -1785,12 +1785,12 @@ return [
                 ],
                 [
                     'code' => 'general-settings',
-                    'name' => 'General HR Settings',
+                    'name' => 'General Settings',
                     'type' => 'page',
                     'route' => '/hrm/settings/general',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View'],
-                        ['code' => 'edit', 'name' => 'Update'],
+                        ['code' => 'view', 'name' => 'View General Settings'],
+                        ['code' => 'update', 'name' => 'Update General Settings'],
                     ],
                 ],
                 [
@@ -1799,8 +1799,8 @@ return [
                     'type' => 'page',
                     'route' => '/hrm/settings/leave',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View'],
-                        ['code' => 'edit', 'name' => 'Update'],
+                        ['code' => 'view', 'name' => 'View Leave Settings'],
+                        ['code' => 'update', 'name' => 'Update Leave Settings'],
                     ],
                 ],
                 [
@@ -1809,8 +1809,8 @@ return [
                     'type' => 'page',
                     'route' => '/hrm/settings/attendance',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View'],
-                        ['code' => 'edit', 'name' => 'Update'],
+                        ['code' => 'view', 'name' => 'View Attendance Settings'],
+                        ['code' => 'update', 'name' => 'Update Attendance Settings'],
                     ],
                 ],
                 [
@@ -1819,18 +1819,18 @@ return [
                     'type' => 'page',
                     'route' => '/hrm/settings/task-templates',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View'],
-                        ['code' => 'edit', 'name' => 'Manage'],
+                        ['code' => 'view', 'name' => 'View Task Templates'],
+                        ['code' => 'manage', 'name' => 'Manage Task Templates'],
                     ],
                 ],
                 [
                     'code' => 'holidays',
-                    'name' => 'Holiday Calendar',
+                    'name' => 'Public Holidays',
                     'type' => 'page',
                     'route' => '/hrm/settings/holidays',
                     'actions' => [
-                        ['code' => 'view', 'name' => 'View'],
-                        ['code' => 'edit', 'name' => 'Manage'],
+                        ['code' => 'view', 'name' => 'View Holidays'],
+                        ['code' => 'manage', 'name' => 'Manage Holidays'],
                     ],
                 ],
             ],

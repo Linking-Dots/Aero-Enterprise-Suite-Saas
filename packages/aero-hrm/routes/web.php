@@ -108,7 +108,12 @@ use Aero\HRM\Http\Controllers\SelfService\DashboardController;
 use Aero\HRM\Http\Controllers\SelfService\PayslipController;
 use Aero\HRM\Http\Controllers\SelfService\PerformanceController;
 use Aero\HRM\Http\Controllers\Settings\AttendanceSettingController;
+use Aero\HRM\Http\Controllers\Settings\HrmAttendanceSettingController;
+use Aero\HRM\Http\Controllers\Settings\HrmGeneralSettingController;
+use Aero\HRM\Http\Controllers\Settings\HrmLeaveSettingController;
+use Aero\HRM\Http\Controllers\Settings\HrmPublicHolidayController;
 use Aero\HRM\Http\Controllers\Settings\HrmSettingController;
+use Aero\HRM\Http\Controllers\Settings\HrmTaskTemplateController;
 use Aero\HRM\Http\Controllers\Settings\LeaveSettingController;
 use Aero\HRM\Http\Controllers\Succession\HrmCareerPathController;
 use Aero\HRM\Http\Controllers\Succession\HrmSuccessionCandidateController;
@@ -2226,6 +2231,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.workforce-planning.talent-marketplace.view')->name('index');
         Route::post('/', [HrmTalentMobilityController::class, 'store'])
             ->middleware('hrmac:hrm.workforce-planning.talent-marketplace.manage')->name('store');
+    });
+
+    // ============================================================================
+    // H-18 HRM Settings
+    // ============================================================================
+    Route::prefix('settings')->name('settings.')->group(function () {
+
+        Route::get('general', [HrmGeneralSettingController::class, 'show'])
+            ->middleware('hrmac:hrm.settings.general-settings.view')->name('general.show');
+        Route::put('general', [HrmGeneralSettingController::class, 'update'])
+            ->middleware('hrmac:hrm.settings.general-settings.update')->name('general.update');
+
+        Route::get('leave', [HrmLeaveSettingController::class, 'show'])
+            ->middleware('hrmac:hrm.settings.leave-settings.view')->name('leave.show');
+        Route::put('leave', [HrmLeaveSettingController::class, 'update'])
+            ->middleware('hrmac:hrm.settings.leave-settings.update')->name('leave.update');
+
+        Route::get('attendance', [HrmAttendanceSettingController::class, 'show'])
+            ->middleware('hrmac:hrm.settings.attendance-settings.view')->name('attendance.show');
+        Route::put('attendance', [HrmAttendanceSettingController::class, 'update'])
+            ->middleware('hrmac:hrm.settings.attendance-settings.update')->name('attendance.update');
+
+        Route::get('task-templates', [HrmTaskTemplateController::class, 'index'])
+            ->middleware('hrmac:hrm.settings.task-templates.view')->name('task-templates.index');
+        Route::post('task-templates', [HrmTaskTemplateController::class, 'store'])
+            ->middleware('hrmac:hrm.settings.task-templates.manage')->name('task-templates.store');
+        Route::put('task-templates/{taskTemplate}', [HrmTaskTemplateController::class, 'update'])
+            ->middleware('hrmac:hrm.settings.task-templates.manage')->name('task-templates.update');
+        Route::delete('task-templates/{taskTemplate}', [HrmTaskTemplateController::class, 'destroy'])
+            ->middleware('hrmac:hrm.settings.task-templates.manage')->name('task-templates.destroy');
+
+        Route::get('holidays', [HrmPublicHolidayController::class, 'index'])
+            ->middleware('hrmac:hrm.settings.holidays.view')->name('holidays.index');
+        Route::post('holidays', [HrmPublicHolidayController::class, 'store'])
+            ->middleware('hrmac:hrm.settings.holidays.manage')->name('holidays.store');
+        Route::delete('holidays/{holiday}', [HrmPublicHolidayController::class, 'destroy'])
+            ->middleware('hrmac:hrm.settings.holidays.manage')->name('holidays.destroy');
     });
 
 });
