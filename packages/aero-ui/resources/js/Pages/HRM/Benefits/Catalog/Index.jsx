@@ -15,7 +15,7 @@ const CATEGORY_OPTIONS = [
   })),
 ];
 
-export default function CatalogIndex({ benefits, filters, categories }) {
+export default function CatalogIndex({ benefits, filters }) {
   const canEdit   = useHRMAC('hrm.benefits.benefit-catalog.edit');
   const [modalOpen, setModalOpen] = useState(false);
   const [toDelete,  setToDelete]  = useState(null);

@@ -1,8 +1,9 @@
 import { useForm, router } from '@inertiajs/react';
 import App from '../../../../App.jsx';
+import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   FormPageLayout, Card, CardBody, Field, Input, Select, Textarea,
-  Toggle, Button, HStack, VStack,
+  Toggle, Button, HStack, VStack, Text,
 } from '@aero/ui';
 
 const FREQ_OPTIONS = ['monthly', 'biweekly', 'weekly', 'annual'].map(f => ({
@@ -10,7 +11,9 @@ const FREQ_OPTIONS = ['monthly', 'biweekly', 'weekly', 'annual'].map(f => ({
   label: f.charAt(0).toUpperCase() + f.slice(1),
 }));
 
-export default function CatalogCreate({ categories, frequencies }) {
+export default function CatalogCreate({ categories }) {
+  const canEdit = useHRMAC('hrm.benefits.benefit-catalog.edit');
+
   const categoryOptions = (categories ?? []).map(c => ({
     value: c,
     label: c.charAt(0).toUpperCase() + c.slice(1),
@@ -33,6 +36,18 @@ export default function CatalogCreate({ categories, frequencies }) {
   function submit(e) {
     e.preventDefault();
     post(route('hrm.benefits.catalog.store'));
+  }
+
+  if (!canEdit) {
+    return (
+      <FormPageLayout title="New Benefit">
+        <Card>
+          <CardBody>
+            <Text tone="secondary">You do not have permission to create benefits.</Text>
+          </CardBody>
+        </Card>
+      </FormPageLayout>
+    );
   }
 
   return (

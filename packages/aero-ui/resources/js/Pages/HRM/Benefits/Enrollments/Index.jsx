@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import App from '../../../../App.jsx';
+import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   IndexPageLayout, DataTable, HStack,
   Field, Select, Input, Pagination, Badge, Text,
@@ -8,6 +9,8 @@ import {
 const STATUS_INTENT = { enrolled: 'success', waived: 'warning' };
 
 export default function EnrollmentsIndex({ enrollments, filters, periods, benefits }) {
+  const canView = useHRMAC('hrm.benefits.enrollments.view');
+
   const periodOptions = [
     { value: '', label: 'All Periods' },
     ...(periods ?? []).map(p => ({ value: String(p.id), label: p.name })),
@@ -67,6 +70,14 @@ export default function EnrollmentsIndex({ enrollments, filters, periods, benefi
       label: 'Elected',
     },
   ];
+
+  if (!canView) {
+    return (
+      <IndexPageLayout title="Benefit Enrollments">
+        <Text tone="secondary">You do not have permission to view enrollment records.</Text>
+      </IndexPageLayout>
+    );
+  }
 
   return (
     <IndexPageLayout

@@ -1,11 +1,14 @@
 import { useForm, router } from '@inertiajs/react';
 import App from '../../../../App.jsx';
+import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   FormPageLayout, Card, CardBody, Field, Input, Button,
   HStack, VStack, Checkbox, Text,
 } from '@aero/ui';
 
-export default function EnrollmentPeriodsCreate({ benefits, departments }) {
+export default function EnrollmentPeriodsCreate({ benefits }) {
+  const canCreate = useHRMAC('hrm.benefits.enrollment-periods.edit');
+
   const { data, setData, post, processing, errors } = useForm({
     name:               '',
     starts_at:          '',
@@ -27,6 +30,18 @@ export default function EnrollmentPeriodsCreate({ benefits, departments }) {
   function submit(e) {
     e.preventDefault();
     post(route('hrm.benefits.enrollment-periods.store'));
+  }
+
+  if (!canCreate) {
+    return (
+      <FormPageLayout title="New Enrollment Period">
+        <Card>
+          <CardBody>
+            <Text tone="secondary">You do not have permission to create enrollment periods.</Text>
+          </CardBody>
+        </Card>
+      </FormPageLayout>
+    );
   }
 
   return (
