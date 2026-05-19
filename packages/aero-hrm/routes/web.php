@@ -110,6 +110,10 @@ use Aero\HRM\Http\Controllers\SelfService\PerformanceController;
 use Aero\HRM\Http\Controllers\Settings\AttendanceSettingController;
 use Aero\HRM\Http\Controllers\Settings\HrmSettingController;
 use Aero\HRM\Http\Controllers\Settings\LeaveSettingController;
+use Aero\HRM\Http\Controllers\Succession\HrmCareerPathController;
+use Aero\HRM\Http\Controllers\Succession\HrmSuccessionCandidateController;
+use Aero\HRM\Http\Controllers\Succession\HrmTalentMobilityController;
+use Aero\HRM\Http\Controllers\Succession\HrmTalentPoolController;
 use Aero\HRM\Http\Controllers\SuccessionPlanningController;
 use Aero\HRM\Http\Controllers\TalentMarketplaceController;
 use Aero\HRM\Http\Controllers\Training\TrainingCategoryController;
@@ -2182,6 +2186,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.events.announcements.edit')->name('store');
         Route::post('{announcement}/read', [HrmAnnouncementController::class, 'markRead'])
             ->name('read');
+    });
+
+    // ============================================================================
+    // H-17 Succession Planning
+    // ============================================================================
+
+    Route::prefix('career-paths')->name('career-paths.')->group(function () {
+        Route::get('/', [HrmCareerPathController::class, 'index'])
+            ->middleware('hrmac:hrm.career-pathing.career-paths.view')->name('index');
+        Route::get('create', [HrmCareerPathController::class, 'create'])
+            ->middleware('hrmac:hrm.career-pathing.career-paths.create')->name('create');
+        Route::post('/', [HrmCareerPathController::class, 'store'])
+            ->middleware('hrmac:hrm.career-pathing.career-paths.create')->name('store');
+        Route::get('{careerPath:slug}', [HrmCareerPathController::class, 'show'])
+            ->middleware('hrmac:hrm.career-pathing.career-paths.view')->name('show');
+        Route::post('{careerPath:slug}/assign', [HrmCareerPathController::class, 'assign'])
+            ->middleware('hrmac:hrm.career-pathing.employee-progressions.assign')->name('assign');
+    });
+
+    Route::prefix('succession-planning')->name('succession-planning.')->group(function () {
+        Route::get('talent-pool', [HrmTalentPoolController::class, 'index'])
+            ->middleware('hrmac:hrm.succession-planning.succession-candidates.view')->name('talent-pool.index');
+        Route::post('talent-pool', [HrmTalentPoolController::class, 'add'])
+            ->middleware('hrmac:hrm.succession-planning.succession-candidates.manage')->name('talent-pool.add');
+        Route::delete('talent-pool/{member}', [HrmTalentPoolController::class, 'remove'])
+            ->middleware('hrmac:hrm.succession-planning.succession-candidates.manage')->name('talent-pool.remove');
+
+        Route::get('candidates', [HrmSuccessionCandidateController::class, 'index'])
+            ->middleware('hrmac:hrm.succession-planning.succession-candidates.view')->name('candidates.index');
+        Route::post('candidates', [HrmSuccessionCandidateController::class, 'store'])
+            ->middleware('hrmac:hrm.succession-planning.succession-candidates.manage')->name('candidates.store');
+        Route::delete('candidates/{candidate}', [HrmSuccessionCandidateController::class, 'destroy'])
+            ->middleware('hrmac:hrm.succession-planning.succession-candidates.manage')->name('candidates.destroy');
+    });
+
+    Route::prefix('talent-marketplace')->name('talent-marketplace.')->group(function () {
+        Route::get('/', [HrmTalentMobilityController::class, 'index'])
+            ->middleware('hrmac:hrm.workforce-planning.talent-marketplace.view')->name('index');
+        Route::post('/', [HrmTalentMobilityController::class, 'store'])
+            ->middleware('hrmac:hrm.workforce-planning.talent-marketplace.manage')->name('store');
     });
 
 });
