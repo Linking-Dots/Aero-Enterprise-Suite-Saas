@@ -464,7 +464,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Skills & Competency Management
-    Route::middleware(['hrmac:hrm.employees.skills'])->group(function () {
+    Route::middleware(['hrmac:hrm.performance.skill-matrix.view'])->group(function () {
         Route::get('/skills', [SkillsController::class, 'index'])->name('skills.index');
         Route::get('/skills/stats', [SkillsController::class, 'stats'])->name('skills.stats');
         Route::get('/skills/matrix', [SkillsController::class, 'matrix'])->name('skills.matrix');
@@ -538,7 +538,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Employee Benefits Administration
-    Route::middleware(['hrmac:hrm.employees.benefits'])->group(function () {
+    Route::middleware(['hrmac:hrm.benefits.benefit-catalog.view'])->group(function () {
         Route::get('/benefits', [BenefitsController::class, 'index'])->name('benefits.index');
         Route::get('/benefits/stats', [BenefitsController::class, 'stats'])->name('benefits.stats');
         Route::get('/benefits/open-enrollment-periods', [BenefitsController::class, 'openEnrollmentPeriods'])->name('benefits.open-enrollment-periods.index');
@@ -600,7 +600,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // HR Analytics & Reporting
-    Route::middleware(['hrmac:hrm.hr-reports'])->group(function () {
+    Route::middleware(['hrmac:hrm.analytics.hr-reports.view'])->group(function () {
         // Redirect /hr-analytics to /analytics for navigation consistency
         Route::get('/hr-analytics', fn () => redirect()->route('hrm.analytics.index'))->name('hr-analytics.index');
         Route::get('/analytics', [HrAnalyticsController::class, 'index'])->name('analytics.index');
@@ -636,7 +636,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Enhanced Employee Self-Service Portal
-    Route::middleware(['hrmac:hrm.employees.self-service'])->group(function () {
+    Route::middleware(['hrmac:hrm.employee-self-service.my-profile.view'])->group(function () {
         Route::get('/self-service', [EmployeeSelfServiceController::class, 'index'])->name('selfservice.index');
         Route::get('/self-service/profile', [EmployeeSelfServiceController::class, 'profile'])->name('selfservice.profile');
         Route::put('/self-service/profile', [EmployeeSelfServiceController::class, 'updateProfile'])->name('selfservice.profile.update');
@@ -739,7 +739,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Bank Details
         Route::get('/bank-details', [EmployeeProfileController::class, 'getBankDetails'])->name('bank-details.show');
         Route::post('/bank-details/verify', [EmployeeProfileController::class, 'verifyBankDetails'])
-            ->middleware('hrmac:hrm.employees.verify')
+            ->middleware('hrmac:hrm.employees.employee-directory.change-status')
             ->name('bank-details.verify');
 
         // Emergency Contacts
@@ -1009,11 +1009,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::middleware(['hrmac:hrm.settings.documents-settings'])->get('/documents', [HrmSettingController::class, 'index'])->name('settings.hr.documents');
 
         // Update routes
-        Route::middleware(['hrmac:hrm.settings.onboarding-settings,setting-list,update'])->post('/onboarding', [HrmSettingController::class, 'updateOnboardingSettings'])->name('settings.hr.onboarding.update');
-        Route::middleware(['hrmac:hrm.settings.skills-settings,setting-list,update'])->post('/skills', [HrmSettingController::class, 'updateSkillsSettings'])->name('settings.hr.skills.update');
-        Route::middleware(['hrmac:hrm.settings.benefits-settings,setting-list,update'])->post('/benefits', [HrmSettingController::class, 'updateBenefitsSettings'])->name('settings.hr.benefits.update');
-        Route::middleware(['hrmac:hrm.settings.safety-settings,setting-list,update'])->post('/safety', [HrmSettingController::class, 'updateSafetySettings'])->name('settings.hr.safety.update');
-        Route::middleware(['hrmac:hrm.settings.documents-settings,setting-list,update'])->post('/documents', [HrmSettingController::class, 'updateDocumentSettings'])->name('settings.hr.documents.update');
+        Route::middleware(['hrmac:hrm.settings.onboarding-settings.update'])->post('/onboarding', [HrmSettingController::class, 'updateOnboardingSettings'])->name('settings.hr.onboarding.update');
+        Route::middleware(['hrmac:hrm.settings.skills-settings.update'])->post('/skills', [HrmSettingController::class, 'updateSkillsSettings'])->name('settings.hr.skills.update');
+        Route::middleware(['hrmac:hrm.settings.benefits-settings.update'])->post('/benefits', [HrmSettingController::class, 'updateBenefitsSettings'])->name('settings.hr.benefits.update');
+        Route::middleware(['hrmac:hrm.settings.safety-settings.update'])->post('/safety', [HrmSettingController::class, 'updateSafetySettings'])->name('settings.hr.safety.update');
+        Route::middleware(['hrmac:hrm.settings.documents-settings.update'])->post('/documents', [HrmSettingController::class, 'updateDocumentSettings'])->name('settings.hr.documents.update');
     });
 
     // Designation Management - Designations is under hrm.employees.designations in navigation
@@ -1389,40 +1389,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Performance Improvement Plans (PIP)
     // =========================================================================
     Route::prefix('performance/improvement-plans')->name('performance.pip.')
-        ->middleware('hrmac:hrm.performance.improvement_plans.view')
+        ->middleware('hrmac:hrm.performance.improvement-plans.view')
         ->group(function () {
             Route::get('/', [PerformanceImprovementPlanController::class, 'index'])->name('index');
             Route::get('/{pipPlan}', [PerformanceImprovementPlanController::class, 'show'])->name('show');
             Route::get('/{pipPlan}/goals', [PerformanceImprovementPlanController::class, 'goals'])->name('goals');
 
             Route::post('/', [PerformanceImprovementPlanController::class, 'store'])
-                ->withoutMiddleware('hrmac:hrm.performance.improvement_plans.view')
-                ->middleware('hrmac:hrm.performance.improvement_plans.create')
+                ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
+                ->middleware('hrmac:hrm.performance.improvement-plans.create')
                 ->name('store');
 
             Route::put('/{pipPlan}', [PerformanceImprovementPlanController::class, 'update'])
-                ->withoutMiddleware('hrmac:hrm.performance.improvement_plans.view')
-                ->middleware('hrmac:hrm.performance.improvement_plans.update')
+                ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
+                ->middleware('hrmac:hrm.performance.improvement-plans.update')
                 ->name('update');
 
             Route::patch('/{pipPlan}/status', [PerformanceImprovementPlanController::class, 'updateStatus'])
-                ->withoutMiddleware('hrmac:hrm.performance.improvement_plans.view')
-                ->middleware('hrmac:hrm.performance.improvement_plans.update')
+                ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
+                ->middleware('hrmac:hrm.performance.improvement-plans.update')
                 ->name('update-status');
 
             Route::delete('/{pipPlan}', [PerformanceImprovementPlanController::class, 'destroy'])
-                ->withoutMiddleware('hrmac:hrm.performance.improvement_plans.view')
-                ->middleware('hrmac:hrm.performance.improvement_plans.delete')
+                ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
+                ->middleware('hrmac:hrm.performance.improvement-plans.delete')
                 ->name('destroy');
 
             Route::post('/{pipPlan}/goals', [PerformanceImprovementPlanController::class, 'storeGoal'])
-                ->withoutMiddleware('hrmac:hrm.performance.improvement_plans.view')
-                ->middleware('hrmac:hrm.performance.improvement_plans.update')
+                ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
+                ->middleware('hrmac:hrm.performance.improvement-plans.update')
                 ->name('goals.store');
 
             Route::put('/{pipPlan}/goals/{goal}', [PerformanceImprovementPlanController::class, 'updateGoal'])
-                ->withoutMiddleware('hrmac:hrm.performance.improvement_plans.view')
-                ->middleware('hrmac:hrm.performance.improvement_plans.update')
+                ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
+                ->middleware('hrmac:hrm.performance.improvement-plans.update')
                 ->name('goals.update');
         });
 
@@ -1467,9 +1467,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ── Leave Management ────────────────────────────────────────────────────────
     Route::prefix('leave/types')->name('leave.types.')->group(function () {
         Route::get('/', [LeaveTypeController::class, 'index'])->middleware('hrmac:hrm.leaves.leave-types.view')->name('index');
-        Route::post('/', [LeaveTypeController::class, 'store'])->middleware('hrmac:hrm.leaves.leave-types.edit')->name('store');
-        Route::put('/{type}', [LeaveTypeController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-types.edit')->name('update');
-        Route::delete('/{type}', [LeaveTypeController::class, 'destroy'])->middleware('hrmac:hrm.leaves.leave-types.edit')->name('destroy');
+        Route::post('/', [LeaveTypeController::class, 'store'])->middleware('hrmac:hrm.leaves.leave-types.create')->name('store');
+        Route::put('/{type}', [LeaveTypeController::class, 'update'])->middleware('hrmac:hrm.leaves.leave-types.update')->name('update');
+        Route::delete('/{type}', [LeaveTypeController::class, 'destroy'])->middleware('hrmac:hrm.leaves.leave-types.delete')->name('destroy');
     });
 
     Route::prefix('leave/applications')->name('leave.applications.')->group(function () {
@@ -1490,8 +1490,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ── Attendance ──────────────────────────────────────────────────────────────
     // Clock in/out + my status
     Route::get('attendance/clock', [AttendanceController::class, 'clockStatus'])->middleware('hrmac:hrm.attendance.my-attendance.view')->name('attendance.clock');
-    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->middleware('hrmac:hrm.attendance.my-attendance.view')->name('attendance.clock-in');
-    Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware('hrmac:hrm.attendance.my-attendance.view')->name('attendance.clock-out');
+    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->middleware('hrmac:hrm.attendance.my-attendance.punch')->name('attendance.clock-in');
+    Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware('hrmac:hrm.attendance.my-attendance.punch')->name('attendance.clock-out');
 
     // Admin daily + monthly
     Route::get('attendance/daily', [AttendanceController::class, 'daily'])->middleware('hrmac:hrm.attendance.daily-attendance.view')->name('attendance.daily');
@@ -1501,7 +1501,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('attendance/overtime')->name('attendance.overtime.')->group(function () {
         Route::get('/', [AttendanceOvertimeController::class, 'index'])->middleware('hrmac:hrm.overtime.overtime-records.view')->name('index');
         Route::get('/create', [AttendanceOvertimeController::class, 'create'])->middleware('hrmac:hrm.overtime.overtime-records.view')->name('create');
-        Route::post('/', [AttendanceOvertimeController::class, 'store'])->middleware('hrmac:hrm.overtime.overtime-records.view')->name('store');
+        Route::post('/', [AttendanceOvertimeController::class, 'store'])->middleware('hrmac:hrm.overtime.overtime-records.create')->name('store');
         Route::post('/{overtime}/approve', [AttendanceOvertimeController::class, 'approve'])->middleware('hrmac:hrm.overtime.overtime-records.approve')->name('approve');
         Route::post('/{overtime}/reject', [AttendanceOvertimeController::class, 'reject'])->middleware('hrmac:hrm.overtime.overtime-records.approve')->name('reject');
     });
@@ -1509,7 +1509,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Timesheets
     Route::prefix('attendance/timesheets')->name('attendance.timesheets.')->group(function () {
         Route::get('/', [TimesheetController::class, 'index'])->middleware('hrmac:hrm.attendance.attendance-logs.view')->name('index');
-        Route::put('/{timesheet}', [TimesheetController::class, 'update'])->middleware('hrmac:hrm.attendance.attendance-logs.view')->name('update');
+        Route::put('/{timesheet}', [TimesheetController::class, 'update'])->middleware('hrmac:hrm.attendance.attendance-logs.update')->name('update');
     });
 
     // Shift Marketplace
@@ -1682,13 +1682,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Performance Improvement Plans (v2)
     Route::prefix('performance/pip')->name('performance.pip.')->group(function () {
         Route::get('/', [PerformanceImprovementPlanController::class, 'index'])
-            ->middleware('hrmac:hrm.performance.improvement_plans.view')
+            ->middleware('hrmac:hrm.performance.improvement-plans.view')
             ->name('index');
         Route::get('/create', [PerformanceImprovementPlanController::class, 'create'])
-            ->middleware('hrmac:hrm.performance.improvement_plans.create')
+            ->middleware('hrmac:hrm.performance.improvement-plans.create')
             ->name('create');
         Route::post('/', [PerformanceImprovementPlanController::class, 'store'])
-            ->middleware('hrmac:hrm.performance.improvement_plans.create')
+            ->middleware('hrmac:hrm.performance.improvement-plans.create')
             ->name('store');
     });
 
@@ -1988,10 +1988,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.view')
             ->name('index');
         Route::get('create', [HrmExitInterviewController::class, 'create'])
-            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.update')
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.create')
             ->name('create');
         Route::post('/', [HrmExitInterviewController::class, 'store'])
-            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.update')
+            ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.create')
             ->name('store');
         Route::get('{interview}', [HrmExitInterviewController::class, 'show'])
             ->middleware('hrmac:hrm.exit-interviews.exit-interview-list.view')
@@ -2006,10 +2006,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.grievances.grievance-list.view')
             ->name('index');
         Route::get('create', [HrmGrievanceController::class, 'create'])
-            ->middleware('hrmac:hrm.grievances.grievance-list.update')
+            ->middleware('hrmac:hrm.grievances.grievance-list.create')
             ->name('create');
         Route::post('/', [HrmGrievanceController::class, 'store'])
-            ->middleware('hrmac:hrm.grievances.grievance-list.update')
+            ->middleware('hrmac:hrm.grievances.grievance-list.create')
             ->name('store');
         Route::get('{grievance}', [HrmGrievanceController::class, 'show'])
             ->middleware('hrmac:hrm.grievances.grievance-list.view')
@@ -2018,7 +2018,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.grievances.grievance-list.investigate')
             ->name('investigate');
         Route::post('{grievance}/resolve', [HrmGrievanceController::class, 'resolve'])
-            ->middleware('hrmac:hrm.grievances.grievance-list.investigate')
+            ->middleware('hrmac:hrm.grievances.grievance-list.resolve')
             ->name('resolve');
     });
 
@@ -2190,6 +2190,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/', [HrmAnnouncementController::class, 'store'])
             ->middleware('hrmac:hrm.events.announcements.edit')->name('store');
         Route::post('{announcement}/read', [HrmAnnouncementController::class, 'markRead'])
+            ->middleware('hrmac:hrm.events.announcements.view')
             ->name('read');
     });
 

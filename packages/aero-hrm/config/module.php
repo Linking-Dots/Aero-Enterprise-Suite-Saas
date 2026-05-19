@@ -342,30 +342,6 @@ return [
                     ],
                 ],
                 [
-                    'code' => 'departments',
-                    'name' => 'Departments',
-                    'type' => 'page',
-                    'route' => '/hrm/departments',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Departments'],
-                        ['code' => 'create', 'name' => 'Create Department'],
-                        ['code' => 'update', 'name' => 'Update Department'],
-                        ['code' => 'delete', 'name' => 'Delete Department'],
-                    ],
-                ],
-                [
-                    'code' => 'designations',
-                    'name' => 'Designations',
-                    'type' => 'page',
-                    'route' => '/hrm/designations',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Designations'],
-                        ['code' => 'create', 'name' => 'Create Designation'],
-                        ['code' => 'update', 'name' => 'Update Designation'],
-                        ['code' => 'delete', 'name' => 'Delete Designation'],
-                    ],
-                ],
-                [
                     'code' => 'employee-documents',
                     'name' => 'Employee Documents',
                     'type' => 'page',
@@ -441,7 +417,10 @@ return [
                     'name' => 'Attendance Logs',
                     'type' => 'page',
                     'route' => '/hrm/attendance',
-                    'actions' => [['code' => 'view', 'name' => 'View Attendance Logs']],
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Attendance Logs'],
+                        ['code' => 'update', 'name' => 'Update Attendance Log'],
+                    ],
                 ],
                 [
                     'code' => 'shift-scheduling',
@@ -575,7 +554,11 @@ return [
                     'name' => 'Leave Policies',
                     'type' => 'page',
                     'route' => '/hrm/leaves', // Fixed: Use working leave management page
-                    'actions' => [['code' => 'manage', 'name' => 'Manage Leave Policies']],
+                    'actions' => [
+                        ['code' => 'manage', 'name' => 'Manage Leave Policies'],
+                        ['code' => 'view', 'name' => 'View Leave Policies'],
+                        ['code' => 'edit', 'name' => 'Edit Leave Policies'],
+                    ],
                 ],
                 [
                     'code' => 'leave-accrual',
@@ -995,7 +978,7 @@ return [
                     ],
                 ],
                 [
-                    'code' => 'improvement_plans',
+                    'code' => 'improvement-plans',
                     'name' => 'Performance Improvement Plans',
                     'type' => 'page',
                     'route' => '/hrm/performance/improvement-plans',
@@ -1179,6 +1162,16 @@ return [
                         ['code' => 'export', 'name' => 'Export Performance Data'],
                     ],
                 ],
+                [
+                    'code' => 'hr-reports',
+                    'name' => 'HR Reports',
+                    'type' => 'page',
+                    'route' => '/hrm/hr-reports',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View HR Reports'],
+                        ['code' => 'export', 'name' => 'Export Reports'],
+                    ],
+                ],
             ],
         ],
 
@@ -1211,6 +1204,16 @@ return [
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Candidates'],
                         ['code' => 'manage', 'name' => 'Manage Candidates'],
+                    ],
+                ],
+                [
+                    'code' => 'talent-pool',
+                    'name' => 'Talent Pool',
+                    'type' => 'page',
+                    'route' => '/hrm/succession-planning/talent-pool',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Talent Pool'],
+                        ['code' => 'manage', 'name' => 'Manage Talent Pool'],
                     ],
                 ],
             ],
