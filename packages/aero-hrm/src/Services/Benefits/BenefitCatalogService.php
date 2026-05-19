@@ -4,6 +4,7 @@ namespace Aero\HRM\Services\Benefits;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\HRM\Models\HrmBenefit;
+use Illuminate\Support\Facades\DB;
 
 final class BenefitCatalogService
 {
@@ -28,7 +29,11 @@ final class BenefitCatalogService
     public function delete(HrmBenefit $benefit): void
     {
         abort_if($benefit->enrollments()->exists(), 422, 'Has active enrollments — deactivate instead.');
-        $this->audit->log(event: 'BENEFIT_DELETED', action: 'delete', subject: $benefit, description: "Deleted benefit: {$benefit->name}");
-        $benefit->delete();
+
+        DB::transaction(function () use ($benefit) {
+            $name = $benefit->name;
+            $benefit->delete();
+            $this->audit->log(event: 'BENEFIT_DELETED', action: 'delete', subject: $benefit, description: "Deleted benefit: {$name}");
+        });
     }
 }

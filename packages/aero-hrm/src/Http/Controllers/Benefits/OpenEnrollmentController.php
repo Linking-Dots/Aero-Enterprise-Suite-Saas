@@ -27,6 +27,7 @@ final class OpenEnrollmentController extends Controller
             'myElections' => $period
                 ? HrmBenefitEnrollment::where('employee_id', $employee->id)
                     ->where('period_id', $period->id)
+                    ->with('benefit:id,name,category,allows_dependents,dependent_cost,frequency')
                     ->get()
                 : [],
         ]);

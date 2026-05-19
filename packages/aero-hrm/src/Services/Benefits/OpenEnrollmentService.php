@@ -36,9 +36,13 @@ final class OpenEnrollmentService
 
     public function elect(Employee $e, HrmBenefitEnrollmentPeriod $p, array $elections): void
     {
-        DB::transaction(function () use ($e, $p, $elections) {
+        $benefitIds = collect($elections)->pluck('benefit_id')->unique()->all();
+        $benefitMap = HrmBenefit::whereIn('id', $benefitIds)->get()->keyBy('id');
+
+        DB::transaction(function () use ($e, $p, $elections, $benefitMap) {
             foreach ($elections as $row) {
-                $benefit = HrmBenefit::findOrFail($row['benefit_id']);
+                $benefit = $benefitMap->get($row['benefit_id']);
+                abort_unless($benefit !== null, 422, 'Benefit not found.');
                 abort_unless($this->eligibility->isEligible($e, $benefit, now()), 422, 'Not eligible for this benefit.');
 
                 $enrollment = HrmBenefitEnrollment::updateOrCreate(

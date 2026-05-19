@@ -2,6 +2,7 @@
 
 namespace Aero\HRM\Http\Controllers\Benefits;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\HRM\Http\Requests\Benefits\StoreEnrollmentPeriodRequest;
 use Aero\HRM\Models\Department;
 use Aero\HRM\Models\HrmBenefit;
@@ -15,7 +16,10 @@ use Inertia\Response;
 
 final class EnrollmentPeriodController extends Controller
 {
-    public function __construct(private EnrollmentPeriodService $svc) {}
+    public function __construct(
+        private EnrollmentPeriodService $svc,
+        private AuditServiceInterface $audit,
+    ) {}
 
     public function index(): Response
     {
@@ -47,6 +51,8 @@ final class EnrollmentPeriodController extends Controller
 
             return $p;
         });
+
+        $this->audit->log(event: 'ENROLLMENT_PERIOD_CREATED', action: 'create', subject: $period, description: "Created enrollment period: {$period->name}");
 
         return redirect()->route('hrm.benefits.enrollment-periods.show', $period)
             ->with('success', 'Enrollment period created.');
