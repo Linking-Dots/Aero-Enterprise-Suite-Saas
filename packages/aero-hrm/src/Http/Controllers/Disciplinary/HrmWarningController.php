@@ -52,6 +52,7 @@ final class HrmWarningController extends Controller
 
     public function acknowledge(AcknowledgeWarningRequest $r, HrmWarning $warning): RedirectResponse
     {
+        $warning->load('employee');
         abort_unless($warning->employee->user_id === $r->user()->id, 403, 'You can only acknowledge your own warnings.');
         $this->svc->acknowledge($warning, $r->input('response'));
 

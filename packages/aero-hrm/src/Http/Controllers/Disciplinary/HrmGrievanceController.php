@@ -53,7 +53,7 @@ final class HrmGrievanceController extends Controller
     public function show(HrmGrievance $grievance): Response
     {
         $user = request()->user();
-        $isAdmin = $user->can('hrm.grievances.grievance-list.update');
+        $isAdmin = $user->can('hrm.grievances.grievance-list.view');
         $isOwner = $user->employee?->id === $grievance->filed_by;
 
         abort_unless($isAdmin || $isOwner, 403);

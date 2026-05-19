@@ -311,7 +311,7 @@ class HRMServiceProvider extends AbstractModuleProvider
 
         $this->app->singleton(WarningService::class, function ($app) {
             return new WarningService(
-                $app->make(DisciplinaryCaseService::class),
+                $app->make(ReferenceGenerator::class),
                 $app->make(AuditServiceInterface::class),
             );
         });

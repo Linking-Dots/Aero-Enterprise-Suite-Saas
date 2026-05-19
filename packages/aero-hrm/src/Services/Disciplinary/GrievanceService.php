@@ -49,6 +49,11 @@ final class GrievanceService
 
     public function dismiss(HrmGrievance $g, string $reason, int $userId): void
     {
+        abort_if(
+            in_array($g->status, [HrmGrievance::STATUS_RESOLVED, HrmGrievance::STATUS_DISMISSED], true),
+            422,
+            'Grievance already resolved or dismissed.'
+        );
         DB::transaction(function () use ($g, $reason, $userId) {
             $g->update(['status' => HrmGrievance::STATUS_DISMISSED, 'resolution_notes' => $reason, 'resolved_at' => now()]);
             $this->addEvent($g, 'dismissed', ['reason' => $reason], $userId);
