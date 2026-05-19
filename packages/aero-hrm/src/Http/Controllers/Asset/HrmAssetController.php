@@ -10,6 +10,7 @@ use Aero\HRM\Models\HrmAsset;
 use Aero\HRM\Models\HrmAssetCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,14 +52,12 @@ final class HrmAssetController extends Controller
 
         unset($data['photo']);
 
-        $asset = HrmAsset::create($data);
+        $asset = DB::transaction(function () use ($data) {
+            $asset = HrmAsset::create($data);
+            $this->audit->log(event: 'ASSET_CREATED', action: 'create', subject: $asset, description: "Created asset: {$asset->tag} — {$asset->name}");
 
-        $this->audit->log(
-            event: 'ASSET_CREATED',
-            action: 'create',
-            subject: $asset,
-            description: "Created asset: {$asset->tag} — {$asset->name}"
-        );
+            return $asset;
+        });
 
         return redirect()->route('hrm.assets.show', $asset)->with('success', 'Asset created.');
     }
@@ -83,30 +82,24 @@ final class HrmAssetController extends Controller
 
         unset($data['photo']);
 
-        $asset->update($data);
-
-        $this->audit->log(
-            event: 'ASSET_UPDATED',
-            action: 'update',
-            subject: $asset,
-            description: "Updated asset: {$asset->tag} — {$asset->name}"
-        );
+        DB::transaction(function () use ($asset, $data) {
+            $asset->update($data);
+            $this->audit->log(event: 'ASSET_UPDATED', action: 'update', subject: $asset, description: "Updated asset: {$asset->tag} — {$asset->name}");
+        });
 
         return back()->with('success', 'Asset updated.');
     }
 
     public function destroy(HrmAsset $asset): RedirectResponse
     {
-        abort_if($asset->currentAllocation()->exists(), 422, 'Asset is currently allocated — return it first.');
+        abort_if($asset->allocations()->whereNull('returned_at')->exists(), 422, 'Asset is currently allocated — return it first.');
 
-        $this->audit->log(
-            event: 'ASSET_DELETED',
-            action: 'delete',
-            subject: $asset,
-            description: "Deleted asset: {$asset->tag} — {$asset->name}"
-        );
-
-        $asset->delete();
+        DB::transaction(function () use ($asset) {
+            $tag = $asset->tag;
+            $name = $asset->name;
+            $asset->delete();
+            $this->audit->log(event: 'ASSET_DELETED', action: 'delete', subject: $asset, description: "Deleted asset: {$tag} — {$name}");
+        });
 
         return back()->with('success', 'Asset deleted.');
     }

@@ -42,6 +42,8 @@ final class AssetAllocationService
         abort_unless($allocation->returned_at === null, 422, 'Allocation already closed.');
 
         return DB::transaction(function () use ($allocation, $payload, $actorId) {
+            $allocation->loadMissing('asset');
+
             $allocation->update([
                 'returned_at' => now(),
                 'condition_on_return' => $payload['condition'] ?? 'good',

@@ -7,6 +7,7 @@ use Aero\HRM\Models\HrmAssetCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,14 +29,12 @@ final class HrmAssetCategoryController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        $cat = HrmAssetCategory::create($data);
+        $cat = DB::transaction(function () use ($data) {
+            $cat = HrmAssetCategory::create($data);
+            $this->audit->log(event: 'ASSET_CATEGORY_CREATED', action: 'create', subject: $cat, description: "Created category: {$cat->name}");
 
-        $this->audit->log(
-            event: 'ASSET_CATEGORY_CREATED',
-            action: 'create',
-            subject: $cat,
-            description: "Created category: {$cat->name}"
-        );
+            return $cat;
+        });
 
         return back()->with('success', 'Category created.');
     }
@@ -48,14 +47,10 @@ final class HrmAssetCategoryController extends Controller
             'active' => ['boolean'],
         ]);
 
-        $category->update($data);
-
-        $this->audit->log(
-            event: 'ASSET_CATEGORY_UPDATED',
-            action: 'update',
-            subject: $category,
-            description: "Updated category: {$category->name}"
-        );
+        DB::transaction(function () use ($category, $data) {
+            $category->update($data);
+            $this->audit->log(event: 'ASSET_CATEGORY_UPDATED', action: 'update', subject: $category, description: "Updated category: {$category->name}");
+        });
 
         return back()->with('success', 'Category updated.');
     }
@@ -64,14 +59,11 @@ final class HrmAssetCategoryController extends Controller
     {
         abort_if($category->assets()->exists(), 422, 'Category has assets — delete or reassign them first.');
 
-        $this->audit->log(
-            event: 'ASSET_CATEGORY_DELETED',
-            action: 'delete',
-            subject: $category,
-            description: "Deleted category: {$category->name}"
-        );
-
-        $category->delete();
+        DB::transaction(function () use ($category) {
+            $name = $category->name;
+            $category->delete();
+            $this->audit->log(event: 'ASSET_CATEGORY_DELETED', action: 'delete', subject: $category, description: "Deleted category: {$name}");
+        });
 
         return back()->with('success', 'Category deleted.');
     }
