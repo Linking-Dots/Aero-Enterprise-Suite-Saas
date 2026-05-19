@@ -922,11 +922,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['hrmac:hrm.employees.departments'])->get('/departments', [DepartmentController::class, 'index'])->name('departments');
     Route::middleware(['hrmac:hrm.employees.departments'])->get('/api/departments', [DepartmentController::class, 'getDepartments'])->name('api.departments');
     Route::middleware(['hrmac:hrm.employees.departments'])->get('/departments/stats', [DepartmentController::class, 'getStats'])->name('departments.stats');
-    Route::middleware(['hrmac:hrm.employees.departments,department-list,create'])->post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
-    Route::middleware(['hrmac:hrm.employees.departments'])->get('/departments/{id}', [DepartmentController::class, 'show'])->name('departments.show');
-    Route::middleware(['hrmac:hrm.employees.departments,department-list,update'])->put('/departments/{id}', [DepartmentController::class, 'update'])->name('departments.update');
-    Route::middleware(['hrmac:hrm.employees.departments,department-list,delete'])->delete('/departments/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
-    Route::middleware(['hrmac:hrm.employees.departments,department-list,update'])->put('/users/{id}/department', [DepartmentController::class, 'updateUserDepartment'])->name('users.update-department');
+    Route::middleware(['hrmac:hrm.org-structure.departments.create'])->post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
+    Route::middleware(['hrmac:hrm.org-structure.departments.view'])->get('/departments/{id}', [DepartmentController::class, 'show'])->name('departments.show');
+    Route::middleware(['hrmac:hrm.org-structure.departments.update'])->put('/departments/{id}', [DepartmentController::class, 'update'])->name('departments.update');
+    Route::middleware(['hrmac:hrm.org-structure.departments.delete'])->delete('/departments/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
+    Route::middleware(['hrmac:hrm.org-structure.departments.update'])->put('/users/{id}/department', [DepartmentController::class, 'updateUserDepartment'])->name('users.update-department');
 
     // Organization Chart route
     Route::middleware(['hrmac:hrm.employees.departments'])->get('/org-chart', [DepartmentController::class, 'orgChart'])->name('org-chart');
@@ -934,8 +934,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::middleware(['hrmac:hrm.organization'])->get('/jurisdiction', [JurisdictionController::class, 'index'])->name('jurisdiction'); // TODO: Move to compliance package
 
     // Holiday management routes
-    Route::middleware(['hrmac:hrm.time-off.holidays,holiday-list,create'])->post('/holiday-add', [HolidayController::class, 'create'])->name('holiday-add');
-    Route::middleware(['hrmac:hrm.time-off.holidays,holiday-list,delete'])->delete('/holiday-delete', [HolidayController::class, 'delete'])->name('holiday-delete');
+    Route::middleware(['hrmac:hrm.settings.holidays.manage'])->post('/holiday-add', [HolidayController::class, 'create'])->name('holiday-add');
+    Route::middleware(['hrmac:hrm.settings.holidays.manage'])->delete('/holiday-delete', [HolidayController::class, 'delete'])->name('holiday-delete');
 
     // Attendance management routes
     Route::middleware(['hrmac:hrm.attendance'])->group(function () {
