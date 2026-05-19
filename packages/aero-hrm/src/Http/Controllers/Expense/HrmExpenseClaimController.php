@@ -43,7 +43,9 @@ final class HrmExpenseClaimController extends Controller
 
     public function store(StoreClaimRequest $r): RedirectResponse
     {
-        $claim = $this->svc->submit((int) $r->user()->employee->id, $r->validated());
+        $employee = $r->user()->employee;
+        abort_unless($employee !== null, 422, 'No employee profile found. Contact HR.');
+        $claim = $this->svc->submit((int) $employee->id, $r->validated());
 
         return redirect()->route('hrm.expenses.claims.show', $claim)->with('success', 'Expense claim submitted.');
     }

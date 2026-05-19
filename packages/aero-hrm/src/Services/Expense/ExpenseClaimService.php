@@ -4,6 +4,7 @@ namespace Aero\HRM\Services\Expense;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\HRM\Models\HrmExpenseClaim;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -27,7 +28,7 @@ final class ExpenseClaimService
             ]);
 
             foreach ($payload['items'] as $row) {
-                $claim->items()->create($row);
+                $claim->items()->create(Arr::only($row, ['category_id', 'expense_date', 'amount', 'description']));
             }
 
             foreach ($payload['receipts'] ?? [] as $file) {
