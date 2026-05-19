@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
-import App from '../../App.jsx';
-import useHRMAC from '../../../hooks/useHRMAC.js';
+import App from '../../../App.jsx';
+import useHRMAC from '../../../../hooks/useHRMAC.js';
 import {
   FormPageLayout, VStack, HStack, Field, Input, Select,
   Textarea, Button, Text, Eyebrow, DataTable,
