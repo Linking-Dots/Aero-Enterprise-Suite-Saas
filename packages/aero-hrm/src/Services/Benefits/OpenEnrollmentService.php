@@ -65,9 +65,9 @@ final class OpenEnrollmentService
                     description: "Employee {$e->id} elected benefit {$benefit->name}: {$row['status']}",
                 );
             }
-        });
 
-        event(new BenefitElectionsCommitted($e->id, $p->id));
+            event(new BenefitElectionsCommitted($e->id, $p->id));
+        });
     }
 
     private function matchesAudience(Employee $e, ?array $filter): bool

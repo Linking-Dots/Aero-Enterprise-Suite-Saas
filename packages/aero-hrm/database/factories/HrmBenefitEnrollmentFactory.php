@@ -14,16 +14,14 @@ class HrmBenefitEnrollmentFactory extends Factory
 
     public function definition(): array
     {
-        $benefit = HrmBenefit::factory()->create();
-
         return [
             'employee_id' => Employee::factory(),
             'period_id' => HrmBenefitEnrollmentPeriod::factory(),
-            'benefit_id' => $benefit->id,
+            'benefit_id' => HrmBenefit::factory(),
             'status' => HrmBenefitEnrollment::STATUS_ENROLLED,
             'dependents_count' => 0,
-            'employee_cost_snapshot' => $benefit->employee_cost,
-            'employer_cost_snapshot' => $benefit->employer_cost,
+            'employee_cost_snapshot' => $this->faker->randomFloat(2, 0, 200),
+            'employer_cost_snapshot' => $this->faker->randomFloat(2, 0, 400),
             'waiver_reason' => null,
             'elected_at' => now(),
         ];
@@ -31,6 +29,9 @@ class HrmBenefitEnrollmentFactory extends Factory
 
     public function waived(string $reason = 'Spouse coverage'): static
     {
-        return $this->state(['status' => HrmBenefitEnrollment::STATUS_WAIVED, 'waiver_reason' => $reason]);
+        return $this->state([
+            'status' => HrmBenefitEnrollment::STATUS_WAIVED,
+            'waiver_reason' => $reason,
+        ]);
     }
 }
