@@ -8,6 +8,9 @@ use Aero\HRM\Http\Controllers\Analytics\PulseSurveyController as AnalyticsPulseS
 use Aero\HRM\Http\Controllers\Analytics\WorkforcePlanningController as AnalyticsWorkforcePlanningController;
 use Aero\HRM\Http\Controllers\Asset\AssetCategoryController;
 use Aero\HRM\Http\Controllers\Asset\AssetController;
+use Aero\HRM\Http\Controllers\Asset\HrmAssetAllocationController;
+use Aero\HRM\Http\Controllers\Asset\HrmAssetCategoryController;
+use Aero\HRM\Http\Controllers\Asset\HrmAssetController;
 use Aero\HRM\Http\Controllers\Attendance\AttendanceController;
 use Aero\HRM\Http\Controllers\Attendance\OvertimeController as AttendanceOvertimeController;
 use Aero\HRM\Http\Controllers\Attendance\ShiftMarketplaceController;
@@ -56,6 +59,9 @@ use Aero\HRM\Http\Controllers\EmployeeHistoryController;
 use Aero\HRM\Http\Controllers\ExitInterviewController;
 use Aero\HRM\Http\Controllers\Expense\ExpenseCategoryController;
 use Aero\HRM\Http\Controllers\Expense\ExpenseClaimController;
+use Aero\HRM\Http\Controllers\Expense\HrmExpenseCategoryController;
+use Aero\HRM\Http\Controllers\Expense\HrmExpenseClaimController;
+use Aero\HRM\Http\Controllers\Expense\HrmMyExpenseController;
 use Aero\HRM\Http\Controllers\Feedback360Controller;
 use Aero\HRM\Http\Controllers\GrievanceController;
 use Aero\HRM\Http\Controllers\HRMDashboardController;
@@ -89,9 +95,6 @@ use Aero\HRM\Http\Controllers\Recruitment\InterviewController;
 use Aero\HRM\Http\Controllers\Recruitment\JobController;
 use Aero\HRM\Http\Controllers\Recruitment\OfferController;
 use Aero\HRM\Http\Controllers\Recruitment\RecruitmentController;
-use Aero\HRM\Http\Controllers\Asset\HrmAssetAllocationController;
-use Aero\HRM\Http\Controllers\Asset\HrmAssetCategoryController;
-use Aero\HRM\Http\Controllers\Asset\HrmAssetController;
 use Aero\HRM\Http\Controllers\Safety\HrmSafetyDashboardController;
 use Aero\HRM\Http\Controllers\Safety\HrmSafetyIncidentController;
 use Aero\HRM\Http\Controllers\Safety\HrmSafetyInspectionController;
@@ -2089,6 +2092,50 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('hrmac:hrm.assets.asset-allocations.assign')->name('allocations.store');
         Route::post('allocations/{allocation}/return', [HrmAssetAllocationController::class, 'returnAsset'])
             ->middleware('hrmac:hrm.assets.asset-allocations.return')->name('allocations.return');
+    });
+
+    // ============================================================================
+    // H-15 Expense Claims
+    // ============================================================================
+    Route::prefix('expenses')->name('expenses.')->group(function () {
+
+        // Categories (admin)
+        Route::prefix('categories')->name('categories.')->group(function () {
+            Route::get('/', [HrmExpenseCategoryController::class, 'index'])
+                ->middleware('hrmac:hrm.expenses.expense-categories.view')->name('index');
+            Route::post('/', [HrmExpenseCategoryController::class, 'store'])
+                ->middleware('hrmac:hrm.expenses.expense-categories.manage')->name('store');
+            Route::put('{category}', [HrmExpenseCategoryController::class, 'update'])
+                ->middleware('hrmac:hrm.expenses.expense-categories.manage')->name('update');
+            Route::delete('{category}', [HrmExpenseCategoryController::class, 'destroy'])
+                ->middleware('hrmac:hrm.expenses.expense-categories.manage')->name('destroy');
+        });
+
+        // Claims (admin view + approve/reject)
+        Route::prefix('claims')->name('claims.')->group(function () {
+            Route::get('/', [HrmExpenseClaimController::class, 'index'])
+                ->middleware('hrmac:hrm.expenses.expense-claims.view')->name('index');
+            Route::get('create', [HrmExpenseClaimController::class, 'create'])
+                ->middleware('hrmac:hrm.expenses.expense-claims.create')->name('create');
+            Route::post('/', [HrmExpenseClaimController::class, 'store'])
+                ->middleware('hrmac:hrm.expenses.expense-claims.create')->name('store');
+            Route::get('{claim}', [HrmExpenseClaimController::class, 'show'])
+                ->middleware('hrmac:hrm.expenses.expense-claims.view')->name('show');
+            Route::post('{claim}/approve', [HrmExpenseClaimController::class, 'approve'])
+                ->middleware('hrmac:hrm.expenses.expense-claims.approve')->name('approve');
+            Route::post('{claim}/reject', [HrmExpenseClaimController::class, 'reject'])
+                ->middleware('hrmac:hrm.expenses.expense-claims.reject')->name('reject');
+        });
+
+        // My claims (employee self-service)
+        Route::prefix('my')->name('my.')->group(function () {
+            Route::get('/', [HrmMyExpenseController::class, 'index'])
+                ->middleware('hrmac:hrm.expenses.my-expense-claims.view')->name('index');
+            Route::get('create', [HrmExpenseClaimController::class, 'create'])
+                ->middleware('hrmac:hrm.expenses.my-expense-claims.create')->name('create');
+            Route::post('/', [HrmExpenseClaimController::class, 'store'])
+                ->middleware('hrmac:hrm.expenses.my-expense-claims.create')->name('store');
+        });
     });
 
 });

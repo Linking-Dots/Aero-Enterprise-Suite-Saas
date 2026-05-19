@@ -55,6 +55,7 @@ use Aero\HRM\Services\Disciplinary\GrievanceService;
 use Aero\HRM\Services\Disciplinary\ReferenceGenerator;
 use Aero\HRM\Services\Disciplinary\WarningService;
 use Aero\HRM\Services\EmployeeService;
+use Aero\HRM\Services\Expense\ExpenseClaimService;
 use Aero\HRM\Services\HRMetricsAggregatorService;
 use Aero\HRM\Services\HrmNotificationChannelResolver;
 use Aero\HRM\Services\LeaveApplicationService;
@@ -337,6 +338,11 @@ class HRMServiceProvider extends AbstractModuleProvider
         // Register Asset Services (H14)
         $this->app->singleton(AssetAllocationService::class, function ($app) {
             return new AssetAllocationService($app->make(AuditServiceInterface::class));
+        });
+
+        // Register Expense Services (H15)
+        $this->app->singleton(ExpenseClaimService::class, function ($app) {
+            return new ExpenseClaimService($app->make(AuditServiceInterface::class));
         });
 
         // Register Safety Services (H13)
