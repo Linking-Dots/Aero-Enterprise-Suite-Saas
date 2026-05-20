@@ -12,13 +12,14 @@ import {
 } from '@aero/ui';
 import App from '../../../App.jsx';
 
-export default function TenantsCreate({ plans }) {
+export default function TenantsCreate({ plans, products }) {
   const toast = useToast();
 
   const form = useForm({
     name:         '',
     email:        '',
     plan_id:      '',
+    product_id:   '',
     timezone:     'UTC',
     byoc_enabled: false,
   });
@@ -39,6 +40,14 @@ export default function TenantsCreate({ plans }) {
   const planOptions = [
     { value: '', label: 'Select a plan...' },
     ...(plans ?? []).map(p => ({
+      value: String(p.id),
+      label: `${p.name}${p.price_monthly != null ? ` — $${p.price_monthly}/mo` : ''}`,
+    })),
+  ];
+
+  const productOptions = [
+    { value: '', label: 'No initial product (add later)' },
+    ...(products ?? []).map(p => ({
       value: String(p.id),
       label: `${p.name}${p.price_monthly != null ? ` — $${p.price_monthly}/mo` : ''}`,
     })),
@@ -91,6 +100,7 @@ export default function TenantsCreate({ plans }) {
           label="Plan"
           htmlFor="plan_id"
           error={form.errors.plan_id}
+          hint="Sets quota limits and tier for this tenant."
           required
         >
           <Select
@@ -98,6 +108,20 @@ export default function TenantsCreate({ plans }) {
             value={form.data.plan_id}
             onChange={e => form.setData('plan_id', e.target.value)}
             options={planOptions}
+          />
+        </Field>
+
+        <Field
+          label="Initial Product"
+          htmlFor="product_id"
+          error={form.errors.product_id}
+          hint="The product (HRM, Finance, CRM, etc.) this tenant subscribes to. A ProductSubscription will be created on provisioning."
+        >
+          <Select
+            id="product_id"
+            value={form.data.product_id}
+            onChange={e => form.setData('product_id', e.target.value)}
+            options={productOptions}
           />
         </Field>
 

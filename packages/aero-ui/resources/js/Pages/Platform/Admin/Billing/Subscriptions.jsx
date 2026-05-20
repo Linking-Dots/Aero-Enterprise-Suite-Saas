@@ -32,7 +32,8 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
   const canCancel  = useHRMAC('billing-management.subscriptions.cancel');
   const canUpgrade = useHRMAC('billing-management.subscriptions.upgrade');
 
-  const [status, setStatus] = useState(filters?.status ?? '');
+  const [status, setStatus]             = useState(filters?.status ?? '');
+  const [subType, setSubType]           = useState(filters?.subscription_type ?? '');
 
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -45,13 +46,14 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
   function applyFilters() {
     router.get(
       route('platform.admin.billing.subscriptions.index'),
-      { status },
+      { status, subscription_type: subType },
       { preserveState: true, preserveScroll: true, only: ['subscriptions', 'filters'] }
     );
   }
 
   function resetFilters() {
     setStatus('');
+    setSubType('');
     router.get(route('platform.admin.billing.subscriptions.index'), {}, {
       preserveState: true, preserveScroll: true, only: ['subscriptions', 'filters'],
     });
@@ -106,10 +108,18 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
     { value: 'paused',    label: 'Paused' },
   ];
 
+  const typeOptions = [
+    { value: '',        label: 'All Types' },
+    { value: 'plan',    label: 'Plan Subscription' },
+    { value: 'product', label: 'Product Subscription' },
+  ];
+
   const planOptions = [
     { value: '', label: 'Select plan...' },
     ...(plans ?? []).map(p => ({ value: String(p.id), label: p.name })),
   ];
+
+  const TYPE_INTENT = { plan: 'primary', product: 'amber' };
 
   const columns = [
     {
@@ -126,9 +136,26 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
       ),
     },
     {
+      key: 'type',
+      label: 'Type',
+      render: (row) => {
+        const t = row.subscription_type ?? (row.plan_id ? 'plan' : 'product');
+        return (
+          <Badge intent={TYPE_INTENT[t] ?? 'neutral'}>
+            {t === 'product' ? `Product: ${row.product?.name ?? '—'}` : 'Plan'}
+          </Badge>
+        );
+      },
+    },
+    {
       key: 'plan',
-      label: 'Plan',
-      render: (row) => <Text>{row.plan?.name ?? '—'}</Text>,
+      label: 'Plan / Product',
+      render: (row) => {
+        if (row.subscription_type === 'product' || (!row.plan_id && row.product)) {
+          return <Text>{row.product?.name ?? '—'}</Text>;
+        }
+        return <Text>{row.plan?.name ?? '—'}</Text>;
+      },
     },
     {
       key: 'status',
@@ -185,10 +212,15 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
         { label: 'Billing', href: route('platform.admin.billing.subscriptions.index') },
         { label: 'Subscriptions' },
       ]}
-      description="Manage all tenant subscriptions."
+      description="Manage all tenant plan and product subscriptions. Both a plan and a product subscription are required for module access."
     >
       <VStack gap={4}>
         <HStack gap={3}>
+          <Select
+            value={subType}
+            onChange={e => setSubType(e.target.value)}
+            options={typeOptions}
+          />
           <Select
             value={status}
             onChange={e => setStatus(e.target.value)}
@@ -211,7 +243,7 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
             onChange={page =>
               router.get(
                 route('platform.admin.billing.subscriptions.index'),
-                { page, status },
+                { page, status, subscription_type: subType },
                 { preserveState: true, preserveScroll: true, only: ['subscriptions'] }
               )
             }

@@ -70,7 +70,7 @@ export default function PlansForm({ plan, availableModules }) {
         { label: 'Plans', href: route('platform.admin.plans.index') },
         { label: isEdit ? plan.name : 'New' },
       ]}
-      description={isEdit ? 'Update plan details, pricing, and module access.' : 'Create a new subscription plan.'}
+      description={isEdit ? 'Update plan details, pricing, and permitted module limits. Module access also requires a ProductSubscription.' : 'Create a new subscription plan. Plans set quota limits and permitted modules; tenants purchase Products separately for module access.'}
       onSubmit={handleSubmit}
     >
       <VStack gap={6}>
@@ -216,13 +216,17 @@ export default function PlansForm({ plan, availableModules }) {
           </CardBody>
         </Card>
 
-        {/* Module Assignment */}
+        {/* Permitted Module Limits */}
         <Card>
           <CardBody>
             <VStack gap={4}>
-              <Eyebrow>Module Assignment</Eyebrow>
+              <Eyebrow>Permitted Module Limits</Eyebrow>
+              <Text tone="secondary">
+                These modules are permitted (unlocked) under this plan tier. A tenant must also hold an active
+                ProductSubscription for a module to be accessible — plan limits alone do not grant access.
+              </Text>
               {(availableModules ?? []).length === 0 ? (
-                <p className="aeos-text-sm aeos-text-secondary">No modules registered.</p>
+                <Text tone="secondary">No modules registered.</Text>
               ) : (
                 <VStack gap={2}>
                   {availableModules.map(key => (

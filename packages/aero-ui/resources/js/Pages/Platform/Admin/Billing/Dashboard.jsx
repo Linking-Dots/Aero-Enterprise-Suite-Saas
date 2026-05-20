@@ -116,14 +116,14 @@ export default function BillingDashboard({ stats, recent_subscriptions, recent_i
     >
       <VStack gap={6}>
 
-        {/* KPI Cards */}
+        {/* KPI Cards — combined */}
         <HStack gap={4} wrap>
           <KPI
-            label="MRR"
+            label="Total MRR"
             value={`$${Number(stats?.mrr ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           />
           <KPI
-            label="ARR"
+            label="Total ARR"
             value={`$${Number(stats?.arr ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           />
           <KPI
@@ -140,6 +140,33 @@ export default function BillingDashboard({ stats, recent_subscriptions, recent_i
             intent="danger"
           />
         </HStack>
+
+        {/* MRR Breakdown — plan vs product */}
+        <Card>
+          <CardBody>
+            <VStack gap={3}>
+              <Eyebrow>MRR Breakdown</Eyebrow>
+              <HStack gap={4} wrap>
+                <KPI
+                  label="Plan MRR"
+                  value={`$${Number(stats?.plan_mrr ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+                <KPI
+                  label="Product MRR"
+                  value={`$${Number(stats?.product_mrr ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+                <KPI
+                  label="Plan ARR"
+                  value={`$${Number(stats?.plan_arr ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+                <KPI
+                  label="Product ARR"
+                  value={`$${Number(stats?.product_arr ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+              </HStack>
+            </VStack>
+          </CardBody>
+        </Card>
 
         {/* Recent Subscriptions */}
         <Card>

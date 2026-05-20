@@ -91,6 +91,14 @@ export default function OnboardingPending({ tenants }) {
       ),
     },
     {
+      key: 'product',
+      label: 'Product',
+      render: (row) => {
+        if (!row.pending_product) return <Text tone="secondary">—</Text>;
+        return <Badge intent="amber">{row.pending_product.name}</Badge>;
+      },
+    },
+    {
       key: 'created_at',
       label: 'Registered',
       render: (row) => (
@@ -134,7 +142,7 @@ export default function OnboardingPending({ tenants }) {
         { label: 'Onboarding' },
         { label: 'Pending Approvals' },
       ]}
-      description="Review and approve new tenant registrations awaiting manual approval."
+      description="Review and approve new tenant registrations. Approval activates both the plan subscription and the initial ProductSubscription for module access."
     >
       <VStack gap={4}>
         <DataTable

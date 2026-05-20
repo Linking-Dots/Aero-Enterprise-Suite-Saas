@@ -146,13 +146,17 @@ export default function PlansShow({ plan, metrics }) {
           </CardBody>
         </Card>
 
-        {/* Module Chips */}
+        {/* Permitted Module Limits */}
         <Card>
           <CardBody>
             <VStack gap={3}>
-              <Eyebrow>Included Modules</Eyebrow>
+              <Eyebrow>Permitted Module Limits</Eyebrow>
+              <Text tone="secondary">
+                Modules permitted under this plan tier. Tenants must also hold an active ProductSubscription
+                for each module to gain actual access.
+              </Text>
               {(plan.modules ?? []).length === 0 ? (
-                <Text tone="secondary">No modules assigned.</Text>
+                <Text tone="secondary">No module limits configured.</Text>
               ) : (
                 <HStack gap={2} wrap>
                   {plan.modules.map(m => (
