@@ -2,12 +2,14 @@
 
 namespace Aero\Platform\Models;
 
+use Aero\Platform\Observers\SubscriptionImmutableObserver;
 use Carbon\Carbon;
 use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Cashier\Subscription as CashierSubscription;
 
@@ -48,6 +50,15 @@ class Subscription extends CashierSubscription
     public const STATUS_TRIALING = 'trialing';
 
     public const STATUS_EXPIRED = 'expired';
+
+    /**
+     * Boot the model — register immutability observer.
+     */
+    protected static function booted(): void
+    {
+        parent::booted();
+        static::observe(SubscriptionImmutableObserver::class);
+    }
 
     /**
      * Override Cashier incrementing because we use UUID primary keys.
@@ -103,6 +114,10 @@ class Subscription extends CashierSubscription
         'downgrade_scheduled_at',
         'grace_period_ends_at',
         'current_period_start',
+        // P-2 additions
+        'current_period_end',
+        'cancel_reason',
+        'stripe_subscription_id',
     ];
 
     /**
@@ -129,6 +144,8 @@ class Subscription extends CashierSubscription
         'downgrade_scheduled_at' => 'datetime',
         'grace_period_ends_at' => 'datetime',
         'current_period_start' => 'datetime',
+        // P-2 additions
+        'current_period_end' => 'datetime',
     ];
 
     // =========================================================================
@@ -153,7 +170,7 @@ class Subscription extends CashierSubscription
     /**
      * Cashier polymorphic billable relation alias.
      */
-    public function owner(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    public function owner(): MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'billable_type', 'billable_id');
     }

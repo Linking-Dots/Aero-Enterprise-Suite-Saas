@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Models;
 
+use Aero\Platform\Observers\InvoiceImmutableObserver;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -34,15 +34,29 @@ class Invoice extends CentralModel
 {
     use HasUuids, SoftDeletes;
 
+    /**
+     * Boot the model — register immutability observer.
+     */
+    protected static function booted(): void
+    {
+        parent::booted();
+        static::observe(InvoiceImmutableObserver::class);
+    }
+
     public $incrementing = false;
 
     protected $keyType = 'string';
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ISSUED = 'issued';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_VOID = 'void';
+
     public const STATUS_OVERDUE = 'overdue';
+
     public const STATUS_REFUNDED = 'refunded';
 
     protected $fillable = [
@@ -67,6 +81,11 @@ class Invoice extends CentralModel
         'due_date',
         'metadata',
         'notes',
+        // P-2 additions
+        'reference',
+        'amount',
+        'stripe_invoice_id',
+        'pdf_path',
     ];
 
     protected $casts = [
@@ -79,8 +98,10 @@ class Invoice extends CentralModel
         'billing_period_start' => 'date',
         'billing_period_end' => 'date',
         'paid_at' => 'datetime',
-        'due_date' => 'datetime',
+        'due_date' => 'date',
         'metadata' => 'array',
+        // P-2 additions
+        'amount' => 'decimal:2',
     ];
 
     // =========================================================================
@@ -164,7 +185,7 @@ class Invoice extends CentralModel
     {
         return $this->update([
             'status' => self::STATUS_VOID,
-            'notes' => $reason ? ($this->notes ? $this->notes . ' | ' . $reason : $reason) : $this->notes,
+            'notes' => $reason ? ($this->notes ? $this->notes.' | '.$reason : $reason) : $this->notes,
         ]);
     }
 

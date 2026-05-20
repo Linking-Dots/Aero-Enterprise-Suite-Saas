@@ -72,6 +72,13 @@ class Plan extends CentralModel
         'stripe_monthly_price_id',
         'stripe_yearly_price_id',
         'stripe_product_id',
+        // P-2 additions
+        'price_monthly',
+        'price_annual',
+        'status',
+        'is_public',
+        'stripe_price_id_monthly',
+        'stripe_price_id_annual',
     ];
 
     /**
@@ -86,6 +93,9 @@ class Plan extends CentralModel
             'monthly_price' => 'decimal:2',
             'yearly_price' => 'decimal:2',
             'setup_fee' => 'decimal:2',
+            'price_monthly' => 'decimal:2',
+            'price_annual' => 'decimal:2',
+            'is_public' => 'boolean',
             'features' => 'array',
             'limits' => 'array',
             'trial_days' => 'integer',
@@ -144,6 +154,14 @@ class Plan extends CentralModel
     public function planQuotas(): HasMany
     {
         return $this->hasMany(PlanQuota::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Get the plan module configuration rows (P-2 billing module gating).
+     */
+    public function planModules(): HasMany
+    {
+        return $this->hasMany(PlanModule::class);
     }
 
     // =========================================================================

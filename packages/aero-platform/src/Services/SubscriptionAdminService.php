@@ -1,0 +1,138 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Aero\Platform\Services;
+
+use Aero\Core\Services\AuditService;
+use Aero\Platform\Models\Subscription;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Admin-only subscription management service.
+ *
+ * NOTE: This service performs direct DB updates on subscription records.
+ * For Stripe-managed subscriptions, changes here will DIVERGE from Stripe
+ * until the next webhook sync. A Stripe webhook sync job should be scheduled
+ * for production to reconcile state. TODO: implement webhook reconciliation.
+ */
+class SubscriptionAdminService
+{
+    public function __construct(
+        private readonly AuditService $audit
+    ) {}
+
+    /**
+     * Paginated list of subscriptions with tenant + plan eager-loaded.
+     *
+     * @return LengthAwarePaginator<Subscription>
+     */
+    public function list(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    {
+        return Subscription::query()
+            ->with(['plan:id,name,slug', 'owner'])
+            ->when(
+                isset($filters['status']),
+                fn ($q) => $q->where('status', $filters['status'])
+            )
+            ->when(
+                isset($filters['plan_id']),
+                fn ($q) => $q->where('plan_id', $filters['plan_id'])
+            )
+            ->when(isset($filters['search']), function ($q) use ($filters) {
+                $q->where('tenant_id', 'like', '%'.$filters['search'].'%');
+            })
+            ->latest('created_at')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Cancel a subscription — admin override.
+     * Sets status to cancelled and records reason.
+     */
+    public function cancel(Subscription $subscription, string $reason): Subscription
+    {
+        return DB::transaction(function () use ($subscription, $reason) {
+            // Bypass SubscriptionImmutableObserver by using DB::table directly
+            // so the admin can force-cancel without triggering the immutability check
+            // on billing_cycle/plan_id.
+            DB::table('subscriptions')
+                ->where('id', $subscription->id)
+                ->update([
+                    'status' => Subscription::STATUS_CANCELLED,
+                    'cancelled_at' => now(),
+                    'cancel_reason' => $reason,
+                    'updated_at' => now(),
+                ]);
+
+            $subscription->refresh();
+
+            $this->audit->log(
+                'subscription.cancelled',
+                $subscription,
+                "Subscription [{$subscription->id}] cancelled by admin.",
+                ['status' => Subscription::STATUS_ACTIVE],
+                ['status' => Subscription::STATUS_CANCELLED, 'cancel_reason' => $reason]
+            );
+
+            return $subscription;
+        });
+    }
+
+    /**
+     * Change the plan on a subscription — admin override.
+     */
+    public function changePlan(Subscription $subscription, string $newPlanId): Subscription
+    {
+        return DB::transaction(function () use ($subscription, $newPlanId) {
+            $oldPlanId = $subscription->plan_id;
+
+            DB::table('subscriptions')
+                ->where('id', $subscription->id)
+                ->update([
+                    'plan_id' => $newPlanId,
+                    'updated_at' => now(),
+                ]);
+
+            $subscription->refresh();
+
+            $this->audit->log(
+                'subscription.plan_changed',
+                $subscription,
+                "Subscription [{$subscription->id}] plan changed by admin.",
+                ['plan_id' => $oldPlanId],
+                ['plan_id' => $newPlanId]
+            );
+
+            return $subscription;
+        });
+    }
+
+    /**
+     * Reactivate a cancelled or past-due subscription.
+     */
+    public function reactivate(Subscription $subscription): Subscription
+    {
+        return DB::transaction(function () use ($subscription) {
+            DB::table('subscriptions')
+                ->where('id', $subscription->id)
+                ->update([
+                    'status' => Subscription::STATUS_ACTIVE,
+                    'cancelled_at' => null,
+                    'cancel_reason' => null,
+                    'updated_at' => now(),
+                ]);
+
+            $subscription->refresh();
+
+            $this->audit->log(
+                'subscription.reactivated',
+                $subscription,
+                "Subscription [{$subscription->id}] reactivated by admin."
+            );
+
+            return $subscription;
+        });
+    }
+}
