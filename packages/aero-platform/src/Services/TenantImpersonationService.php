@@ -4,15 +4,17 @@ namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Tenant;
-use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 class TenantImpersonationService
 {
+    private const TTL_MINUTES = 60;
+
     public function __construct(private AuditServiceInterface $audit) {}
 
     public function start(Tenant $tenant, int $actorId): string
     {
-        $token = (string) Str::uuid();
+        $token = bin2hex(random_bytes(32));
 
         session(['impersonation' => [
             'tenant_id' => $tenant->id,
@@ -36,6 +38,14 @@ class TenantImpersonationService
         $sess = session('impersonation');
 
         if (! $sess || $sess['token'] !== $token) {
+            return;
+        }
+
+        $startedAt = Carbon::parse($sess['started']);
+
+        if ($startedAt->diffInMinutes(now()) > self::TTL_MINUTES) {
+            session()->forget('impersonation');
+
             return;
         }
 

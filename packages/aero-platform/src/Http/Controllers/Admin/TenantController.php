@@ -121,6 +121,8 @@ class TenantController extends Controller
             return back()->with('error', 'Tenant has no domain configured');
         }
 
-        return redirect()->away("https://{$domain->domain}/?impersonate={$token}");
+        $cookie = cookie('_impersonate', $token, 60, '/', null, true, true, false, 'Strict');
+
+        return redirect()->away("https://{$domain->domain}/")->withCookie($cookie);
     }
 }

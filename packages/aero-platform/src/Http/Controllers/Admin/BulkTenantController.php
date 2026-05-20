@@ -26,10 +26,18 @@ class BulkTenantController extends Controller
             'body' => 'required_if:type,email|string',
         ]);
 
+        $tenantIds = $data['tenant_ids'];
+        $payload = array_filter([
+            'reason' => $data['reason'] ?? null,
+            'plan_id' => $data['plan_id'] ?? null,
+            'subject' => $data['subject'] ?? null,
+            'body' => $data['body'] ?? null,
+        ], fn ($v) => $v !== null);
+
         $op = $this->svc->execute(
             $data['type'],
-            $data['tenant_ids'],
-            $data,
+            $tenantIds,
+            $payload,
             $request->user()->id,
         );
 

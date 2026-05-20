@@ -36,6 +36,9 @@ class TenantExportController extends Controller
             'Export expired or not ready'
         );
 
-        return Storage::disk('exports')->download($exportRequest->download_url);
+        $safePath = basename($exportRequest->download_url);
+        abort_if(empty($safePath), 410, 'Invalid export file');
+
+        return Storage::disk('exports')->download($safePath);
     }
 }

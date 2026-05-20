@@ -30,10 +30,10 @@ class TenantAdminService
             $s = $filters['search'];
             $q->where(fn ($w) => $w->where('name', 'like', "%{$s}%")
                 ->orWhere('email', 'like', "%{$s}%")
-                ->orWhere('id', 'like', "%{$s}%"));
+                ->orWhere('id', $s));
         }
 
-        return $q->orderByDesc('created_at')->paginate(25)->withQueryString();
+        return $q->orderByDesc('created_at')->paginate(config('aero-platform.admin_page_size', 25))->withQueryString();
     }
 
     public function show(string $tenantId): Tenant
@@ -215,6 +215,7 @@ class TenantAdminService
                 description: "Tenant {$tenant->name} purged by user {$actorId}"
             );
 
+            // TODO(P-10): Dispatch TenantPurgeJob to drop tenant DB, revoke domains, cancel Stripe subscription
             $tenant->delete();
         });
     }

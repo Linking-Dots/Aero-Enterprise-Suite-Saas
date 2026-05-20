@@ -19,7 +19,7 @@ class TenantExportService
                 'tenant_id' => $tenant->id,
                 'requested_by' => $actorId,
                 'status' => 'pending',
-                'expires_at' => now()->addDays(7),
+                'expires_at' => now()->addDays(config('aero-platform.export_ttl_days', 7)),
             ]);
 
             $this->audit->log(
@@ -44,7 +44,7 @@ class TenantExportService
     {
         return URL::temporarySignedRoute(
             'platform.admin.tenants.export.download',
-            now()->addHours(2),
+            now()->addHours(config('aero-platform.export_download_link_ttl_hours', 2)),
             ['exportRequest' => $request->id]
         );
     }

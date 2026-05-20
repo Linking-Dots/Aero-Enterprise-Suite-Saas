@@ -31,7 +31,7 @@ class OnboardingController extends Controller
     public function pending(): Response
     {
         return Inertia::render('Platform/Admin/Onboarding/Pending', [
-            'tenants' => Tenant::where('status', 'pending')->paginate(25),
+            'tenants' => Tenant::where('status', 'pending')->with('domains')->paginate(25),
         ]);
     }
 
@@ -71,6 +71,7 @@ class OnboardingController extends Controller
     {
         return Inertia::render('Platform/Admin/Onboarding/Trials', [
             'tenants' => Tenant::whereNotNull('stripe_trial_ends_at')
+                ->with('domains')
                 ->orderBy('stripe_trial_ends_at')
                 ->paginate(25),
         ]);
