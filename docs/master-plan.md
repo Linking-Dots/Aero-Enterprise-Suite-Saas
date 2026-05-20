@@ -137,11 +137,17 @@ Platform plans apply to the central (landlord) database. All platform admin acti
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
-| P-1 | `phase-2-platform/plan-p1-tenants.md` | ⬜ | Tenant list + detail, provisioning status, BYOC credential management, health check, suspend, purge, bulk operations, impersonation |
-| P-2 | `phase-2-platform/plan-p2-plans-billing.md` | ⬜ | Plan CRUD, subscriptions (immutable after activation), invoices (immutable after payment), Stripe integration, trial management, grace periods |
-| P-3 | `phase-2-platform/plan-p3-platform-dashboard.md` | ⬜ | Platform dashboard (tenant stats, MRR, health), system alerts, quota management, rate limit config, reports |
-| P-4 | `phase-2-platform/plan-p4-platform-settings.md` | ⬜ | Platform settings (branding, SEO, mail config, maintenance mode), landlord user management, roles, newsletter, affiliate tracking, leads |
-| P-5 | `phase-2-platform/plan-p5-platform-audit.md` | ⬜ | Platform audit log viewer, access log viewer, security dashboard (failed logins, suspicious activity, IP blocks) |
+| P-1  | `phase-2-platform/plan-p1-tenants.md` | ⬜ | Tenants list/detail/show, BYOC creds, suspend/purge, bulk ops, impersonation, provisioning queue |
+| P-2  | `phase-2-platform/plan-p2-plans-billing.md` | ⬜ | Plan CRUD + clone, subscriptions (immutable on activation), invoices + PDF, Stripe, payment gateways |
+| P-3  | `phase-2-platform/plan-p3-dashboard-analytics.md` | ⬜ | Platform dashboard (MRR/ARR, health), quota management, platform analytics, product analytics |
+| P-4  | `phase-2-platform/plan-p4-settings-users.md` | ⬜ | Platform settings, landlord users, roles + permissions, module management |
+| P-5  | `phase-2-platform/plan-p5-audit-devtools.md` | ⬜ | Audit logs, access logs, error monitoring, developer tools (cache/queues/logs) |
+| P-6  | `phase-2-platform/plan-p6-marketing-growth.md` | ⬜ | SEO, leads pipeline, newsletter, affiliates program, social auth providers |
+| P-7  | `phase-2-platform/plan-p7-integrations-flags.md` | ⬜ | Integrations (API keys/webhooks/connectors), outbound webhooks, feature flags, tenant communications |
+| P-8  | `phase-2-platform/plan-p8-advanced-billing.md` | ⬜ | Coupons & campaigns, add-ons & metered billing, refunds & credit notes, dunning recovery |
+| P-9  | `phase-2-platform/plan-p9-finance-payments.md` | ⬜ | Tax engine, multi-currency, invoicing engine, payment methods vault, subscription lifecycle, reseller partners |
+| P-10 | `phase-2-platform/plan-p10-infra-security.md` | ⬜ | White-label, backup/restore, status page + incidents, platform security (RBAC/MFA/SSO/IP), security center |
+| P-11 | `phase-2-platform/plan-p11-enterprise.md` | ⬜ | Customer success, help center, compliance/legal, multi-region, secrets/KMS, observability, DR, SCIM, contracts, API gateway, resource provisioning, release mgmt, license mgmt |
 
 ---
 
