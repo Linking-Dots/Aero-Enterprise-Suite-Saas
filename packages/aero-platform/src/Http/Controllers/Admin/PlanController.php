@@ -83,6 +83,21 @@ class PlanController extends Controller
         return back()->with('success', 'Plan archived.');
     }
 
+    public function clone(Plan $plan): RedirectResponse
+    {
+        $copy = $this->svc->clone($plan);
+
+        return redirect()->route('platform.admin.plans.show', $copy)->with('success', 'Plan cloned');
+    }
+
+    public function assignModules(Request $request, Plan $plan): RedirectResponse
+    {
+        $request->validate(['modules' => 'required|array']);
+        $this->svc->assignModules($plan, $request->input('modules'));
+
+        return back()->with('success', 'Modules assigned');
+    }
+
     public function stats(Plan $plan): JsonResponse
     {
         $active = $plan->subscriptions()->where('status', 'active')->count();

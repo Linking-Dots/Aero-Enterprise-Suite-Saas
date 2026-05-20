@@ -144,6 +144,90 @@ class PlanService
     }
 
     /**
+     * Duplicate a plan and its module assignments.
+     * The clone is created as a draft with a modified name/slug and no active subscriptions.
+     */
+    public function clone(Plan $plan): Plan
+    {
+        return DB::transaction(function () use ($plan) {
+            $plan->loadMissing('planModules');
+
+            $baseName = $plan->name.' (Copy)';
+            $baseSlug = Str::slug($baseName);
+
+            // Ensure unique slug
+            $slug = $baseSlug;
+            $counter = 1;
+            while (Plan::where('slug', $slug)->exists()) {
+                $slug = $baseSlug.'-'.$counter++;
+            }
+
+            $cloneData = $plan->only([
+                'billing_cycle',
+                'price',
+                'currency',
+                'trial_days',
+                'features',
+                'max_users',
+                'max_storage_gb',
+                'is_public',
+                'sort_order',
+                'metadata',
+            ]);
+
+            $cloneData['name'] = $baseName;
+            $cloneData['slug'] = $slug;
+            $cloneData['status'] = 'draft';
+            $cloneData['is_active'] = false;
+
+            /** @var Plan $copy */
+            $copy = Plan::create($cloneData);
+
+            // Copy module assignments
+            $modules = $plan->planModules->map(fn ($pm) => [
+                'module_code' => $pm->module_code,
+                'is_enabled' => (bool) $pm->is_enabled,
+                'config' => $pm->config,
+            ])->all();
+
+            $this->syncPlanModules($copy, $modules);
+
+            $this->audit->log(
+                'plan.cloned',
+                $copy,
+                "Plan [{$plan->name}] cloned as [{$copy->name}].",
+                ['source_plan_id' => $plan->id],
+                $copy->toArray()
+            );
+
+            return $copy;
+        });
+    }
+
+    /**
+     * Replace all module assignments for a plan with the provided list.
+     *
+     * @param  array<int, array{module_code: string, is_enabled?: bool, config?: array<mixed>}>  $modules
+     */
+    public function assignModules(Plan $plan, array $modules): void
+    {
+        DB::transaction(function () use ($plan, $modules) {
+            // Full replacement — delete existing rows first
+            PlanModule::where('plan_id', $plan->id)->delete();
+
+            $this->syncPlanModules($plan, $modules);
+
+            $this->audit->log(
+                'plan.modules_assigned',
+                $plan,
+                "Modules reassigned for plan [{$plan->name}].",
+                null,
+                ['modules' => $modules]
+            );
+        });
+    }
+
+    /**
      * Sync plan_modules rows from an array of ['module_code' => string, 'is_enabled' => bool, 'config' => array].
      *
      * @param  array<int, array{module_code: string, is_enabled?: bool, config?: array<mixed>}>  $modules

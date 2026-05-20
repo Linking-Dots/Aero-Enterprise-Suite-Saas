@@ -6,6 +6,7 @@ namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\Invoice;
+use Aero\Platform\Models\Subscription;
 use Aero\Platform\Services\InvoiceAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -76,5 +77,26 @@ class InvoiceController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="invoice-'.$invoice->reference.'.pdf"',
         ]);
+    }
+
+    public function generate(Request $request): RedirectResponse
+    {
+        $request->validate(['subscription_id' => 'required|integer|exists:subscriptions,id']);
+        $sub = Subscription::findOrFail($request->integer('subscription_id'));
+        $inv = $this->svc->generate($sub);
+
+        return back()->with('success', "Invoice {$inv->reference} generated");
+    }
+
+    public function send(Invoice $invoice): RedirectResponse
+    {
+        $this->svc->send($invoice);
+
+        return back()->with('success', 'Invoice sent');
+    }
+
+    public function download(Invoice $invoice): HttpResponse|RedirectResponse
+    {
+        return $this->downloadPdf($invoice);
     }
 }

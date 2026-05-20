@@ -55,6 +55,15 @@ class SubscriptionController extends Controller
         return back()->with('success', 'Subscription plan updated.');
     }
 
+    public function upgrade(Request $request, Subscription $subscription): RedirectResponse
+    {
+        $request->validate(['plan_id' => 'required|integer|exists:plans,id']);
+        $new = $this->svc->upgrade($subscription, $request->integer('plan_id'), $request->user()->id);
+
+        return redirect()->route('platform.admin.billing.subscriptions.show', $new)
+            ->with('success', 'Subscription upgraded');
+    }
+
     public function reactivate(Subscription $subscription): RedirectResponse
     {
         $this->svc->reactivate($subscription);

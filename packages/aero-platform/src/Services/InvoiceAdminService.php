@@ -6,6 +6,8 @@ namespace Aero\Platform\Services;
 
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Invoice;
+use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +81,72 @@ class InvoiceAdminService
             );
 
             return $invoice->fresh();
+        });
+    }
+
+    /**
+     * Generate a draft invoice for an existing subscription.
+     * Derives amount and billing period from the subscription's plan.
+     */
+    public function generate(Subscription $sub): Invoice
+    {
+        return DB::transaction(function () use ($sub) {
+            $sub->loadMissing('plan');
+            $amount = $sub->plan?->price ?? '0.00';
+            $currency = $sub->plan?->currency ?? 'USD';
+
+            $data = [
+                'billable_type' => Tenant::class,
+                'billable_id' => $sub->tenant_id,
+                'subscription_id' => $sub->id,
+                'status' => Invoice::STATUS_DRAFT,
+                'currency' => $currency,
+                'subtotal' => $amount,
+                'total' => $amount,
+                'amount_due' => $amount,
+                'amount_paid' => '0.00',
+                'billing_period_start' => now()->startOfMonth()->toDateString(),
+                'billing_period_end' => now()->endOfMonth()->toDateString(),
+                'due_date' => now()->addDays(30)->toDateString(),
+            ];
+
+            $data['reference'] = $this->generateReference();
+            $data['invoice_number'] = $data['reference'];
+
+            /** @var Invoice $invoice */
+            $invoice = Invoice::create($data);
+
+            $this->audit->log(
+                'invoice.generated',
+                $invoice,
+                "Invoice [{$invoice->reference}] generated for subscription [{$sub->id}].",
+                null,
+                $invoice->toArray()
+            );
+
+            return $invoice;
+        });
+    }
+
+    /**
+     * Mark a draft invoice as sent (status = issued).
+     */
+    public function send(Invoice $invoice): Invoice
+    {
+        return DB::transaction(function () use ($invoice) {
+            DB::table('invoices')
+                ->where('id', $invoice->id)
+                ->update(['status' => Invoice::STATUS_ISSUED, 'updated_at' => now()]);
+
+            $invoice->refresh();
+
+            $this->audit->log(
+                'invoice.sent',
+                $invoice,
+                "Invoice [{$invoice->reference}] sent (status set to issued)."
+            );
+
+            return $invoice;
         });
     }
 

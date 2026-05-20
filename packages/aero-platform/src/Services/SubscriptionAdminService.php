@@ -110,6 +110,14 @@ class SubscriptionAdminService
     }
 
     /**
+     * Upgrade a subscription to a new plan — alias for changePlan().
+     */
+    public function upgrade(Subscription $sub, int $newPlanId, int $actorId): Subscription
+    {
+        return $this->changePlan($sub, (string) $newPlanId);
+    }
+
+    /**
      * Reactivate a cancelled or past-due subscription.
      */
     public function reactivate(Subscription $subscription): Subscription
