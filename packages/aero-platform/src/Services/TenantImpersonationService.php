@@ -4,7 +4,6 @@ namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Tenant;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TenantImpersonationService
@@ -15,21 +14,19 @@ class TenantImpersonationService
     {
         $token = (string) Str::uuid();
 
-        DB::transaction(function () use ($tenant, $actorId, $token) {
-            session(['impersonation' => [
-                'tenant_id' => $tenant->id,
-                'actor_id' => $actorId,
-                'token' => $token,
-                'started' => now()->toISOString(),
-            ]]);
+        session(['impersonation' => [
+            'tenant_id' => $tenant->id,
+            'actor_id' => $actorId,
+            'token' => $token,
+            'started' => now()->toISOString(),
+        ]]);
 
-            $this->audit->log(
-                event: 'TENANT_IMPERSONATION_STARTED',
-                action: 'impersonate',
-                subject: $tenant,
-                description: "Actor {$actorId} started impersonating {$tenant->name}"
-            );
-        });
+        $this->audit->log(
+            event: 'TENANT_IMPERSONATION_STARTED',
+            action: 'impersonate',
+            subject: $tenant,
+            description: "Actor {$actorId} started impersonating {$tenant->name}"
+        );
 
         return $token;
     }

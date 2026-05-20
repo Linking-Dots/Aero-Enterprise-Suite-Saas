@@ -8,6 +8,7 @@ use Aero\Platform\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class TenantDatabaseController extends Controller
 {
@@ -28,27 +29,31 @@ class TenantDatabaseController extends Controller
 
     public function migrate(Tenant $tenant): RedirectResponse
     {
-        Artisan::call('tenants:migrate', ['--tenants' => [$tenant->id]]);
+        DB::transaction(function () use ($tenant) {
+            Artisan::call('tenants:migrate', ['--tenants' => [$tenant->id]]);
 
-        $this->audit->log(
-            event: 'TENANT_DB_MIGRATED',
-            action: 'migrate',
-            subject: $tenant,
-            description: "Migrated DB for {$tenant->name}"
-        );
+            $this->audit->log(
+                event: 'TENANT_DB_MIGRATED',
+                action: 'migrate',
+                subject: $tenant,
+                description: "Migrated DB for {$tenant->name}"
+            );
+        });
 
         return back()->with('success', 'Migrations executed');
     }
 
     public function backup(Tenant $tenant): RedirectResponse
     {
-        // Backup implementation pending (P-10)
-        $this->audit->log(
-            event: 'TENANT_DB_BACKUP_REQUESTED',
-            action: 'backup',
-            subject: $tenant,
-            description: "Backup requested for {$tenant->name}"
-        );
+        DB::transaction(function () use ($tenant) {
+            // Backup implementation pending (P-10)
+            $this->audit->log(
+                event: 'TENANT_DB_BACKUP_REQUESTED',
+                action: 'backup',
+                subject: $tenant,
+                description: "Backup requested for {$tenant->name}"
+            );
+        });
 
         return back()->with('success', 'Backup queued');
     }

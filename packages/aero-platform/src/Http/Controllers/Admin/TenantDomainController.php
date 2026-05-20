@@ -2,6 +2,7 @@
 
 namespace Aero\Platform\Http\Controllers\Admin;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\Domain;
 use Aero\Platform\Models\Tenant;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class TenantDomainController extends Controller
 {
+    public function __construct(private AuditServiceInterface $audit) {}
+
     public function index(Tenant $tenant): JsonResponse
     {
         return response()->json([
@@ -31,13 +34,20 @@ class TenantDomainController extends Controller
                 $tenant->domains()->update(['is_primary' => false]);
             }
 
-            Domain::create([
+            $domain = Domain::create([
                 'tenant_id' => $tenant->id,
                 'domain' => $data['domain'],
                 'is_primary' => $data['is_primary'] ?? false,
                 'status' => 'pending',
                 'ssl_status' => 'pending',
             ]);
+
+            $this->audit->log(
+                event: 'TENANT_DOMAIN_ADDED',
+                action: 'store',
+                subject: $domain,
+                description: "Domain {$data['domain']} added to tenant {$tenant->name}"
+            );
         });
 
         return back()->with('success', 'Domain added');
@@ -46,7 +56,19 @@ class TenantDomainController extends Controller
     public function destroy(Tenant $tenant, Domain $domain): RedirectResponse
     {
         abort_unless($domain->tenant_id === $tenant->id, 404);
-        $domain->delete();
+
+        DB::transaction(function () use ($tenant, $domain) {
+            $domainName = $domain->domain;
+
+            $domain->delete();
+
+            $this->audit->log(
+                event: 'TENANT_DOMAIN_REMOVED',
+                action: 'destroy',
+                subject: $tenant,
+                description: "Domain {$domainName} removed from tenant {$tenant->name}"
+            );
+        });
 
         return back()->with('success', 'Domain removed');
     }
@@ -54,7 +76,17 @@ class TenantDomainController extends Controller
     public function verify(Tenant $tenant, Domain $domain): RedirectResponse
     {
         abort_unless($domain->tenant_id === $tenant->id, 404);
-        $domain->markAsVerified();
+
+        DB::transaction(function () use ($tenant, $domain) {
+            $domain->markAsVerified();
+
+            $this->audit->log(
+                event: 'TENANT_DOMAIN_VERIFIED',
+                action: 'verify',
+                subject: $domain,
+                description: "Domain {$domain->domain} verified for tenant {$tenant->name}"
+            );
+        });
 
         return back()->with('success', 'Domain verified');
     }

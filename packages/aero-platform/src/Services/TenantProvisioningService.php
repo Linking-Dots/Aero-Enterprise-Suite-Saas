@@ -22,6 +22,13 @@ class TenantProvisioningService
             ]);
 
             $tenant->update(['status' => 'provisioning']);
+
+            $this->audit->log(
+                event: 'TENANT_PROVISIONING_QUEUED',
+                action: 'queue',
+                subject: $tenant,
+                description: "Provisioning queued for {$tenant->name}"
+            );
         });
     }
 
