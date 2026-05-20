@@ -17,6 +17,14 @@
 
 All under `landlord` guard against the central DB.
 
+> **ARCH NOTE (locked):**
+> 1. `ProductSubscription` is the canonical access model. `SubscriptionModule` is deprecated — never reference it in this plan.
+> 2. Plans and Products are independent. `Plan` defines pricing tier + resource limits ONLY (does NOT grant module access).
+> 3. One invoice per subscription record: a separate `Invoice` for each `Subscription` (plan) and a separate `Invoice` for each `ProductSubscription`. No consolidated invoices.
+> 4. Invoicing UI/services in this plan operate on the generic `Invoice` model, which is polymorphic over its billable (`Subscription` | `ProductSubscription`).
+> 5. Lifecycle operations (trial extend/convert, proration, pause/resume, cancellation) MUST work for both plan subscriptions and product subscriptions. Service signatures use a `BillableSubscription` interface (or polymorphic argument) so the same code path handles both.
+> 6. Cancelling a plan `Subscription` does NOT auto-cancel `ProductSubscription` rows (per P-2 architectural decision). Cancellation save-flow configuration must distinguish plan-cancellation vs product-cancellation surveys/offers.
+
 ---
 
 ## 2. Architecture
@@ -108,15 +116,18 @@ Schema::create('platform_currencies', function (Blueprint $t) {
 
 ### `regional_prices`
 ```php
+// ARCH NOTE: Regional prices apply to BOTH plans AND products. Use a polymorphic owner
+// (priceable_type / priceable_id pointing at Plan or Product) so a single table serves
+// both pricing surfaces without duplicating the schema.
 Schema::create('regional_prices', function (Blueprint $t) {
     $t->id();
-    $t->foreignId('plan_id')->constrained('plans');
+    $t->morphs('priceable'); // Plan | Product
     $t->string('currency_code', 3);
     $t->decimal('price_monthly', 12, 2);
     $t->decimal('price_annual', 12, 2);
     $t->boolean('is_active')->default(true);
     $t->timestamps();
-    $t->unique(['plan_id','currency_code']);
+    $t->unique(['priceable_type','priceable_id','currency_code'], 'regional_prices_priceable_currency_unique');
 });
 ```
 
@@ -188,8 +199,8 @@ Additional supporting tables (referenced but defined in P-2 / extended here):
 - `listRegionalPricing(array $filters)` / `upsertRegionalPrice(array $data, int $actorId)`
 
 ### `InvoicingService`
-- `list(array $filters)`
-- `create(array $data, int $actorId)` / `update(Invoice $invoice, array $data, int $actorId)`
+- `list(array $filters)` — must surface filter by billable type (plan vs product) so admins can scope.
+- `create(array $data, int $actorId)` / `update(Invoice $invoice, array $data, int $actorId)`. ARCH NOTE: `create` requires `billable_type` + `billable_id` (Subscription | ProductSubscription). One invoice per subscription record — never consolidate plan + product into one invoice.
 - `send(Invoice $invoice, int $actorId)`
 - `void(Invoice $invoice, int $actorId)` — fails if status=paid
 - `markPaid(Invoice $invoice, int $actorId)`
@@ -206,14 +217,15 @@ Additional supporting tables (referenced but defined in P-2 / extended here):
 - `get3dsConfig()` / `update3dsConfig(array $data, int $actorId)`
 
 ### `SubscriptionLifecycleService`
-- `listTrials(array $filters)`
-- `extendTrial(Subscription $subscription, int $days, int $actorId)`
-- `convertTrial(Subscription $subscription, int $planId, int $actorId)` — fails if already active
-- `previewProration(Subscription $subscription, int $newPlanId)`
-- `executeChange(Subscription $subscription, int $newPlanId, int $actorId)`
-- `pause(Subscription $subscription, ?Carbon $resumeAt, int $actorId)`
-- `resume(Subscription $subscription, int $actorId)`
-- `listCancellations(array $filters)` / `updateCancellationFlow(array $config, int $actorId)`
+> ARCH NOTE: All methods accept either a plan `Subscription` OR a `ProductSubscription`. Implement via a `BillableSubscription` interface (or `BillableSubscription` union type) so the same lifecycle code path serves plan tiers AND product (module) subscriptions. The trial / proration / pause / cancellation UIs must let the operator pick which billable to act on.
+- `listTrials(array $filters)` — UNION of trialing plan subscriptions and trialing product subscriptions, with a `billable_type` column in the result set.
+- `extendTrial(BillableSubscription $subscription, int $days, int $actorId)`
+- `convertTrial(BillableSubscription $subscription, int $targetId, int $actorId)` — fails if already active. `$targetId` is a Plan id (for `Subscription`) or a Product id (for `ProductSubscription`).
+- `previewProration(BillableSubscription $subscription, int $newTargetId)`
+- `executeChange(BillableSubscription $subscription, int $newTargetId, int $actorId)` — ARCH NOTE: changing a plan does NOT cascade to product subscriptions (plans and products are independent).
+- `pause(BillableSubscription $subscription, ?Carbon $resumeAt, int $actorId)`
+- `resume(BillableSubscription $subscription, int $actorId)`
+- `listCancellations(array $filters)` — must include cancellations of BOTH `Subscription` and `ProductSubscription`. `updateCancellationFlow(array $config, int $actorId)` — config keyed by billable type so plan-cancellation and product-cancellation can each have their own survey/save-offer.
 
 ### `PartnerService`
 - `list(array $filters)` / `create(array $data, int $actorId)` / `update(ResellerPartner $partner, array $data, int $actorId)`
@@ -330,7 +342,7 @@ Located at `packages/aero-ui/resources/js/Pages/Platform/Admin/`:
 4. **`Invoicing/Index.jsx`** — invoice table with status filter; View/Send/Mark Paid actions; Generate Invoice button; PDF download link.
 5. **`Invoicing/Settings.jsx`** — prefix, number padding, logo upload, company name, footer text; template selector; branding preview.
 6. **`PaymentMethods/Index.jsx`** — per-tenant payment method view (tenant selector); card/bank list with set-default star; 3DS config toggle.
-7. **`SubscriptionLifecycle/Index.jsx`** — tab layout: Trials (table with Extend/Convert), Plan Changes (history), Paused (Resume button), Cancellations (save-flow config).
+7. **`SubscriptionLifecycle/Index.jsx`** — tab layout: Trials (table with Extend/Convert), Plan Changes (history), Paused (Resume button), Cancellations (save-flow config). ARCH NOTE: every list view must include a "Type" column (Plan / Product) and let the operator filter by billable type. Cancellation save-flow config has two separate sections: one for plan-subscription cancellations, one for product-subscription cancellations.
 8. **`Partners/Index.jsx`** — partner table (name, commission %, tenant count, status); Approve/Suspend actions; Show page with commissions table, partner tenants list, payout button.
 
 Import depths (depth 4):
@@ -348,12 +360,13 @@ Feature tests in `packages/aero-platform/tests/` with `Gate::before(fn () => tru
 - `TaxRateTest` — `upsertRate` updates the existing row for the same `country_code` + `type` (no duplicate created).
 - `TaxIdValidationTest` — validate route invokes the active provider and returns its result.
 - `CurrencySyncTest` — `syncExchangeRates` updates `exchange_rate_to_usd` and `rate_updated_at` for active currencies only.
-- `RegionalPricingTest` — regional price unique per (plan, currency); upsert replaces existing.
+- `RegionalPricingTest` — regional price unique per (priceable_type + priceable_id + currency); upsert replaces existing. Coverage MUST include both `Plan` and `Product` priceables.
 - `InvoiceVoidTest` — `void` fails when invoice status=paid; succeeds for `open` / `sent`.
 - `InvoicePdfTest` — PDF download responds with `application/pdf` content type.
 - `PaymentMethodSetDefaultTest` — setting default toggles the previous default off (atomic in DB::transaction).
-- `TrialExtensionTest` — `extendTrial` adds the requested number of days to `trial_ends_at`.
-- `TrialConvertTest` — `convertTrial` fails if subscription is already active (`status=active`).
+- `TrialExtensionTest` — `extendTrial` adds the requested number of days to `trial_ends_at`. Coverage MUST include both a plan `Subscription` and a `ProductSubscription`.
+- `TrialConvertTest` — `convertTrial` fails if subscription is already active (`status=active`). Coverage MUST include both plan and product paths.
+- `PlanChangeIndependenceTest` — executing a plan change on a `Subscription` does NOT cancel or modify any `ProductSubscription` rows for the same tenant.
 - `PartnerApproveTest` — approve sets `status=active`, stamps `approved_at`, audit log written.
 - `CommissionPayoutTest` — `processCommissionPayout` only processes commissions with `status=pending`; transitions them to `paid` and stamps `paid_at`.
 

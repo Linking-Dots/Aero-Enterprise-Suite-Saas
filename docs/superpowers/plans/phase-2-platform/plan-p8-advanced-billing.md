@@ -15,6 +15,8 @@
 
 All under `landlord` guard against the central DB.
 
+> **ARCH NOTE (locked):** Per locked architecture, `ProductSubscription` is the canonical access model and there is one invoice per subscription record (one `Invoice` per `Subscription`, one `Invoice` per `ProductSubscription`). All references in this plan to "subscription"/"invoice"/"failed payment"/"refund" apply BOTH to plan subscriptions and to product subscriptions unless explicitly scoped. `SubscriptionModule` is deprecated — do not introduce it. Add-ons here are **billable extras** (e.g. extra storage, SMS credits) that ride on top of a plan subscription; they are NOT the module access mechanism (that is `ProductSubscription`).
+
 ---
 
 ## 2. Architecture
@@ -98,11 +100,13 @@ Schema::create('coupon_campaigns', function (Blueprint $t) {
 
 ### `coupon_redemptions`
 ```php
+// ARCH NOTE: A coupon may apply to a plan Subscription OR a ProductSubscription.
+// Use a polymorphic target (subscribable_type / subscribable_id) instead of a single FK.
 Schema::create('coupon_redemptions', function (Blueprint $t) {
     $t->id();
     $t->foreignId('coupon_id')->constrained('coupons');
     $t->string('tenant_id');
-    $t->foreignId('subscription_id')->nullable();
+    $t->nullableMorphs('subscribable'); // Subscription | ProductSubscription
     $t->decimal('discount_applied', 10, 2);
     $t->timestamp('redeemed_at');
     $t->timestamps();
@@ -156,6 +160,8 @@ Schema::create('usage_events', function (Blueprint $t) {
 
 ### `refunds`
 ```php
+// ARCH NOTE: invoice_id may point to a plan-subscription Invoice OR a product-subscription Invoice.
+// Both are stored in the same `invoices` table per P-2; the polymorphic owner lives on Invoice.
 Schema::create('refunds', function (Blueprint $t) {
     $t->id();
     $t->string('reference')->unique();
@@ -248,11 +254,11 @@ Schema::create('dunning_rules', function (Blueprint $t) {
 - `apply(CreditNote $creditNote, int $invoiceId, float $amount, int $actorId)`
 
 ### `DunningService`
-- `dashboard()` — failed payment count, revenue at risk, top affected tenants
+- `dashboard()` — failed payment count, revenue at risk, top affected tenants. ARCH NOTE: "revenue at risk" must aggregate failed invoices from BOTH plan subscriptions and product subscriptions.
 - `listRules()` / `upsertRule(array $data, int $actorId)`
-- `listFailedPayments(array $filters)`
-- `retryPayment(Subscription $subscription, int $actorId)` — dispatches retry job
-- `markUncollectible(Subscription $subscription, int $actorId)`
+- `listFailedPayments(array $filters)` — joins `invoices` (status=`failed`); each invoice belongs to either a `Subscription` or a `ProductSubscription`.
+- `retryPayment(Invoice $invoice, int $actorId)` — dispatches retry job against the invoice's billable (Subscription | ProductSubscription). ARCH NOTE: signature accepts `Invoice`, not `Subscription`, so it works uniformly for both record types.
+- `markUncollectible(Invoice $invoice, int $actorId)` — marks the invoice uncollectible; cascade-suspends ONLY the owning subscription record (plan vs product), never both, because plan and product subscriptions are independent.
 
 All mutations: `DB::transaction()` + `audit->log()`.
 
@@ -368,7 +374,7 @@ Feature tests in `packages/aero-platform/tests/` with `Gate::before(fn () => tru
 - `UsageMeterTest` — usage event aggregation respects meter `aggregation` mode.
 - `RefundTest` — refund cannot be processed before approved; process stamps `processed_at` and writes audit log.
 - `CreditNoteTest` — credit note cannot be applied for more than (`amount` − `amount_used`); status transitions to `partially_applied` / `fully_applied`.
-- `DunningTest` — retry dispatches the payment retry job; `mark-uncollectible` updates the related subscription status; rule ordering by `order_index` honored.
+- `DunningTest` — retry dispatches the payment retry job; `mark-uncollectible` updates the related subscription status (plan OR product, never both); rule ordering by `order_index` honored. Coverage MUST include both a plan-subscription invoice and a product-subscription invoice path.
 
 ---
 

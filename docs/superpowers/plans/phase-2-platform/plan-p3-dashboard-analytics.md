@@ -10,6 +10,8 @@
 
 ---
 
+> **ARCH NOTE (locked):** MRR/ARR throughout this plan = plan subscription revenue + product subscription revenue. The `Plan` model defines pricing tier and resource limits ONLY; it does NOT grant module access. Module access is gated by `ProductSubscription` (canonical) — `SubscriptionModule` is deprecated. All revenue analytics must query both `subscriptions` (plan) and `product_subscriptions` (product) tables.
+
 ## Task 1 — Migrations
 
 - [ ] Create migrations under `packages/aero-platform/database/migrations/`:
@@ -32,8 +34,14 @@ return new class extends Migration
         Schema::connection('central')->create('platform_metrics_daily', function (Blueprint $table) {
             $table->id();
             $table->date('date')->unique();
+            // ARCH NOTE: mrr/arr are TOTALS = plan_mrr + product_mrr. Per locked architecture,
+            // MRR/ARR = sum(subscriptions revenue) + sum(product_subscriptions revenue).
             $table->decimal('mrr', 14, 2)->default(0);
             $table->decimal('arr', 14, 2)->default(0);
+            $table->decimal('plan_mrr', 14, 2)->default(0);
+            $table->decimal('product_mrr', 14, 2)->default(0);
+            $table->decimal('plan_arr', 14, 2)->default(0);
+            $table->decimal('product_arr', 14, 2)->default(0);
             $table->unsignedInteger('new_tenants')->default(0);
             $table->unsignedInteger('churned_tenants')->default(0);
             $table->unsignedInteger('active_tenants')->default(0);
@@ -185,7 +193,8 @@ class PlatformMetricDaily extends CentralModel
     protected $table = 'platform_metrics_daily';
 
     protected $fillable = [
-        'date', 'mrr', 'arr', 'new_tenants', 'churned_tenants',
+        'date', 'mrr', 'arr', 'plan_mrr', 'product_mrr', 'plan_arr', 'product_arr',
+        'new_tenants', 'churned_tenants',
         'active_tenants', 'trial_tenants', 'total_revenue',
     ];
 
@@ -195,6 +204,10 @@ class PlatformMetricDaily extends CentralModel
             'date' => 'date',
             'mrr' => 'decimal:2',
             'arr' => 'decimal:2',
+            'plan_mrr' => 'decimal:2',
+            'product_mrr' => 'decimal:2',
+            'plan_arr' => 'decimal:2',
+            'product_arr' => 'decimal:2',
             'total_revenue' => 'decimal:2',
         ];
     }
@@ -513,10 +526,16 @@ class PlatformDashboardService
 
             $churnRate = $this->churnRate(30);
 
+            // ARCH NOTE: MRR/ARR = plan_mrr + product_mrr per locked architecture.
+            // Plan subscriptions and product subscriptions are independent revenue streams.
             return [
                 'mrr'              => (float) ($latest->mrr ?? 0),
                 'mrr_growth'       => $this->growth($latest?->mrr, $prev?->mrr),
+                'plan_mrr'         => (float) ($latest->plan_mrr ?? 0),
+                'product_mrr'      => (float) ($latest->product_mrr ?? 0),
                 'arr'              => (float) ($latest->arr ?? 0),
+                'plan_arr'         => (float) ($latest->plan_arr ?? 0),
+                'product_arr'      => (float) ($latest->product_arr ?? 0),
                 'active_tenants'   => (int) ($latest->active_tenants ?? Tenant::where('status', Tenant::STATUS_ACTIVE)->count()),
                 'trial_tenants'    => (int) ($latest->trial_tenants ?? 0),
                 'churned_tenants'  => (int) ($latest->churned_tenants ?? 0),
@@ -763,15 +782,24 @@ class PlatformAnalyticsService
                 'revenue' => (float) $group->sum('total_revenue'),
             ])->values()->all();
 
-        $byPlan = DB::connection('central')->table('tenants')
-            ->join('plans', 'tenants.plan_id', '=', 'plans.id')
-            ->where('tenants.status', Tenant::STATUS_ACTIVE)
+        // ARCH NOTE: Plan MRR (plan subscription revenue only).
+        $byPlan = DB::connection('central')->table('subscriptions')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->where('subscriptions.status', 'active')
             ->select('plans.name', DB::raw('count(*) as tenants'), DB::raw('sum(plans.price_monthly) as mrr'))
             ->groupBy('plans.name')->get()->toArray();
 
+        // ARCH NOTE: Product MRR is independent — sum product_subscriptions.price_monthly per product.
+        $byProduct = DB::connection('central')->table('product_subscriptions')
+            ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
+            ->where('product_subscriptions.status', 'active')
+            ->select('products.name', DB::raw('count(*) as tenants'), DB::raw('sum(product_subscriptions.price_monthly) as mrr'))
+            ->groupBy('products.name')->get()->toArray();
+
         return [
-            'trend'   => $trend,
-            'by_plan' => $byPlan,
+            'trend'      => $trend,
+            'by_plan'    => $byPlan,
+            'by_product' => $byProduct,
             'churn'   => [
                 'churned' => (int) $rows->sum('churned_tenants'),
                 'new'     => (int) $rows->sum('new_tenants'),

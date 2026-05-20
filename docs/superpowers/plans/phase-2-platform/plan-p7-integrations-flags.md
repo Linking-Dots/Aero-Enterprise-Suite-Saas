@@ -84,7 +84,8 @@ Register under `packages/aero-platform/config/module.php`.
 - `title`, `body` (html), `target` (all/specific), `target_tenant_ids` (json nullable), `published_at`, `dismissed_count`, `created_by` FK
 
 ### `TenantEmailBlast`
-- `subject`, `body_html`, `target_filter` (json — `{plan_ids, statuses}`), `sent_count`, `sent_at`, `created_by` FK
+- `subject`, `body_html`, `target_filter` (json — `{plan_ids, product_ids, statuses}`), `sent_count`, `sent_at`, `created_by` FK
+- ARCH NOTE: `target_filter.product_ids` filters tenants by active `ProductSubscription.product_id`. `plan_ids` filters by active `Subscription.plan_id`. Both axes are independent and can be combined (AND).
 
 ### `MaintenanceWindow`
 - `title`, `message`, `starts_at`, `ends_at`, `status` (scheduled/active/cancelled), `affected_tenants` (all/specific), `cancelled_at`
@@ -196,7 +197,7 @@ Located at `packages/aero-ui/resources/js/Pages/Platform/Admin/`:
 3. **`FeatureFlags/Index.jsx`** — flag table with toggle switch, rollout-% slider, per-tenant override management.
 4. **`FeatureFlags/Experiments.jsx`** — experiment list with start/stop and basic result visualization.
 5. **`Communications/Broadcasts.jsx`** — broadcast list, create form (rich text editor), publish/dismiss-all actions.
-6. **`Communications/EmailBlasts.jsx`** — blast list with targeting filter (plan + status), create form, send action.
+6. **`Communications/EmailBlasts.jsx`** — blast list with targeting filter (plan + product + status), create form, send action. ARCH NOTE: product filter resolves to active `ProductSubscription` rows.
 7. **`Communications/Maintenance.jsx`** — maintenance window calendar/list, schedule form, cancel action.
 
 Import depths (depth 4):

@@ -10,6 +10,8 @@
 
 ---
 
+> **ARCH NOTE (locked):** "Module Management" in this plan refers to the platform-wide PRODUCT CATALOG (which products/modules are sellable, their default config and pricing). It does NOT grant tenant access. Tenant module access is granted exclusively via `ProductSubscription` records (created in P-1 / managed via the Subscriptions admin in P-2). Setting a module's `is_active=false` here removes it from the storefront catalog but does NOT cancel existing tenant `ProductSubscription` rows. `SubscriptionModule` is deprecated — never reference it in this plan.
+
 ## Task 1 — Migrations & data model
 
 The `PlatformSetting`, `LandlordUser`, and `Module` (PlatformModule) tables already exist. We only add `landlord_roles` (if missing) and a `module_pricing`/config columns for `modules`.
@@ -699,6 +701,9 @@ class ModuleAdminService
 
     public function toggleActive(Module $module): Module
     {
+        // ARCH NOTE: Toggles catalog availability only. Does NOT touch existing
+        // ProductSubscription rows — tenants currently subscribed keep access until
+        // their ProductSubscription is cancelled via the Subscriptions admin (P-2).
         return DB::transaction(function () use ($module) {
             $module->update(['is_active' => ! $module->is_active]);
             $this->audit->log(
