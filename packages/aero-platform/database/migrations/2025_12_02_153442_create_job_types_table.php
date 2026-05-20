@@ -17,11 +17,20 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration
 {
+    public function getConnection(): string
+    {
+        return 'central';
+    }
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
+        if (Schema::connection('central')->hasTable('job_types')) {
+            return;
+        }
+
         Schema::create('job_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');

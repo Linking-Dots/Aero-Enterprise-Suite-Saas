@@ -20,13 +20,19 @@ class QuotaEnforcementSetting extends CentralModel
 
     protected $table = 'quota_enforcement_settings';
 
+    /**
+     * All columns from the original (2025_12_24) and P-3 (2026_05_21_030006)
+     * consolidation migration. Legacy notification columns coexist with new
+     * resource/limit columns to allow a zero-downtime column addition strategy.
+     */
     protected $fillable = [
+        // P-3 resource-based columns
         'resource',
         'default_limit',
         'warning_threshold_pct',
         'hard_limit_pct',
         'action',
-        // Legacy columns (original schema)
+        // Original schema columns
         'quota_type',
         'warning_threshold_percentage',
         'critical_threshold_percentage',
@@ -42,10 +48,11 @@ class QuotaEnforcementSetting extends CentralModel
     protected function casts(): array
     {
         return [
+            // P-3 resource-based casts
             'default_limit' => 'integer',
             'warning_threshold_pct' => 'integer',
             'hard_limit_pct' => 'integer',
-            // Legacy casts
+            // Original schema casts
             'warning_threshold_percentage' => 'integer',
             'critical_threshold_percentage' => 'integer',
             'block_threshold_percentage' => 'integer',

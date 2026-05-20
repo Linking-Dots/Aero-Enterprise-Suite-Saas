@@ -6,11 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    public function getConnection(): string
+    {
+        return 'central';
+    }
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
+        if (Schema::connection('central')->hasTable('quota_enforcement_settings')) {
+            return;
+        }
+
         Schema::create('quota_enforcement_settings', function (Blueprint $table) {
             $table->id();
             $table->string('quota_type', 50)->unique(); // 'users', 'storage_gb', 'api_calls_monthly', etc.
