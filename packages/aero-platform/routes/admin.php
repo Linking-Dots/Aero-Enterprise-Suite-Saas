@@ -1499,16 +1499,13 @@ Route::middleware('admin.domain')->group(function () {
 
         // Platform Dashboard (P-3)
         Route::middleware('hrmac:platform-dashboard.dashboard-overview.view')->group(function () {
-            Route::get('/p3/dashboard', [P3DashboardController::class, 'index'])
-                ->name('platform.admin.dashboard');
-            Route::get('/p3/dashboard/stats', [P3DashboardController::class, 'stats'])
-                ->name('platform.admin.dashboard.stats');
-            Route::get('/p3/dashboard/health', [P3DashboardController::class, 'systemHealth'])
-                ->name('platform.admin.dashboard.health');
+            Route::get('/dashboard',        [P3DashboardController::class, 'index'])->name('platform.admin.dashboard');
+            Route::get('/dashboard/stats',  [P3DashboardController::class, 'stats'])->name('platform.admin.dashboard.stats');
+            Route::get('/dashboard/health', [P3DashboardController::class, 'systemHealth'])->name('platform.admin.dashboard.health');
         });
 
         // Quota Management (P-3)
-        Route::prefix('p3/quotas')->name('platform.admin.quotas.')->group(function () {
+        Route::prefix('quotas')->name('platform.admin.quotas.')->group(function () {
             Route::middleware('hrmac:quota-management.quota-dashboard.view')
                 ->get('/', [P3QuotaController::class, 'index'])->name('index');
 
@@ -1524,7 +1521,7 @@ Route::middleware('admin.domain')->group(function () {
         });
 
         // Platform Analytics (P-3)
-        Route::prefix('p3/analytics')->name('platform.admin.analytics.')->group(function () {
+        Route::prefix('analytics')->name('platform.admin.analytics.')->group(function () {
             Route::middleware('hrmac:platform-analytics.analytics-dashboard.view')
                 ->get('/', [P3AnalyticsController::class, 'dashboard'])->name('index');
             Route::middleware('hrmac:platform-analytics.revenue-reports.view')
@@ -1536,7 +1533,7 @@ Route::middleware('admin.domain')->group(function () {
         });
 
         // Product Analytics (P-3)
-        Route::prefix('p3/product-analytics')->name('platform.admin.product-analytics.')->group(function () {
+        Route::prefix('product-analytics')->name('platform.admin.product-analytics.')->group(function () {
             Route::middleware('hrmac:product-analytics.feature-usage.view')
                 ->get('/features', [P3ProductAnalyticsController::class, 'featureUsage'])->name('features');
             Route::middleware('hrmac:product-analytics.cohort-analysis.view')
