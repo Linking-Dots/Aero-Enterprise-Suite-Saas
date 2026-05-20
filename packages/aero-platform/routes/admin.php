@@ -1448,111 +1448,45 @@ Route::middleware('admin.domain')->group(function () {
         // P-2: Plans & Billing Admin Routes
         // =========================================================================
 
-        // Billing dashboard
-        Route::prefix('p2/billing')->name('platform.admin.billing.')->group(function () {
-            Route::get('/dashboard', [BillingDashboardController::class, 'index'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions')
-                ->name('dashboard');
-            Route::get('/dashboard/stats', [BillingDashboardController::class, 'stats'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions')
-                ->name('dashboard.stats');
-        });
-
-        // Plans CRUD (P-2 — uses platform.admin.plans.* names to avoid conflict with admin.plans.*)
+        // Plans CRUD
         Route::prefix('p2/plans')->name('platform.admin.plans.')->group(function () {
-            Route::get('/', [AdminP2PlanController::class, 'index'])
-                ->middleware('hrmac:subscriptions.plans')
-                ->name('index');
-            Route::get('/create', [AdminP2PlanController::class, 'create'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.create')
-                ->name('create');
-            Route::post('/', [AdminP2PlanController::class, 'store'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.create')
-                ->name('store');
-            Route::get('/{plan}', [AdminP2PlanController::class, 'show'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.view')
-                ->name('show');
-            Route::get('/{plan}/edit', [AdminP2PlanController::class, 'edit'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.update')
-                ->name('edit');
-            Route::put('/{plan}', [AdminP2PlanController::class, 'update'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.update')
-                ->name('update');
-            Route::delete('/{plan}', [AdminP2PlanController::class, 'destroy'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.delete')
-                ->name('destroy');
-            Route::post('/{plan}/archive', [AdminP2PlanController::class, 'archive'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.update')
-                ->name('archive');
-            Route::get('/{plan}/stats', [AdminP2PlanController::class, 'stats'])
-                ->middleware('hrmac:subscriptions.plans.plan-list.view')
-                ->name('stats');
+            Route::get('/',             [AdminP2PlanController::class, 'index'])->name('index')->middleware('hrmac:plan-management.plan-list.view');
+            Route::get('/create',       [AdminP2PlanController::class, 'create'])->name('create')->middleware('hrmac:plan-management.plan-list.create');
+            Route::post('/',            [AdminP2PlanController::class, 'store'])->name('store')->middleware('hrmac:plan-management.plan-list.create');
+            Route::get('/{plan}',       [AdminP2PlanController::class, 'show'])->name('show')->middleware('hrmac:plan-management.plan-details.view');
+            Route::get('/{plan}/edit',  [AdminP2PlanController::class, 'edit'])->name('edit')->middleware('hrmac:plan-management.plan-list.edit');
+            Route::put('/{plan}',       [AdminP2PlanController::class, 'update'])->name('update')->middleware('hrmac:plan-management.plan-list.edit');
+            Route::delete('/{plan}',    [AdminP2PlanController::class, 'destroy'])->name('destroy')->middleware('hrmac:plan-management.plan-list.delete');
+            Route::post('/{plan}/archive', [AdminP2PlanController::class, 'archive'])->name('archive')->middleware('hrmac:plan-management.plan-list.archive');
+            Route::post('/{plan}/clone',   [AdminP2PlanController::class, 'clone'])->name('clone')->middleware('hrmac:plan-management.plan-list.clone');
+            Route::post('/{plan}/modules', [AdminP2PlanController::class, 'assignModules'])->name('modules.assign')->middleware('hrmac:plan-management.plan-modules.assign');
         });
 
-        // Subscriptions admin (P-2)
-        Route::prefix('p2/subscriptions')->name('platform.admin.subscriptions.')->group(function () {
-            Route::get('/', [AdminSubscriptionController::class, 'index'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions')
-                ->name('index');
-            Route::get('/{subscription}', [AdminSubscriptionController::class, 'show'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions.subscription-list.view')
-                ->name('show');
-            Route::post('/{subscription}/cancel', [AdminSubscriptionController::class, 'cancel'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions.subscription-list.update')
-                ->name('cancel');
-            Route::post('/{subscription}/change-plan', [AdminSubscriptionController::class, 'changePlan'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions.subscription-list.update')
-                ->name('change-plan');
-            Route::post('/{subscription}/reactivate', [AdminSubscriptionController::class, 'reactivate'])
-                ->middleware('hrmac:subscriptions.tenant-subscriptions.subscription-list.update')
-                ->name('reactivate');
-        });
+        // Billing (dashboard + subscriptions + invoices + gateways)
+        Route::prefix('p2/billing')->name('platform.admin.billing.')->group(function () {
+            Route::get('/dashboard', [BillingDashboardController::class, 'index'])->name('dashboard')->middleware('hrmac:billing-management.billing-dashboard.view');
 
-        // Invoices admin (P-2)
-        Route::prefix('p2/invoices')->name('platform.admin.invoices.')->group(function () {
-            Route::get('/', [AdminInvoiceController::class, 'index'])
-                ->middleware('hrmac:subscriptions.invoices')
-                ->name('index');
-            Route::get('/{invoice}', [AdminInvoiceController::class, 'show'])
-                ->middleware('hrmac:subscriptions.invoices.invoice-list.view')
-                ->name('show');
-            Route::post('/{invoice}/mark-paid', [AdminInvoiceController::class, 'markPaid'])
-                ->middleware('hrmac:subscriptions.invoices.invoice-list.update')
-                ->name('mark-paid');
-            Route::post('/{invoice}/void', [AdminInvoiceController::class, 'void'])
-                ->middleware('hrmac:subscriptions.invoices.invoice-list.update')
-                ->name('void');
-            Route::post('/{invoice}/generate-pdf', [AdminInvoiceController::class, 'generatePdf'])
-                ->middleware('hrmac:subscriptions.invoices.invoice-list.view')
-                ->name('generate-pdf');
-            Route::get('/{invoice}/download', [AdminInvoiceController::class, 'downloadPdf'])
-                ->middleware('hrmac:subscriptions.invoices.invoice-list.download')
-                ->name('download');
-        });
+            Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+                Route::get('/',                        [AdminSubscriptionController::class, 'index'])->name('index')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::get('/{subscription}',          [AdminSubscriptionController::class, 'show'])->name('show')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::post('/{subscription}/cancel',  [AdminSubscriptionController::class, 'cancel'])->name('cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
+                Route::post('/{subscription}/upgrade', [AdminSubscriptionController::class, 'upgrade'])->name('upgrade')->middleware('hrmac:billing-management.subscriptions.upgrade');
+            });
 
-        // Payment gateways admin (P-2)
-        Route::prefix('p2/payment-gateways')->name('platform.admin.payment-gateways.')->group(function () {
-            Route::get('/', [PaymentGatewayController::class, 'index'])
-                ->middleware('hrmac:subscriptions.payment-gateways')
-                ->name('index');
-            Route::post('/', [PaymentGatewayController::class, 'store'])
-                ->middleware('hrmac:subscriptions.payment-gateways.gateway-list.create')
-                ->name('store');
-            Route::put('/{gateway}', [PaymentGatewayController::class, 'update'])
-                ->middleware('hrmac:subscriptions.payment-gateways.gateway-list.update')
-                ->name('update');
-            Route::put('/{gateway}/config', [PaymentGatewayController::class, 'updateConfig'])
-                ->middleware('hrmac:subscriptions.payment-gateways.gateway-list.update')
-                ->name('update-config');
-            Route::post('/{gateway}/toggle', [PaymentGatewayController::class, 'toggle'])
-                ->middleware('hrmac:subscriptions.payment-gateways.gateway-list.update')
-                ->name('toggle');
-            Route::post('/{gateway}/set-default', [PaymentGatewayController::class, 'setDefault'])
-                ->middleware('hrmac:subscriptions.payment-gateways.gateway-list.update')
-                ->name('set-default');
-            Route::delete('/{gateway}', [PaymentGatewayController::class, 'destroy'])
-                ->middleware('hrmac:subscriptions.payment-gateways.gateway-list.delete')
-                ->name('destroy');
+            Route::prefix('invoices')->name('invoices.')->group(function () {
+                Route::get('/',                          [AdminInvoiceController::class, 'index'])->name('index')->middleware('hrmac:billing-management.invoices.view');
+                Route::get('/{invoice}',                 [AdminInvoiceController::class, 'show'])->name('show')->middleware('hrmac:billing-management.invoices.view');
+                Route::post('/generate',                 [AdminInvoiceController::class, 'generate'])->name('generate')->middleware('hrmac:billing-management.invoices.generate');
+                Route::post('/{invoice}/send',           [AdminInvoiceController::class, 'send'])->name('send')->middleware('hrmac:billing-management.invoices.send');
+                Route::post('/{invoice}/mark-paid',      [AdminInvoiceController::class, 'markPaid'])->name('mark-paid')->middleware('hrmac:billing-management.invoices.mark-paid');
+                Route::get('/{invoice}/download',        [AdminInvoiceController::class, 'download'])->name('download')->middleware('hrmac:billing-management.invoices.view');
+            });
+
+            Route::prefix('gateways')->name('gateways.')->group(function () {
+                Route::get('/',              [PaymentGatewayController::class, 'index'])->name('index')->middleware('hrmac:billing-management.payment-gateways.view');
+                Route::put('/{code}',        [PaymentGatewayController::class, 'update'])->name('update')->middleware('hrmac:billing-management.payment-gateways.configure');
+                Route::post('/{code}/test',  [PaymentGatewayController::class, 'test'])->name('test')->middleware('hrmac:billing-management.payment-gateways.view');
+            });
         });
 
         // Onboarding (P-1)
