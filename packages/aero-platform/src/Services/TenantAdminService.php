@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantProvisioningLog;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -61,6 +62,19 @@ class TenantAdminService
                 'step' => 'queued',
                 'message' => 'Tenant created, provisioning queued',
             ]);
+
+            if (! empty($data['product_id'])) {
+                ProductSubscription::create([
+                    'tenant_id' => $tenant->id,
+                    'product_id' => $data['product_id'],
+                    'billing_cycle' => $data['billing_cycle'] ?? 'monthly',
+                    'amount' => 0, // set by billing flow; 0 for admin-created tenants
+                    'currency' => 'USD',
+                    'status' => 'trialing',
+                    'starts_at' => now(),
+                    'trial_ends_at' => now()->addDays(14),
+                ]);
+            }
 
             $this->audit->log(
                 event: 'TENANT_CREATED',

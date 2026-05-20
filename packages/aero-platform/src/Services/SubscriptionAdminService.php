@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services;
 
 use Aero\Core\Services\AuditService;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +51,7 @@ class SubscriptionAdminService
     /**
      * Cancel a subscription — admin override.
      * Sets status to cancelled and records reason.
+     * Also cascade-cancels all active ProductSubscriptions for the tenant.
      */
     public function cancel(Subscription $subscription, string $reason): Subscription
     {
@@ -67,6 +69,23 @@ class SubscriptionAdminService
                 ]);
 
             $subscription->refresh();
+
+            // Cascade-cancel all active ProductSubscriptions for this tenant
+            if ($subscription->tenant_id) {
+                ProductSubscription::where('tenant_id', $subscription->tenant_id)
+                    ->whereIn('status', ['active', 'trialing'])
+                    ->update([
+                        'status' => 'cancelled',
+                        'cancelled_at' => now(),
+                        'cancellation_reason' => "Plan subscription cancelled: {$reason}",
+                    ]);
+
+                $this->audit->log(
+                    'product_subscriptions.cancelled',
+                    $subscription,
+                    "All product subscriptions cancelled for tenant {$subscription->tenant_id}"
+                );
+            }
 
             $this->audit->log(
                 'subscription.cancelled',
@@ -111,9 +130,12 @@ class SubscriptionAdminService
 
     /**
      * Upgrade a subscription to a new plan — alias for changePlan().
+     *
+     * Product subscriptions are independent of plan — they are preserved on plan upgrade.
      */
     public function upgrade(Subscription $sub, int $newPlanId, int $actorId): Subscription
     {
+        // Product subscriptions are independent of plan — they are preserved on plan upgrade.
         return $this->changePlan($sub, (string) $newPlanId);
     }
 

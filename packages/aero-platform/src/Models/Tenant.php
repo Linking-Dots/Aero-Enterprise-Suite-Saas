@@ -275,6 +275,17 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Get all product subscriptions for this tenant.
+     *
+     * ProductSubscription is the canonical access model — use this relationship
+     * for access gating instead of SubscriptionModule.
+     */
+    public function productSubscriptions(): HasMany
+    {
+        return $this->hasMany(ProductSubscription::class, 'tenant_id');
+    }
+
+    /**
      * Get all modules subscribed by this tenant (feature access registry).
      */
     public function modules(): BelongsToMany
@@ -287,6 +298,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     /**
      * Get active module codes for this tenant.
+     *
+     * @deprecated Use productSubscriptions() with hasAccess() scope instead.
+     *             This method will be removed in a future release.
      */
     public function getActiveModules(): Collection
     {
@@ -499,37 +513,23 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
-     * Check if the tenant has an active module subscription for a specific module.
+     * Check if the tenant has an active product subscription granting access to a module.
      *
      * This is the core gating method used by CheckModuleAccess middleware.
-     * Plans and products/modules are separate concerns:
-     * - Plan subscription controls limits (users, storage).
-     * - Module access is determined by the tenant_module pivot and
-     *   independent module subscriptions (subscription_modules table).
+     * ProductSubscription is the canonical access model:
+     * - Plan subscription controls limits (users, storage, seats).
+     * - Module access is determined by ProductSubscription linked to a
+     *   Product whose module_code matches the requested module.
      *
      * @param  string  $moduleName  Module code e.g., 'hrm', 'crm'
      */
     public function hasActiveSubscription(string $moduleName): bool
     {
-        // Check 1: Active module in tenant_module pivot (covers manual grants + synced modules)
-        if ($this->modules()->where('code', $moduleName)->exists()) {
-            return true;
-        }
-
-        // Check 2: Active module subscription via subscription_modules table
-        $hasModuleSub = $this->moduleSubscriptions()
-            ->where('module_code', $moduleName)
-            ->where(function ($q) {
-                $q->where('status', SubscriptionModule::STATUS_ACTIVE)
-                    ->orWhere('status', SubscriptionModule::STATUS_TRIALING);
-            })
-            ->where(function ($q) {
-                $q->whereNull('ends_at')
-                    ->orWhere('ends_at', '>=', now());
-            })
+        return $this->productSubscriptions()
+            ->where('status', 'active')
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
+            ->whereHas('product', fn ($pq) => $pq->where('module_code', $moduleName))
             ->exists();
-
-        return $hasModuleSub;
     }
 
     /**

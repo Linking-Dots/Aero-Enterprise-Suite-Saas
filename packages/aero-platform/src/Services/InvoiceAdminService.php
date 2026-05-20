@@ -6,6 +6,7 @@ namespace Aero\Platform\Services;
 
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Invoice;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -125,6 +126,52 @@ class InvoiceAdminService
             );
 
             return $invoice;
+        });
+    }
+
+    /**
+     * Generate a draft invoice for a ProductSubscription.
+     *
+     * Creates a separate invoice record for a product (add-on) subscription,
+     * distinct from plan invoices. Reference uses the INV-P- prefix to
+     * distinguish product invoices from plan invoices (INV-).
+     */
+    public function generateForProduct(ProductSubscription $ps): Invoice
+    {
+        return DB::transaction(function () use ($ps) {
+            $year = now()->year;
+            $seq = Invoice::whereYear('created_at', $year)->count() + 1;
+            $ref = sprintf('INV-P-%d-%06d', $year, $seq);
+
+            /** @var Invoice $invoice */
+            $invoice = Invoice::create([
+                'billable_type' => Tenant::class,
+                'billable_id' => $ps->tenant_id,
+                'subscription_id' => null, // product subscription, not plan subscription
+                'reference' => $ref,
+                'invoice_number' => $ref,
+                'amount' => $ps->amount,
+                'subtotal' => $ps->amount,
+                'total' => $ps->amount,
+                'amount_due' => $ps->amount,
+                'amount_paid' => '0.00',
+                'currency' => $ps->currency ?? 'USD',
+                'tax_amount' => '0.00',
+                'status' => Invoice::STATUS_DRAFT,
+                'due_date' => now()->addDays(14)->toDateString(),
+                'billing_period_start' => now()->startOfMonth()->toDateString(),
+                'billing_period_end' => now()->endOfMonth()->toDateString(),
+            ]);
+
+            $this->audit->log(
+                'invoice.generated',
+                $invoice,
+                "Product invoice [{$ref}] generated for tenant [{$ps->tenant_id}].",
+                null,
+                $invoice->toArray()
+            );
+
+            return $invoice->fresh();
         });
     }
 

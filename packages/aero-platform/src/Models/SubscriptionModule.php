@@ -2,10 +2,11 @@
 
 namespace Aero\Platform\Models;
 
+use Carbon\Carbon;
+use Database\Factories\SubscriptionModuleFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * record. Module subscriptions can have independent billing cycles, trial
  * periods, and cancellation status from the base plan subscription.
  *
+ * @deprecated Use ProductSubscription instead. SubscriptionModule will be removed in a future release.
+ *
  * @property string $id UUID primary key
  * @property string $billable_type
  * @property string $billable_id
@@ -23,15 +26,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $billing_cycle monthly|yearly
  * @property string $amount Decimal price
  * @property string $status active, cancelled, past_due, trialing, paused, expired
- * @property \Carbon\Carbon|null $trial_ends_at
- * @property \Carbon\Carbon|null $ends_at
+ * @property Carbon|null $trial_ends_at
+ * @property Carbon|null $ends_at
  */
 class SubscriptionModule extends CentralModel
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    /** @use HasFactory<\Database\Factories\SubscriptionModuleFactory> */
-
+    /** @use HasFactory<SubscriptionModuleFactory> */
     protected $table = 'subscription_modules';
 
     public $incrementing = false;
@@ -87,7 +89,7 @@ class SubscriptionModule extends CentralModel
     /**
      * The tenant (or other billable entity) that owns this module subscription.
      */
-    public function billable(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    public function billable(): MorphTo
     {
         return $this->morphTo();
     }

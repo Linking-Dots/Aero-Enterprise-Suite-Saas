@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantProvisioningLog;
 use Illuminate\Support\Facades\DB;
@@ -58,6 +59,11 @@ class TenantProvisioningService
         DB::transaction(function () use ($tenant) {
             $tenant->update(['status' => 'active']);
 
+            // Activate any trialing ProductSubscriptions for this tenant
+            ProductSubscription::where('tenant_id', $tenant->id)
+                ->where('status', 'trialing')
+                ->update(['status' => 'active', 'trial_ends_at' => null, 'starts_at' => now()]);
+
             $this->audit->log(
                 event: 'TENANT_APPROVED',
                 action: 'approve',
@@ -102,6 +108,11 @@ class TenantProvisioningService
     {
         return DB::transaction(function () use ($tenant) {
             $tenant->update(['status' => 'active', 'stripe_trial_ends_at' => null]);
+
+            // Activate any trialing ProductSubscriptions for this tenant
+            ProductSubscription::where('tenant_id', $tenant->id)
+                ->where('status', 'trialing')
+                ->update(['status' => 'active', 'trial_ends_at' => null, 'starts_at' => now()]);
 
             $this->audit->log(
                 event: 'TENANT_TRIAL_CONVERTED',

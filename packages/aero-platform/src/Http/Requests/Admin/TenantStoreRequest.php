@@ -17,6 +17,8 @@ class TenantStoreRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'plan_id' => 'nullable|integer|exists:plans,id',
+            'product_id' => 'nullable|uuid|exists:products,id',
+            'billing_cycle' => 'nullable|in:monthly,yearly',
             'byoc_enabled' => 'boolean',
             'timezone' => 'nullable|string|max:64',
         ];
