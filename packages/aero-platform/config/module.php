@@ -2714,51 +2714,6 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Release Management
-        |--------------------------------------------------------------------------
-        */
-        [
-            'code' => 'release-management',
-            'name' => 'Release Management',
-            'description' => 'Platform version tracking, tenant update deployment, rollout scheduling, changelog',
-            'icon' => 'RocketLaunchIcon',
-            'route' => '/releases',
-            'priority' => 51,
-            'components' => [
-                [
-                    'code' => 'versions',
-                    'name' => 'Platform Versions',
-                    'route' => '/releases/versions',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Versions'],
-                        ['code' => 'publish', 'name' => 'Publish Release'],
-                        ['code' => 'rollback', 'name' => 'Rollback Release'],
-                    ],
-                ],
-                [
-                    'code' => 'tenant-updates',
-                    'name' => 'Tenant Update Rollout',
-                    'route' => '/releases/rollout',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Rollout Status'],
-                        ['code' => 'schedule', 'name' => 'Schedule Tenant Update'],
-                        ['code' => 'force', 'name' => 'Force Update Tenant'],
-                    ],
-                ],
-                [
-                    'code' => 'changelog',
-                    'name' => 'Changelog',
-                    'route' => '/releases/changelog',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Changelog'],
-                        ['code' => 'manage', 'name' => 'Manage Changelog Entries'],
-                    ],
-                ],
-            ],
-        ],
-
-        /*
-        |--------------------------------------------------------------------------
         | License Management (Standalone / Self-Hosted)
         |--------------------------------------------------------------------------
         */
