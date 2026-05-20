@@ -5,9 +5,11 @@ declare(strict_types=1);
 use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
+use Aero\Platform\Http\Controllers\Admin\AnalyticsController as P3AnalyticsController;
 use Aero\Platform\Http\Controllers\Admin\BillingDashboardController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenantController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
+use Aero\Platform\Http\Controllers\Admin\DashboardController as P3DashboardController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
@@ -15,6 +17,8 @@ use Aero\Platform\Http\Controllers\Admin\NewsletterController;
 use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminP1OnboardingController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
+use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController as P3ProductAnalyticsController;
+use Aero\Platform\Http\Controllers\Admin\QuotaController as P3QuotaController;
 use Aero\Platform\Http\Controllers\Admin\RateLimitConfigController;
 use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\RoleController;
@@ -1450,15 +1454,15 @@ Route::middleware('admin.domain')->group(function () {
 
         // Plans CRUD
         Route::prefix('p2/plans')->name('platform.admin.plans.')->group(function () {
-            Route::get('/',             [AdminP2PlanController::class, 'index'])->name('index')->middleware('hrmac:plan-management.plan-list.view');
-            Route::get('/create',       [AdminP2PlanController::class, 'create'])->name('create')->middleware('hrmac:plan-management.plan-list.create');
-            Route::post('/',            [AdminP2PlanController::class, 'store'])->name('store')->middleware('hrmac:plan-management.plan-list.create');
-            Route::get('/{plan}',       [AdminP2PlanController::class, 'show'])->name('show')->middleware('hrmac:plan-management.plan-details.view');
-            Route::get('/{plan}/edit',  [AdminP2PlanController::class, 'edit'])->name('edit')->middleware('hrmac:plan-management.plan-list.edit');
-            Route::put('/{plan}',       [AdminP2PlanController::class, 'update'])->name('update')->middleware('hrmac:plan-management.plan-list.edit');
-            Route::delete('/{plan}',    [AdminP2PlanController::class, 'destroy'])->name('destroy')->middleware('hrmac:plan-management.plan-list.delete');
+            Route::get('/', [AdminP2PlanController::class, 'index'])->name('index')->middleware('hrmac:plan-management.plan-list.view');
+            Route::get('/create', [AdminP2PlanController::class, 'create'])->name('create')->middleware('hrmac:plan-management.plan-list.create');
+            Route::post('/', [AdminP2PlanController::class, 'store'])->name('store')->middleware('hrmac:plan-management.plan-list.create');
+            Route::get('/{plan}', [AdminP2PlanController::class, 'show'])->name('show')->middleware('hrmac:plan-management.plan-details.view');
+            Route::get('/{plan}/edit', [AdminP2PlanController::class, 'edit'])->name('edit')->middleware('hrmac:plan-management.plan-list.edit');
+            Route::put('/{plan}', [AdminP2PlanController::class, 'update'])->name('update')->middleware('hrmac:plan-management.plan-list.edit');
+            Route::delete('/{plan}', [AdminP2PlanController::class, 'destroy'])->name('destroy')->middleware('hrmac:plan-management.plan-list.delete');
             Route::post('/{plan}/archive', [AdminP2PlanController::class, 'archive'])->name('archive')->middleware('hrmac:plan-management.plan-list.archive');
-            Route::post('/{plan}/clone',   [AdminP2PlanController::class, 'clone'])->name('clone')->middleware('hrmac:plan-management.plan-list.clone');
+            Route::post('/{plan}/clone', [AdminP2PlanController::class, 'clone'])->name('clone')->middleware('hrmac:plan-management.plan-list.clone');
             Route::post('/{plan}/modules', [AdminP2PlanController::class, 'assignModules'])->name('modules.assign')->middleware('hrmac:plan-management.plan-modules.assign');
         });
 
@@ -1467,26 +1471,82 @@ Route::middleware('admin.domain')->group(function () {
             Route::get('/dashboard', [BillingDashboardController::class, 'index'])->name('dashboard')->middleware('hrmac:billing-management.billing-dashboard.view');
 
             Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
-                Route::get('/',                        [AdminSubscriptionController::class, 'index'])->name('index')->middleware('hrmac:billing-management.subscriptions.view');
-                Route::get('/{subscription}',          [AdminSubscriptionController::class, 'show'])->name('show')->middleware('hrmac:billing-management.subscriptions.view');
-                Route::post('/{subscription}/cancel',  [AdminSubscriptionController::class, 'cancel'])->name('cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
+                Route::get('/', [AdminSubscriptionController::class, 'index'])->name('index')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::get('/{subscription}', [AdminSubscriptionController::class, 'show'])->name('show')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::post('/{subscription}/cancel', [AdminSubscriptionController::class, 'cancel'])->name('cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
                 Route::post('/{subscription}/upgrade', [AdminSubscriptionController::class, 'upgrade'])->name('upgrade')->middleware('hrmac:billing-management.subscriptions.upgrade');
             });
 
             Route::prefix('invoices')->name('invoices.')->group(function () {
-                Route::get('/',                          [AdminInvoiceController::class, 'index'])->name('index')->middleware('hrmac:billing-management.invoices.view');
-                Route::get('/{invoice}',                 [AdminInvoiceController::class, 'show'])->name('show')->middleware('hrmac:billing-management.invoices.view');
-                Route::post('/generate',                 [AdminInvoiceController::class, 'generate'])->name('generate')->middleware('hrmac:billing-management.invoices.generate');
-                Route::post('/{invoice}/send',           [AdminInvoiceController::class, 'send'])->name('send')->middleware('hrmac:billing-management.invoices.send');
-                Route::post('/{invoice}/mark-paid',      [AdminInvoiceController::class, 'markPaid'])->name('mark-paid')->middleware('hrmac:billing-management.invoices.mark-paid');
-                Route::get('/{invoice}/download',        [AdminInvoiceController::class, 'download'])->name('download')->middleware('hrmac:billing-management.invoices.view');
+                Route::get('/', [AdminInvoiceController::class, 'index'])->name('index')->middleware('hrmac:billing-management.invoices.view');
+                Route::get('/{invoice}', [AdminInvoiceController::class, 'show'])->name('show')->middleware('hrmac:billing-management.invoices.view');
+                Route::post('/generate', [AdminInvoiceController::class, 'generate'])->name('generate')->middleware('hrmac:billing-management.invoices.generate');
+                Route::post('/{invoice}/send', [AdminInvoiceController::class, 'send'])->name('send')->middleware('hrmac:billing-management.invoices.send');
+                Route::post('/{invoice}/mark-paid', [AdminInvoiceController::class, 'markPaid'])->name('mark-paid')->middleware('hrmac:billing-management.invoices.mark-paid');
+                Route::get('/{invoice}/download', [AdminInvoiceController::class, 'download'])->name('download')->middleware('hrmac:billing-management.invoices.view');
             });
 
             Route::prefix('gateways')->name('gateways.')->group(function () {
-                Route::get('/',              [PaymentGatewayController::class, 'index'])->name('index')->middleware('hrmac:billing-management.payment-gateways.view');
-                Route::put('/{code}',        [PaymentGatewayController::class, 'update'])->name('update')->middleware('hrmac:billing-management.payment-gateways.configure');
-                Route::post('/{code}/test',  [PaymentGatewayController::class, 'test'])->name('test')->middleware('hrmac:billing-management.payment-gateways.view');
+                Route::get('/', [PaymentGatewayController::class, 'index'])->name('index')->middleware('hrmac:billing-management.payment-gateways.view');
+                Route::put('/{code}', [PaymentGatewayController::class, 'update'])->name('update')->middleware('hrmac:billing-management.payment-gateways.configure');
+                Route::post('/{code}/test', [PaymentGatewayController::class, 'test'])->name('test')->middleware('hrmac:billing-management.payment-gateways.view');
             });
+        });
+
+        // =========================================================================
+        // P-3: Dashboard & Analytics Admin Routes
+        // =========================================================================
+
+        // Platform Dashboard (P-3)
+        Route::middleware('hrmac:platform-dashboard.dashboard-overview.view')->group(function () {
+            Route::get('/p3/dashboard', [P3DashboardController::class, 'index'])
+                ->name('platform.admin.dashboard');
+            Route::get('/p3/dashboard/stats', [P3DashboardController::class, 'stats'])
+                ->name('platform.admin.dashboard.stats');
+            Route::get('/p3/dashboard/health', [P3DashboardController::class, 'systemHealth'])
+                ->name('platform.admin.dashboard.health');
+        });
+
+        // Quota Management (P-3)
+        Route::prefix('p3/quotas')->name('platform.admin.quotas.')->group(function () {
+            Route::middleware('hrmac:quota-management.quota-dashboard.view')
+                ->get('/', [P3QuotaController::class, 'index'])->name('index');
+
+            Route::middleware('hrmac:quota-management.quota-dashboard.override')->group(function () {
+                Route::post('{tenant}/override', [P3QuotaController::class, 'override'])->name('override');
+                Route::delete('{tenant}/override/{resource}', [P3QuotaController::class, 'removeOverride'])->name('override.remove');
+            });
+
+            Route::middleware('hrmac:quota-management.quota-settings.view')
+                ->get('/settings', [P3QuotaController::class, 'settings'])->name('settings');
+            Route::middleware('hrmac:quota-management.quota-settings.edit')
+                ->put('/settings', [P3QuotaController::class, 'updateSettings'])->name('settings.update');
+        });
+
+        // Platform Analytics (P-3)
+        Route::prefix('p3/analytics')->name('platform.admin.analytics.')->group(function () {
+            Route::middleware('hrmac:platform-analytics.analytics-dashboard.view')
+                ->get('/', [P3AnalyticsController::class, 'dashboard'])->name('index');
+            Route::middleware('hrmac:platform-analytics.revenue-reports.view')
+                ->get('/revenue', [P3AnalyticsController::class, 'revenue'])->name('revenue');
+            Route::middleware('hrmac:platform-analytics.tenant-analytics.view')
+                ->get('/tenants', [P3AnalyticsController::class, 'tenants'])->name('tenants');
+            Route::middleware('hrmac:platform-analytics.analytics-dashboard.view')
+                ->get('/usage', [P3AnalyticsController::class, 'usage'])->name('usage');
+        });
+
+        // Product Analytics (P-3)
+        Route::prefix('p3/product-analytics')->name('platform.admin.product-analytics.')->group(function () {
+            Route::middleware('hrmac:product-analytics.feature-usage.view')
+                ->get('/features', [P3ProductAnalyticsController::class, 'featureUsage'])->name('features');
+            Route::middleware('hrmac:product-analytics.cohort-analysis.view')
+                ->get('/cohorts', [P3ProductAnalyticsController::class, 'cohorts'])->name('cohorts');
+            Route::middleware('hrmac:product-analytics.funnel-analysis.view')
+                ->get('/funnels', [P3ProductAnalyticsController::class, 'funnels'])->name('funnels');
+            Route::middleware('hrmac:product-analytics.funnel-analysis.manage')
+                ->post('/funnels', [P3ProductAnalyticsController::class, 'storeFunnel'])->name('funnels.store');
+            Route::middleware('hrmac:product-analytics.adoption-metrics.view')
+                ->get('/adoption', [P3ProductAnalyticsController::class, 'adoption'])->name('adoption');
         });
 
         // Onboarding (P-1)
