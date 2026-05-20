@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
+use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Services\SubscriptionAdminService;
 use Illuminate\Http\RedirectResponse;
@@ -21,8 +23,15 @@ class SubscriptionController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('Platform/Admin/Billing/P2/Subscriptions', [
-            'subscriptions' => $this->svc->list($request->only(['status', 'plan_id', 'search'])),
-            'filters' => $request->only(['status', 'plan_id', 'search']),
+            'subscriptions' => $this->svc->list($request->only(['status', 'tenant_id'])),
+            'product_subscriptions' => ProductSubscription::with('product')
+                ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+                ->when($request->input('tenant_id'), fn ($q, $t) => $q->where('tenant_id', $t))
+                ->orderByDesc('created_at')
+                ->paginate(25)
+                ->withQueryString(),
+            'filters' => $request->only(['status', 'tenant_id']),
+            'plans' => Plan::orderBy('name')->get(['id', 'name', 'price_monthly', 'price_annual']),
         ]);
     }
 

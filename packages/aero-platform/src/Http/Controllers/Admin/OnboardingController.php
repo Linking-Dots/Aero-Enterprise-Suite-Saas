@@ -3,6 +3,7 @@
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantProvisioningLog;
 use Aero\Platform\Services\TenantProvisioningService;
@@ -30,8 +31,22 @@ class OnboardingController extends Controller
 
     public function pending(): Response
     {
+        $tenants = Tenant::where('status', 'pending')
+            ->with(['domains'])
+            ->paginate(25);
+
+        $tenants->getCollection()->transform(function (Tenant $tenant): Tenant {
+            $ps = ProductSubscription::with('product')
+                ->where('tenant_id', $tenant->id)
+                ->whereIn('status', ['trialing', 'pending', 'active'])
+                ->first();
+            $tenant->pending_product = $ps?->product;
+
+            return $tenant;
+        });
+
         return Inertia::render('Platform/Admin/Onboarding/Pending', [
-            'tenants' => Tenant::where('status', 'pending')->with('domains')->paginate(25),
+            'tenants' => $tenants,
         ]);
     }
 

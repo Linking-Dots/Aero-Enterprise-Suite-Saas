@@ -6,6 +6,7 @@ use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Http\Requests\Admin\TenantStoreRequest;
 use Aero\Platform\Http\Requests\Admin\TenantUpdateRequest;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Product;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantAdminService;
 use Aero\Platform\Services\TenantImpersonationService;
@@ -33,7 +34,10 @@ class TenantController extends Controller
     public function create(): Response
     {
         return Inertia::render('Platform/Admin/Tenants/Create', [
-            'plans' => Plan::where('is_active', true)->orderBy('name')->get(['id', 'name', 'monthly_price']),
+            'plans' => Plan::where('status', 'active')->orderBy('name')->get(['id', 'name', 'price_monthly']),
+            'products' => Product::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'module_code', 'monthly_price']),
         ]);
     }
 
