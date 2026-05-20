@@ -2,14 +2,15 @@
 
 namespace Aero\Platform\Models;
 
+use Aero\Core\Encryption\EncryptedField;
 use Aero\Platform\Database\Factories\TenantFactory;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
@@ -143,8 +144,32 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'pm_type',
             'pm_last_four',
             'stripe_trial_ends_at',
+            // BYOC database credentials (encrypted)
+            'byoc_enabled',
+            'byoc_db_driver',
+            'byoc_db_host',
+            'byoc_db_port',
+            'byoc_db_name',
+            'byoc_db_username',
+            'byoc_db_password',
+            'byoc_db_ssl_mode',
+            'byoc_validated_at',
+            'encryption_key_id',
+            'encryption_driver',
+            // Lifecycle fields
+            'suspended_at',
+            'suspension_reason',
+            'archived_at',
+            'frozen_at',
         ];
     }
+
+    /**
+     * Hidden attributes — never expose raw DB credentials.
+     *
+     * @var array<string>
+     */
+    protected $hidden = ['byoc_db_username', 'byoc_db_password'];
 
     /**
      * The attributes that should be cast.
@@ -167,6 +192,17 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'company_phone_verified_at' => 'datetime',
             'company_email_verification_sent_at' => 'datetime',
             'company_phone_verification_sent_at' => 'datetime',
+            // BYOC
+            'byoc_enabled' => 'boolean',
+            'byoc_db_host' => EncryptedField::class,
+            'byoc_db_name' => EncryptedField::class,
+            'byoc_db_username' => EncryptedField::class,
+            'byoc_db_password' => EncryptedField::class,
+            'byoc_validated_at' => 'datetime',
+            // Lifecycle
+            'suspended_at' => 'datetime',
+            'archived_at' => 'datetime',
+            'frozen_at' => 'datetime',
         ];
     }
 
@@ -224,7 +260,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     /**
      * Get all module add-on subscriptions for this tenant.
      */
-    public function moduleSubscriptions(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function moduleSubscriptions(): MorphMany
     {
         return $this->morphMany(SubscriptionModule::class, 'billable');
     }
@@ -232,7 +268,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     /**
      * Get all invoices for this tenant (polymorphic billable).
      */
-    public function invoices(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function invoices(): MorphMany
     {
         return $this->morphMany(Invoice::class, 'billable')
             ->orderByDesc('created_at');
@@ -251,8 +287,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     /**
      * Get active module codes for this tenant.
-     *
-     * @return \Illuminate\Support\Collection
      */
     public function getActiveModules(): Collection
     {
@@ -612,6 +646,22 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function billingAddress(): HasOne
     {
         return $this->hasOne(TenantBillingAddress::class, 'tenant_id');
+    }
+
+    /**
+     * Get all provisioning log entries for this tenant.
+     */
+    public function provisioningLogs(): HasMany
+    {
+        return $this->hasMany(TenantProvisioningLog::class);
+    }
+
+    /**
+     * Get all data export requests for this tenant.
+     */
+    public function exportRequests(): HasMany
+    {
+        return $this->hasMany(TenantExportRequest::class);
     }
 
     // =========================================================================

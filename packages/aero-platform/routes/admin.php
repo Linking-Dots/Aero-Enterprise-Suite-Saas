@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
-use Aero\Platform\Http\Controllers\Admin\AdminOnboardingController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
+use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenantController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
+use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminP1OnboardingController;
 use Aero\Platform\Http\Controllers\Admin\RateLimitConfigController;
 use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\RoleController;
 use Aero\Platform\Http\Controllers\Admin\SeoController;
 use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
+use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantController;
+use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;
+use Aero\Platform\Http\Controllers\Admin\TenantDomainController as AdminTenantDomainController;
+use Aero\Platform\Http\Controllers\Admin\TenantExportController;
 use Aero\Platform\Http\Controllers\Admin\UserController;
 use Aero\Platform\Http\Controllers\Billing\BillingController;
 use Aero\Platform\Http\Controllers\DomainController;
@@ -1022,76 +1027,76 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         Route::middleware(['hrmac:platform-onboarding'])->prefix('onboarding')->name('admin.onboarding.')->group(function () {
             // Page routes
-            Route::get('/', [AdminOnboardingController::class, 'dashboard'])
+            Route::get('/', [AdminP1OnboardingController::class, 'dashboard'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_dashboard.view'])
                 ->name('dashboard');
 
-            Route::get('/pending', [AdminOnboardingController::class, 'pending'])
+            Route::get('/pending', [AdminP1OnboardingController::class, 'pending'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.view'])
                 ->name('pending');
 
-            Route::get('/provisioning', [AdminOnboardingController::class, 'provisioning'])
+            Route::get('/provisioning', [AdminP1OnboardingController::class, 'provisioning'])
                 ->middleware(['hrmac:platform-onboarding.provisioning.view'])
                 ->name('provisioning');
 
-            Route::get('/trials', [AdminOnboardingController::class, 'trials'])
+            Route::get('/trials', [AdminP1OnboardingController::class, 'trials'])
                 ->middleware(['hrmac:platform-onboarding.trials.view'])
                 ->name('trials');
 
-            Route::get('/analytics', [AdminOnboardingController::class, 'analytics'])
+            Route::get('/analytics', [AdminP1OnboardingController::class, 'analytics'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_analytics.view'])
                 ->name('analytics');
 
-            Route::get('/automation', [AdminOnboardingController::class, 'automation'])
+            Route::get('/automation', [AdminP1OnboardingController::class, 'automation'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_automation.view'])
                 ->name('automation');
 
-            Route::get('/settings', [AdminOnboardingController::class, 'settings'])
+            Route::get('/settings', [AdminP1OnboardingController::class, 'settings'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_settings.view'])
                 ->name('settings');
 
             // API action routes
-            Route::post('/registrations/{tenant}/approve', [AdminOnboardingController::class, 'approve'])
+            Route::post('/registrations/{tenant}/approve', [AdminP1OnboardingController::class, 'approve'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.approve', 'throttle:10,1'])
                 ->name('approve');
 
-            Route::post('/registrations/{tenant}/reject', [AdminOnboardingController::class, 'reject'])
+            Route::post('/registrations/{tenant}/reject', [AdminP1OnboardingController::class, 'reject'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.reject', 'throttle:10,1'])
                 ->name('reject');
 
-            Route::post('/provisioning/{tenant}/retry', [AdminOnboardingController::class, 'retryProvisioning'])
+            Route::post('/provisioning/{tenant}/retry', [AdminP1OnboardingController::class, 'retryProvisioning'])
                 ->middleware(['hrmac:platform-onboarding.provisioning.retry', 'throttle:5,1'])
                 ->name('provisioning.retry');
 
-            Route::post('/trials/{tenant}/extend', [AdminOnboardingController::class, 'extendTrial'])
+            Route::post('/trials/{tenant}/extend', [AdminP1OnboardingController::class, 'extendTrial'])
                 ->middleware(['hrmac:platform-onboarding.trials.extend', 'throttle:5,1'])
                 ->name('trials.extend');
 
-            Route::post('/trials/{tenant}/convert', [AdminOnboardingController::class, 'convertToPaid'])
+            Route::post('/trials/{tenant}/convert', [AdminP1OnboardingController::class, 'convertToPaid'])
                 ->middleware(['hrmac:platform-onboarding.trials.convert', 'throttle:5,1'])
                 ->name('trials.convert');
 
-            Route::post('/trials/{tenant}/cancel', [AdminOnboardingController::class, 'cancelTrial'])
+            Route::post('/trials/{tenant}/cancel', [AdminP1OnboardingController::class, 'cancelTrial'])
                 ->middleware(['hrmac:platform-onboarding.trials.cancel', 'throttle:5,1'])
                 ->name('trials.cancel');
 
-            Route::post('/tenants/{tenant}/suspend', [AdminOnboardingController::class, 'suspend'])
+            Route::post('/tenants/{tenant}/suspend', [AdminP1OnboardingController::class, 'suspend'])
                 ->middleware(['hrmac:platform-onboarding.manage.suspend', 'throttle:5,1'])
                 ->name('tenants.suspend');
 
-            Route::post('/tenants/{tenant}/reactivate', [AdminOnboardingController::class, 'reactivate'])
+            Route::post('/tenants/{tenant}/reactivate', [AdminP1OnboardingController::class, 'reactivate'])
                 ->middleware(['hrmac:platform-onboarding.manage.reactivate', 'throttle:5,1'])
                 ->name('tenants.reactivate');
 
-            Route::post('/tenants/{tenant}/archive', [AdminOnboardingController::class, 'archive'])
+            Route::post('/tenants/{tenant}/archive', [AdminP1OnboardingController::class, 'archive'])
                 ->middleware(['hrmac:platform-onboarding.manage.archive', 'throttle:5,1'])
                 ->name('tenants.archive');
 
-            Route::post('/settings', [AdminOnboardingController::class, 'updateSettings'])
+            Route::post('/settings', [AdminP1OnboardingController::class, 'updateSettings'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_settings.update', 'throttle:10,1'])
                 ->name('settings.update');
 
-            Route::post('/automation/toggle', [AdminOnboardingController::class, 'toggleAutomation'])
+            Route::post('/automation/toggle', [AdminP1OnboardingController::class, 'toggleAutomation'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_automation.manage', 'throttle:10,1'])
                 ->name('automation.toggle');
         });
@@ -1363,6 +1368,97 @@ Route::middleware('admin.domain')->group(function () {
             Route::put('/settings', [SocialAuthController::class, 'updateSettings'])
                 ->middleware(['hrmac:social-authentication.providers.configure'])
                 ->name('settings.update');
+        });
+
+        // =============================================================================
+        // P-1: Tenant Lifecycle Admin Routes
+        // =============================================================================
+
+        // Tenants CRUD + lifecycle actions
+        Route::prefix('tenants')->name('platform.admin.tenants.')->group(function () {
+            Route::get('/', [AdminTenantController::class, 'index'])->name('index')
+                ->middleware('hrmac:tenants.tenant-list.view');
+            Route::get('/create', [AdminTenantController::class, 'create'])->name('create')
+                ->middleware('hrmac:tenants.tenant-list.create');
+            Route::post('/', [AdminTenantController::class, 'store'])->name('store')
+                ->middleware('hrmac:tenants.tenant-list.create');
+            Route::get('/{tenant}', [AdminTenantController::class, 'show'])->name('show')
+                ->middleware('hrmac:tenants.tenant-list.view');
+            Route::put('/{tenant}', [AdminTenantController::class, 'update'])->name('update')
+                ->middleware('hrmac:tenants.tenant-list.edit');
+            Route::delete('/{tenant}', [AdminTenantController::class, 'destroy'])->name('destroy')
+                ->middleware('hrmac:tenants.tenant-list.delete');
+
+            Route::post('/{tenant}/suspend', [AdminTenantController::class, 'suspend'])->name('suspend')
+                ->middleware('hrmac:tenants.tenant-list.suspend');
+            Route::post('/{tenant}/activate', [AdminTenantController::class, 'activate'])->name('activate')
+                ->middleware('hrmac:tenants.tenant-list.activate');
+            Route::post('/{tenant}/freeze', [AdminTenantController::class, 'freeze'])->name('freeze')
+                ->middleware('hrmac:tenant-operations.tenant-freeze.freeze');
+            Route::post('/{tenant}/unfreeze', [AdminTenantController::class, 'unfreeze'])->name('unfreeze')
+                ->middleware('hrmac:tenant-operations.tenant-freeze.unfreeze');
+            Route::post('/{tenant}/archive', [AdminTenantController::class, 'archive'])->name('archive')
+                ->middleware('hrmac:tenant-operations.tenant-archive.archive');
+            Route::post('/{tenant}/restore', [AdminTenantController::class, 'restore'])->name('restore')
+                ->middleware('hrmac:tenant-operations.tenant-archive.restore');
+            Route::post('/{tenant}/impersonate', [AdminTenantController::class, 'impersonate'])->name('impersonate')
+                ->middleware('hrmac:tenants.tenant-list.impersonate');
+
+            // Domains
+            Route::get('/{tenant}/domains', [AdminTenantDomainController::class, 'index'])->name('domains.index')
+                ->middleware('hrmac:tenants.tenant-domains.view');
+            Route::post('/{tenant}/domains', [AdminTenantDomainController::class, 'store'])->name('domains.store')
+                ->middleware('hrmac:tenants.tenant-domains.manage');
+            Route::delete('/{tenant}/domains/{domain}', [AdminTenantDomainController::class, 'destroy'])->name('domains.destroy')
+                ->middleware('hrmac:tenants.tenant-domains.manage');
+            Route::post('/{tenant}/domains/{domain}/verify', [AdminTenantDomainController::class, 'verify'])->name('domains.verify')
+                ->middleware('hrmac:tenants.tenant-domains.manage');
+
+            // Databases
+            Route::get('/{tenant}/database', [TenantDatabaseController::class, 'index'])->name('database.index')
+                ->middleware('hrmac:tenants.tenant-databases.view');
+            Route::post('/{tenant}/database/migrate', [TenantDatabaseController::class, 'migrate'])->name('database.migrate')
+                ->middleware('hrmac:tenants.tenant-databases.migrate');
+            Route::post('/{tenant}/database/backup', [TenantDatabaseController::class, 'backup'])->name('database.backup')
+                ->middleware('hrmac:tenants.tenant-databases.backup');
+
+            // Export
+            Route::post('/{tenant}/export', [TenantExportController::class, 'request'])->name('export.request')
+                ->middleware('hrmac:tenant-operations.tenant-export.request');
+            Route::get('/{tenant}/export/status', [TenantExportController::class, 'status'])->name('export.status')
+                ->middleware('hrmac:tenant-operations.tenant-export.view');
+            Route::get('/exports/{exportRequest}/download', [TenantExportController::class, 'download'])->name('export.download')
+                ->middleware('hrmac:tenant-operations.tenant-export.download');
+        });
+
+        // Bulk operations
+        Route::prefix('tenants/bulk')->name('platform.admin.tenants.bulk.')->group(function () {
+            Route::get('/', [AdminBulkTenantController::class, 'history'])->name('history')
+                ->middleware('hrmac:tenant-operations.bulk-actions.bulk-suspend');
+            Route::post('/', [AdminBulkTenantController::class, 'execute'])->name('execute')
+                ->middleware('hrmac:tenant-operations.bulk-actions.bulk-suspend');
+        });
+
+        // Onboarding (P-1)
+        Route::prefix('onboarding/p1')->name('platform.admin.onboarding.p1.')->group(function () {
+            Route::get('/dashboard', [AdminP1OnboardingController::class, 'dashboard'])->name('dashboard')
+                ->middleware('hrmac:platform-onboarding.onboarding-dashboard.view');
+            Route::get('/pending', [AdminP1OnboardingController::class, 'pending'])->name('pending')
+                ->middleware('hrmac:platform-onboarding.pending-approvals.view');
+            Route::post('/{tenant}/approve', [AdminP1OnboardingController::class, 'approve'])->name('approve')
+                ->middleware('hrmac:platform-onboarding.pending-approvals.approve');
+            Route::post('/{tenant}/reject', [AdminP1OnboardingController::class, 'reject'])->name('reject')
+                ->middleware('hrmac:platform-onboarding.pending-approvals.reject');
+            Route::get('/provisioning', [AdminP1OnboardingController::class, 'provisioning'])->name('provisioning')
+                ->middleware('hrmac:platform-onboarding.provisioning.view');
+            Route::post('/{tenant}/retry', [AdminP1OnboardingController::class, 'retryProvisioning'])->name('retry')
+                ->middleware('hrmac:platform-onboarding.provisioning.retry');
+            Route::get('/trials', [AdminP1OnboardingController::class, 'trials'])->name('trials')
+                ->middleware('hrmac:platform-onboarding.trials.view');
+            Route::post('/{tenant}/extend', [AdminP1OnboardingController::class, 'extendTrial'])->name('extend')
+                ->middleware('hrmac:platform-onboarding.trials.extend');
+            Route::post('/{tenant}/convert', [AdminP1OnboardingController::class, 'convertTrial'])->name('convert')
+                ->middleware('hrmac:platform-onboarding.trials.convert');
         });
 
         // =========================================================================
