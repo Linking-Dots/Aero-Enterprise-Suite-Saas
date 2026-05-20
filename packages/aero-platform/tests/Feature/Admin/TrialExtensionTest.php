@@ -9,36 +9,40 @@ use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantProvisioningService;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
-/**
- * P-1 — Trial Extension (OnboardingController + TenantProvisioningService)
- *
- * Covers:
- *  - Extending a trial from a future date adds the exact number of days
- *  - Extending a trial when stripe_trial_ends_at is null uses today as the base
- *  - Multiple consecutive extensions accumulate correctly
- *  - Days=0 is rejected by validation (min:1)
- *  - Days=91 is rejected by validation (max:90)
- *  - Extending writes TENANT_TRIAL_EXTENDED to platform_audit_logs
- *  - convertTrial clears stripe_trial_ends_at and sets status active
- *  - Unauthenticated requests to extend are redirected
- *
- * The Inertia route is: POST /admin/onboarding/p1/{tenant}/extend
- * Named: platform.admin.onboarding.p1.extend
- */
 class TrialExtensionTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations {
+        runDatabaseMigrations as baseRunDatabaseMigrations;
+    }
 
     protected LandlordUser $admin;
+
+    public function runDatabaseMigrations(): void
+    {
+        $this->beforeRefreshingDatabase();
+        $this->refreshTestDatabase();
+        $this->afterRefreshingDatabase();
+    }
+
+    private function shareSqliteAcrossConnections(): void
+    {
+        $sqliteConfig = ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'foreign_key_constraints' => true];
+        config(['database.connections.mysql' => $sqliteConfig, 'database.connections.central' => $sqliteConfig, 'tenancy.database.central_connection' => 'sqlite']);
+        $this->app['db']->purge('mysql');
+        $this->app['db']->purge('central');
+        $pdo = $this->app['db']->connection('sqlite')->getPdo();
+        $this->app['db']->connection('mysql')->setPdo($pdo);
+        $this->app['db']->connection('central')->setPdo($pdo);
+    }
 
     protected function setUp(): void
     {
         parent::setUp();
-
+        $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
         $role = Role::firstOrCreate(

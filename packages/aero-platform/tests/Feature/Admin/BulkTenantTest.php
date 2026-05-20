@@ -9,34 +9,41 @@ use Aero\Platform\Jobs\ExecuteBulkTenantAction;
 use Aero\Platform\Models\BulkOperation;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Tenant;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
-/**
- * P-1 — Bulk Tenant Operations (BulkTenantController + BulkTenantService)
- *
- * Covers:
- *  - Bulk suspend dispatches one ExecuteBulkTenantAction per selected tenant
- *  - BulkOperation record is created with correct total count
- *  - Validation blocks invalid input (missing type, empty tenant list)
- *  - Unknown tenant IDs are rejected by the validator
- *  - Suspend action requires a reason field
- *  - Unauthenticated requests are redirected
- *
- * Uses Bus::fake() to prevent jobs from executing while still asserting dispatch.
- */
 class BulkTenantTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations {
+        runDatabaseMigrations as baseRunDatabaseMigrations;
+    }
 
     protected LandlordUser $admin;
+
+    public function runDatabaseMigrations(): void
+    {
+        $this->beforeRefreshingDatabase();
+        $this->refreshTestDatabase();
+        $this->afterRefreshingDatabase();
+    }
+
+    private function shareSqliteAcrossConnections(): void
+    {
+        $sqliteConfig = ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'foreign_key_constraints' => true];
+        config(['database.connections.mysql' => $sqliteConfig, 'database.connections.central' => $sqliteConfig, 'tenancy.database.central_connection' => 'sqlite']);
+        $this->app['db']->purge('mysql');
+        $this->app['db']->purge('central');
+        $pdo = $this->app['db']->connection('sqlite')->getPdo();
+        $this->app['db']->connection('mysql')->setPdo($pdo);
+        $this->app['db']->connection('central')->setPdo($pdo);
+    }
 
     protected function setUp(): void
     {
         parent::setUp();
-
+        $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
         $role = Role::firstOrCreate(

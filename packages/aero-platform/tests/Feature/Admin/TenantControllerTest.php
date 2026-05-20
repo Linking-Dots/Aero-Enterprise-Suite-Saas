@@ -11,36 +11,48 @@ use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantAdminService;
 use Aero\Platform\Services\TenantImpersonationService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
 /**
  * P-1 — Admin TenantController (Inertia routes)
  *
- * Covers:
- *  - index renders with correct Inertia component and props
- *  - status filter narrows the tenants list
- *  - suspend happy-path → status = suspended in DB + audit entry in platform_audit_logs
- *  - suspend blocked when tenant is already suspended
- *  - BYOC credentials are stored encrypted (plaintext absent from DB)
- *  - impersonate logs TENANT_IMPERSONATION_STARTED audit event
- *  - unauthenticated requests are redirected
- *
  * Auth pattern: actingAs($landlordUser, 'landlord').
  * Gate::before(fn () => true) bypasses HRMAC middleware for all tests.
  */
 class TenantControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations {
+        runDatabaseMigrations as baseRunDatabaseMigrations;
+    }
 
     protected LandlordUser $admin;
 
     protected Plan $plan;
 
+    public function runDatabaseMigrations(): void
+    {
+        $this->beforeRefreshingDatabase();
+        $this->refreshTestDatabase();
+        $this->afterRefreshingDatabase();
+    }
+
+    private function shareSqliteAcrossConnections(): void
+    {
+        $sqliteConfig = ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'foreign_key_constraints' => true];
+        config(['database.connections.mysql' => $sqliteConfig, 'database.connections.central' => $sqliteConfig, 'tenancy.database.central_connection' => 'sqlite']);
+        $this->app['db']->purge('mysql');
+        $this->app['db']->purge('central');
+        $pdo = $this->app['db']->connection('sqlite')->getPdo();
+        $this->app['db']->connection('mysql')->setPdo($pdo);
+        $this->app['db']->connection('central')->setPdo($pdo);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->shareSqliteAcrossConnections();
 
         // Bypass all HRMAC / Gate checks — the unit under test is controller logic.
         Gate::before(fn () => true);
