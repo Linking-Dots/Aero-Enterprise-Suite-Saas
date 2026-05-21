@@ -83,12 +83,14 @@ Declared in `packages/aero-platform/config/module.php`. Routes reference codes a
 
 ```text
 platform_audit_logs
-  id, event, action, actor_id, actor_type, subject_id, subject_type,
-  description, metadata (json), ip_address, user_agent, created_at
+  id, event_type, action, actor_id, actor_name, actor_ip, actor_user_agent,
+  subject_type, subject_id, subject_label, description,
+  before_state, after_state, changed_fields,
+  session_id, request_id, url, http_method, metadata, anonymized_at, created_at
 
 platform_access_logs
-  id, actor_id, actor_type, subject_id, subject_type, field_accessed,
-  ip_address, user_agent, created_at
+  id, actor_id, actor_name, actor_ip, actor_user_agent,
+  resource_type, resource_id, subject_label, fields_accessed (json), created_at
 
 error_logs
   id, tenant_id (nullable), type, message, file, line, trace (text),
@@ -104,28 +106,40 @@ error_logs
 
 ```php
 // packages/aero-platform/src/Models/PlatformAuditLog.php
+// NOTE: This model is PRE-CREATED by the EAM fix commit before P-5.
+// If the file already exists, skip creating it — just verify the schema matches.
 namespace Aero\Platform\Models;
 
-use Aero\Contracts\Models\CentralModel;
+use Aero\Core\Models\CentralModel;
 
 class PlatformAuditLog extends CentralModel
 {
     protected $table = 'platform_audit_logs';
-    public $timestamps = false;
 
+    public const UPDATED_AT = null; // immutable — no updated_at
+
+    // Canonical schema (matches platform_audit_logs migration 2026_05_14_000002)
     protected $fillable = [
-        'event','action','actor_id','actor_type','subject_id','subject_type',
-        'description','metadata','ip_address','user_agent','created_at',
+        'actor_id', 'actor_name', 'actor_ip', 'actor_user_agent',
+        'event_type', 'action', 'description',
+        'subject_type', 'subject_id', 'subject_label',
+        'before_state', 'after_state', 'changed_fields',
+        'session_id', 'request_id', 'url', 'http_method',
+        'metadata', 'anonymized_at',
     ];
 
     protected $casts = [
-        'metadata'   => 'array',
-        'created_at' => 'datetime',
+        'before_state'   => 'array',
+        'after_state'    => 'array',
+        'changed_fields' => 'array',
+        'metadata'       => 'array',
+        'created_at'     => 'datetime',
+        'anonymized_at'  => 'datetime',
     ];
 
     public function scopeEvent($q, ?string $event)
     {
-        return $event ? $q->where('event', $event) : $q;
+        return $event ? $q->where('event_type', $event) : $q;
     }
 
     public function scopeActor($q, ?int $actorId)
@@ -159,8 +173,8 @@ class PlatformAccessLog extends CentralModel
     public $timestamps = false;
 
     protected $fillable = [
-        'actor_id','actor_type','subject_id','subject_type',
-        'field_accessed','ip_address','user_agent','created_at',
+        'actor_id','actor_name','subject_id','subject_type',
+        'field_accessed','actor_ip','actor_user_agent','created_at',
     ];
 
     protected $casts = ['created_at' => 'datetime'];
@@ -265,7 +279,7 @@ class AuditLogAdminService
     public function list(array $filters)
     {
         return PlatformAuditLog::query()
-            ->event($filters['event'] ?? null)
+            ->eventType($filters['event_type'] ?? null)
             ->actor($filters['actor_id'] ?? null)
             ->subjectType($filters['subject_type'] ?? null)
             ->dateRange($filters['from'] ?? null, $filters['to'] ?? null)
@@ -282,7 +296,7 @@ class AuditLogAdminService
     public function export(array $filters, int $actorId): StreamedResponse
     {
         $rows = PlatformAuditLog::query()
-            ->event($filters['event'] ?? null)
+            ->eventType($filters['event_type'] ?? null)
             ->actor($filters['actor_id'] ?? null)
             ->subjectType($filters['subject_type'] ?? null)
             ->dateRange($filters['from'] ?? null, $filters['to'] ?? null)
@@ -301,13 +315,13 @@ class AuditLogAdminService
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id','created_at','event','action','actor_id','subject_type','subject_id','description','ip_address']);
+            fputcsv($out, ['id','created_at','event_type','action','actor_id','subject_type','subject_id','description','actor_ip']);
             foreach ($rows as $r) {
                 fputcsv($out, [
                     $r->id, optional($r->created_at)->toIso8601String(),
                     $r->event, $r->action, $r->actor_id,
                     $r->subject_type, $r->subject_id,
-                    $r->description, $r->ip_address,
+                    $r->description, $r->actor_ip,
                 ]);
             }
             fclose($out);
@@ -376,12 +390,12 @@ class AccessLogAdminService
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id','created_at','actor_id','subject_type','subject_id','field_accessed','ip_address']);
+            fputcsv($out, ['id','created_at','actor_id','subject_type','subject_id','field_accessed','actor_ip']);
             foreach ($rows as $r) {
                 fputcsv($out, [
                     $r->id, optional($r->created_at)->toIso8601String(),
                     $r->actor_id, $r->subject_type, $r->subject_id,
-                    $r->field_accessed, $r->ip_address,
+                    $r->field_accessed, $r->actor_ip,
                 ]);
             }
             fclose($out);
@@ -1110,11 +1124,11 @@ export default function AuditLogsIndex() {
             <div className="space-y-2 text-sm">
               <div><b>Event:</b> {selected?.event}</div>
               <div><b>Action:</b> {selected?.action}</div>
-              <div><b>Actor:</b> {selected?.actor_type} #{selected?.actor_id}</div>
+              <div><b>Actor:</b> {selected?.actor_name} #{selected?.actor_id}</div>
               <div><b>Subject:</b> {selected?.subject_type} #{selected?.subject_id}</div>
               <div><b>Description:</b> {selected?.description}</div>
-              <div><b>IP:</b> {selected?.ip_address}</div>
-              <div><b>User Agent:</b> {selected?.user_agent}</div>
+              <div><b>IP:</b> {selected?.actor_ip}</div>
+              <div><b>User Agent:</b> {selected?.actor_user_agent}</div>
               {selected?.metadata && (
                 <pre className="bg-default-100 p-2 rounded text-xs overflow-auto">
                   {JSON.stringify(selected.metadata, null, 2)}
@@ -1215,10 +1229,10 @@ export default function AccessLogsIndex() {
                 {logs.data.map((l) => (
                   <TableRow key={l.id}>
                     <TableCell>{l.created_at}</TableCell>
-                    <TableCell>{l.actor_type} #{l.actor_id}</TableCell>
+                    <TableCell>{l.actor_name} #{l.actor_id}</TableCell>
                     <TableCell>{l.subject_type} #{l.subject_id}</TableCell>
                     <TableCell><Chip size="sm" color={pii ? 'warning' : 'default'} variant="flat">{l.field_accessed}</Chip></TableCell>
-                    <TableCell>{l.ip_address}</TableCell>
+                    <TableCell>{l.actor_ip}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
