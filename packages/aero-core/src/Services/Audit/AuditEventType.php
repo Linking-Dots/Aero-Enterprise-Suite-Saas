@@ -177,4 +177,50 @@ enum AuditEventType: string
     case DUNNING_RULE_UPSERTED = 'platform.dunning.rule_upserted';
     case DUNNING_PAYMENT_RETRY = 'platform.dunning.payment_retry';
     case DUNNING_MARKED_UNCOLLECTIBLE = 'platform.dunning.marked_uncollectible';
+
+    // P-9 — Tax Engine
+    case TAX_RATE_UPSERTED = 'platform.tax.rate_upserted';
+    case TAX_PROVIDER_CONFIGURED = 'platform.tax.provider_configured';
+    case TAX_REPORT_GENERATED = 'platform.tax.report_generated';
+    case TAX_REPORT_EXPORTED = 'platform.tax.report_exported';
+    case TAX_W9_GENERATED = 'platform.tax.w9_generated';
+
+    // P-9 — Multi-Currency
+    case CURRENCY_UPSERTED = 'platform.currency.upserted';
+    case EXCHANGE_RATES_SYNCED = 'platform.currency.rates_synced';
+    case EXCHANGE_RATE_SET_MANUAL = 'platform.currency.rate_set_manual';
+    case REGIONAL_PRICE_UPSERTED = 'platform.currency.regional_price_upserted';
+
+    // P-9 — Invoicing Engine
+    case INVOICE_CREATED = 'platform.invoice.created';
+    case INVOICE_UPDATED = 'platform.invoice.updated';
+    case INVOICE_SENT = 'platform.invoice.sent';
+    case INVOICE_VOIDED = 'platform.invoice.voided';
+    case INVOICE_PDF_DOWNLOADED = 'platform.invoice.pdf_downloaded';
+    case INVOICE_SETTINGS_UPDATED = 'platform.invoice.settings_updated';
+    case INVOICE_TEMPLATE_UPSERTED = 'platform.invoice.template_upserted';
+    case INVOICE_BRANDING_UPDATED = 'platform.invoice.branding_updated';
+
+    // P-9 — Payment Methods Admin
+    case PAYMENT_METHOD_ADDED = 'platform.payment_method.added';
+    case PAYMENT_METHOD_REMOVED = 'platform.payment_method.removed';
+    case PAYMENT_METHOD_SET_DEFAULT = 'platform.payment_method.set_default';
+    case THREE_DS_CONFIG_UPDATED = 'platform.payment_method.3ds_config_updated';
+
+    // P-9 — Subscription Lifecycle
+    case SUBSCRIPTION_TRIAL_EXTENDED = 'platform.subscription.trial_extended';
+    case SUBSCRIPTION_TRIAL_CONVERTED = 'platform.subscription.trial_converted';
+    case SUBSCRIPTION_PLAN_CHANGED = 'platform.subscription.plan_changed';
+    case SUBSCRIPTION_PAUSED = 'platform.subscription.paused';
+    case SUBSCRIPTION_RESUMED = 'platform.subscription.resumed';
+    case SUBSCRIPTION_CANCELLATION_FLOW_UPDATED = 'platform.subscription.cancellation_flow_updated';
+
+    // P-9 — Reseller Partners
+    case PARTNER_CREATED = 'platform.partner.created';
+    case PARTNER_UPDATED = 'platform.partner.updated';
+    case PARTNER_APPROVED = 'platform.partner.approved';
+    case PARTNER_SUSPENDED = 'platform.partner.suspended';
+    case PARTNER_COMMISSION_PAYOUT_PROCESSED = 'platform.partner.commission_payout_processed';
+    case PARTNER_TENANT_REASSIGNED = 'platform.partner.tenant_reassigned';
+    case PARTNER_PORTAL_CONFIGURED = 'platform.partner.portal_configured';
 }

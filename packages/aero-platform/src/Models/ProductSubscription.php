@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\Platform\Models;
 
+use Aero\Platform\Contracts\BillableSubscription as BillableSubscriptionContract;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProductSubscription extends CentralModel
+class ProductSubscription extends CentralModel implements BillableSubscriptionContract
 {
     use HasUuids, SoftDeletes;
 
@@ -19,14 +23,14 @@ class ProductSubscription extends CentralModel
     ];
 
     protected $casts = [
-        'amount'          => 'decimal:2',
+        'amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'trial_starts_at' => 'datetime',
-        'trial_ends_at'   => 'datetime',
-        'starts_at'       => 'datetime',
-        'ends_at'         => 'datetime',
-        'cancelled_at'    => 'datetime',
-        'metadata'        => 'array',
+        'trial_ends_at' => 'datetime',
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     public function product(): BelongsTo
@@ -52,20 +56,44 @@ class ProductSubscription extends CentralModel
         return $this->isActive() || $this->isTrialing();
     }
 
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active')
-            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()));
+            ->where(fn (Builder $q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()));
     }
 
-    public function scopeHasAccess($query)
+    public function scopeHasAccess(Builder $query): Builder
     {
-        return $query->where(function ($q) {
+        return $query->where(function (Builder $q) {
             $q->where('status', 'active')
-              ->where(fn ($sub) => $sub->whereNull('ends_at')->orWhere('ends_at', '>', now()));
-        })->orWhere(function ($q) {
+                ->where(fn (Builder $sub) => $sub->whereNull('ends_at')->orWhere('ends_at', '>', now()));
+        })->orWhere(function (Builder $q) {
             $q->where('status', 'trialing')
-              ->where('trial_ends_at', '>', now());
+                ->where('trial_ends_at', '>', now());
         });
+    }
+
+    // =========================================================================
+    // BillableSubscription interface implementation
+    // =========================================================================
+
+    public function billableType(): string
+    {
+        return 'product';
+    }
+
+    public function getTenantId(): string
+    {
+        return (string) $this->tenant_id;
+    }
+
+    public function getStatus(): string
+    {
+        return (string) $this->status;
+    }
+
+    public function getTrialEndsAt(): ?Carbon
+    {
+        return $this->trial_ends_at instanceof Carbon ? $this->trial_ends_at : null;
     }
 }

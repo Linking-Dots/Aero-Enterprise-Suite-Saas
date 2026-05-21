@@ -2,6 +2,7 @@
 
 namespace Aero\Platform\Models;
 
+use Aero\Platform\Contracts\BillableSubscription as BillableSubscriptionContract;
 use Aero\Platform\Observers\SubscriptionImmutableObserver;
 use Carbon\Carbon;
 use Database\Factories\SubscriptionFactory;
@@ -33,7 +34,7 @@ use Laravel\Cashier\Subscription as CashierSubscription;
  * @property Carbon|null $ends_at Subscription end date
  * @property string|null $stripe_id Stripe subscription ID (from Cashier)
  */
-class Subscription extends CashierSubscription
+class Subscription extends CashierSubscription implements BillableSubscriptionContract
 {
     /** @use HasFactory<SubscriptionFactory> */
     use HasFactory, HasUuids, SoftDeletes;
@@ -323,6 +324,30 @@ class Subscription extends CashierSubscription
             'cancelled_at' => now(),
             'cancellation_reason' => $reason,
         ]);
+    }
+
+    // =========================================================================
+    // BillableSubscription interface implementation
+    // =========================================================================
+
+    public function billableType(): string
+    {
+        return 'plan';
+    }
+
+    public function getTenantId(): string
+    {
+        return (string) $this->billable_id;
+    }
+
+    public function getStatus(): string
+    {
+        return (string) $this->status;
+    }
+
+    public function getTrialEndsAt(): ?Carbon
+    {
+        return $this->trial_ends_at instanceof Carbon ? $this->trial_ends_at : null;
     }
 
     /**

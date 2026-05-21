@@ -23,6 +23,7 @@ use Aero\Platform\Http\Controllers\Admin\EmailBlastController;
 use Aero\Platform\Http\Controllers\Admin\ErrorLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\ExperimentController;
 use Aero\Platform\Http\Controllers\Admin\FeatureFlagController;
+use Aero\Platform\Http\Controllers\Admin\Finance;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use Aero\Platform\Http\Controllers\Admin\LandlordRoleController;
 use Aero\Platform\Http\Controllers\Admin\LandlordUserController;
@@ -1888,6 +1889,231 @@ Route::middleware('admin.domain')->group(function () {
             Route::post('/{id}/apply', [CreditNoteController::class, 'apply'])
                 ->name('apply')
                 ->middleware('hrmac:refunds-credits.credit-notes.apply');
+        });
+
+        // =========================================================================
+        // P-9: Finance & Payments — Tax Engine
+        // =========================================================================
+        Route::prefix('tax')->name('platform.admin.tax.')->group(function () {
+            // Static routes MUST precede parameterised ones
+            Route::get('/reports', [Finance\TaxController::class, 'reports'])
+                ->name('reports.index')
+                ->middleware('hrmac:tax-engine.tax-reports.view');
+            Route::post('/reports/generate', [Finance\TaxController::class, 'generateReport'])
+                ->name('reports.generate')
+                ->middleware('hrmac:tax-engine.tax-reports.generate');
+            Route::get('/reports/export', [Finance\TaxController::class, 'exportReport'])
+                ->name('reports.export')
+                ->middleware('hrmac:tax-engine.tax-reports.export');
+            Route::get('/providers', [Finance\TaxController::class, 'providers'])
+                ->name('providers.index')
+                ->middleware('hrmac:tax-engine.tax-providers.view');
+            Route::put('/providers/{code}', [Finance\TaxController::class, 'configureProvider'])
+                ->name('providers.configure')
+                ->middleware('hrmac:tax-engine.tax-providers.configure');
+            Route::post('/validate', [Finance\TaxController::class, 'validateId'])
+                ->name('validate')
+                ->middleware('hrmac:tax-engine.tax-id-validation.validate');
+            Route::get('/w9', [Finance\TaxController::class, 'w9'])
+                ->name('w9.index')
+                ->middleware('hrmac:tax-engine.w9-1099.view');
+            Route::post('/w9/{tenantId}/generate', [Finance\TaxController::class, 'generateW9'])
+                ->name('w9.generate')
+                ->middleware('hrmac:tax-engine.w9-1099.generate');
+            Route::get('/rates', [Finance\TaxController::class, 'rates'])
+                ->name('rates.index')
+                ->middleware('hrmac:tax-engine.tax-rates.view');
+            Route::post('/rates', [Finance\TaxController::class, 'upsertRate'])
+                ->name('rates.store')
+                ->middleware('hrmac:tax-engine.tax-rates.manage');
+            Route::put('/rates/{id}', [Finance\TaxController::class, 'upsertRate'])
+                ->name('rates.update')
+                ->middleware('hrmac:tax-engine.tax-rates.manage');
+        });
+
+        // =========================================================================
+        // P-9: Finance & Payments — Multi-Currency
+        // =========================================================================
+        Route::prefix('currencies')->name('platform.admin.currencies.')->group(function () {
+            // Static routes before parameterised
+            Route::get('/rates', [Finance\CurrencyController::class, 'index'])
+                ->name('rates.index')
+                ->middleware('hrmac:multi-currency.exchange-rates.view');
+            Route::post('/rates/sync', [Finance\CurrencyController::class, 'syncRates'])
+                ->name('rates.sync')
+                ->middleware('hrmac:multi-currency.exchange-rates.sync');
+            Route::get('/regional', [Finance\CurrencyController::class, 'regionalPricing'])
+                ->name('regional.index')
+                ->middleware('hrmac:multi-currency.regional-pricing.view');
+            Route::post('/regional', [Finance\CurrencyController::class, 'upsertRegionalPrice'])
+                ->name('regional.store')
+                ->middleware('hrmac:multi-currency.regional-pricing.manage');
+            Route::get('/', [Finance\CurrencyController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:multi-currency.currencies.view');
+            Route::post('/', [Finance\CurrencyController::class, 'upsert'])
+                ->name('store')
+                ->middleware('hrmac:multi-currency.currencies.manage');
+            Route::put('/{id}', [Finance\CurrencyController::class, 'upsert'])
+                ->name('update')
+                ->middleware('hrmac:multi-currency.currencies.manage');
+            Route::post('/{id}/rate', [Finance\CurrencyController::class, 'setManualRate'])
+                ->name('rate.manual')
+                ->middleware('hrmac:multi-currency.exchange-rates.manual');
+        });
+
+        // =========================================================================
+        // P-9: Finance & Payments — Invoicing Engine
+        // =========================================================================
+        Route::prefix('invoices')->name('platform.admin.invoicing.')->group(function () {
+            // Static routes before parameterised
+            Route::get('/settings', [Finance\InvoicingController::class, 'settings'])
+                ->name('settings')
+                ->middleware('hrmac:invoicing.invoice-numbering.manage');
+            Route::put('/settings', [Finance\InvoicingController::class, 'updateSettings'])
+                ->name('settings.update')
+                ->middleware('hrmac:invoicing.invoice-numbering.manage');
+            Route::get('/templates', [Finance\InvoicingController::class, 'templates'])
+                ->name('templates.index')
+                ->middleware('hrmac:invoicing.invoice-templates.view');
+            Route::post('/templates', [Finance\InvoicingController::class, 'upsertTemplate'])
+                ->name('templates.store')
+                ->middleware('hrmac:invoicing.invoice-templates.manage');
+            Route::put('/templates/{id}', [Finance\InvoicingController::class, 'upsertTemplate'])
+                ->name('templates.update')
+                ->middleware('hrmac:invoicing.invoice-templates.manage');
+            Route::put('/branding', [Finance\InvoicingController::class, 'updateBranding'])
+                ->name('branding.update')
+                ->middleware('hrmac:invoicing.invoice-branding.manage');
+            Route::get('/', [Finance\InvoicingController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:invoicing.invoices.view');
+            Route::post('/', [Finance\InvoicingController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:invoicing.invoices.create');
+            Route::put('/{id}', [Finance\InvoicingController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:invoicing.invoices.update');
+            Route::post('/{id}/send', [Finance\InvoicingController::class, 'send'])
+                ->name('send')
+                ->middleware('hrmac:invoicing.invoices.send');
+            Route::post('/{id}/void', [Finance\InvoicingController::class, 'void'])
+                ->name('void')
+                ->middleware('hrmac:invoicing.invoices.void');
+            Route::post('/{id}/mark-paid', [Finance\InvoicingController::class, 'markPaid'])
+                ->name('mark-paid')
+                ->middleware('hrmac:invoicing.invoices.mark-paid');
+            Route::get('/{id}/pdf', [Finance\InvoicingController::class, 'downloadPdf'])
+                ->name('pdf')
+                ->middleware('hrmac:invoicing.invoices.download-pdf');
+        });
+
+        // =========================================================================
+        // P-9: Finance & Payments — Payment Methods Admin
+        // =========================================================================
+        Route::prefix('payment-methods')->name('platform.admin.payment-methods.')->group(function () {
+            // Static 3DS routes MUST precede parameterised /{tenantId} routes
+            Route::get('/3ds', [Finance\PaymentMethodController::class, 'threeDsConfig'])
+                ->name('3ds.index')
+                ->middleware('hrmac:payment-methods.sca-3ds.view');
+            Route::put('/3ds', [Finance\PaymentMethodController::class, 'updateThreeDsConfig'])
+                ->name('3ds.update')
+                ->middleware('hrmac:payment-methods.sca-3ds.configure');
+            Route::get('/{tenantId}', [Finance\PaymentMethodController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:payment-methods.pm-list.view');
+            Route::post('/{tenantId}', [Finance\PaymentMethodController::class, 'add'])
+                ->name('store')
+                ->middleware('hrmac:payment-methods.pm-list.add');
+            Route::put('/{tenantId}/{id}', [Finance\PaymentMethodController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:payment-methods.pm-list.update');
+            Route::delete('/{tenantId}/{id}', [Finance\PaymentMethodController::class, 'remove'])
+                ->name('destroy')
+                ->middleware('hrmac:payment-methods.pm-list.remove');
+            Route::post('/{tenantId}/{id}/default', [Finance\PaymentMethodController::class, 'setDefault'])
+                ->name('set-default')
+                ->middleware('hrmac:payment-methods.pm-list.set-default');
+        });
+
+        // =========================================================================
+        // P-9: Finance & Payments — Subscription Lifecycle
+        // =========================================================================
+        Route::prefix('lifecycle')->name('platform.admin.subscription-lifecycle.')->group(function () {
+            // Static routes before parameterised
+            Route::get('/trials', [Finance\SubscriptionLifecycleController::class, 'trials'])
+                ->name('trials.index')
+                ->middleware('hrmac:subscription-lifecycle.trials.view');
+            Route::get('/plan-changes', [Finance\SubscriptionLifecycleController::class, 'trials'])
+                ->name('plan-changes.index')
+                ->middleware('hrmac:subscription-lifecycle.plan-changes.view');
+            Route::get('/cancellations', [Finance\SubscriptionLifecycleController::class, 'cancellations'])
+                ->name('cancellations.index')
+                ->middleware('hrmac:subscription-lifecycle.cancellations.view');
+            Route::put('/cancellations', [Finance\SubscriptionLifecycleController::class, 'updateCancellationFlow'])
+                ->name('cancellations.configure')
+                ->middleware('hrmac:subscription-lifecycle.cancellations.configure');
+            Route::put('/proration', [Finance\SubscriptionLifecycleController::class, 'previewProration'])
+                ->name('proration.configure')
+                ->middleware('hrmac:subscription-lifecycle.proration.configure');
+            Route::get('/proration/{id}/preview', [Finance\SubscriptionLifecycleController::class, 'previewProration'])
+                ->name('proration.preview')
+                ->middleware('hrmac:subscription-lifecycle.proration.preview');
+            Route::post('/trials/{id}/extend', [Finance\SubscriptionLifecycleController::class, 'extend'])
+                ->name('trials.extend')
+                ->middleware('hrmac:subscription-lifecycle.trials.extend');
+            Route::post('/trials/{id}/convert', [Finance\SubscriptionLifecycleController::class, 'convert'])
+                ->name('trials.convert')
+                ->middleware('hrmac:subscription-lifecycle.trials.convert');
+            Route::post('/plan-changes/{id}', [Finance\SubscriptionLifecycleController::class, 'executeChange'])
+                ->name('plan-changes.execute')
+                ->middleware('hrmac:subscription-lifecycle.plan-changes.execute');
+            Route::post('/{id}/pause', [Finance\SubscriptionLifecycleController::class, 'pause'])
+                ->name('pause')
+                ->middleware('hrmac:subscription-lifecycle.pause-resume.pause');
+            Route::post('/{id}/resume', [Finance\SubscriptionLifecycleController::class, 'resume'])
+                ->name('resume')
+                ->middleware('hrmac:subscription-lifecycle.pause-resume.resume');
+        });
+
+        // =========================================================================
+        // P-9: Finance & Payments — Reseller Partners
+        // =========================================================================
+        Route::prefix('partners')->name('platform.admin.partners.')->group(function () {
+            // Static routes before parameterised
+            Route::post('/tenants/{tenantId}/reassign', [Finance\PartnerController::class, 'reassign'])
+                ->name('tenants.reassign')
+                ->middleware('hrmac:reseller-partners.partner-tenants.reassign');
+            Route::get('/', [Finance\PartnerController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:reseller-partners.partners.view');
+            Route::post('/', [Finance\PartnerController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:reseller-partners.partners.create');
+            Route::put('/{id}', [Finance\PartnerController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:reseller-partners.partners.update');
+            Route::post('/{id}/approve', [Finance\PartnerController::class, 'approve'])
+                ->name('approve')
+                ->middleware('hrmac:reseller-partners.partners.approve');
+            Route::post('/{id}/suspend', [Finance\PartnerController::class, 'suspend'])
+                ->name('suspend')
+                ->middleware('hrmac:reseller-partners.partners.suspend');
+            Route::get('/{id}', [Finance\PartnerController::class, 'show'])
+                ->name('show')
+                ->middleware('hrmac:reseller-partners.partners.view');
+            Route::get('/{id}/commissions', [Finance\PartnerController::class, 'commissions'])
+                ->name('commissions.index')
+                ->middleware('hrmac:reseller-partners.partner-commissions.view');
+            Route::post('/{id}/commissions/payout', [Finance\PartnerController::class, 'payout'])
+                ->name('commissions.payout')
+                ->middleware('hrmac:reseller-partners.partner-commissions.payout');
+            Route::get('/{id}/tenants', [Finance\PartnerController::class, 'tenants'])
+                ->name('tenants.index')
+                ->middleware('hrmac:reseller-partners.partner-tenants.view');
+            Route::put('/{id}/portal', [Finance\PartnerController::class, 'updatePortal'])
+                ->name('portal.update')
+                ->middleware('hrmac:reseller-partners.partner-portal.configure');
         });
 
         // =========================================================================
