@@ -11,10 +11,14 @@ use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenant
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
 use Aero\Platform\Http\Controllers\Admin\DashboardController as P3DashboardController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
+use Aero\Platform\Http\Controllers\Admin\LandlordRoleController as P4LandlordRoleController;
+use Aero\Platform\Http\Controllers\Admin\LandlordUserController as P4LandlordUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
+use Aero\Platform\Http\Controllers\Admin\ModuleAdminController as P4ModuleAdminController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
 use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminP1OnboardingController;
+use Aero\Platform\Http\Controllers\Admin\P4PlatformSettingController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
 use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController as P3ProductAnalyticsController;
@@ -1499,8 +1503,8 @@ Route::middleware('admin.domain')->group(function () {
 
         // Platform Dashboard (P-3)
         Route::middleware('hrmac:platform-dashboard.dashboard-overview.view')->group(function () {
-            Route::get('/dashboard',        [P3DashboardController::class, 'index'])->name('platform.admin.dashboard');
-            Route::get('/dashboard/stats',  [P3DashboardController::class, 'stats'])->name('platform.admin.dashboard.stats');
+            Route::get('/dashboard', [P3DashboardController::class, 'index'])->name('platform.admin.dashboard');
+            Route::get('/dashboard/stats', [P3DashboardController::class, 'stats'])->name('platform.admin.dashboard.stats');
             Route::get('/dashboard/health', [P3DashboardController::class, 'systemHealth'])->name('platform.admin.dashboard.health');
         });
 
@@ -1566,6 +1570,87 @@ Route::middleware('admin.domain')->group(function () {
                 ->middleware('hrmac:platform-onboarding.trials.extend');
             Route::post('/{tenant}/convert', [AdminP1OnboardingController::class, 'convertTrial'])->name('convert')
                 ->middleware('hrmac:platform-onboarding.trials.convert');
+        });
+
+        // =========================================================================
+        // P-4: Settings, Users, Roles & Modules Admin Routes
+        // =========================================================================
+
+        // Platform Settings (P-4)
+        Route::prefix('p4/settings')->name('platform.admin.settings.')->group(function () {
+            Route::middleware('hrmac:system-settings.general-settings.view')
+                ->get('/', [P4PlatformSettingController::class, 'general'])->name('general');
+            Route::middleware('hrmac:system-settings.general-settings.edit')
+                ->put('/general', [P4PlatformSettingController::class, 'updateGeneral'])->name('general.update');
+
+            Route::middleware('hrmac:system-settings.branding-settings.view')
+                ->get('/branding', [P4PlatformSettingController::class, 'branding'])->name('branding');
+            Route::middleware('hrmac:system-settings.branding-settings.edit')
+                ->put('/branding', [P4PlatformSettingController::class, 'updateBranding'])->name('branding.update');
+
+            Route::middleware('hrmac:system-settings.email-settings.view')
+                ->get('/email', [P4PlatformSettingController::class, 'email'])->name('email');
+            Route::middleware('hrmac:system-settings.email-settings.edit')
+                ->put('/email', [P4PlatformSettingController::class, 'updateEmail'])->name('email.update');
+            Route::middleware('hrmac:system-settings.email-settings.test')
+                ->post('/email/test', [P4PlatformSettingController::class, 'testEmail'])->name('email.test');
+
+            Route::middleware('hrmac:system-settings.localization-settings.view')
+                ->get('/localization', [P4PlatformSettingController::class, 'localization'])->name('localization');
+            Route::middleware('hrmac:system-settings.localization-settings.edit')
+                ->put('/localization', [P4PlatformSettingController::class, 'updateLocalization'])->name('localization.update');
+
+            Route::middleware('hrmac:system-settings.maintenance-settings.view')
+                ->get('/maintenance', [P4PlatformSettingController::class, 'maintenance'])->name('maintenance');
+            Route::middleware('hrmac:system-settings.maintenance-settings.toggle')
+                ->post('/maintenance/toggle', [P4PlatformSettingController::class, 'toggleMaintenance'])->name('maintenance.toggle');
+
+            Route::middleware('hrmac:system-settings.infrastructure-settings.view')
+                ->get('/infrastructure', [P4PlatformSettingController::class, 'infrastructure'])->name('infrastructure');
+            Route::middleware('hrmac:system-settings.infrastructure-settings.edit')
+                ->put('/infrastructure', [P4PlatformSettingController::class, 'updateInfrastructure'])->name('infrastructure.update');
+        });
+
+        // Landlord Users (P-4)
+        Route::prefix('p4/users')->name('platform.admin.p4users.')->group(function () {
+            Route::middleware('hrmac:platform-users.landlord-user-list.view')->group(function () {
+                Route::get('/', [P4LandlordUserController::class, 'index'])->name('index');
+                Route::get('/{user}', [P4LandlordUserController::class, 'show'])->name('show');
+            });
+            Route::middleware('hrmac:platform-users.landlord-user-list.create')
+                ->post('/', [P4LandlordUserController::class, 'store'])->name('store');
+            Route::middleware('hrmac:platform-users.landlord-user-list.edit')->group(function () {
+                Route::put('/{user}', [P4LandlordUserController::class, 'update'])->name('update');
+                Route::patch('/{user}/toggle-status', [P4LandlordUserController::class, 'toggleStatus'])->name('toggle-status');
+            });
+            Route::middleware('hrmac:platform-users.landlord-user-list.delete')
+                ->delete('/{user}', [P4LandlordUserController::class, 'destroy'])->name('destroy');
+        });
+
+        // Landlord Roles (P-4)
+        Route::prefix('p4/roles')->name('platform.admin.p4roles.')->group(function () {
+            Route::middleware('hrmac:platform-users.landlord-roles.view')
+                ->get('/', [P4LandlordRoleController::class, 'index'])->name('index');
+            Route::middleware('hrmac:platform-users.landlord-roles.manage')->group(function () {
+                Route::post('/', [P4LandlordRoleController::class, 'store'])->name('store');
+                Route::put('/{role}', [P4LandlordRoleController::class, 'update'])->name('update');
+                Route::delete('/{role}', [P4LandlordRoleController::class, 'destroy'])->name('destroy');
+                Route::post('/{role}/clone', [P4LandlordRoleController::class, 'clone'])->name('clone');
+            });
+            Route::middleware('hrmac:platform-users.module-access.manage')
+                ->patch('/{role}/permissions', [P4LandlordRoleController::class, 'updatePermissions'])->name('permissions');
+        });
+
+        // Module Management (P-4)
+        Route::prefix('p4/modules')->name('platform.admin.p4modules.')->group(function () {
+            Route::middleware('hrmac:module-management.module-list.view')
+                ->get('/', [P4ModuleAdminController::class, 'index'])->name('index');
+            Route::middleware('hrmac:module-management.module-list.toggle-active')
+                ->post('/{module}/toggle', [P4ModuleAdminController::class, 'toggle'])->name('toggle');
+            Route::middleware('hrmac:module-management.module-list.configure')
+                ->put('/{module}/config', [P4ModuleAdminController::class, 'configure'])->name('configure');
+            Route::middleware('hrmac:module-management.module-pricing.edit')
+                ->put('/{module}/pricing', [P4ModuleAdminController::class, 'updatePricing'])->name('pricing');
         });
 
         // =========================================================================
