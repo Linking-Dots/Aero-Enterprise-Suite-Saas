@@ -12,12 +12,12 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * P-7 — Platform API Key Controller (Admin).
+ * Platform API Key Controller (Admin).
  *
- * Route prefix: /admin/p7/api-keys
+ * Route prefix: /admin/integrations/api-keys
  * Route names:  platform.admin.integrations.api-keys.*
  */
-class P7ApiKeyController extends Controller
+class ApiKeyAdminController extends Controller
 {
     public function __construct(private readonly PlatformApiKeyService $svc) {}
 

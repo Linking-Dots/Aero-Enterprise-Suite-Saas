@@ -6,24 +6,24 @@ namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\PlatformSetting;
-use Aero\Platform\Services\P4PlatformSettingService;
+use Aero\Platform\Services\PlatformSettingAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * P-4 Platform Setting Controller (Admin)
+ * Platform Setting Controller (Admin)
  *
  * Handles all 6 settings sections:
  *   general, branding, email + test-send, localization, maintenance, infrastructure
  *
- * Route prefix: /admin/p4/settings
+ * Route prefix: /admin/settings
  * Route names:  platform.admin.settings.*
  */
-class P4PlatformSettingController extends Controller
+class PlatformSettingController extends Controller
 {
-    public function __construct(private P4PlatformSettingService $svc) {}
+    public function __construct(private PlatformSettingAdminService $svc) {}
 
     public function general(): Response
     {

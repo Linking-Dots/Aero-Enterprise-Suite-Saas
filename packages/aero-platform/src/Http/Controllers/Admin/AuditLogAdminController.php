@@ -12,7 +12,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class P5AuditLogController extends Controller
+class AuditLogAdminController extends Controller
 {
     public function __construct(private readonly AuditLogAdminService $svc) {}
 

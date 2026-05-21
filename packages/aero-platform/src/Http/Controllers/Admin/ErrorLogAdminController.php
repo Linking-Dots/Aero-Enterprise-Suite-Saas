@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class P5ErrorLogController extends Controller
+class ErrorLogAdminController extends Controller
 {
     public function __construct(private readonly ErrorLogAdminService $svc) {}
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Aero\Platform\Tests\Feature\Admin\P7;
+namespace Aero\Platform\Tests\Feature\Admin;
 
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\TenantBroadcast;

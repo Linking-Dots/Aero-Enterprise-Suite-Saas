@@ -13,15 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * P-4 Platform Setting Service
+ * Platform Setting Admin Service
  *
  * Provides granular update methods per settings section:
  * general, branding, email, localization, maintenance, infrastructure.
- *
- * The original PlatformSettingService (pre-P-4) remains untouched for
- * backward-compatibility with older controllers.
  */
-class P4PlatformSettingService
+class PlatformSettingAdminService
 {
     public function __construct(private AuditServiceInterface $audit) {}
 

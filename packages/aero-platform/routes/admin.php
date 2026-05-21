@@ -6,37 +6,34 @@ use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Aero\Platform\Http\Controllers\Admin\AccessLogController;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
-use Aero\Platform\Http\Controllers\Admin\AnalyticsController as P3AnalyticsController;
+use Aero\Platform\Http\Controllers\Admin\AnalyticsController;
+use Aero\Platform\Http\Controllers\Admin\ApiKeyAdminController;
+use Aero\Platform\Http\Controllers\Admin\AuditLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\BillingDashboardController;
 use Aero\Platform\Http\Controllers\Admin\BroadcastController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenantController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
-use Aero\Platform\Http\Controllers\Admin\DashboardController as P3DashboardController;
+use Aero\Platform\Http\Controllers\Admin\DashboardController;
 use Aero\Platform\Http\Controllers\Admin\DeveloperToolsController;
 use Aero\Platform\Http\Controllers\Admin\EmailBlastController;
+use Aero\Platform\Http\Controllers\Admin\ErrorLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\ExperimentController;
 use Aero\Platform\Http\Controllers\Admin\FeatureFlagController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
-use Aero\Platform\Http\Controllers\Admin\LandlordRoleController as P4LandlordRoleController;
-use Aero\Platform\Http\Controllers\Admin\LandlordUserController as P4LandlordUserController;
+use Aero\Platform\Http\Controllers\Admin\LandlordRoleController;
+use Aero\Platform\Http\Controllers\Admin\LandlordUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\MaintenanceWindowController;
-use Aero\Platform\Http\Controllers\Admin\ModuleAdminController as P4ModuleAdminController;
+use Aero\Platform\Http\Controllers\Admin\ModuleAdminController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
-use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminP1OnboardingController;
-use Aero\Platform\Http\Controllers\Admin\P4PlatformSettingController;
-use Aero\Platform\Http\Controllers\Admin\P5AuditLogController;
-use Aero\Platform\Http\Controllers\Admin\P5ErrorLogController;
-use Aero\Platform\Http\Controllers\Admin\P7ApiKeyController;
-use Aero\Platform\Http\Controllers\Admin\P7WebhookController;
+use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminOnboardingController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
-use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController as P3ProductAnalyticsController;
-use Aero\Platform\Http\Controllers\Admin\QuotaController as P3QuotaController;
+use Aero\Platform\Http\Controllers\Admin\PlatformSettingController;
+use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController;
 use Aero\Platform\Http\Controllers\Admin\RateLimitConfigController;
 use Aero\Platform\Http\Controllers\Admin\ReportController;
-use Aero\Platform\Http\Controllers\Admin\RoleController;
 use Aero\Platform\Http\Controllers\Admin\SeoController;
 use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
 use Aero\Platform\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
@@ -44,17 +41,14 @@ use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantControll
 use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;
 use Aero\Platform\Http\Controllers\Admin\TenantDomainController as AdminTenantDomainController;
 use Aero\Platform\Http\Controllers\Admin\TenantExportController;
-use Aero\Platform\Http\Controllers\Admin\UserController;
+use Aero\Platform\Http\Controllers\Admin\WebhookAdminController;
 use Aero\Platform\Http\Controllers\Billing\BillingController;
 use Aero\Platform\Http\Controllers\DomainController;
 use Aero\Platform\Http\Controllers\ErrorLogController;
 use Aero\Platform\Http\Controllers\Integrations\WebhookController;
-use Aero\Platform\Http\Controllers\MaintenanceController;
 use Aero\Platform\Http\Controllers\ModuleAnalyticsController;
 use Aero\Platform\Http\Controllers\PlanController;
 use Aero\Platform\Http\Controllers\PlanModuleController;
-use Aero\Platform\Http\Controllers\PlatformSettingController;
-use Aero\Platform\Http\Controllers\SystemMonitoring\AuditLogController;
 use Aero\Platform\Http\Controllers\TenantController;
 use Aero\Platform\Http\Middleware\IdentifyDomainContext;
 use Aero\Platform\Models\Module;
@@ -213,47 +207,6 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // 3. USERS & AUTHENTICATION MODULE (platform-users)
         // =========================================================================
-        Route::middleware(['hrmac:platform-users'])->prefix('users')->name('admin.users.')->group(function () {
-            Route::get('/', [UserController::class, 'adminIndex'])
-                ->middleware(['hrmac:platform-users.admin-users'])
-                ->name('index');
-
-            Route::get('/paginate', function (Request $request) {
-                return app(UserController::class)->paginate($request, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.view'])->name('paginate');
-
-            Route::get('/stats', function (Request $request) {
-                return app(UserController::class)->stats($request, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.view'])->name('stats');
-
-            Route::post('/', function (Request $request) {
-                return app(UserController::class)->store($request, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.create'])->name('store');
-
-            Route::put('/{user}', function (Request $request, $user) {
-                return app(UserController::class)->update($request, $user, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('update');
-
-            Route::delete('/{user}', function ($user) {
-                return app(UserController::class)->destroy($user, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.delete'])->name('destroy');
-
-            Route::patch('/{user}/toggle-status', function (Request $request, $user) {
-                return app(UserController::class)->toggleStatus($request, $user, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('toggle-status');
-
-            Route::patch('/{user}/roles', function (Request $request, $user) {
-                return app(UserController::class)->updateRoles($request, $user, 'admin');
-            })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('update-roles');
-
-            Route::get('/{user}', function ($user) {
-                return Inertia::render('Platform/Admin/Users/Show', ['userId' => $user]);
-            })->middleware(['hrmac:platform-users.admin-users.user-list.view'])->name('show');
-
-            Route::get('/{user}/edit', function ($user) {
-                return Inertia::render('Platform/Admin/Users/Edit', ['userId' => $user]);
-            })->middleware(['hrmac:platform-users.admin-users.user-list.update'])->name('edit');
-        });
 
         // Authentication Settings
         Route::get('/authentication', function () {
@@ -268,115 +221,11 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // 4. ROLES & ACCESS CONTROL MODULE (platform-roles)
         // =========================================================================
-        Route::middleware(['hrmac:platform-roles'])->prefix('roles')->name('admin.roles.')->group(function () {
-            Route::get('/', [RoleController::class, 'index'])
-                ->middleware(['hrmac:platform-roles.role-management'])
-                ->name('index');
-            Route::post('/', [RoleController::class, 'storeRole'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.create'])
-                ->name('store');
-            Route::put('/{id}', [RoleController::class, 'updateRole'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.update'])
-                ->name('update');
-            Route::delete('/{id}', [RoleController::class, 'deleteRole'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.delete'])
-                ->name('destroy');
-            Route::patch('/{id}/permissions', [RoleController::class, 'batchUpdatePermissions'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.update'])
-                ->name('permissions.batch');
-            Route::post('/toggle-permission', [RoleController::class, 'togglePermission'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.update'])
-                ->name('toggle-permission');
-            Route::post('/update-module', [RoleController::class, 'updateRoleModule'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.update'])
-                ->name('update-module');
-            Route::post('/clone/{id}', [RoleController::class, 'cloneRole'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.create'])
-                ->name('clone');
-            Route::get('/export', [RoleController::class, 'exportRoles'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.view'])
-                ->name('export');
-            Route::get('/snapshot', [RoleController::class, 'snapshot'])
-                ->middleware(['hrmac:platform-roles.role-management.role-list.view'])
-                ->name('snapshot');
-            Route::get('/admin/modules', [ModuleController::class, 'index'])
-                ->middleware(['hrmac:platform-roles.module-permissions'])
-                ->name('modules.index');
-        });
 
         // Module Access Management (Platform Users > Module Access)
         Route::get('/module-access', [ModuleController::class, 'index'])
             ->middleware(['hrmac:landlord_users.module_access'])
             ->name('admin.module-access');
-
-        // Modules Management (Module Access)
-        Route::middleware(['hrmac:platform-roles.module-permissions'])->prefix('modules')->name('admin.modules.')->group(function () {
-            Route::get('/', [ModuleController::class, 'index'])->name('index');
-            Route::get('/api', [ModuleController::class, 'apiIndex'])->name('api.index');
-
-            // Module CRUD
-            Route::post('/', [ModuleController::class, 'storeModule'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.create'])
-                ->name('store');
-            Route::put('/{module}', [ModuleController::class, 'updateModule'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.update'])
-                ->name('update');
-            Route::delete('/{module}', [ModuleController::class, 'destroyModule'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.delete'])
-                ->name('destroy');
-
-            // Sub-module CRUD
-            Route::post('/{module}/sub-modules', [ModuleController::class, 'storeSubModule'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.create'])
-                ->name('sub-modules.store');
-            Route::put('/sub-modules/{subModule}', [ModuleController::class, 'updateSubModule'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.update'])
-                ->name('sub-modules.update');
-            Route::delete('/sub-modules/{subModule}', [ModuleController::class, 'destroySubModule'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.delete'])
-                ->name('sub-modules.destroy');
-
-            // Component CRUD
-            Route::post('/sub-modules/{subModule}/components', [ModuleController::class, 'storeComponent'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.create'])
-                ->name('components.store');
-            Route::put('/components/{component}', [ModuleController::class, 'updateComponent'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.update'])
-                ->name('components.update');
-            Route::delete('/components/{component}', [ModuleController::class, 'destroyComponent'])
-                ->middleware(['hrmac:platform-roles.module-permissions.module-list.delete'])
-                ->name('components.destroy');
-
-            // Module access check
-            Route::post('/check-access', [ModuleController::class, 'checkAccess'])->name('check-access');
-
-            // Module requirements
-            Route::get('/{moduleCode}/requirements', [ModuleController::class, 'getModuleRequirements'])->name('requirements');
-
-            // Module Catalog API (for plan configuration)
-            Route::get('/catalog', [PlanModuleController::class, 'getModules'])
-                ->middleware(['hrmac:subscriptions.plans'])
-                ->name('catalog');
-
-            // Role Module Access Management
-            Route::prefix('role-access')->name('role-access.')->group(function () {
-                Route::get('/roles', [ModuleController::class, 'getRolesWithAccessCounts'])
-                    ->middleware(['hrmac:platform-roles.module-permissions.role-access.view'])
-                    ->name('roles');
-                Route::get('/{roleId}', [ModuleController::class, 'getRoleAccess'])
-                    ->middleware(['hrmac:platform-roles.module-permissions.role-access.view'])
-                    ->name('show');
-                Route::post('/{roleId}/sync', [ModuleController::class, 'syncRoleAccess'])
-                    ->middleware(['hrmac:platform-roles.module-permissions.role-access.manage'])
-                    ->name('sync');
-                Route::post('/{roleId}/grant/{moduleId}', [ModuleController::class, 'grantModuleAccess'])
-                    ->middleware(['hrmac:platform-roles.module-permissions.role-access.manage'])
-                    ->name('grant');
-                Route::post('/{roleId}/revoke/{moduleId}', [ModuleController::class, 'revokeModuleAccess'])
-                    ->middleware(['hrmac:platform-roles.module-permissions.role-access.manage'])
-                    ->name('revoke');
-            });
-        });
 
         // =========================================================================
         // 5. SUBSCRIPTIONS & BILLING MODULE (subscriptions)
@@ -612,130 +461,13 @@ Route::middleware('admin.domain')->group(function () {
             })->middleware(['hrmac:audit-logs.system-logs'])->name('system');
         });
 
-        // Audit Logs API
-        Route::middleware(['hrmac:audit-logs.activity-logs'])->prefix('audit-logs')->name('admin.audit-logs.')->group(function () {
-            Route::get('/', [AuditLogController::class, 'index'])->name('index');
-            Route::get('/export', [AuditLogController::class, 'export'])
-                ->middleware(['hrmac:audit-logs.activity-logs.log-list.export'])
-                ->name('export');
-            Route::get('/statistics', [AuditLogController::class, 'statistics'])->name('statistics');
-            Route::get('/{activity}', [AuditLogController::class, 'show'])->name('show');
-        });
-
-        // Error Logs
-        Route::middleware(['hrmac:audit-logs'])->prefix('error-logs')->name('admin.error-logs.')->group(function () {
-            Route::get('/', [ErrorLogController::class, 'index'])->name('index');
-            Route::get('/statistics', [ErrorLogController::class, 'statistics'])->name('statistics');
-            Route::get('/{errorLog}', [ErrorLogController::class, 'show'])->name('show');
-            Route::post('/{errorLog}/resolve', [ErrorLogController::class, 'resolve'])->name('resolve');
-            Route::delete('/{errorLog}', [ErrorLogController::class, 'destroy'])->name('destroy');
-            Route::post('/bulk-resolve', [ErrorLogController::class, 'bulkResolve'])->name('bulk-resolve');
-            Route::post('/bulk-destroy', [ErrorLogController::class, 'bulkDestroy'])->name('bulk-destroy');
-        });
-
         // =========================================================================
         // 9. SYSTEM SETTINGS MODULE (system-settings)
         // =========================================================================
-        Route::middleware(['hrmac:system-settings'])->prefix('settings')->name('admin.settings.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Settings/Index');
-            })->middleware(['hrmac:system-settings.general-settings'])->name('index');
-
-            Route::get('/branding', function () {
-                return Inertia::render('Platform/Admin/Settings/Branding');
-            })->middleware(['hrmac:system-settings.branding'])->name('branding');
-
-            Route::get('/localization', function () {
-                return Inertia::render('Platform/Admin/Settings/Localization');
-            })->middleware(['hrmac:system-settings.localization'])->name('localization');
-
-            Route::get('/email', function () {
-                return Inertia::render('Platform/Admin/Settings/Email');
-            })->middleware(['hrmac:system-settings.email-settings'])->name('email');
-
-            Route::get('/integrations', function () {
-                return Inertia::render('Platform/Admin/Settings/Integrations');
-            })->middleware(['hrmac:system-settings.integrations'])->name('integrations');
-
-            Route::get('/payment-gateways', function () {
-                return Inertia::render('Platform/Admin/Settings/PaymentGateways');
-            })->middleware(['hrmac:subscriptions.payment-gateways'])->name('payment-gateways');
-
-            // Platform Settings API
-            Route::get('/platform', [PlatformSettingController::class, 'index'])
-                ->middleware(['hrmac:system-settings.general-settings.platform-settings.view'])
-                ->name('platform.index');
-            Route::put('/platform', [PlatformSettingController::class, 'update'])
-                ->middleware(['hrmac:system-settings.general-settings.platform-settings.update'])
-                ->name('platform.update');
-            Route::post('/platform', [PlatformSettingController::class, 'update'])
-                ->middleware(['hrmac:system-settings.general-settings.platform-settings.update'])
-                ->name('platform.store');
-            Route::post('/platform/test-email', [PlatformSettingController::class, 'sendTestEmail'])
-                ->middleware(['hrmac:system-settings.email-settings.email-config.test'])
-                ->name('platform.test-email');
-            Route::post('/platform/test-sms', [PlatformSettingController::class, 'sendTestSms'])
-                ->middleware(['hrmac:system-settings.general-settings.platform-settings.update'])
-                ->name('platform.test-sms');
-
-            // Infrastructure & Hosting Mode
-            Route::get('/infrastructure', [PlatformSettingController::class, 'infrastructure'])
-                ->middleware(['hrmac:system-settings.general-settings'])
-                ->name('infrastructure');
-            Route::post('/infrastructure/test-cpanel', [PlatformSettingController::class, 'testCpanelConnection'])
-                ->middleware(['hrmac:system-settings.general-settings'])
-                ->name('infrastructure.test-cpanel');
-
-            // System Maintenance
-            Route::get('/maintenance', [MaintenanceController::class, 'index'])
-                ->middleware(['hrmac:developer-tools.maintenance'])
-                ->name('maintenance.index');
-            Route::put('/maintenance', [MaintenanceController::class, 'update'])
-                ->middleware(['hrmac:developer-tools.maintenance.maintenance-controls.update'])
-                ->name('maintenance.update');
-            Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])
-                ->middleware(['hrmac:developer-tools.maintenance.maintenance-controls.update'])
-                ->name('maintenance.toggle');
-        });
 
         // =========================================================================
         // 10. DEVELOPER TOOLS MODULE (developer-tools)
         // =========================================================================
-        Route::middleware(['hrmac:developer-tools'])->prefix('developer')->name('admin.developer.')->group(function () {
-            Route::get('/api', function () {
-                return Inertia::render('Platform/Admin/Developer/Api');
-            })->middleware(['hrmac:developer-tools.api-management'])->name('api');
-
-            Route::get('/webhooks', function () {
-                return Inertia::render('Platform/Admin/Webhooks/WebhookManager');
-            })->middleware(['hrmac:developer-tools.webhooks'])->name('webhooks');
-
-            Route::get('/rate-limits', function () {
-                return Inertia::render('Platform/Admin/RateLimit/RateLimitConfig');
-            })->middleware(['hrmac:developer-tools.api-management'])->name('rate-limits');
-
-            Route::get('/debug', function () {
-                return Inertia::render('Platform/Admin/Developer/Debug');
-            })->middleware(['hrmac:developer-tools.debug-tools'])->name('debug');
-
-            Route::get('/queues', function () {
-                return Inertia::render('Platform/Admin/Developer/Queues');
-            })->middleware(['hrmac:developer-tools.queue-jobs'])->name('queues');
-
-            Route::get('/cache', function () {
-                return Inertia::render('Platform/Admin/Developer/Cache');
-            })->middleware(['hrmac:developer-tools.cache-management'])->name('cache');
-
-            Route::get('/maintenance', [MaintenanceController::class, 'index'])
-                ->middleware(['hrmac:developer-tools.maintenance'])
-                ->name('maintenance');
-            Route::put('/maintenance', [MaintenanceController::class, 'update'])
-                ->middleware(['hrmac:developer-tools.maintenance'])
-                ->name('maintenance.update');
-            Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])
-                ->middleware(['hrmac:developer-tools.maintenance'])
-                ->name('maintenance.toggle');
-        });
 
         // =========================================================================
         // 11. PLATFORM ANALYTICS MODULE (platform-analytics)
@@ -1051,76 +783,76 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         Route::middleware(['hrmac:platform-onboarding'])->prefix('onboarding')->name('admin.onboarding.')->group(function () {
             // Page routes
-            Route::get('/', [AdminP1OnboardingController::class, 'dashboard'])
+            Route::get('/', [AdminOnboardingController::class, 'dashboard'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_dashboard.view'])
                 ->name('dashboard');
 
-            Route::get('/pending', [AdminP1OnboardingController::class, 'pending'])
+            Route::get('/pending', [AdminOnboardingController::class, 'pending'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.view'])
                 ->name('pending');
 
-            Route::get('/provisioning', [AdminP1OnboardingController::class, 'provisioning'])
+            Route::get('/provisioning', [AdminOnboardingController::class, 'provisioning'])
                 ->middleware(['hrmac:platform-onboarding.provisioning.view'])
                 ->name('provisioning');
 
-            Route::get('/trials', [AdminP1OnboardingController::class, 'trials'])
+            Route::get('/trials', [AdminOnboardingController::class, 'trials'])
                 ->middleware(['hrmac:platform-onboarding.trials.view'])
                 ->name('trials');
 
-            Route::get('/analytics', [AdminP1OnboardingController::class, 'analytics'])
+            Route::get('/analytics', [AdminOnboardingController::class, 'analytics'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_analytics.view'])
                 ->name('analytics');
 
-            Route::get('/automation', [AdminP1OnboardingController::class, 'automation'])
+            Route::get('/automation', [AdminOnboardingController::class, 'automation'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_automation.view'])
                 ->name('automation');
 
-            Route::get('/settings', [AdminP1OnboardingController::class, 'settings'])
+            Route::get('/settings', [AdminOnboardingController::class, 'settings'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_settings.view'])
                 ->name('settings');
 
             // API action routes
-            Route::post('/registrations/{tenant}/approve', [AdminP1OnboardingController::class, 'approve'])
+            Route::post('/registrations/{tenant}/approve', [AdminOnboardingController::class, 'approve'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.approve', 'throttle:10,1'])
                 ->name('approve');
 
-            Route::post('/registrations/{tenant}/reject', [AdminP1OnboardingController::class, 'reject'])
+            Route::post('/registrations/{tenant}/reject', [AdminOnboardingController::class, 'reject'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.reject', 'throttle:10,1'])
                 ->name('reject');
 
-            Route::post('/provisioning/{tenant}/retry', [AdminP1OnboardingController::class, 'retryProvisioning'])
+            Route::post('/provisioning/{tenant}/retry', [AdminOnboardingController::class, 'retryProvisioning'])
                 ->middleware(['hrmac:platform-onboarding.provisioning.retry', 'throttle:5,1'])
                 ->name('provisioning.retry');
 
-            Route::post('/trials/{tenant}/extend', [AdminP1OnboardingController::class, 'extendTrial'])
+            Route::post('/trials/{tenant}/extend', [AdminOnboardingController::class, 'extendTrial'])
                 ->middleware(['hrmac:platform-onboarding.trials.extend', 'throttle:5,1'])
                 ->name('trials.extend');
 
-            Route::post('/trials/{tenant}/convert', [AdminP1OnboardingController::class, 'convertToPaid'])
+            Route::post('/trials/{tenant}/convert', [AdminOnboardingController::class, 'convertToPaid'])
                 ->middleware(['hrmac:platform-onboarding.trials.convert', 'throttle:5,1'])
                 ->name('trials.convert');
 
-            Route::post('/trials/{tenant}/cancel', [AdminP1OnboardingController::class, 'cancelTrial'])
+            Route::post('/trials/{tenant}/cancel', [AdminOnboardingController::class, 'cancelTrial'])
                 ->middleware(['hrmac:platform-onboarding.trials.cancel', 'throttle:5,1'])
                 ->name('trials.cancel');
 
-            Route::post('/tenants/{tenant}/suspend', [AdminP1OnboardingController::class, 'suspend'])
+            Route::post('/tenants/{tenant}/suspend', [AdminOnboardingController::class, 'suspend'])
                 ->middleware(['hrmac:platform-onboarding.manage.suspend', 'throttle:5,1'])
                 ->name('tenants.suspend');
 
-            Route::post('/tenants/{tenant}/reactivate', [AdminP1OnboardingController::class, 'reactivate'])
+            Route::post('/tenants/{tenant}/reactivate', [AdminOnboardingController::class, 'reactivate'])
                 ->middleware(['hrmac:platform-onboarding.manage.reactivate', 'throttle:5,1'])
                 ->name('tenants.reactivate');
 
-            Route::post('/tenants/{tenant}/archive', [AdminP1OnboardingController::class, 'archive'])
+            Route::post('/tenants/{tenant}/archive', [AdminOnboardingController::class, 'archive'])
                 ->middleware(['hrmac:platform-onboarding.manage.archive', 'throttle:5,1'])
                 ->name('tenants.archive');
 
-            Route::post('/settings', [AdminP1OnboardingController::class, 'updateSettings'])
+            Route::post('/settings', [AdminOnboardingController::class, 'updateSettings'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_settings.update', 'throttle:10,1'])
                 ->name('settings.update');
 
-            Route::post('/automation/toggle', [AdminP1OnboardingController::class, 'toggleAutomation'])
+            Route::post('/automation/toggle', [AdminOnboardingController::class, 'toggleAutomation'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_automation.manage', 'throttle:10,1'])
                 ->name('automation.toggle');
         });
@@ -1468,7 +1200,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
 
         // Plans CRUD
-        Route::prefix('p2/plans')->name('platform.admin.plans.')->group(function () {
+        Route::prefix('plans')->name('platform.admin.plans.')->group(function () {
             Route::get('/', [AdminP2PlanController::class, 'index'])->name('index')->middleware('hrmac:plan-management.plan-list.view');
             Route::get('/create', [AdminP2PlanController::class, 'create'])->name('create')->middleware('hrmac:plan-management.plan-list.create');
             Route::post('/', [AdminP2PlanController::class, 'store'])->name('store')->middleware('hrmac:plan-management.plan-list.create');
@@ -1481,7 +1213,7 @@ Route::middleware('admin.domain')->group(function () {
         });
 
         // Billing (dashboard + subscriptions + invoices + gateways)
-        Route::prefix('p2/billing')->name('platform.admin.billing.')->group(function () {
+        Route::prefix('billing')->name('platform.admin.billing.')->group(function () {
             Route::get('/dashboard', [BillingDashboardController::class, 'index'])->name('dashboard')->middleware('hrmac:billing-management.billing-dashboard.view');
 
             Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
@@ -1513,9 +1245,9 @@ Route::middleware('admin.domain')->group(function () {
 
         // Platform Dashboard (P-3)
         Route::middleware('hrmac:platform-dashboard.dashboard-overview.view')->group(function () {
-            Route::get('/dashboard', [P3DashboardController::class, 'index'])->name('platform.admin.dashboard');
-            Route::get('/dashboard/stats', [P3DashboardController::class, 'stats'])->name('platform.admin.dashboard.stats');
-            Route::get('/dashboard/health', [P3DashboardController::class, 'systemHealth'])->name('platform.admin.dashboard.health');
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('platform.admin.dashboard');
+            Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('platform.admin.dashboard.stats');
+            Route::get('/dashboard/health', [DashboardController::class, 'systemHealth'])->name('platform.admin.dashboard.health');
         });
 
         // Quota Management (P-3)
@@ -1537,48 +1269,48 @@ Route::middleware('admin.domain')->group(function () {
         // Platform Analytics (P-3)
         Route::prefix('analytics')->name('platform.admin.analytics.')->group(function () {
             Route::middleware('hrmac:platform-analytics.analytics-dashboard.view')
-                ->get('/', [P3AnalyticsController::class, 'dashboard'])->name('index');
+                ->get('/', [AnalyticsController::class, 'dashboard'])->name('index');
             Route::middleware('hrmac:platform-analytics.revenue-reports.view')
-                ->get('/revenue', [P3AnalyticsController::class, 'revenue'])->name('revenue');
+                ->get('/revenue', [AnalyticsController::class, 'revenue'])->name('revenue');
             Route::middleware('hrmac:platform-analytics.tenant-analytics.view')
-                ->get('/tenants', [P3AnalyticsController::class, 'tenants'])->name('tenants');
+                ->get('/tenants', [AnalyticsController::class, 'tenants'])->name('tenants');
             Route::middleware('hrmac:platform-analytics.analytics-dashboard.view')
-                ->get('/usage', [P3AnalyticsController::class, 'usage'])->name('usage');
+                ->get('/usage', [AnalyticsController::class, 'usage'])->name('usage');
         });
 
         // Product Analytics (P-3)
         Route::prefix('product-analytics')->name('platform.admin.product-analytics.')->group(function () {
             Route::middleware('hrmac:product-analytics.feature-usage.view')
-                ->get('/features', [P3ProductAnalyticsController::class, 'featureUsage'])->name('features');
+                ->get('/features', [ProductAnalyticsController::class, 'featureUsage'])->name('features');
             Route::middleware('hrmac:product-analytics.cohort-analysis.view')
-                ->get('/cohorts', [P3ProductAnalyticsController::class, 'cohorts'])->name('cohorts');
+                ->get('/cohorts', [ProductAnalyticsController::class, 'cohorts'])->name('cohorts');
             Route::middleware('hrmac:product-analytics.funnel-analysis.view')
-                ->get('/funnels', [P3ProductAnalyticsController::class, 'funnels'])->name('funnels');
+                ->get('/funnels', [ProductAnalyticsController::class, 'funnels'])->name('funnels');
             Route::middleware('hrmac:product-analytics.funnel-analysis.manage')
-                ->post('/funnels', [P3ProductAnalyticsController::class, 'storeFunnel'])->name('funnels.store');
+                ->post('/funnels', [ProductAnalyticsController::class, 'storeFunnel'])->name('funnels.store');
             Route::middleware('hrmac:product-analytics.adoption-metrics.view')
-                ->get('/adoption', [P3ProductAnalyticsController::class, 'adoption'])->name('adoption');
+                ->get('/adoption', [ProductAnalyticsController::class, 'adoption'])->name('adoption');
         });
 
-        // Onboarding (P-1)
-        Route::prefix('onboarding/p1')->name('platform.admin.onboarding.p1.')->group(function () {
-            Route::get('/dashboard', [AdminP1OnboardingController::class, 'dashboard'])->name('dashboard')
+        // Onboarding
+        Route::prefix('onboarding')->name('platform.admin.onboarding.')->group(function () {
+            Route::get('/dashboard', [AdminOnboardingController::class, 'dashboard'])->name('dashboard')
                 ->middleware('hrmac:platform-onboarding.onboarding-dashboard.view');
-            Route::get('/pending', [AdminP1OnboardingController::class, 'pending'])->name('pending')
+            Route::get('/pending', [AdminOnboardingController::class, 'pending'])->name('pending')
                 ->middleware('hrmac:platform-onboarding.pending-approvals.view');
-            Route::post('/{tenant}/approve', [AdminP1OnboardingController::class, 'approve'])->name('approve')
+            Route::post('/{tenant}/approve', [AdminOnboardingController::class, 'approve'])->name('approve')
                 ->middleware('hrmac:platform-onboarding.pending-approvals.approve');
-            Route::post('/{tenant}/reject', [AdminP1OnboardingController::class, 'reject'])->name('reject')
+            Route::post('/{tenant}/reject', [AdminOnboardingController::class, 'reject'])->name('reject')
                 ->middleware('hrmac:platform-onboarding.pending-approvals.reject');
-            Route::get('/provisioning', [AdminP1OnboardingController::class, 'provisioning'])->name('provisioning')
+            Route::get('/provisioning', [AdminOnboardingController::class, 'provisioning'])->name('provisioning')
                 ->middleware('hrmac:platform-onboarding.provisioning.view');
-            Route::post('/{tenant}/retry', [AdminP1OnboardingController::class, 'retryProvisioning'])->name('retry')
+            Route::post('/{tenant}/retry', [AdminOnboardingController::class, 'retryProvisioning'])->name('retry')
                 ->middleware('hrmac:platform-onboarding.provisioning.retry');
-            Route::get('/trials', [AdminP1OnboardingController::class, 'trials'])->name('trials')
+            Route::get('/trials', [AdminOnboardingController::class, 'trials'])->name('trials')
                 ->middleware('hrmac:platform-onboarding.trials.view');
-            Route::post('/{tenant}/extend', [AdminP1OnboardingController::class, 'extendTrial'])->name('extend')
+            Route::post('/{tenant}/extend', [AdminOnboardingController::class, 'extendTrial'])->name('extend')
                 ->middleware('hrmac:platform-onboarding.trials.extend');
-            Route::post('/{tenant}/convert', [AdminP1OnboardingController::class, 'convertTrial'])->name('convert')
+            Route::post('/{tenant}/convert', [AdminOnboardingController::class, 'convertTrial'])->name('convert')
                 ->middleware('hrmac:platform-onboarding.trials.convert');
         });
 
@@ -1587,80 +1319,80 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
 
         // Platform Settings (P-4)
-        Route::prefix('p4/settings')->name('platform.admin.settings.')->group(function () {
+        Route::prefix('settings')->name('platform.admin.settings.')->group(function () {
             Route::middleware('hrmac:system-settings.general-settings.view')
-                ->get('/', [P4PlatformSettingController::class, 'general'])->name('general');
+                ->get('/', [PlatformSettingController::class, 'general'])->name('general');
             Route::middleware('hrmac:system-settings.general-settings.edit')
-                ->put('/general', [P4PlatformSettingController::class, 'updateGeneral'])->name('general.update');
+                ->put('/general', [PlatformSettingController::class, 'updateGeneral'])->name('general.update');
 
             Route::middleware('hrmac:system-settings.branding-settings.view')
-                ->get('/branding', [P4PlatformSettingController::class, 'branding'])->name('branding');
+                ->get('/branding', [PlatformSettingController::class, 'branding'])->name('branding');
             Route::middleware('hrmac:system-settings.branding-settings.edit')
-                ->put('/branding', [P4PlatformSettingController::class, 'updateBranding'])->name('branding.update');
+                ->put('/branding', [PlatformSettingController::class, 'updateBranding'])->name('branding.update');
 
             Route::middleware('hrmac:system-settings.email-settings.view')
-                ->get('/email', [P4PlatformSettingController::class, 'email'])->name('email');
+                ->get('/email', [PlatformSettingController::class, 'email'])->name('email');
             Route::middleware('hrmac:system-settings.email-settings.edit')
-                ->put('/email', [P4PlatformSettingController::class, 'updateEmail'])->name('email.update');
+                ->put('/email', [PlatformSettingController::class, 'updateEmail'])->name('email.update');
             Route::middleware('hrmac:system-settings.email-settings.test')
-                ->post('/email/test', [P4PlatformSettingController::class, 'testEmail'])->name('email.test');
+                ->post('/email/test', [PlatformSettingController::class, 'testEmail'])->name('email.test');
 
             Route::middleware('hrmac:system-settings.localization-settings.view')
-                ->get('/localization', [P4PlatformSettingController::class, 'localization'])->name('localization');
+                ->get('/localization', [PlatformSettingController::class, 'localization'])->name('localization');
             Route::middleware('hrmac:system-settings.localization-settings.edit')
-                ->put('/localization', [P4PlatformSettingController::class, 'updateLocalization'])->name('localization.update');
+                ->put('/localization', [PlatformSettingController::class, 'updateLocalization'])->name('localization.update');
 
             Route::middleware('hrmac:system-settings.maintenance-settings.view')
-                ->get('/maintenance', [P4PlatformSettingController::class, 'maintenance'])->name('maintenance');
+                ->get('/maintenance', [PlatformSettingController::class, 'maintenance'])->name('maintenance');
             Route::middleware('hrmac:system-settings.maintenance-settings.toggle')
-                ->post('/maintenance/toggle', [P4PlatformSettingController::class, 'toggleMaintenance'])->name('maintenance.toggle');
+                ->post('/maintenance/toggle', [PlatformSettingController::class, 'toggleMaintenance'])->name('maintenance.toggle');
 
             Route::middleware('hrmac:system-settings.infrastructure-settings.view')
-                ->get('/infrastructure', [P4PlatformSettingController::class, 'infrastructure'])->name('infrastructure');
+                ->get('/infrastructure', [PlatformSettingController::class, 'infrastructure'])->name('infrastructure');
             Route::middleware('hrmac:system-settings.infrastructure-settings.edit')
-                ->put('/infrastructure', [P4PlatformSettingController::class, 'updateInfrastructure'])->name('infrastructure.update');
+                ->put('/infrastructure', [PlatformSettingController::class, 'updateInfrastructure'])->name('infrastructure.update');
         });
 
         // Landlord Users (P-4)
-        Route::prefix('p4/users')->name('platform.admin.users.')->group(function () {
+        Route::prefix('users')->name('platform.admin.users.')->group(function () {
             Route::middleware('hrmac:platform-users.landlord-user-list.view')->group(function () {
-                Route::get('/', [P4LandlordUserController::class, 'index'])->name('index');
-                Route::get('/{user}', [P4LandlordUserController::class, 'show'])->name('show');
+                Route::get('/', [LandlordUserController::class, 'index'])->name('index');
+                Route::get('/{user}', [LandlordUserController::class, 'show'])->name('show');
             });
             Route::middleware('hrmac:platform-users.landlord-user-list.create')
-                ->post('/', [P4LandlordUserController::class, 'store'])->name('store');
+                ->post('/', [LandlordUserController::class, 'store'])->name('store');
             Route::middleware('hrmac:platform-users.landlord-user-list.edit')->group(function () {
-                Route::put('/{user}', [P4LandlordUserController::class, 'update'])->name('update');
-                Route::patch('/{user}/toggle-status', [P4LandlordUserController::class, 'toggleStatus'])->name('toggle-status');
+                Route::put('/{user}', [LandlordUserController::class, 'update'])->name('update');
+                Route::patch('/{user}/toggle-status', [LandlordUserController::class, 'toggleStatus'])->name('toggle-status');
             });
             Route::middleware('hrmac:platform-users.landlord-user-list.delete')
-                ->delete('/{user}', [P4LandlordUserController::class, 'destroy'])->name('destroy');
+                ->delete('/{user}', [LandlordUserController::class, 'destroy'])->name('destroy');
         });
 
         // Landlord Roles (P-4)
-        Route::prefix('p4/roles')->name('platform.admin.roles.')->group(function () {
+        Route::prefix('roles')->name('platform.admin.roles.')->group(function () {
             Route::middleware('hrmac:platform-users.landlord-roles.view')
-                ->get('/', [P4LandlordRoleController::class, 'index'])->name('index');
+                ->get('/', [LandlordRoleController::class, 'index'])->name('index');
             Route::middleware('hrmac:platform-users.landlord-roles.manage')->group(function () {
-                Route::post('/', [P4LandlordRoleController::class, 'store'])->name('store');
-                Route::put('/{role}', [P4LandlordRoleController::class, 'update'])->name('update');
-                Route::delete('/{role}', [P4LandlordRoleController::class, 'destroy'])->name('destroy');
-                Route::post('/{role}/clone', [P4LandlordRoleController::class, 'clone'])->name('clone');
+                Route::post('/', [LandlordRoleController::class, 'store'])->name('store');
+                Route::put('/{role}', [LandlordRoleController::class, 'update'])->name('update');
+                Route::delete('/{role}', [LandlordRoleController::class, 'destroy'])->name('destroy');
+                Route::post('/{role}/clone', [LandlordRoleController::class, 'clone'])->name('clone');
             });
             Route::middleware('hrmac:platform-users.module-access.manage')
-                ->patch('/{role}/permissions', [P4LandlordRoleController::class, 'updatePermissions'])->name('permissions');
+                ->patch('/{role}/permissions', [LandlordRoleController::class, 'updatePermissions'])->name('permissions');
         });
 
         // Module Management (P-4)
-        Route::prefix('p4/modules')->name('platform.admin.modules.')->group(function () {
+        Route::prefix('modules')->name('platform.admin.modules.')->group(function () {
             Route::middleware('hrmac:module-management.module-list.view')
-                ->get('/', [P4ModuleAdminController::class, 'index'])->name('index');
+                ->get('/', [ModuleAdminController::class, 'index'])->name('index');
             Route::middleware('hrmac:module-management.module-list.toggle-active')
-                ->post('/{module}/toggle', [P4ModuleAdminController::class, 'toggle'])->name('toggle');
+                ->post('/{module}/toggle', [ModuleAdminController::class, 'toggle'])->name('toggle');
             Route::middleware('hrmac:module-management.module-list.configure')
-                ->put('/{module}/config', [P4ModuleAdminController::class, 'configure'])->name('configure');
+                ->put('/{module}/config', [ModuleAdminController::class, 'configure'])->name('configure');
             Route::middleware('hrmac:module-management.module-pricing.edit')
-                ->put('/{module}/pricing', [P4ModuleAdminController::class, 'updatePricing'])->name('pricing');
+                ->put('/{module}/pricing', [ModuleAdminController::class, 'updatePricing'])->name('pricing');
         });
 
         // =========================================================================
@@ -1801,20 +1533,20 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
 
         // Audit Logs (P-5)
-        Route::prefix('p5/audit-logs')->name('platform.admin.audit-logs.')->group(function () {
-            Route::get('/', [P5AuditLogController::class, 'index'])
+        Route::prefix('audit-logs')->name('platform.admin.audit-logs.')->group(function () {
+            Route::get('/', [AuditLogAdminController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:audit-logs.audit-log-list.view');
-            Route::get('/export', [P5AuditLogController::class, 'export'])
+            Route::get('/export', [AuditLogAdminController::class, 'export'])
                 ->name('export')
                 ->middleware('hrmac:audit-logs.audit-log-list.export');
-            Route::get('/{id}', [P5AuditLogController::class, 'show'])
+            Route::get('/{id}', [AuditLogAdminController::class, 'show'])
                 ->name('show')
                 ->middleware('hrmac:audit-logs.audit-log-list.view');
         });
 
         // Access Logs (P-5)
-        Route::prefix('p5/access-logs')->name('platform.admin.access-logs.')->group(function () {
+        Route::prefix('access-logs')->name('platform.admin.access-logs.')->group(function () {
             Route::get('/', [AccessLogController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:access-logs.access-log-list.view');
@@ -1826,36 +1558,36 @@ Route::middleware('admin.domain')->group(function () {
                 ->middleware('hrmac:access-logs.access-log-list.export');
         });
 
-        // Error Logs — P-5 Inertia surface (P5ErrorLogController)
-        Route::prefix('p5/error-logs')->name('platform.admin.error-logs.')->group(function () {
-            Route::get('/', [P5ErrorLogController::class, 'index'])
+        // Error Logs — P-5 Inertia surface (ErrorLogAdminController)
+        Route::prefix('error-logs')->name('platform.admin.error-logs.')->group(function () {
+            Route::get('/', [ErrorLogAdminController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:error-monitoring.error-log-list.view');
-            Route::get('/analytics', [P5ErrorLogController::class, 'analytics'])
+            Route::get('/analytics', [ErrorLogAdminController::class, 'analytics'])
                 ->name('analytics')
                 ->middleware('hrmac:error-monitoring.error-analytics.view');
-            Route::get('/bulk/resolve', [P5ErrorLogController::class, 'bulkResolve'])
+            Route::get('/bulk/resolve', [ErrorLogAdminController::class, 'bulkResolve'])
                 ->name('bulk-resolve-form')
                 ->middleware('hrmac:error-monitoring.error-log-list.resolve');
-            Route::post('/bulk/resolve', [P5ErrorLogController::class, 'bulkResolve'])
+            Route::post('/bulk/resolve', [ErrorLogAdminController::class, 'bulkResolve'])
                 ->name('bulk-resolve')
                 ->middleware('hrmac:error-monitoring.error-log-list.resolve');
-            Route::post('/bulk/destroy', [P5ErrorLogController::class, 'bulkDestroy'])
+            Route::post('/bulk/destroy', [ErrorLogAdminController::class, 'bulkDestroy'])
                 ->name('bulk-destroy')
                 ->middleware('hrmac:error-monitoring.error-log-list.delete');
-            Route::get('/{errorLog}', [P5ErrorLogController::class, 'show'])
+            Route::get('/{errorLog}', [ErrorLogAdminController::class, 'show'])
                 ->name('show')
                 ->middleware('hrmac:error-monitoring.error-log-list.view');
-            Route::post('/{errorLog}/resolve', [P5ErrorLogController::class, 'resolve'])
+            Route::post('/{errorLog}/resolve', [ErrorLogAdminController::class, 'resolve'])
                 ->name('resolve')
                 ->middleware('hrmac:error-monitoring.error-log-list.resolve');
-            Route::delete('/{errorLog}', [P5ErrorLogController::class, 'destroy'])
+            Route::delete('/{errorLog}', [ErrorLogAdminController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('hrmac:error-monitoring.error-log-list.delete');
         });
 
         // Developer Tools (P-5)
-        Route::prefix('p5/developer')->name('platform.admin.developer.')->group(function () {
+        Route::prefix('developer')->name('platform.admin.developer.')->group(function () {
             Route::get('/', [DeveloperToolsController::class, 'dashboard'])
                 ->name('dashboard')
                 ->middleware('hrmac:developer-tools.developer-dashboard.view');
@@ -1885,14 +1617,14 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Integrations — API Keys
         // =========================================================================
-        Route::prefix('p7/api-keys')->name('platform.admin.integrations.api-keys.')->group(function () {
-            Route::get('/', [P7ApiKeyController::class, 'index'])
+        Route::prefix('integrations/api-keys')->name('platform.admin.integrations.api-keys.')->group(function () {
+            Route::get('/', [ApiKeyAdminController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:platform-integrations.api-keys.view');
-            Route::post('/', [P7ApiKeyController::class, 'store'])
+            Route::post('/', [ApiKeyAdminController::class, 'store'])
                 ->name('store')
                 ->middleware('hrmac:platform-integrations.api-keys.create');
-            Route::post('/{id}/revoke', [P7ApiKeyController::class, 'revoke'])
+            Route::post('/{id}/revoke', [ApiKeyAdminController::class, 'revoke'])
                 ->name('revoke')
                 ->middleware('hrmac:platform-integrations.api-keys.revoke');
         });
@@ -1900,34 +1632,34 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Integrations — Webhook Endpoints
         // =========================================================================
-        Route::prefix('p7/webhooks')->name('platform.admin.integrations.webhooks.')->group(function () {
+        Route::prefix('integrations/webhooks')->name('platform.admin.integrations.webhooks.')->group(function () {
             // Static routes MUST come before parameterised {id} routes
-            Route::get('/events', [P7WebhookController::class, 'eventCatalog'])
+            Route::get('/events', [WebhookAdminController::class, 'eventCatalog'])
                 ->name('events')
                 ->middleware('hrmac:outbound-webhooks.event-catalog.view');
-            Route::post('/logs/{logId}/replay', [P7WebhookController::class, 'replay'])
+            Route::post('/logs/{logId}/replay', [WebhookAdminController::class, 'replay'])
                 ->name('logs.replay')
                 ->middleware('hrmac:outbound-webhooks.delivery-logs.replay');
 
-            Route::get('/', [P7WebhookController::class, 'index'])
+            Route::get('/', [WebhookAdminController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:outbound-webhooks.webhook-endpoints.view');
-            Route::post('/', [P7WebhookController::class, 'store'])
+            Route::post('/', [WebhookAdminController::class, 'store'])
                 ->name('store')
                 ->middleware('hrmac:outbound-webhooks.webhook-endpoints.create');
-            Route::put('/{id}', [P7WebhookController::class, 'update'])
+            Route::put('/{id}', [WebhookAdminController::class, 'update'])
                 ->name('update')
                 ->middleware('hrmac:outbound-webhooks.webhook-endpoints.update');
-            Route::delete('/{id}', [P7WebhookController::class, 'destroy'])
+            Route::delete('/{id}', [WebhookAdminController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('hrmac:outbound-webhooks.webhook-endpoints.delete');
-            Route::post('/{id}/test', [P7WebhookController::class, 'test'])
+            Route::post('/{id}/test', [WebhookAdminController::class, 'test'])
                 ->name('test')
                 ->middleware('hrmac:outbound-webhooks.webhook-endpoints.test');
-            Route::get('/{id}/logs', [P7WebhookController::class, 'deliveryLogs'])
+            Route::get('/{id}/logs', [WebhookAdminController::class, 'deliveryLogs'])
                 ->name('logs.index')
                 ->middleware('hrmac:outbound-webhooks.delivery-logs.view');
-            Route::post('/{id}/rotate-secret', [P7WebhookController::class, 'rotateSecret'])
+            Route::post('/{id}/rotate-secret', [WebhookAdminController::class, 'rotateSecret'])
                 ->name('rotate-secret')
                 ->middleware('hrmac:outbound-webhooks.webhook-signing.rotate');
         });
@@ -1935,7 +1667,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Feature Flags
         // =========================================================================
-        Route::prefix('p7/feature-flags')->name('platform.admin.feature-flags.')->group(function () {
+        Route::prefix('feature-flags')->name('platform.admin.feature-flags.')->group(function () {
             // Static routes before parameterised
             Route::delete('/overrides/{overrideId}', [FeatureFlagController::class, 'removeOverride'])
                 ->name('overrides.remove')
@@ -1967,7 +1699,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Experiments
         // =========================================================================
-        Route::prefix('p7/experiments')->name('platform.admin.feature-flags.experiments.')->group(function () {
+        Route::prefix('feature-flags/experiments')->name('platform.admin.feature-flags.experiments.')->group(function () {
             Route::get('/', [ExperimentController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:feature-flags.experiments.view');
@@ -1982,7 +1714,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Tenant Communications — Broadcasts
         // =========================================================================
-        Route::prefix('p7/broadcasts')->name('platform.admin.tenant-comms.broadcasts.')->group(function () {
+        Route::prefix('tenant-comms/broadcasts')->name('platform.admin.tenant-comms.broadcasts.')->group(function () {
             Route::get('/', [BroadcastController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:tenant-communications.broadcasts.view');
@@ -2000,7 +1732,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Tenant Communications — Email Blasts
         // =========================================================================
-        Route::prefix('p7/email-blasts')->name('platform.admin.tenant-comms.email-blasts.')->group(function () {
+        Route::prefix('tenant-comms/email-blasts')->name('platform.admin.tenant-comms.email-blasts.')->group(function () {
             Route::get('/', [EmailBlastController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:tenant-communications.email-blasts.view');
@@ -2015,7 +1747,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // P-7: Tenant Communications — Maintenance Windows
         // =========================================================================
-        Route::prefix('p7/maintenance-windows')->name('platform.admin.tenant-comms.maintenance-windows.')->group(function () {
+        Route::prefix('tenant-comms/maintenance-windows')->name('platform.admin.tenant-comms.maintenance-windows.')->group(function () {
             Route::get('/', [MaintenanceWindowController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:tenant-communications.maintenance-windows.view');

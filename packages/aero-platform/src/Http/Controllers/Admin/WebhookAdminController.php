@@ -12,12 +12,12 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * P-7 — Platform Webhook Endpoint Controller (Admin).
+ * Platform Webhook Endpoint Controller (Admin).
  *
- * Route prefix: /admin/p7/webhooks
+ * Route prefix: /admin/integrations/webhooks
  * Route names:  platform.admin.integrations.webhooks.*
  */
-class P7WebhookController extends Controller
+class WebhookAdminController extends Controller
 {
     public function __construct(private readonly WebhookService $svc) {}
 
