@@ -9,7 +9,7 @@
 | Standalone | `c:\laragon\www\aeos365-standalone` (`http://aeos365-standalone.test`) |
 
 ## Status
-Phase 0 ✅ Done (Auth, Install, Tenant Shell) · Phase 1 ⬜ Starting (HRM — H-1 Employees next) · Full roadmap: `docs/master-plan.md`
+Phase 0 ✅ Done · Phase 1 ✅ Done (HRM H-1–H-18) · Phase 2 🟡 In Progress (P-1–P-5 ✅, P-6 next) · Full roadmap: `docs/master-plan.md`
 
 ## Rules
 
