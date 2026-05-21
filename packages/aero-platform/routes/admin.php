@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
+use Aero\Platform\Http\Controllers\Admin\AccessLogController;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
 use Aero\Platform\Http\Controllers\Admin\AnalyticsController as P3AnalyticsController;
@@ -10,6 +11,7 @@ use Aero\Platform\Http\Controllers\Admin\BillingDashboardController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenantController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
 use Aero\Platform\Http\Controllers\Admin\DashboardController as P3DashboardController;
+use Aero\Platform\Http\Controllers\Admin\DeveloperToolsController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use Aero\Platform\Http\Controllers\Admin\LandlordRoleController as P4LandlordRoleController;
 use Aero\Platform\Http\Controllers\Admin\LandlordUserController as P4LandlordUserController;
@@ -19,6 +21,8 @@ use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
 use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminP1OnboardingController;
 use Aero\Platform\Http\Controllers\Admin\P4PlatformSettingController;
+use Aero\Platform\Http\Controllers\Admin\P5AuditLogController;
+use Aero\Platform\Http\Controllers\Admin\P5ErrorLogController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
 use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController as P3ProductAnalyticsController;
@@ -1783,6 +1787,92 @@ Route::middleware('admin.domain')->group(function () {
                 Route::post('/{id}/test', [RateLimitConfigController::class, 'test'])->name('test');
                 Route::post('/bulk-update', [RateLimitConfigController::class, 'bulkUpdate'])->name('bulk-update');
             });
+        });
+
+        // =========================================================================
+        // P-5: Audit & Developer Tools Admin Routes
+        // =========================================================================
+
+        // Audit Logs (P-5)
+        Route::prefix('p5/audit-logs')->name('platform.admin.audit-logs.')->group(function () {
+            Route::get('/', [P5AuditLogController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:audit-logs.audit-log-list.view');
+            Route::get('/export', [P5AuditLogController::class, 'export'])
+                ->name('export')
+                ->middleware('hrmac:audit-logs.audit-log-list.export');
+            Route::get('/{id}', [P5AuditLogController::class, 'show'])
+                ->name('show')
+                ->middleware('hrmac:audit-logs.audit-log-list.view');
+        });
+
+        // Access Logs (P-5)
+        Route::prefix('p5/access-logs')->name('platform.admin.access-logs.')->group(function () {
+            Route::get('/', [AccessLogController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:access-logs.access-log-list.view');
+            Route::get('/pii', [AccessLogController::class, 'piiAccess'])
+                ->name('pii')
+                ->middleware('hrmac:access-logs.pii-access.view');
+            Route::get('/export', [AccessLogController::class, 'export'])
+                ->name('export')
+                ->middleware('hrmac:access-logs.access-log-list.export');
+        });
+
+        // Error Logs — P-5 Inertia surface (P5ErrorLogController)
+        Route::prefix('p5/error-logs')->name('platform.admin.error-logs.')->group(function () {
+            Route::get('/', [P5ErrorLogController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:error-monitoring.error-log-list.view');
+            Route::get('/analytics', [P5ErrorLogController::class, 'analytics'])
+                ->name('analytics')
+                ->middleware('hrmac:error-monitoring.error-analytics.view');
+            Route::get('/bulk/resolve', [P5ErrorLogController::class, 'bulkResolve'])
+                ->name('bulk-resolve-form')
+                ->middleware('hrmac:error-monitoring.error-log-list.resolve');
+            Route::post('/bulk/resolve', [P5ErrorLogController::class, 'bulkResolve'])
+                ->name('bulk-resolve')
+                ->middleware('hrmac:error-monitoring.error-log-list.resolve');
+            Route::post('/bulk/destroy', [P5ErrorLogController::class, 'bulkDestroy'])
+                ->name('bulk-destroy')
+                ->middleware('hrmac:error-monitoring.error-log-list.delete');
+            Route::get('/{errorLog}', [P5ErrorLogController::class, 'show'])
+                ->name('show')
+                ->middleware('hrmac:error-monitoring.error-log-list.view');
+            Route::post('/{errorLog}/resolve', [P5ErrorLogController::class, 'resolve'])
+                ->name('resolve')
+                ->middleware('hrmac:error-monitoring.error-log-list.resolve');
+            Route::delete('/{errorLog}', [P5ErrorLogController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('hrmac:error-monitoring.error-log-list.delete');
+        });
+
+        // Developer Tools (P-5)
+        Route::prefix('p5/developer')->name('platform.admin.developer.')->group(function () {
+            Route::get('/', [DeveloperToolsController::class, 'dashboard'])
+                ->name('dashboard')
+                ->middleware('hrmac:developer-tools.developer-dashboard.view');
+            Route::post('/cache/clear', [DeveloperToolsController::class, 'clearCache'])
+                ->name('cache.clear')
+                ->middleware('hrmac:developer-tools.cache-management.clear');
+            Route::get('/queue/jobs', [DeveloperToolsController::class, 'queueJobs'])
+                ->name('queue.jobs')
+                ->middleware('hrmac:developer-tools.queue-management.view');
+            Route::post('/queue/retry', [DeveloperToolsController::class, 'retryJob'])
+                ->name('queue.retry')
+                ->middleware('hrmac:developer-tools.queue-management.manage');
+            Route::post('/queue/forget', [DeveloperToolsController::class, 'deleteJob'])
+                ->name('queue.forget')
+                ->middleware('hrmac:developer-tools.queue-management.manage');
+            Route::get('/logs', [DeveloperToolsController::class, 'logFiles'])
+                ->name('logs.index')
+                ->middleware('hrmac:developer-tools.log-viewer.view');
+            Route::get('/logs/download', [DeveloperToolsController::class, 'downloadLog'])
+                ->name('logs.download')
+                ->middleware('hrmac:developer-tools.log-viewer.download');
+            Route::get('/logs/tail', [DeveloperToolsController::class, 'tailLog'])
+                ->name('logs.tail')
+                ->middleware('hrmac:developer-tools.log-viewer.view');
         });
     });
 });

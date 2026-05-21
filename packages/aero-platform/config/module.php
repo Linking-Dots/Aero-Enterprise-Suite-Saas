@@ -653,6 +653,41 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | 13b. Access Logs (PII access tracking)
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'access-logs',
+            'name' => 'Access Logs',
+            'description' => 'Track access to sensitive fields and PII data',
+            'icon' => 'ShieldCheckIcon',
+            'route' => '/access-logs',
+            'priority' => 14,
+
+            'components' => [
+                [
+                    'code' => 'access-log-list',
+                    'name' => 'All Access Logs',
+                    'route' => '/access-logs',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Access Logs'],
+                        ['code' => 'export', 'name' => 'Export Logs'],
+                    ],
+                ],
+                [
+                    'code' => 'pii-access',
+                    'name' => 'PII Access',
+                    'route' => '/access-logs/pii',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View PII Access Logs'],
+                        ['code' => 'export', 'name' => 'Export PII Logs'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
         | 14. Analytics & Reports
         |--------------------------------------------------------------------------
         */
