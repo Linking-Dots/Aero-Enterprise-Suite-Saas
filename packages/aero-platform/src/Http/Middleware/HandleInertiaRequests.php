@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Http\Middleware;
 
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\User;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\Support\TenantCache;
-use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Aero\I18n\Services\TranslationService;
@@ -522,18 +522,20 @@ class HandleInertiaRequests extends Middleware
         return TenantCache::remember('tenant_subscribed_modules:'.tenant('id'), 300, function () {
             $modules = Module::where('is_core', true)->where('is_active', true)->pluck('code')->toArray();
 
-            $subscription = tenant()->currentSubscription;
-            if ($subscription && $subscription->plan) {
-                $planModules = $subscription->plan->modules()->where('is_active', true)->pluck('modules.code')->toArray();
-                $modules = array_merge($modules, $planModules);
-            }
+            // Access gate: ProductSubscription is the canonical source of module access.
+            // plan_modules defines the catalog/storefront only — it does NOT grant access.
+            $productModules = tenant()->productSubscriptions()
+                ->where('status', 'active')
+                ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
+                ->with('product:id,module_code')
+                ->get()
+                ->pluck('product.module_code')
+                ->filter()
+                ->values()
+                ->toArray();
+            $modules = array_merge($modules, $productModules);
 
-            // Legacy/Direct plan check
-            if (tenant()->plan) {
-                $directPlanModules = tenant()->plan->modules()->where('is_active', true)->pluck('modules.code')->toArray();
-                $modules = array_merge($modules, $directPlanModules);
-            }
-
+            // Admin overrides: granted outside subscription flow
             $tenantModuleCodes = tenant()->modules()->pluck('code')->toArray();
             if (! empty($tenantModuleCodes)) {
                 $modules = array_merge($modules, $tenantModuleCodes);

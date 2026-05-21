@@ -3,10 +3,10 @@
 namespace Aero\Core\Http\Middleware;
 
 use Aero\Contracts\DomainContextContract;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
 use Aero\Core\Services\NavigationRegistry;
-use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\HRMAC\Models\Action;
 use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;
@@ -557,20 +557,20 @@ class HandleInertiaRequests extends Middleware
             // Add plan-based modules from subscription
             $tenant = tenant();
             if ($tenant) {
-                // Check currentSubscription → plan → modules
-                $subscription = $tenant->currentSubscription ?? null;
-                if ($subscription && $subscription->plan) {
-                    $planModules = $subscription->plan->modules()->where('is_active', true)->pluck('modules.code')->toArray();
-                    $modules = array_merge($modules, $planModules);
-                }
+                // Access gate: ProductSubscription is the canonical source of module access.
+                // plan_modules defines the catalog/storefront only — it does NOT grant access.
+                $productModules = $tenant->productSubscriptions()
+                    ->where('status', 'active')
+                    ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
+                    ->with('product:id,module_code')
+                    ->get()
+                    ->pluck('product.module_code')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+                $modules = array_merge($modules, $productModules);
 
-                // Legacy/Direct plan check
-                if ($tenant->plan) {
-                    $directPlanModules = $tenant->plan->modules()->where('is_active', true)->pluck('modules.code')->toArray();
-                    $modules = array_merge($modules, $directPlanModules);
-                }
-
-                // Tenant-level module overrides (from tenant_module pivot)
+                // Admin overrides: granted outside subscription flow
                 $tenantModules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
                 if (! empty($tenantModules)) {
                     $modules = array_merge($modules, $tenantModules);

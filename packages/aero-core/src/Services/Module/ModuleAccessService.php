@@ -462,17 +462,20 @@ class ModuleAccessService
             }
 
             if ($includePaidModules) {
-                // Check 1: Get modules from subscription plan (if plan exists)
-                $plan = $tenant->plan;
-                if ($plan) {
-                    $planModules = $plan->modules()
-                        ->where('is_active', true)
-                        ->pluck('modules.code')
-                        ->toArray();
-                    $moduleCodes = array_merge($moduleCodes, $planModules);
-                }
+                // Access gate: ProductSubscription is the canonical source of module access.
+                // plan_modules defines the catalog/storefront only — it does NOT grant access.
+                $productModuleCodes = $tenant->productSubscriptions()
+                    ->where('status', 'active')
+                    ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
+                    ->with('product:id,module_code')
+                    ->get()
+                    ->pluck('product.module_code')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+                $moduleCodes = array_merge($moduleCodes, $productModuleCodes);
 
-                // Check 2: Get modules from tenant's custom modules collection
+                // Admin overrides: granted outside subscription flow
                 $tenantModules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
                 if (! empty($tenantModules)) {
                     $moduleCodes = array_merge($moduleCodes, $tenantModules);
