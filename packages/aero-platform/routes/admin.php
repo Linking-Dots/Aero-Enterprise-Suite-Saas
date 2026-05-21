@@ -8,14 +8,19 @@ use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
 use Aero\Platform\Http\Controllers\Admin\AnalyticsController as P3AnalyticsController;
 use Aero\Platform\Http\Controllers\Admin\BillingDashboardController;
+use Aero\Platform\Http\Controllers\Admin\BroadcastController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenantController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
 use Aero\Platform\Http\Controllers\Admin\DashboardController as P3DashboardController;
 use Aero\Platform\Http\Controllers\Admin\DeveloperToolsController;
+use Aero\Platform\Http\Controllers\Admin\EmailBlastController;
+use Aero\Platform\Http\Controllers\Admin\ExperimentController;
+use Aero\Platform\Http\Controllers\Admin\FeatureFlagController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use Aero\Platform\Http\Controllers\Admin\LandlordRoleController as P4LandlordRoleController;
 use Aero\Platform\Http\Controllers\Admin\LandlordUserController as P4LandlordUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
+use Aero\Platform\Http\Controllers\Admin\MaintenanceWindowController;
 use Aero\Platform\Http\Controllers\Admin\ModuleAdminController as P4ModuleAdminController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
@@ -23,6 +28,8 @@ use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminP1Onboardi
 use Aero\Platform\Http\Controllers\Admin\P4PlatformSettingController;
 use Aero\Platform\Http\Controllers\Admin\P5AuditLogController;
 use Aero\Platform\Http\Controllers\Admin\P5ErrorLogController;
+use Aero\Platform\Http\Controllers\Admin\P7ApiKeyController;
+use Aero\Platform\Http\Controllers\Admin\P7WebhookController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
 use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController as P3ProductAnalyticsController;
@@ -1873,6 +1880,151 @@ Route::middleware('admin.domain')->group(function () {
             Route::get('/logs/tail', [DeveloperToolsController::class, 'tailLog'])
                 ->name('logs.tail')
                 ->middleware('hrmac:developer-tools.log-viewer.view');
+        });
+
+        // =========================================================================
+        // P-7: Integrations — API Keys
+        // =========================================================================
+        Route::prefix('p7/api-keys')->name('platform.admin.integrations.api-keys.')->group(function () {
+            Route::get('/', [P7ApiKeyController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:platform-integrations.api-keys.view');
+            Route::post('/', [P7ApiKeyController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:platform-integrations.api-keys.create');
+            Route::post('/{id}/revoke', [P7ApiKeyController::class, 'revoke'])
+                ->name('revoke')
+                ->middleware('hrmac:platform-integrations.api-keys.revoke');
+        });
+
+        // =========================================================================
+        // P-7: Integrations — Webhook Endpoints
+        // =========================================================================
+        Route::prefix('p7/webhooks')->name('platform.admin.integrations.webhooks.')->group(function () {
+            // Static routes MUST come before parameterised {id} routes
+            Route::get('/events', [P7WebhookController::class, 'eventCatalog'])
+                ->name('events')
+                ->middleware('hrmac:outbound-webhooks.event-catalog.view');
+            Route::post('/logs/{logId}/replay', [P7WebhookController::class, 'replay'])
+                ->name('logs.replay')
+                ->middleware('hrmac:outbound-webhooks.delivery-logs.replay');
+
+            Route::get('/', [P7WebhookController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:outbound-webhooks.webhook-endpoints.view');
+            Route::post('/', [P7WebhookController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:outbound-webhooks.webhook-endpoints.create');
+            Route::put('/{id}', [P7WebhookController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:outbound-webhooks.webhook-endpoints.update');
+            Route::delete('/{id}', [P7WebhookController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('hrmac:outbound-webhooks.webhook-endpoints.delete');
+            Route::post('/{id}/test', [P7WebhookController::class, 'test'])
+                ->name('test')
+                ->middleware('hrmac:outbound-webhooks.webhook-endpoints.test');
+            Route::get('/{id}/logs', [P7WebhookController::class, 'deliveryLogs'])
+                ->name('logs.index')
+                ->middleware('hrmac:outbound-webhooks.delivery-logs.view');
+            Route::post('/{id}/rotate-secret', [P7WebhookController::class, 'rotateSecret'])
+                ->name('rotate-secret')
+                ->middleware('hrmac:outbound-webhooks.webhook-signing.rotate');
+        });
+
+        // =========================================================================
+        // P-7: Feature Flags
+        // =========================================================================
+        Route::prefix('p7/feature-flags')->name('platform.admin.feature-flags.')->group(function () {
+            // Static routes before parameterised
+            Route::delete('/overrides/{overrideId}', [FeatureFlagController::class, 'removeOverride'])
+                ->name('overrides.remove')
+                ->middleware('hrmac:feature-flags.tenant-flags.manage');
+
+            Route::get('/', [FeatureFlagController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:feature-flags.flags.view');
+            Route::post('/', [FeatureFlagController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:feature-flags.flags.create');
+            Route::put('/{id}', [FeatureFlagController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:feature-flags.flags.update');
+            Route::post('/{id}/archive', [FeatureFlagController::class, 'archive'])
+                ->name('archive')
+                ->middleware('hrmac:feature-flags.flags.archive');
+            Route::post('/{id}/toggle', [FeatureFlagController::class, 'toggle'])
+                ->name('toggle')
+                ->middleware('hrmac:feature-flags.flags.toggle');
+            Route::get('/{id}/overrides', [FeatureFlagController::class, 'tenantOverrides'])
+                ->name('overrides.index')
+                ->middleware('hrmac:feature-flags.tenant-flags.view');
+            Route::post('/{id}/overrides', [FeatureFlagController::class, 'setOverride'])
+                ->name('overrides.store')
+                ->middleware('hrmac:feature-flags.tenant-flags.manage');
+        });
+
+        // =========================================================================
+        // P-7: Experiments
+        // =========================================================================
+        Route::prefix('p7/experiments')->name('platform.admin.feature-flags.experiments.')->group(function () {
+            Route::get('/', [ExperimentController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:feature-flags.experiments.view');
+            Route::post('/', [ExperimentController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:feature-flags.experiments.start');
+            Route::post('/{id}/stop', [ExperimentController::class, 'stop'])
+                ->name('stop')
+                ->middleware('hrmac:feature-flags.experiments.stop');
+        });
+
+        // =========================================================================
+        // P-7: Tenant Communications — Broadcasts
+        // =========================================================================
+        Route::prefix('p7/broadcasts')->name('platform.admin.tenant-comms.broadcasts.')->group(function () {
+            Route::get('/', [BroadcastController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:tenant-communications.broadcasts.view');
+            Route::post('/', [BroadcastController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:tenant-communications.broadcasts.create');
+            Route::post('/{id}/publish', [BroadcastController::class, 'publish'])
+                ->name('publish')
+                ->middleware('hrmac:tenant-communications.broadcasts.publish');
+            Route::post('/{id}/dismiss-all', [BroadcastController::class, 'dismissAll'])
+                ->name('dismiss-all')
+                ->middleware('hrmac:tenant-communications.broadcasts.dismiss-all');
+        });
+
+        // =========================================================================
+        // P-7: Tenant Communications — Email Blasts
+        // =========================================================================
+        Route::prefix('p7/email-blasts')->name('platform.admin.tenant-comms.email-blasts.')->group(function () {
+            Route::get('/', [EmailBlastController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:tenant-communications.email-blasts.view');
+            Route::post('/', [EmailBlastController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:tenant-communications.email-blasts.create');
+            Route::post('/{id}/send', [EmailBlastController::class, 'send'])
+                ->name('send')
+                ->middleware('hrmac:tenant-communications.email-blasts.send');
+        });
+
+        // =========================================================================
+        // P-7: Tenant Communications — Maintenance Windows
+        // =========================================================================
+        Route::prefix('p7/maintenance-windows')->name('platform.admin.tenant-comms.maintenance-windows.')->group(function () {
+            Route::get('/', [MaintenanceWindowController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:tenant-communications.maintenance-windows.view');
+            Route::post('/', [MaintenanceWindowController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:tenant-communications.maintenance-windows.schedule');
+            Route::post('/{id}/cancel', [MaintenanceWindowController::class, 'cancel'])
+                ->name('cancel')
+                ->middleware('hrmac:tenant-communications.maintenance-windows.cancel');
         });
     });
 });

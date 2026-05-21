@@ -115,4 +115,37 @@ enum AuditEventType: string
     case LANDLORD_ROLE_CLONED = 'platform.role.cloned';
     case MODULE_TOGGLED = 'platform.module.toggled';
     case MODULE_CONFIGURED = 'platform.module.configured';
+
+    // P-7 — Integrations / API Keys
+    case API_KEY_CREATED = 'platform.api_key.created';
+    case API_KEY_REVOKED = 'platform.api_key.revoked';
+
+    // P-7 — Webhook Endpoints
+    case WEBHOOK_ENDPOINT_CREATED = 'platform.webhook.endpoint_created';
+    case WEBHOOK_ENDPOINT_UPDATED = 'platform.webhook.endpoint_updated';
+    case WEBHOOK_ENDPOINT_DELETED = 'platform.webhook.endpoint_deleted';
+    case WEBHOOK_ENDPOINT_TESTED = 'platform.webhook.endpoint_tested';
+    case WEBHOOK_SECRET_ROTATED = 'platform.webhook.secret_rotated';
+    case WEBHOOK_LOG_REPLAYED = 'platform.webhook.log_replayed';
+
+    // P-7 — Feature Flags
+    case FEATURE_FLAG_CREATED = 'platform.feature_flag.created';
+    case FEATURE_FLAG_UPDATED = 'platform.feature_flag.updated';
+    case FEATURE_FLAG_ARCHIVED = 'platform.feature_flag.archived';
+    case FEATURE_FLAG_TOGGLED = 'platform.feature_flag.toggled';
+    case FEATURE_FLAG_OVERRIDE_SET = 'platform.feature_flag.override_set';
+    case FEATURE_FLAG_OVERRIDE_REMOVED = 'platform.feature_flag.override_removed';
+
+    // P-7 — Experiments
+    case EXPERIMENT_STARTED = 'platform.experiment.started';
+    case EXPERIMENT_STOPPED = 'platform.experiment.stopped';
+
+    // P-7 — Tenant Communications
+    case BROADCAST_CREATED = 'platform.broadcast.created';
+    case BROADCAST_PUBLISHED = 'platform.broadcast.published';
+    case BROADCAST_DISMISSED_ALL = 'platform.broadcast.dismissed_all';
+    case EMAIL_BLAST_CREATED = 'platform.email_blast.created';
+    case EMAIL_BLAST_SENT = 'platform.email_blast.sent';
+    case MAINTENANCE_WINDOW_SCHEDULED = 'platform.maintenance_window.scheduled';
+    case MAINTENANCE_WINDOW_CANCELLED = 'platform.maintenance_window.cancelled';
 }
