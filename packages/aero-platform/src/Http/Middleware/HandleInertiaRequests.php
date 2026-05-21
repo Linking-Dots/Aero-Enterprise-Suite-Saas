@@ -523,7 +523,7 @@ class HandleInertiaRequests extends Middleware
             $modules = Module::where('is_core', true)->where('is_active', true)->pluck('code')->toArray();
 
             // Access gate: ProductSubscription is the canonical source of module access.
-            // plan_modules defines the catalog/storefront only — it does NOT grant access.
+            // Plans and products are independent — plan selection does NOT gate module access.
             $productModules = tenant()->productSubscriptions()
                 ->where('status', 'active')
                 ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))

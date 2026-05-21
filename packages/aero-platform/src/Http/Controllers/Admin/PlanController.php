@@ -31,8 +31,7 @@ class PlanController extends Controller
 
     public function show(Plan $plan): Response
     {
-        $plan->loadCount(['subscriptions as active_count' => fn ($q) => $q->where('status', 'active')])
-            ->load('planModules');
+        $plan->loadCount(['subscriptions as active_count' => fn ($q) => $q->where('status', 'active')]);
 
         return Inertia::render('Platform/Admin/Plans/P2/Show', [
             'plan' => $plan,
@@ -56,7 +55,7 @@ class PlanController extends Controller
     public function edit(Plan $plan): Response
     {
         return Inertia::render('Platform/Admin/Plans/P2/Form', [
-            'plan' => $plan->load('planModules'),
+            'plan' => $plan,
         ]);
     }
 
@@ -90,14 +89,6 @@ class PlanController extends Controller
         return redirect()->route('platform.admin.plans.show', $copy)->with('success', 'Plan cloned');
     }
 
-    public function assignModules(Request $request, Plan $plan): RedirectResponse
-    {
-        $request->validate(['modules' => 'required|array']);
-        $this->svc->assignModules($plan, $request->input('modules'));
-
-        return back()->with('success', 'Modules assigned');
-    }
-
     public function stats(Plan $plan): JsonResponse
     {
         $active = $plan->subscriptions()->where('status', 'active')->count();
@@ -107,7 +98,6 @@ class PlanController extends Controller
             'active_subscribers' => $active,
             'mrr' => number_format((float) $mrr, 2),
             'features_count' => is_array($plan->features) ? count($plan->features) : 0,
-            'modules_count' => $plan->planModules()->count(),
         ]);
     }
 }

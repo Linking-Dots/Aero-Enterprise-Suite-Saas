@@ -1,5 +1,9 @@
 # Plan P-2 — Plans & Billing Implementation Plan
 
+> **ARCHITECTURE UPDATE (2026-05-21):** `plan_modules` table, `PlanModule` model, and `assignModules()` were removed.
+> Plans and products are fully independent subscriptions. A Plan does not bundle or restrict products.
+> All references to `plan_modules`, `PlanModule`, `assignModules`, and `plan-management.plan-modules.*` in this document are **obsolete** and must not be implemented.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Deliver a production-grade Platform Admin surface for product catalog (Plan CRUD + clone + archive + module assignment), subscription management (cancel/upgrade, immutable after activation), invoice management (list, generate, send, mark-paid, download PDF, immutable after payment), payment gateway configuration (Stripe + SSLCommerz), and a billing dashboard with MRR/ARR + outstanding metrics.
@@ -17,7 +21,7 @@ Declared in `packages/aero-platform/config/module.php`. Routes reference codes a
 **Submodule `plan-management`**
 - `plan-management.plan-list.view` / `.create` / `.edit` / `.delete` / `.archive` / `.clone`
 - `plan-management.plan-details.view` / `.view-subscribers` / `.view-revenue` / `.export`
-- `plan-management.plan-modules.view` / `.assign`
+- ~~`plan-management.plan-modules.view` / `.assign`~~ **REMOVED — plan_modules concept eliminated**
 
 **Submodule `billing-management`**
 - `billing-management.billing-dashboard.view`

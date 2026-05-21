@@ -7,7 +7,6 @@ namespace Aero\Platform\Services;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Plan;
-use Aero\Platform\Models\PlanModule;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -49,26 +48,20 @@ class PlanService
         return Plan::query()
             ->where('status', 'active')
             ->where('is_public', true)
-            ->with('planModules')
             ->orderBy('sort_order')
             ->get();
     }
 
     /**
-     * Create a new plan with optional module config rows.
+     * Create a new plan.
      */
     public function create(array $data): Plan
     {
         return DB::transaction(function () use ($data) {
             $data['slug'] ??= Str::slug($data['name']);
 
-            $modules = $data['plan_modules'] ?? [];
-            unset($data['plan_modules']);
-
             /** @var Plan $plan */
             $plan = Plan::create($data);
-
-            $this->syncPlanModules($plan, $modules);
 
             $this->audit->log(
                 AuditEventType::PLAN_CREATED->value,
@@ -90,14 +83,7 @@ class PlanService
         return DB::transaction(function () use ($plan, $data) {
             $old = $plan->toArray();
 
-            $modules = $data['plan_modules'] ?? null;
-            unset($data['plan_modules']);
-
             $plan->update($data);
-
-            if ($modules !== null) {
-                $this->syncPlanModules($plan, $modules);
-            }
 
             $this->audit->log(
                 AuditEventType::PLAN_UPDATED->value,
@@ -145,14 +131,11 @@ class PlanService
     }
 
     /**
-     * Duplicate a plan and its module assignments.
-     * The clone is created as a draft with a modified name/slug and no active subscriptions.
+     * Duplicate a plan. The clone is created as a draft with a modified name/slug and no active subscriptions.
      */
     public function clone(Plan $plan): Plan
     {
         return DB::transaction(function () use ($plan) {
-            $plan->loadMissing('planModules');
-
             $baseName = $plan->name.' (Copy)';
             $baseSlug = Str::slug($baseName);
 
@@ -184,15 +167,6 @@ class PlanService
             /** @var Plan $copy */
             $copy = Plan::create($cloneData);
 
-            // Copy module assignments
-            $modules = $plan->planModules->map(fn ($pm) => [
-                'module_code' => $pm->module_code,
-                'is_enabled' => (bool) $pm->is_enabled,
-                'config' => $pm->config,
-            ])->all();
-
-            $this->syncPlanModules($copy, $modules);
-
             $this->audit->log(
                 AuditEventType::PLAN_CLONED->value,
                 $copy,
@@ -203,57 +177,5 @@ class PlanService
 
             return $copy;
         });
-    }
-
-    /**
-     * Replace all module assignments for a plan with the provided list.
-     *
-     * @param  array<int, array{module_code: string, is_enabled?: bool, config?: array<mixed>}>  $modules
-     */
-    public function assignModules(Plan $plan, array $modules): void
-    {
-        DB::transaction(function () use ($plan, $modules) {
-            // Full replacement — delete existing rows first
-            PlanModule::where('plan_id', $plan->id)->delete();
-
-            $this->syncPlanModules($plan, $modules);
-
-            $this->audit->log(
-                'plan.modules_assigned',
-                $plan,
-                "Modules reassigned for plan [{$plan->name}].",
-                null,
-                ['modules' => $modules]
-            );
-        });
-    }
-
-    /**
-     * Sync plan_modules rows from an array of ['module_code' => string, 'is_enabled' => bool, 'config' => array].
-     *
-     * @param  array<int, array{module_code: string, is_enabled?: bool, config?: array<mixed>}>  $modules
-     */
-    private function syncPlanModules(Plan $plan, array $modules): void
-    {
-        if ($modules === []) {
-            return;
-        }
-
-        // Build an indexed map for upsert
-        $upsertRows = [];
-        foreach ($modules as $row) {
-            $upsertRows[] = [
-                'plan_id' => $plan->id,
-                'module_code' => $row['module_code'],
-                'is_enabled' => (bool) ($row['is_enabled'] ?? true),
-                'config' => isset($row['config']) ? json_encode($row['config']) : null,
-            ];
-        }
-
-        PlanModule::upsert(
-            $upsertRows,
-            ['plan_id', 'module_code'],
-            ['is_enabled', 'config']
-        );
     }
 }

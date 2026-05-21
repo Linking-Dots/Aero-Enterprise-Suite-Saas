@@ -156,14 +156,6 @@ class Plan extends CentralModel
         return $this->hasMany(PlanQuota::class)->orderBy('sort_order');
     }
 
-    /**
-     * Get the plan module configuration rows (P-2 billing module gating).
-     */
-    public function planModules(): HasMany
-    {
-        return $this->hasMany(PlanModule::class);
-    }
-
     // =========================================================================
     // SCOPES
     // =========================================================================

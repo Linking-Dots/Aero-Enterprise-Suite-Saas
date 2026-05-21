@@ -234,15 +234,6 @@ return [
                         ['code' => 'export', 'name' => 'Export Reports'],
                     ],
                 ],
-                [
-                    'code' => 'plan-modules',
-                    'name' => 'Module Assignment',
-                    'route' => '/plans/modules',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Module Assignments'],
-                        ['code' => 'assign', 'name' => 'Assign Modules'],
-                    ],
-                ],
             ],
         ],
 

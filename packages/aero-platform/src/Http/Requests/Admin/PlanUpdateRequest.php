@@ -44,12 +44,6 @@ class PlanUpdateRequest extends FormRequest
             'features.*' => ['string', 'max:255'],
             'limits' => ['nullable', 'array'],
 
-            // Plan module config rows (full replacement when provided)
-            'plan_modules' => ['nullable', 'array'],
-            'plan_modules.*.module_code' => ['required_with:plan_modules', 'string', 'max:64'],
-            'plan_modules.*.is_enabled' => ['boolean'],
-            'plan_modules.*.config' => ['nullable', 'array'],
-
             // Stripe
             'stripe_price_id_monthly' => ['nullable', 'string', 'max:255'],
             'stripe_price_id_annual' => ['nullable', 'string', 'max:255'],

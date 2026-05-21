@@ -1467,7 +1467,6 @@ Route::middleware('admin.domain')->group(function () {
             Route::delete('/{plan}', [AdminP2PlanController::class, 'destroy'])->name('destroy')->middleware('hrmac:plan-management.plan-list.delete');
             Route::post('/{plan}/archive', [AdminP2PlanController::class, 'archive'])->name('archive')->middleware('hrmac:plan-management.plan-list.archive');
             Route::post('/{plan}/clone', [AdminP2PlanController::class, 'clone'])->name('clone')->middleware('hrmac:plan-management.plan-list.clone');
-            Route::post('/{plan}/modules', [AdminP2PlanController::class, 'assignModules'])->name('modules.assign')->middleware('hrmac:plan-management.plan-modules.assign');
         });
 
         // Billing (dashboard + subscriptions + invoices + gateways)
