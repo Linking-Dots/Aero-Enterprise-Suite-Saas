@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlanModule;
@@ -70,7 +71,7 @@ class PlanService
             $this->syncPlanModules($plan, $modules);
 
             $this->audit->log(
-                'plan.created',
+                AuditEventType::PLAN_CREATED->value,
                 $plan,
                 "Plan [{$plan->name}] created.",
                 null,
@@ -99,7 +100,7 @@ class PlanService
             }
 
             $this->audit->log(
-                'plan.updated',
+                AuditEventType::PLAN_UPDATED->value,
                 $plan,
                 "Plan [{$plan->name}] updated.",
                 $old,
@@ -124,7 +125,7 @@ class PlanService
                 );
             }
 
-            $this->audit->log('plan.deleted', $plan, "Plan [{$plan->name}] deleted.");
+            $this->audit->log(AuditEventType::PLAN_DELETED->value, $plan, "Plan [{$plan->name}] deleted.");
             $plan->delete();
         });
     }
@@ -137,7 +138,7 @@ class PlanService
         return DB::transaction(function () use ($plan) {
             $plan->update(['status' => 'archived', 'is_active' => false, 'is_public' => false]);
 
-            $this->audit->log('plan.archived', $plan, "Plan [{$plan->name}] archived.");
+            $this->audit->log(AuditEventType::PLAN_ARCHIVED->value, $plan, "Plan [{$plan->name}] archived.");
 
             return $plan->fresh();
         });
@@ -193,7 +194,7 @@ class PlanService
             $this->syncPlanModules($copy, $modules);
 
             $this->audit->log(
-                'plan.cloned',
+                AuditEventType::PLAN_CLONED->value,
                 $copy,
                 "Plan [{$plan->name}] cloned as [{$copy->name}].",
                 ['source_plan_id' => $plan->id],

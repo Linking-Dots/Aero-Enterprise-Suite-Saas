@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\LandlordUser;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,7 @@ class LandlordUserService
             }
 
             $this->audit->log(
-                event: 'platform.users.created',
+                event: AuditEventType::LANDLORD_USER_CREATED->value,
                 action: 'create',
                 subject: $user,
                 description: "Landlord user created: {$user->email}",
@@ -70,7 +71,7 @@ class LandlordUserService
             }
 
             $this->audit->log(
-                event: 'platform.users.updated',
+                event: AuditEventType::LANDLORD_USER_UPDATED->value,
                 action: 'edit',
                 subject: $user,
                 description: "Landlord user updated: {$user->email}",
@@ -87,7 +88,7 @@ class LandlordUserService
             $user->delete();
 
             $this->audit->log(
-                event: 'platform.users.deleted',
+                event: AuditEventType::LANDLORD_USER_DELETED->value,
                 action: 'delete',
                 subject: $user,
                 description: "Landlord user deleted: {$email}",
@@ -101,7 +102,7 @@ class LandlordUserService
             $user->update(['active' => ! $user->active]);
 
             $this->audit->log(
-                event: 'platform.users.status_toggled',
+                event: AuditEventType::LANDLORD_USER_STATUS_TOGGLED->value,
                 action: 'edit',
                 subject: $user,
                 description: 'Landlord user status set to '.($user->active ? 'active' : 'inactive'),

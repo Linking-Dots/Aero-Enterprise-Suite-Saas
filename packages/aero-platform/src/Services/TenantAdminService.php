@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantProvisioningLog;
@@ -77,7 +78,7 @@ class TenantAdminService
             }
 
             $this->audit->log(
-                event: 'TENANT_CREATED',
+                event: AuditEventType::TENANT_CREATED->value,
                 action: 'create',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} created"
@@ -100,7 +101,7 @@ class TenantAdminService
             }
 
             $this->audit->log(
-                event: 'TENANT_UPDATED',
+                event: AuditEventType::TENANT_UPDATED->value,
                 action: 'update',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} updated"
@@ -124,7 +125,7 @@ class TenantAdminService
             ]);
 
             $this->audit->log(
-                event: 'TENANT_SUSPENDED',
+                event: AuditEventType::TENANT_SUSPENDED->value,
                 action: 'suspend',
                 subject: $tenant,
                 description: "Suspended: {$reason}"
@@ -145,7 +146,7 @@ class TenantAdminService
             ]);
 
             $this->audit->log(
-                event: 'TENANT_ACTIVATED',
+                event: AuditEventType::TENANT_ACTIVATED->value,
                 action: 'activate',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} activated"
@@ -161,7 +162,7 @@ class TenantAdminService
             $tenant->update(['status' => 'frozen', 'frozen_at' => now()]);
 
             $this->audit->log(
-                event: 'TENANT_FROZEN',
+                event: AuditEventType::TENANT_FROZEN->value,
                 action: 'freeze',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} frozen"
@@ -177,7 +178,7 @@ class TenantAdminService
             $tenant->update(['status' => 'active', 'frozen_at' => null]);
 
             $this->audit->log(
-                event: 'TENANT_UNFROZEN',
+                event: AuditEventType::TENANT_UNFROZEN->value,
                 action: 'unfreeze',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} unfrozen"
@@ -193,7 +194,7 @@ class TenantAdminService
             $tenant->update(['status' => 'archived', 'archived_at' => now()]);
 
             $this->audit->log(
-                event: 'TENANT_ARCHIVED',
+                event: AuditEventType::TENANT_ARCHIVED->value,
                 action: 'archive',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} archived"
@@ -209,7 +210,7 @@ class TenantAdminService
             $tenant->update(['status' => 'active', 'archived_at' => null]);
 
             $this->audit->log(
-                event: 'TENANT_RESTORED',
+                event: AuditEventType::TENANT_RESTORED->value,
                 action: 'restore',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} restored"
@@ -223,7 +224,7 @@ class TenantAdminService
     {
         DB::transaction(function () use ($tenant, $actorId) {
             $this->audit->log(
-                event: 'TENANT_PURGED',
+                event: AuditEventType::TENANT_PURGED->value,
                 action: 'delete',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} purged by user {$actorId}"
@@ -246,7 +247,7 @@ class TenantAdminService
             ]);
 
             $this->audit->log(
-                event: 'TENANT_BYOC_UPDATED',
+                event: AuditEventType::TENANT_BYOC_UPDATED->value,
                 action: 'update',
                 subject: $tenant,
                 description: "BYOC credentials updated for {$tenant->name}"

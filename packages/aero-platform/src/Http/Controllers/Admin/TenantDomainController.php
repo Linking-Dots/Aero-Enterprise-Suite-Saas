@@ -3,6 +3,7 @@
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\Domain;
 use Aero\Platform\Models\Tenant;
@@ -43,7 +44,7 @@ class TenantDomainController extends Controller
             ]);
 
             $this->audit->log(
-                event: 'TENANT_DOMAIN_ADDED',
+                event: AuditEventType::TENANT_DOMAIN_ADDED->value,
                 action: 'store',
                 subject: $domain,
                 description: "Domain {$data['domain']} added to tenant {$tenant->name}"
@@ -63,7 +64,7 @@ class TenantDomainController extends Controller
             $domain->delete();
 
             $this->audit->log(
-                event: 'TENANT_DOMAIN_REMOVED',
+                event: AuditEventType::TENANT_DOMAIN_REMOVED->value,
                 action: 'destroy',
                 subject: $tenant,
                 description: "Domain {$domainName} removed from tenant {$tenant->name}"
@@ -81,7 +82,7 @@ class TenantDomainController extends Controller
             $domain->markAsVerified();
 
             $this->audit->log(
-                event: 'TENANT_DOMAIN_VERIFIED',
+                event: AuditEventType::TENANT_DOMAIN_VERIFIED->value,
                 action: 'verify',
                 subject: $domain,
                 description: "Domain {$domain->domain} verified for tenant {$tenant->name}"

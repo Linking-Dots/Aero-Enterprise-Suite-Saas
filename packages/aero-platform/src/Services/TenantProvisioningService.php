@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantProvisioningLog;
@@ -25,7 +26,7 @@ class TenantProvisioningService
             $tenant->update(['status' => 'provisioning']);
 
             $this->audit->log(
-                event: 'TENANT_PROVISIONING_QUEUED',
+                event: AuditEventType::TENANT_PROVISIONING_QUEUED->value,
                 action: 'queue',
                 subject: $tenant,
                 description: "Provisioning queued for {$tenant->name}"
@@ -46,7 +47,7 @@ class TenantProvisioningService
             $tenant->update(['status' => 'provisioning']);
 
             $this->audit->log(
-                event: 'TENANT_PROVISIONING_RETRIED',
+                event: AuditEventType::TENANT_PROVISIONING_RETRIED->value,
                 action: 'retry',
                 subject: $tenant,
                 description: "Provisioning retry queued for {$tenant->name}"
@@ -65,7 +66,7 @@ class TenantProvisioningService
                 ->update(['status' => 'active', 'trial_ends_at' => null, 'starts_at' => now()]);
 
             $this->audit->log(
-                event: 'TENANT_APPROVED',
+                event: AuditEventType::TENANT_APPROVED->value,
                 action: 'approve',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} approved"
@@ -79,7 +80,7 @@ class TenantProvisioningService
             $tenant->update(['status' => 'failed']);
 
             $this->audit->log(
-                event: 'TENANT_REJECTED',
+                event: AuditEventType::TENANT_REJECTED->value,
                 action: 'reject',
                 subject: $tenant,
                 description: "Tenant {$tenant->name} rejected: {$reason}"
@@ -94,7 +95,7 @@ class TenantProvisioningService
             $tenant->update(['stripe_trial_ends_at' => $trialEnds]);
 
             $this->audit->log(
-                event: 'TENANT_TRIAL_EXTENDED',
+                event: AuditEventType::TENANT_TRIAL_EXTENDED->value,
                 action: 'extend',
                 subject: $tenant,
                 description: "Trial extended by {$days} days for {$tenant->name}"
@@ -115,7 +116,7 @@ class TenantProvisioningService
                 ->update(['status' => 'active', 'trial_ends_at' => null, 'starts_at' => now()]);
 
             $this->audit->log(
-                event: 'TENANT_TRIAL_CONVERTED',
+                event: AuditEventType::TENANT_TRIAL_CONVERTED->value,
                 action: 'convert',
                 subject: $tenant,
                 description: "Trial converted to paid for {$tenant->name}"

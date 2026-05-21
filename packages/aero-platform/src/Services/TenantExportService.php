@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantExportRequest;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class TenantExportService
             ]);
 
             $this->audit->log(
-                event: 'TENANT_EXPORT_REQUESTED',
+                event: AuditEventType::TENANT_EXPORT_REQUESTED->value,
                 action: 'request',
                 subject: $req,
                 description: "Export requested for {$tenant->name}"

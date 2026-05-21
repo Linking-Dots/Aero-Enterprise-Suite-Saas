@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Invoice;
 use Aero\Platform\Models\ProductSubscription;
@@ -76,7 +77,7 @@ class InvoiceAdminService
             $invoice->markPaid($method);
 
             $this->audit->log(
-                'invoice.paid',
+                AuditEventType::INVOICE_MARKED_PAID->value,
                 $invoice,
                 "Invoice [{$invoice->reference}] marked as paid."
             );
@@ -118,7 +119,7 @@ class InvoiceAdminService
             $invoice = Invoice::create($data);
 
             $this->audit->log(
-                'invoice.generated',
+                AuditEventType::INVOICE_GENERATED->value,
                 $invoice,
                 "Invoice [{$invoice->reference}] generated for subscription [{$sub->id}].",
                 null,
@@ -164,7 +165,7 @@ class InvoiceAdminService
             ]);
 
             $this->audit->log(
-                'invoice.generated',
+                AuditEventType::INVOICE_GENERATED->value,
                 $invoice,
                 "Product invoice [{$ref}] generated for tenant [{$ps->tenant_id}].",
                 null,
@@ -188,7 +189,7 @@ class InvoiceAdminService
             $invoice->refresh();
 
             $this->audit->log(
-                'invoice.sent',
+                AuditEventType::INVOICE_SENT->value,
                 $invoice,
                 "Invoice [{$invoice->reference}] sent (status set to issued)."
             );

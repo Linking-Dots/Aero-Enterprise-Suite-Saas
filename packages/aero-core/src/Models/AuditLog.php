@@ -1,96 +1,91 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Aero\Core\Models;
 
 use Aero\Contracts\Searchable;
 use Aero\Core\Traits\Searchable as SearchableTrait;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Audit Log Model
  *
- * Tracks all user management actions for compliance and security auditing.
+ * Immutable record of all tenant-scoped business actions.
+ * Schema matches the 2026_05_14_000001_create_audit_logs_table migration.
  *
  * @property int $id
- * @property int|null $user_id
- * @property string|null $user_name
- * @property string|null $user_email
+ * @property int|null $actor_id
+ * @property string|null $actor_name
+ * @property string|null $actor_ip
+ * @property string|null $actor_user_agent
+ * @property string $event_type
  * @property string $action
- * @property string $auditable_type
- * @property int|null $auditable_id
  * @property string|null $description
- * @property array|null $old_values
- * @property array|null $new_values
+ * @property string|null $subject_type
+ * @property string|null $subject_id
+ * @property string|null $subject_label
+ * @property array|null $before_state
+ * @property array|null $after_state
+ * @property array|null $changed_fields
+ * @property string|null $session_id
+ * @property string|null $request_id
+ * @property string|null $url
+ * @property string|null $http_method
  * @property array|null $metadata
  * @property Carbon $created_at
+ * @property Carbon|null $anonymized_at
  */
 class AuditLog extends TenantModel implements Searchable
 {
     use SearchableTrait;
 
     /**
-     * Disable updated_at timestamp (audit logs are immutable).
+     * Disable updated_at timestamp — audit logs are immutable.
      */
     public const UPDATED_AT = null;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
-        'user_id',
-        'user_name',
-        'user_email',
-        'action',
-        'auditable_type',
-        'auditable_id',
-        'description',
-        'old_values',
-        'new_values',
-        'metadata',
+        // Actor
+        'actor_id', 'actor_name', 'actor_ip', 'actor_user_agent',
+        // Event
+        'event_type', 'action', 'description',
+        // Subject
+        'subject_type', 'subject_id', 'subject_label',
+        // Changes
+        'before_state', 'after_state', 'changed_fields',
+        // Request context
+        'session_id', 'request_id', 'url', 'http_method',
+        // Metadata
+        'metadata', 'anonymized_at',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected $casts = [
-        'old_values' => 'array',
-        'new_values' => 'array',
+        'before_state' => 'array',
+        'after_state' => 'array',
+        'changed_fields' => 'array',
         'metadata' => 'array',
         'created_at' => 'datetime',
+        'anonymized_at' => 'datetime',
     ];
 
-    /**
-     * Get the user who performed the action.
-     */
-    public function user(): BelongsTo
+    // =========================================================================
+    // Scopes
+    // =========================================================================
+
+    public function scopeByActor($query, int $actorId)
     {
-        return $this->belongsTo(User::class);
+        return $query->where('actor_id', $actorId);
     }
 
-    /**
-     * Get the auditable model (polymorphic).
-     */
-    public function auditable(): MorphTo
+    public function scopeByEventType($query, string $eventType)
     {
-        return $this->morphTo();
+        return $query->where('event_type', $eventType);
     }
 
-    /**
-     * Scope to filter by action.
-     */
-    public function scopeAction($query, string $action)
+    public function scopeBySubject($query, string $type, string $id)
     {
-        return $query->where('action', $action);
-    }
-
-    /**
-     * Scope to filter by auditable type.
-     */
-    public function scopeAuditableType($query, string $type)
-    {
-        return $query->where('auditable_type', $type);
+        return $query->where('subject_type', $type)->where('subject_id', $id);
     }
 
     /**
@@ -108,31 +103,23 @@ class AuditLog extends TenantModel implements Searchable
         return $query;
     }
 
-    /**
-     * Scope to filter by user.
-     */
-    public function scopeByUser($query, int $userId)
-    {
-        return $query->where('user_id', $userId);
-    }
+    // =========================================================================
+    // Computed attributes
+    // =========================================================================
 
     /**
-     * Get formatted changes for display.
+     * Get formatted changes for display — diffs before_state vs after_state.
      */
     public function getFormattedChangesAttribute(): array
     {
+        $before = $this->before_state ?? [];
+        $after = $this->after_state ?? [];
         $changes = [];
 
-        if ($this->old_values && $this->new_values) {
-            foreach ($this->new_values as $key => $newValue) {
-                $oldValue = $this->old_values[$key] ?? null;
-
-                if ($oldValue !== $newValue) {
-                    $changes[$key] = [
-                        'old' => $oldValue,
-                        'new' => $newValue,
-                    ];
-                }
+        foreach ($after as $key => $newValue) {
+            $oldValue = $before[$key] ?? null;
+            if ($oldValue !== $newValue) {
+                $changes[$key] = ['old' => $oldValue, 'new' => $newValue];
             }
         }
 
@@ -140,41 +127,32 @@ class AuditLog extends TenantModel implements Searchable
     }
 
     /**
-     * Get human-readable action name.
+     * Get a human-readable action name derived from event_type prefix.
      */
     public function getActionNameAttribute(): string
     {
-        return match ($this->action) {
-            'created' => 'Created',
-            'updated' => 'Updated',
-            'deleted' => 'Deleted',
-            'activated' => 'Activated',
-            'deactivated' => 'Deactivated',
-            'invited' => 'Invited',
-            'invitation_resent' => 'Invitation Resent',
-            'invitation_cancelled' => 'Invitation Cancelled',
-            'role_assigned' => 'Role Assigned',
-            'role_removed' => 'Role Removed',
-            'bulk_activated' => 'Bulk Activated',
-            'bulk_deactivated' => 'Bulk Deactivated',
-            'bulk_deleted' => 'Bulk Deleted',
-            'bulk_roles_assigned' => 'Bulk Roles Assigned',
+        return match (true) {
+            str_starts_with($this->event_type, 'auth.') => ucfirst(str_replace('auth.', '', $this->event_type)),
+            str_starts_with($this->event_type, 'hrm.') => ucfirst(str_replace(['hrm.', '.'], ['', ' '], $this->event_type)),
+            str_starts_with($this->event_type, 'platform.') => ucfirst(str_replace(['platform.', '.'], ['', ' '], $this->event_type)),
+            str_starts_with($this->event_type, 'security.') => ucfirst(str_replace(['security.', '.'], ['', ' '], $this->event_type)),
+            str_starts_with($this->event_type, 'gdpr.') => ucfirst(str_replace(['gdpr.', '.'], ['', ' '], $this->event_type)),
             default => ucfirst(str_replace('_', ' ', $this->action)),
         };
     }
 
-    // =====================================================================
-    // Searchable Interface Implementation
-    // =====================================================================
+    // =========================================================================
+    // Searchable interface
+    // =========================================================================
 
     public function getSearchableColumns(): array
     {
-        return ['user_name', 'user_email', 'action', 'description', 'auditable_type'];
+        return ['actor_name', 'event_type', 'action', 'description', 'subject_type'];
     }
 
     public function getSearchResultTitle(): string
     {
-        return $this->action_name.' — '.($this->user_name ?? 'System');
+        return $this->action_name.' — '.($this->actor_name ?? 'System');
     }
 
     public function getSearchResultUrl(): ?string

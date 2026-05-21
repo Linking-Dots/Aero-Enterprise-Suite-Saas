@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\Module;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ class ModuleAdminService
             $module->update(['is_active' => ! $module->is_active]);
 
             $this->audit->log(
-                event: 'platform.modules.toggled',
+                event: AuditEventType::MODULE_TOGGLED->value,
                 action: 'toggle-active',
                 subject: $module,
                 description: "Module {$module->code} set to ".($module->is_active ? 'active' : 'inactive'),
@@ -48,7 +49,7 @@ class ModuleAdminService
             $module->update(['config' => $config]);
 
             $this->audit->log(
-                event: 'platform.modules.configured',
+                event: AuditEventType::MODULE_CONFIGURED->value,
                 action: 'configure',
                 subject: $module,
                 description: "Module {$module->code} configured",

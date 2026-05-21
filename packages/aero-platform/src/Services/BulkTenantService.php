@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Jobs\ExecuteBulkTenantAction;
 use Aero\Platform\Models\BulkOperation;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class BulkTenantService
             }
 
             $this->audit->log(
-                event: 'TENANT_BULK_OPERATION_QUEUED',
+                event: AuditEventType::TENANT_BULK_OPERATION_QUEUED->value,
                 action: $type,
                 subject: $op,
                 description: "Bulk {$type} queued for ".count($tenantIds).' tenants'

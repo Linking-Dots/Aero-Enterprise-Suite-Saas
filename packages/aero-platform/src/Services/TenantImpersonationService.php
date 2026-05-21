@@ -3,6 +3,7 @@
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Support\Carbon;
 
@@ -24,7 +25,7 @@ class TenantImpersonationService
         ]]);
 
         $this->audit->log(
-            event: 'TENANT_IMPERSONATION_STARTED',
+            event: AuditEventType::TENANT_IMPERSONATION_STARTED->value,
             action: 'impersonate',
             subject: $tenant,
             description: "Actor {$actorId} started impersonating {$tenant->name}"
@@ -53,7 +54,7 @@ class TenantImpersonationService
 
         if ($tenant) {
             $this->audit->log(
-                event: 'TENANT_IMPERSONATION_ENDED',
+                event: AuditEventType::TENANT_IMPERSONATION_ENDED->value,
                 action: 'impersonate',
                 subject: $tenant,
                 description: "Actor {$sess['actor_id']} ended impersonation of {$tenant->name}"

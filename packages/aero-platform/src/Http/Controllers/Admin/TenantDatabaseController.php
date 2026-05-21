@@ -3,6 +3,7 @@
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Http\JsonResponse;
@@ -31,7 +32,7 @@ class TenantDatabaseController extends Controller
         Artisan::call('tenants:migrate', ['--tenants' => [$tenant->id]]);
 
         $this->audit->log(
-            event: 'TENANT_DB_MIGRATED',
+            event: AuditEventType::TENANT_DB_MIGRATED->value,
             action: 'migrate',
             subject: $tenant,
             description: "Migrated DB for {$tenant->name}"
@@ -44,7 +45,7 @@ class TenantDatabaseController extends Controller
     {
         // Backup implementation pending (P-10)
         $this->audit->log(
-            event: 'TENANT_DB_BACKUP_REQUESTED',
+            event: AuditEventType::TENANT_DB_BACKUP_REQUESTED->value,
             action: 'backup',
             subject: $tenant,
             description: "Backup requested for {$tenant->name}"

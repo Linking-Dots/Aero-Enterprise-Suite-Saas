@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\LandlordRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class LandlordRoleService
             ]);
 
             $this->audit->log(
-                event: 'platform.roles.created',
+                event: AuditEventType::LANDLORD_ROLE_CREATED->value,
                 action: 'manage',
                 subject: $role,
                 description: "Landlord role created: {$role->name}",
@@ -45,7 +46,7 @@ class LandlordRoleService
             $role->update(collect($data)->only(['name', 'description', 'permissions'])->toArray());
 
             $this->audit->log(
-                event: 'platform.roles.updated',
+                event: AuditEventType::LANDLORD_ROLE_UPDATED->value,
                 action: 'manage',
                 subject: $role,
                 description: "Landlord role updated: {$role->name}",
@@ -66,7 +67,7 @@ class LandlordRoleService
             $role->delete();
 
             $this->audit->log(
-                event: 'platform.roles.deleted',
+                event: AuditEventType::LANDLORD_ROLE_DELETED->value,
                 action: 'manage',
                 subject: $role,
                 description: "Landlord role deleted: {$name}",
@@ -85,7 +86,7 @@ class LandlordRoleService
             ]);
 
             $this->audit->log(
-                event: 'platform.roles.cloned',
+                event: AuditEventType::LANDLORD_ROLE_CLONED->value,
                 action: 'manage',
                 subject: $copy,
                 description: "Role {$role->name} cloned to {$copy->name}",

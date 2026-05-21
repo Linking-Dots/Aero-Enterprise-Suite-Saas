@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\PlatformSetting;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Crypt;
@@ -48,7 +49,7 @@ class P4PlatformSettingService
             ]);
 
             $this->audit->log(
-                event: 'platform.settings.general.updated',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'edit',
                 subject: $setting,
                 description: 'Platform general settings updated',
@@ -71,7 +72,7 @@ class P4PlatformSettingService
             // Media uploads (logo, favicon) are handled via Spatie Media Library in the controller.
 
             $this->audit->log(
-                event: 'platform.settings.branding.updated',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'edit',
                 subject: $setting,
                 description: 'Platform branding updated',
@@ -101,7 +102,7 @@ class P4PlatformSettingService
             $setting->save();
 
             $this->audit->log(
-                event: 'platform.settings.email.updated',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'edit',
                 subject: $setting,
                 description: 'Platform SMTP settings updated',
@@ -120,7 +121,7 @@ class P4PlatformSettingService
             );
 
             $this->audit->log(
-                event: 'platform.settings.email.tested',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'test',
                 subject: $this->current(),
                 description: "Test email sent to {$to}",
@@ -146,7 +147,7 @@ class P4PlatformSettingService
             $setting->save();
 
             $this->audit->log(
-                event: 'platform.settings.localization.updated',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'edit',
                 subject: $setting,
                 description: 'Localization updated',
@@ -168,7 +169,7 @@ class P4PlatformSettingService
             }
 
             $this->audit->log(
-                event: $enable ? 'platform.maintenance.enabled' : 'platform.maintenance.disabled',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'toggle',
                 subject: $setting,
                 description: $enable ? "Maintenance enabled: {$message}" : 'Maintenance disabled',
@@ -197,7 +198,7 @@ class P4PlatformSettingService
             $setting->save();
 
             $this->audit->log(
-                event: 'platform.settings.infrastructure.updated',
+                event: AuditEventType::PLATFORM_SETTING_UPDATED->value,
                 action: 'edit',
                 subject: $setting,
                 description: 'Infrastructure settings updated',

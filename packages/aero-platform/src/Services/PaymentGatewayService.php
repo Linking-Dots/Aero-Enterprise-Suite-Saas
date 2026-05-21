@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\PaymentGateway;
 use Illuminate\Database\Eloquent\Collection;
@@ -57,7 +58,7 @@ class PaymentGatewayService
             $gw->update($data);
 
             $this->audit->log(
-                'payment_gateway.updated',
+                AuditEventType::PAYMENT_GATEWAY_UPDATED->value,
                 $gw,
                 "Payment gateway [{$gw->code}] updated.",
                 $old,

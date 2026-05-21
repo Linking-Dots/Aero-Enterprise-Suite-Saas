@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
@@ -81,14 +82,14 @@ class SubscriptionAdminService
                     ]);
 
                 $this->audit->log(
-                    'product_subscriptions.cancelled',
+                    AuditEventType::PRODUCT_SUBSCRIPTIONS_CANCELLED->value,
                     $subscription,
                     "All product subscriptions cancelled for tenant {$subscription->tenant_id}"
                 );
             }
 
             $this->audit->log(
-                'subscription.cancelled',
+                AuditEventType::SUBSCRIPTION_CANCELLED->value,
                 $subscription,
                 "Subscription [{$subscription->id}] cancelled by admin.",
                 ['status' => Subscription::STATUS_ACTIVE],
@@ -117,7 +118,7 @@ class SubscriptionAdminService
             $subscription->refresh();
 
             $this->audit->log(
-                'subscription.plan_changed',
+                AuditEventType::SUBSCRIPTION_UPGRADED->value,
                 $subscription,
                 "Subscription [{$subscription->id}] plan changed by admin.",
                 ['plan_id' => $oldPlanId],
