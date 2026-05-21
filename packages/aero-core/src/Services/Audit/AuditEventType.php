@@ -148,4 +148,33 @@ enum AuditEventType: string
     case EMAIL_BLAST_SENT = 'platform.email_blast.sent';
     case MAINTENANCE_WINDOW_SCHEDULED = 'platform.maintenance_window.scheduled';
     case MAINTENANCE_WINDOW_CANCELLED = 'platform.maintenance_window.cancelled';
+
+    // P-8 — Advanced Billing: Coupons & Campaigns
+    case COUPON_CREATED = 'platform.coupon.created';
+    case COUPON_UPDATED = 'platform.coupon.updated';
+    case COUPON_ARCHIVED = 'platform.coupon.archived';
+    case COUPON_BULK_GENERATED = 'platform.coupon.bulk_generated';
+    case CAMPAIGN_CREATED = 'platform.campaign.created';
+    case CAMPAIGN_LAUNCHED = 'platform.campaign.launched';
+    case CAMPAIGN_ENDED = 'platform.campaign.ended';
+
+    // P-8 — Advanced Billing: Add-ons & Metered Billing
+    case ADDON_CREATED = 'platform.addon.created';
+    case ADDON_UPDATED = 'platform.addon.updated';
+    case ADDON_ARCHIVED = 'platform.addon.archived';
+    case USAGE_METER_CREATED = 'platform.usage_meter.created';
+    case USAGE_METER_CONFIGURED = 'platform.usage_meter.configured';
+    case PAYG_CONFIG_UPDATED = 'platform.payg.config_updated';
+
+    // P-8 — Advanced Billing: Refunds & Credit Notes
+    case REFUND_CREATED = 'platform.refund.created';
+    case REFUND_APPROVED = 'platform.refund.approved';
+    case REFUND_PROCESSED = 'platform.refund.processed';
+    case CREDIT_NOTE_CREATED = 'platform.credit_note.created';
+    case CREDIT_NOTE_APPLIED = 'platform.credit_note.applied';
+
+    // P-8 — Advanced Billing: Dunning
+    case DUNNING_RULE_UPSERTED = 'platform.dunning.rule_upserted';
+    case DUNNING_PAYMENT_RETRY = 'platform.dunning.payment_retry';
+    case DUNNING_MARKED_UNCOLLECTIBLE = 'platform.dunning.marked_uncollectible';
 }

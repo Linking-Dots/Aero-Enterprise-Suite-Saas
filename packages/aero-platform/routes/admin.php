@@ -13,8 +13,12 @@ use Aero\Platform\Http\Controllers\Admin\BillingDashboardController;
 use Aero\Platform\Http\Controllers\Admin\BroadcastController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantController as AdminBulkTenantController;
 use Aero\Platform\Http\Controllers\Admin\BulkTenantOperationsController;
+use Aero\Platform\Http\Controllers\Admin\CampaignController;
+use Aero\Platform\Http\Controllers\Admin\CouponController;
+use Aero\Platform\Http\Controllers\Admin\CreditNoteController;
 use Aero\Platform\Http\Controllers\Admin\DashboardController;
 use Aero\Platform\Http\Controllers\Admin\DeveloperToolsController;
+use Aero\Platform\Http\Controllers\Admin\DunningController;
 use Aero\Platform\Http\Controllers\Admin\EmailBlastController;
 use Aero\Platform\Http\Controllers\Admin\ErrorLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\ExperimentController;
@@ -30,9 +34,11 @@ use Aero\Platform\Http\Controllers\Admin\NewsletterController;
 use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminOnboardingController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
+use Aero\Platform\Http\Controllers\Admin\PlatformAddonController;
 use Aero\Platform\Http\Controllers\Admin\PlatformSettingController;
 use Aero\Platform\Http\Controllers\Admin\ProductAnalyticsController;
 use Aero\Platform\Http\Controllers\Admin\RateLimitConfigController;
+use Aero\Platform\Http\Controllers\Admin\RefundController;
 use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\SeoController;
 use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
@@ -41,6 +47,7 @@ use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantControll
 use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;
 use Aero\Platform\Http\Controllers\Admin\TenantDomainController as AdminTenantDomainController;
 use Aero\Platform\Http\Controllers\Admin\TenantExportController;
+use Aero\Platform\Http\Controllers\Admin\UsageMeterController;
 use Aero\Platform\Http\Controllers\Admin\WebhookAdminController;
 use Aero\Platform\Http\Controllers\Billing\BillingController;
 use Aero\Platform\Http\Controllers\DomainController;
@@ -1757,6 +1764,163 @@ Route::middleware('admin.domain')->group(function () {
             Route::post('/{id}/cancel', [MaintenanceWindowController::class, 'cancel'])
                 ->name('cancel')
                 ->middleware('hrmac:tenant-communications.maintenance-windows.cancel');
+        });
+
+        // =========================================================================
+        // P-8: Advanced Billing — Coupons & Campaigns
+        // =========================================================================
+        Route::prefix('billing/coupons')->name('platform.admin.coupons.')->group(function () {
+            Route::get('/', [CouponController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:coupons-promotions.coupons.view');
+            Route::post('/', [CouponController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:coupons-promotions.coupons.create');
+            Route::put('/{id}', [CouponController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:coupons-promotions.coupons.update');
+            Route::delete('/{id}', [CouponController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('hrmac:coupons-promotions.coupons.delete');
+            Route::post('/{id}/archive', [CouponController::class, 'archive'])
+                ->name('archive')
+                ->middleware('hrmac:coupons-promotions.coupons.archive');
+            Route::post('/bulk-generate', [CouponController::class, 'bulkGenerate'])
+                ->name('bulk-generate')
+                ->middleware('hrmac:coupons-promotions.coupons.bulk-generate');
+        });
+
+        // Campaigns
+        Route::prefix('billing/campaigns')->name('platform.admin.addons.campaigns.')->group(function () {
+            Route::get('/', [CampaignController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:coupons-promotions.campaigns.view');
+            Route::post('/', [CampaignController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:coupons-promotions.campaigns.create');
+            Route::post('/{id}/launch', [CampaignController::class, 'launch'])
+                ->name('launch')
+                ->middleware('hrmac:coupons-promotions.campaigns.launch');
+            Route::post('/{id}/end', [CampaignController::class, 'end'])
+                ->name('end')
+                ->middleware('hrmac:coupons-promotions.campaigns.end');
+            Route::get('/{id}/redemptions', [CampaignController::class, 'redemptions'])
+                ->name('redemptions')
+                ->middleware('hrmac:coupons-promotions.redemptions.view');
+        });
+
+        // =========================================================================
+        // P-8: Advanced Billing — Add-ons & Metered Billing
+        // =========================================================================
+        Route::prefix('billing/addons')->name('platform.admin.addons.')->group(function () {
+            Route::get('/', [PlatformAddonController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:addons-metered.addons.view');
+            Route::post('/', [PlatformAddonController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:addons-metered.addons.create');
+            Route::put('/{id}', [PlatformAddonController::class, 'update'])
+                ->name('update')
+                ->middleware('hrmac:addons-metered.addons.update');
+            Route::post('/{id}/archive', [PlatformAddonController::class, 'archive'])
+                ->name('archive')
+                ->middleware('hrmac:addons-metered.addons.archive');
+        });
+
+        // Usage Meters
+        Route::prefix('billing/meters')->name('platform.admin.usage.meters.')->group(function () {
+            Route::get('/', [UsageMeterController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:addons-metered.metered-meters.view');
+            Route::post('/', [UsageMeterController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:addons-metered.metered-meters.create');
+            Route::put('/{id}', [UsageMeterController::class, 'configure'])
+                ->name('configure')
+                ->middleware('hrmac:addons-metered.metered-meters.configure');
+            Route::get('/{id}/events', [UsageMeterController::class, 'events'])
+                ->name('events')
+                ->middleware('hrmac:addons-metered.metered-events.view');
+        });
+
+        // Usage Events
+        Route::prefix('billing/usage-events')->name('platform.admin.usage.')->group(function () {
+            Route::get('/', [UsageMeterController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:addons-metered.metered-events.view');
+        });
+
+        // Pay-as-you-go
+        Route::prefix('billing/payg')->name('platform.admin.usage.payg.')->group(function () {
+            Route::get('/', [UsageMeterController::class, 'payAsYouGo'])
+                ->name('index')
+                ->middleware('hrmac:addons-metered.pay-as-you-go.view');
+            Route::put('/', [UsageMeterController::class, 'updatePayAsYouGo'])
+                ->name('update')
+                ->middleware('hrmac:addons-metered.pay-as-you-go.configure');
+        });
+
+        // =========================================================================
+        // P-8: Advanced Billing — Refunds & Credit Notes
+        // =========================================================================
+        Route::prefix('billing/refunds')->name('platform.admin.refunds.')->group(function () {
+            Route::get('/', [RefundController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:refunds-credits.refunds.view');
+            Route::post('/', [RefundController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:refunds-credits.refunds.create');
+            Route::post('/{id}/approve', [RefundController::class, 'approve'])
+                ->name('approve')
+                ->middleware('hrmac:refunds-credits.refunds.approve');
+            Route::post('/{id}/process', [RefundController::class, 'process'])
+                ->name('process')
+                ->middleware('hrmac:refunds-credits.refunds.process');
+        });
+
+        Route::prefix('billing/credit-notes')->name('platform.admin.credit-notes.')->group(function () {
+            Route::get('/', [CreditNoteController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:refunds-credits.credit-notes.view');
+            Route::post('/', [CreditNoteController::class, 'store'])
+                ->name('store')
+                ->middleware('hrmac:refunds-credits.credit-notes.create');
+            Route::post('/{id}/apply', [CreditNoteController::class, 'apply'])
+                ->name('apply')
+                ->middleware('hrmac:refunds-credits.credit-notes.apply');
+        });
+
+        // =========================================================================
+        // P-8: Advanced Billing — Dunning & Recovery
+        // =========================================================================
+        Route::prefix('billing/dunning')->name('platform.admin.dunning.')->group(function () {
+            Route::get('/', [DunningController::class, 'dashboard'])
+                ->name('dashboard')
+                ->middleware('hrmac:dunning.dunning-dashboard.view');
+            Route::get('/rules', [DunningController::class, 'rules'])
+                ->name('rules')
+                ->middleware('hrmac:dunning.dunning-rules.view');
+            Route::post('/rules', [DunningController::class, 'upsertRule'])
+                ->name('rules.store')
+                ->middleware('hrmac:dunning.dunning-rules.manage');
+            Route::put('/rules/{id}', [DunningController::class, 'updateRule'])
+                ->name('rules.update')
+                ->middleware('hrmac:dunning.dunning-rules.manage');
+            Route::get('/failed-payments', [DunningController::class, 'failedPayments'])
+                ->name('failed-payments')
+                ->middleware('hrmac:dunning.failed-payments.view');
+            Route::post('/failed-payments/{id}/retry', [DunningController::class, 'retry'])
+                ->name('failed-payments.retry')
+                ->middleware('hrmac:dunning.failed-payments.retry');
+            Route::post('/failed-payments/{id}/uncollectible', [DunningController::class, 'markUncollectible'])
+                ->name('failed-payments.uncollectible')
+                ->middleware('hrmac:dunning.failed-payments.mark-uncollectible');
+            Route::get('/recovery-emails', [DunningController::class, 'recoveryEmails'])
+                ->name('recovery-emails')
+                ->middleware('hrmac:dunning.recovery-emails.view');
+            Route::put('/recovery-emails/{id}', [DunningController::class, 'updateRecoveryEmail'])
+                ->name('recovery-emails.update')
+                ->middleware('hrmac:dunning.recovery-emails.manage');
         });
     });
 });
