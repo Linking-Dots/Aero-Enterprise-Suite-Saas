@@ -4,7 +4,6 @@ import {
   Field,
   Input,
   Select,
-  Toggle,
   Button,
   HStack,
   VStack,
@@ -15,7 +14,7 @@ import {
 } from '@aero/ui';
 import App from '../../../App.jsx';
 
-export default function PlansForm({ plan, availableModules }) {
+export default function PlansForm({ plan }) {
   const toast   = useToast();
   const isEdit  = !!plan;
 
@@ -30,7 +29,6 @@ export default function PlansForm({ plan, availableModules }) {
     max_users:            plan?.max_users            ?? '',
     max_storage_gb:       plan?.max_storage_gb       ?? '',
     max_api_calls_per_mo: plan?.max_api_calls_per_mo ?? '',
-    modules:              plan?.modules?.map(m => m.key ?? m) ?? [],
   });
 
   function handleSubmit(e) {
@@ -48,14 +46,6 @@ export default function PlansForm({ plan, availableModules }) {
     }
   }
 
-  function toggleModule(key) {
-    const current = form.data.modules;
-    form.setData(
-      'modules',
-      current.includes(key) ? current.filter(k => k !== key) : [...current, key]
-    );
-  }
-
   const statusOptions = [
     { value: 'draft',    label: 'Draft' },
     { value: 'active',   label: 'Active' },
@@ -70,7 +60,7 @@ export default function PlansForm({ plan, availableModules }) {
         { label: 'Plans', href: route('platform.admin.plans.index') },
         { label: isEdit ? plan.name : 'New' },
       ]}
-      description={isEdit ? 'Update plan details, pricing, and permitted module limits. Module access also requires a ProductSubscription.' : 'Create a new subscription plan. Plans set quota limits and permitted modules; tenants purchase Products separately for module access.'}
+      description={isEdit ? 'Update plan details, pricing, and quota limits.' : 'Create a new subscription plan with pricing and quota limits.'}
       onSubmit={handleSubmit}
     >
       <VStack gap={6}>
@@ -212,33 +202,6 @@ export default function PlansForm({ plan, availableModules }) {
                   error={form.errors.max_api_calls_per_mo}
                 />
               </Field>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        {/* Permitted Module Limits */}
-        <Card>
-          <CardBody>
-            <VStack gap={4}>
-              <Eyebrow>Permitted Module Limits</Eyebrow>
-              <Text tone="secondary">
-                These modules are permitted (unlocked) under this plan tier. A tenant must also hold an active
-                ProductSubscription for a module to be accessible — plan limits alone do not grant access.
-              </Text>
-              {(availableModules ?? []).length === 0 ? (
-                <Text tone="secondary">No modules registered.</Text>
-              ) : (
-                <VStack gap={2}>
-                  {availableModules.map(key => (
-                    <Toggle
-                      key={key}
-                      label={key}
-                      checked={form.data.modules.includes(key)}
-                      onChange={() => toggleModule(key)}
-                    />
-                  ))}
-                </VStack>
-              )}
             </VStack>
           </CardBody>
         </Card>
