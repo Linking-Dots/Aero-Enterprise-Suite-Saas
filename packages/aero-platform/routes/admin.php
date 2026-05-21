@@ -1612,7 +1612,7 @@ Route::middleware('admin.domain')->group(function () {
         });
 
         // Landlord Users (P-4)
-        Route::prefix('p4/users')->name('platform.admin.p4users.')->group(function () {
+        Route::prefix('p4/users')->name('platform.admin.users.')->group(function () {
             Route::middleware('hrmac:platform-users.landlord-user-list.view')->group(function () {
                 Route::get('/', [P4LandlordUserController::class, 'index'])->name('index');
                 Route::get('/{user}', [P4LandlordUserController::class, 'show'])->name('show');
@@ -1628,7 +1628,7 @@ Route::middleware('admin.domain')->group(function () {
         });
 
         // Landlord Roles (P-4)
-        Route::prefix('p4/roles')->name('platform.admin.p4roles.')->group(function () {
+        Route::prefix('p4/roles')->name('platform.admin.roles.')->group(function () {
             Route::middleware('hrmac:platform-users.landlord-roles.view')
                 ->get('/', [P4LandlordRoleController::class, 'index'])->name('index');
             Route::middleware('hrmac:platform-users.landlord-roles.manage')->group(function () {
@@ -1642,7 +1642,7 @@ Route::middleware('admin.domain')->group(function () {
         });
 
         // Module Management (P-4)
-        Route::prefix('p4/modules')->name('platform.admin.p4modules.')->group(function () {
+        Route::prefix('p4/modules')->name('platform.admin.modules.')->group(function () {
             Route::middleware('hrmac:module-management.module-list.view')
                 ->get('/', [P4ModuleAdminController::class, 'index'])->name('index');
             Route::middleware('hrmac:module-management.module-list.toggle-active')

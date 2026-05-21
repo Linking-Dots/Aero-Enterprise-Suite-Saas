@@ -40,6 +40,7 @@ class Module extends CentralModel
         'is_active',
         'is_core',
         'settings',
+        'config',
         'version',
         'min_plan',
         'license_type',
@@ -47,6 +48,8 @@ class Module extends CentralModel
         'release_date',
         'monthly_price',
         'yearly_price',
+        'price_monthly',
+        'price_annual',
         'stripe_monthly_price_id',
         'stripe_yearly_price_id',
         'stripe_product_id',
@@ -58,11 +61,14 @@ class Module extends CentralModel
         'is_core' => 'boolean',
         'is_featured' => 'boolean',
         'settings' => 'array',
+        'config' => 'array',
         'dependencies' => 'array',
         'priority' => 'integer',
         'release_date' => 'date',
         'monthly_price' => 'decimal:2',
         'yearly_price' => 'decimal:2',
+        'price_monthly' => 'decimal:2',
+        'price_annual' => 'decimal:2',
     ];
 
     // Module categories
