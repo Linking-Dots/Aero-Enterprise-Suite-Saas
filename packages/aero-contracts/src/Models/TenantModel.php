@@ -20,6 +20,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class TenantModel extends Model
 {
+    /**
+     * Default audit label — returns the model key as a string.
+     * Subclasses may override to return a human-readable label.
+     * Required by AuditService::log() which calls $subject->getAuditLabel().
+     */
+    public function getAuditLabel(): ?string
+    {
+        return (string) $this->getKey();
+    }
+
     protected static function boot(): void
     {
         parent::boot();

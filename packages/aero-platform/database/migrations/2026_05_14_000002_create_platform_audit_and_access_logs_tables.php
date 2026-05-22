@@ -45,21 +45,24 @@ return new class extends Migration
             $table->index('created_at');
         });
 
-        DB::connection('central')->unprepared('
-            CREATE TRIGGER platform_audit_logs_prevent_update
-            BEFORE UPDATE ON platform_audit_logs
-            FOR EACH ROW
-            SIGNAL SQLSTATE "45000"
-            SET MESSAGE_TEXT = "platform_audit_logs records are immutable";
-        ');
+        // MySQL-only immutability triggers (SIGNAL not supported in SQLite/testing).
+        if (DB::connection('central')->getDriverName() === 'mysql') {
+            DB::connection('central')->unprepared('
+                CREATE TRIGGER platform_audit_logs_prevent_update
+                BEFORE UPDATE ON platform_audit_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE "45000"
+                SET MESSAGE_TEXT = "platform_audit_logs records are immutable";
+            ');
 
-        DB::connection('central')->unprepared('
-            CREATE TRIGGER platform_audit_logs_prevent_delete
-            BEFORE DELETE ON platform_audit_logs
-            FOR EACH ROW
-            SIGNAL SQLSTATE "45000"
-            SET MESSAGE_TEXT = "platform_audit_logs records are immutable";
-        ');
+            DB::connection('central')->unprepared('
+                CREATE TRIGGER platform_audit_logs_prevent_delete
+                BEFORE DELETE ON platform_audit_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE "45000"
+                SET MESSAGE_TEXT = "platform_audit_logs records are immutable";
+            ');
+        }
 
         Schema::connection('central')->create('platform_access_logs', function (Blueprint $table) {
             $table->id();

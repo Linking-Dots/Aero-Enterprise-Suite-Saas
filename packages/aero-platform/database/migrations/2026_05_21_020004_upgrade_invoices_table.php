@@ -33,6 +33,18 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Drop indexes before dropping columns — required for SQLite compatibility.
+        Schema::connection('central')->table('invoices', function (Blueprint $table) {
+            if (Schema::connection('central')->hasColumn('invoices', 'reference')) {
+                // Drop the unique index before dropping the column (SQLite requirement).
+                try {
+                    $table->dropUnique(['reference']);
+                } catch (\Throwable) {
+                    // Index may not exist in all environments.
+                }
+            }
+        });
+
         Schema::connection('central')->table('invoices', function (Blueprint $table) {
             $cols = array_filter([
                 Schema::connection('central')->hasColumn('invoices', 'reference') ? 'reference' : null,

@@ -33,6 +33,10 @@ class LicenseService
         ?string $createdBy = null,
         ?\DateTimeInterface $expiresAt = null
     ): LicenseKey {
+        if (empty($productCodes)) {
+            throw new \InvalidArgumentException('At least one product code is required to generate a license key.');
+        }
+
         return DB::transaction(function () use ($productCodes, $planCode, $issuedTo, $maxActivations, $createdBy, $expiresAt): LicenseKey {
             $rawKey = strtoupper(Str::random(8) . '-' . Str::random(8) . '-' . Str::random(8) . '-' . Str::random(8));
             $hashedKey = hash('sha256', $rawKey);

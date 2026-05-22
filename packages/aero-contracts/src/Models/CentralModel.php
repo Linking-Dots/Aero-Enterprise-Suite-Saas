@@ -26,4 +26,14 @@ abstract class CentralModel extends Model
         static::creating(fn (self $m) => $m->setConnection('central'));
         static::saving(fn (self $m) => $m->setConnection('central'));
     }
+
+    /**
+     * Default audit label — returns the model key as a string.
+     * Subclasses may override to return a human-readable label (e.g. name, email).
+     * Required by AuditService::log() which calls $subject->getAuditLabel().
+     */
+    public function getAuditLabel(): ?string
+    {
+        return (string) $this->getKey();
+    }
 }

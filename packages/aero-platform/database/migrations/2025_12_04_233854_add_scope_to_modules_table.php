@@ -15,6 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Guard: table may not exist in platform-only test environments.
+        if (! Schema::hasTable('modules')) {
+            return;
+        }
+
         // Guard: core's create_modules_table already includes 'scope' column
         if (Schema::hasColumn('modules', 'scope')) {
             return;

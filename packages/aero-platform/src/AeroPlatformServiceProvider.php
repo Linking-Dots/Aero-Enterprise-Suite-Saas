@@ -1037,20 +1037,28 @@ class AeroPlatformServiceProvider extends ServiceProvider
                         return $files;
                     }
 
-                    // During installation or testing, allow ALL package migrations to run on central DB
-                    // Core, HRMAC, and other package migrations are needed for the initial setup
-                    if (! InstallationState::isInstalled() || app()->environment('testing')) {
-                        return $files;
+                    // During installation (not yet installed), allow ALL package migrations.
+                    if (! InstallationState::isInstalled() && ! app()->environment('testing')) {
+                        // Deduplicate by operation name before returning — keep latest timestamp.
+                        return collect($files)->unique(function ($path) {
+                            return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
+                        })->all();
                     }
 
-                    // On central/landlord database: ONLY allow migrations from aero-platform package
-                    // All other packages (core, hrm, crm, etc.) are for tenant databases
-                    return collect($files)->filter(function ($path, $name) {
-                        // Normalize path for comparison (resolve ../ and convert slashes)
+                    // On central/landlord database (production + testing):
+                    // ONLY run aero-platform migrations. Other packages (core, hrm, etc.)
+                    // are for tenant databases and cause SQLite-incompatibility in testing.
+                    // Platform migrations are self-sufficient for platform feature tests.
+                    $platformFiles = collect($files)->filter(function ($path, $name) {
                         $normalizedPath = realpath($path) ?: $path;
-
-                        // Allow ONLY platform migrations
                         return str_starts_with($normalizedPath, $this->platformMigrationsPath);
+                    });
+
+                    // Deduplicate within the platform-filtered set by operation name.
+                    // This removes any platform-internal duplicates (e.g. create_notification_logs_table
+                    // exists in both aero-platform and as a copy from another path).
+                    return $platformFiles->unique(function ($path) {
+                        return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
                     })->all();
                 }
             };

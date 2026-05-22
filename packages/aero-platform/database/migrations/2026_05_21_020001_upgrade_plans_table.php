@@ -36,16 +36,17 @@ return new class extends Migration
             }
         });
 
-        // Add indexes if they don't exist
-        $sm = Schema::connection('central')->getConnection()->getDoctrineSchemaManager();
-        $indexes = array_keys($sm->listTableIndexes('plans'));
+        // Add indexes if they don't exist — use Laravel 12 native schema introspection.
+        // (Doctrine DBAL / getDoctrineSchemaManager was removed in Laravel 11.)
+        $existingIndexes = Schema::connection('central')->getIndexes('plans');
+        $existingIndexNames = array_column($existingIndexes, 'name');
 
-        if (! in_array('plans_status_index', $indexes, true)) {
+        if (! in_array('plans_status_index', $existingIndexNames, true)) {
             Schema::connection('central')->table('plans', function (Blueprint $table) {
                 $table->index('status');
             });
         }
-        if (! in_array('plans_is_public_index', $indexes, true)) {
+        if (! in_array('plans_is_public_index', $existingIndexNames, true)) {
             Schema::connection('central')->table('plans', function (Blueprint $table) {
                 $table->index('is_public');
             });
