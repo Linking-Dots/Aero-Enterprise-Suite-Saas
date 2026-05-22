@@ -1,6 +1,6 @@
 # AEOS365 Master Development Plan
 
-**Last updated:** 2026-05-21  
+**Last updated:** 2026-05-22  
 **Status key:** ✅ Done · 🟡 In Progress · ⬜ Pending
 
 ---
@@ -142,12 +142,12 @@ Platform plans apply to the central (landlord) database. All platform admin acti
 | P-3  | `phase-2-platform/plan-p3-dashboard-analytics.md` | ✅ Done | Platform dashboard (MRR/ARR, health), quota management, platform analytics, product analytics |
 | P-4  | `phase-2-platform/plan-p4-settings-users.md` | ✅ Done | Platform settings, landlord users, roles + permissions, module management |
 | P-5  | `phase-2-platform/plan-p5-audit-devtools.md` | ✅ Done | Audit logs, access logs, error monitoring, developer tools (cache/queues/logs) |
-| P-6  | `phase-2-platform/plan-p6-marketing-growth.md` | 🟡 In Progress | SEO, leads pipeline, newsletter, affiliates program, social auth providers |
-| P-7  | `phase-2-platform/plan-p7-integrations-flags.md` | ⬜ | Integrations (API keys/webhooks/connectors), outbound webhooks, feature flags, tenant communications |
-| P-8  | `phase-2-platform/plan-p8-advanced-billing.md` | ⬜ | Coupons & campaigns, add-ons & metered billing, refunds & credit notes, dunning recovery |
-| P-9  | `phase-2-platform/plan-p9-finance-payments.md` | ⬜ | Tax engine, multi-currency, invoicing engine, payment methods vault, subscription lifecycle, reseller partners |
-| P-10 | `phase-2-platform/plan-p10-infra-security.md` | ⬜ | White-label, backup/restore, status page + incidents, platform security (RBAC/MFA/SSO/IP), security center |
-| P-11 | `phase-2-platform/plan-p11-enterprise.md` | ⬜ | Customer success, help center, compliance/legal, multi-region, secrets/KMS, observability, DR, SCIM, contracts, API gateway, resource provisioning, release mgmt, license mgmt |
+| P-6  | `phase-2-platform/plan-p6-marketing-growth.md` | ✅ Done | SEO, leads pipeline, newsletter, affiliates program, social auth providers |
+| P-7  | `phase-2-platform/plan-p7-integrations-flags.md` | ✅ Done | Integrations (API keys/webhooks/connectors), outbound webhooks, feature flags, tenant communications |
+| P-8  | `phase-2-platform/plan-p8-advanced-billing.md` | ✅ Done | Coupons & campaigns, add-ons & metered billing, refunds & credit notes, dunning recovery |
+| P-9  | `phase-2-platform/plan-p9-finance-payments.md` | ✅ Done | Tax engine, multi-currency, invoicing engine, payment methods vault, subscription lifecycle, reseller partners |
+| P-10 | `phase-2-platform/plan-p10-infra-security.md` | ✅ Done | White-label, backup/restore, status page + incidents, platform security (RBAC/MFA/SSO/IP), security center |
+| P-11 | `phase-2-platform/plan-p11-enterprise.md` | ✅ Done | Customer success, help center, compliance/legal, multi-region, secrets/KMS, observability, DR, SCIM, contracts, API gateway, resource provisioning, release mgmt, license mgmt |
 
 ---
 
