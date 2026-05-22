@@ -2867,6 +2867,342 @@ return [
                 ],
             ],
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | P-10: White-Label
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'white-label',
+            'name' => 'White-Label',
+            'description' => 'Custom domains, SSL provisioning, tenant branding, CSS, and email branding',
+            'icon' => 'PaintBrushIcon',
+            'route' => '/white-label',
+            'priority' => 30,
+
+            'components' => [
+                [
+                    'code' => 'custom-domains',
+                    'name' => 'Custom Domains',
+                    'route' => '/white-label/domains',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Custom Domains'],
+                        ['code' => 'add', 'name' => 'Add Domain'],
+                        ['code' => 'verify', 'name' => 'Verify Domain'],
+                        ['code' => 'remove', 'name' => 'Remove Domain'],
+                    ],
+                ],
+                [
+                    'code' => 'ssl-provisioning',
+                    'name' => 'SSL Provisioning',
+                    'route' => '/white-label/ssl',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View SSL Status'],
+                        ['code' => 'provision', 'name' => 'Provision SSL'],
+                        ['code' => 'renew', 'name' => 'Renew SSL'],
+                    ],
+                ],
+                [
+                    'code' => 'tenant-branding',
+                    'name' => 'Tenant Branding',
+                    'route' => '/white-label/branding',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Branding'],
+                        ['code' => 'manage', 'name' => 'Manage Branding'],
+                    ],
+                ],
+                [
+                    'code' => 'custom-css',
+                    'name' => 'Custom CSS',
+                    'route' => '/white-label/css',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Custom CSS'],
+                        ['code' => 'edit', 'name' => 'Edit Custom CSS'],
+                    ],
+                ],
+                [
+                    'code' => 'tenant-email-branding',
+                    'name' => 'Email Branding',
+                    'route' => '/white-label/email-branding',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Email Branding'],
+                        ['code' => 'configure', 'name' => 'Configure Email Branding'],
+                        ['code' => 'verify', 'name' => 'Verify DKIM'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | P-10: Backup & Restore
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'backup-restore',
+            'name' => 'Backup & Restore',
+            'description' => 'Backup schedules, manual backups, restore points, storage, and retention policies',
+            'icon' => 'CircleStackIcon',
+            'route' => '/backup',
+            'priority' => 31,
+
+            'components' => [
+                [
+                    'code' => 'backup-dashboard',
+                    'name' => 'Backup Dashboard',
+                    'route' => '/backup',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Backup Dashboard'],
+                    ],
+                ],
+                [
+                    'code' => 'backup-schedules',
+                    'name' => 'Backup Schedules',
+                    'route' => '/backup/schedules',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Schedules'],
+                        ['code' => 'create', 'name' => 'Create Schedule'],
+                        ['code' => 'update', 'name' => 'Update Schedule'],
+                        ['code' => 'delete', 'name' => 'Delete Schedule'],
+                    ],
+                ],
+                [
+                    'code' => 'manual-backups',
+                    'name' => 'Manual Backups',
+                    'route' => '/backup/manual',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Manual Backups'],
+                        ['code' => 'create', 'name' => 'Trigger Manual Backup'],
+                    ],
+                ],
+                [
+                    'code' => 'restore',
+                    'name' => 'Restore',
+                    'route' => '/backup/restore',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Restore Points'],
+                        ['code' => 'restore', 'name' => 'Restore Backup'],
+                        ['code' => 'pitr', 'name' => 'Point-In-Time Restore'],
+                    ],
+                ],
+                [
+                    'code' => 'backup-storage',
+                    'name' => 'Backup Storage',
+                    'route' => '/backup/storage',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Storage Config'],
+                        ['code' => 'configure', 'name' => 'Configure Storage'],
+                    ],
+                ],
+                [
+                    'code' => 'retention-policies',
+                    'name' => 'Retention Policies',
+                    'route' => '/backup/retention',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Retention Policies'],
+                        ['code' => 'manage', 'name' => 'Manage Retention Policies'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | P-10: Status & Incidents
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'status-incidents',
+            'name' => 'Status & Incidents',
+            'description' => 'Status page, service components, incidents, postmortems, SLA, uptime monitoring',
+            'icon' => 'SignalIcon',
+            'route' => '/status',
+            'priority' => 32,
+
+            'components' => [
+                [
+                    'code' => 'status-page',
+                    'name' => 'Status Page',
+                    'route' => '/status',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Status Page'],
+                        ['code' => 'configure', 'name' => 'Configure Status Page'],
+                    ],
+                ],
+                [
+                    'code' => 'service-components',
+                    'name' => 'Service Components',
+                    'route' => '/status/components',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Components'],
+                        ['code' => 'manage', 'name' => 'Manage Components'],
+                        ['code' => 'set-status', 'name' => 'Set Component Status'],
+                    ],
+                ],
+                [
+                    'code' => 'incidents',
+                    'name' => 'Incidents',
+                    'route' => '/status/incidents',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Incidents'],
+                        ['code' => 'create', 'name' => 'Create Incident'],
+                        ['code' => 'update', 'name' => 'Update Incident'],
+                        ['code' => 'resolve', 'name' => 'Resolve Incident'],
+                    ],
+                ],
+                [
+                    'code' => 'postmortems',
+                    'name' => 'Postmortems',
+                    'route' => '/status/postmortems',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Postmortems'],
+                        ['code' => 'create', 'name' => 'Create Postmortem'],
+                        ['code' => 'publish', 'name' => 'Publish Postmortem'],
+                    ],
+                ],
+                [
+                    'code' => 'sla-reporting',
+                    'name' => 'SLA Reporting',
+                    'route' => '/status/sla',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View SLA Report'],
+                        ['code' => 'export', 'name' => 'Export SLA Report'],
+                    ],
+                ],
+                [
+                    'code' => 'uptime-monitoring',
+                    'name' => 'Uptime Monitoring',
+                    'route' => '/status/uptime',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Uptime'],
+                        ['code' => 'configure', 'name' => 'Configure Uptime Monitoring'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | P-10: Platform Security
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'platform-security',
+            'name' => 'Platform Security',
+            'description' => 'Landlord roles, impersonation audit, staff MFA/SSO, IP allowlist',
+            'icon' => 'LockClosedIcon',
+            'route' => '/security',
+            'priority' => 33,
+
+            'components' => [
+                [
+                    'code' => 'landlord-roles',
+                    'name' => 'Landlord Roles',
+                    'route' => '/security/roles',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Roles'],
+                        ['code' => 'create', 'name' => 'Create Role'],
+                        ['code' => 'update', 'name' => 'Update Role'],
+                        ['code' => 'delete', 'name' => 'Delete Role'],
+                        ['code' => 'assign', 'name' => 'Assign Role'],
+                    ],
+                ],
+                [
+                    'code' => 'impersonation',
+                    'name' => 'Impersonation',
+                    'route' => '/security/impersonation',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Impersonation Log'],
+                        ['code' => 'start', 'name' => 'Start Impersonation'],
+                        ['code' => 'end', 'name' => 'End Impersonation'],
+                        ['code' => 'audit', 'name' => 'Audit Impersonation'],
+                    ],
+                ],
+                [
+                    'code' => 'staff-sessions',
+                    'name' => 'Staff Sessions',
+                    'route' => '/security/sessions',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Sessions'],
+                        ['code' => 'force-logout', 'name' => 'Force Logout'],
+                    ],
+                ],
+                [
+                    'code' => 'staff-mfa',
+                    'name' => 'Staff MFA',
+                    'route' => '/security/mfa',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View MFA Status'],
+                        ['code' => 'enforce', 'name' => 'Enforce MFA'],
+                        ['code' => 'reset', 'name' => 'Reset MFA'],
+                    ],
+                ],
+                [
+                    'code' => 'staff-sso',
+                    'name' => 'Staff SSO',
+                    'route' => '/security/sso',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View SSO Config'],
+                        ['code' => 'configure', 'name' => 'Configure SSO'],
+                    ],
+                ],
+                [
+                    'code' => 'ip-allowlist',
+                    'name' => 'IP Allowlist',
+                    'route' => '/security/ip-allowlist',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View IP Allowlist'],
+                        ['code' => 'manage', 'name' => 'Manage IP Allowlist'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | P-10: Security Center
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'security-center',
+            'name' => 'Security Center',
+            'description' => 'Security dashboard, incidents, pentest reports, bug bounty',
+            'icon' => 'ShieldExclamationIcon',
+            'route' => '/security-center',
+            'priority' => 34,
+
+            'components' => [
+                [
+                    'code' => 'security-dashboard',
+                    'name' => 'Security Dashboard',
+                    'route' => '/security-center',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Security Dashboard'],
+                    ],
+                ],
+                [
+                    'code' => 'security-incidents',
+                    'name' => 'Security Incidents',
+                    'route' => '/security-center/incidents',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Security Incidents'],
+                        ['code' => 'create', 'name' => 'Create Security Incident'],
+                        ['code' => 'notify', 'name' => 'Notify Tenants'],
+                    ],
+                ],
+                [
+                    'code' => 'pentest-reports',
+                    'name' => 'Pentest Reports',
+                    'route' => '/security-center/pentests',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Pentest Reports'],
+                        ['code' => 'upload', 'name' => 'Upload Report'],
+                        ['code' => 'share', 'name' => 'Share with Tenants'],
+                    ],
+                ],
+            ],
+        ],
     ],
 
     'access_control' => [

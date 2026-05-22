@@ -24,6 +24,11 @@ use Aero\Platform\Http\Controllers\Admin\ErrorLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\ExperimentController;
 use Aero\Platform\Http\Controllers\Admin\FeatureFlagController;
 use Aero\Platform\Http\Controllers\Admin\Finance;
+use Aero\Platform\Http\Controllers\Admin\Infra\BackupController;
+use Aero\Platform\Http\Controllers\Admin\Infra\PlatformSecurityController;
+use Aero\Platform\Http\Controllers\Admin\Infra\SecurityCenterController;
+use Aero\Platform\Http\Controllers\Admin\Infra\StatusPageController;
+use Aero\Platform\Http\Controllers\Admin\Infra\WhiteLabelController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use Aero\Platform\Http\Controllers\Admin\LandlordRoleController;
 use Aero\Platform\Http\Controllers\Admin\LandlordUserController;
@@ -2114,6 +2119,214 @@ Route::middleware('admin.domain')->group(function () {
             Route::put('/{id}/portal', [Finance\PartnerController::class, 'updatePortal'])
                 ->name('portal.update')
                 ->middleware('hrmac:reseller-partners.partner-portal.configure');
+        });
+
+        // =========================================================================
+        // P-10: White-Label
+        // =========================================================================
+        Route::prefix('white-label')->name('platform.admin.white-label.')->group(function () {
+            // Custom Domains
+            Route::get('/domains', [WhiteLabelController::class, 'domainsIndex'])
+                ->name('domains')
+                ->middleware('hrmac:white-label.custom-domains.view');
+            Route::post('/domains', [WhiteLabelController::class, 'storeDomain'])
+                ->name('domains.store')
+                ->middleware('hrmac:white-label.custom-domains.add');
+            Route::post('/domains/{domain}/verify', [WhiteLabelController::class, 'verifyDomain'])
+                ->name('domains.verify')
+                ->middleware('hrmac:white-label.custom-domains.verify');
+            Route::delete('/domains/{domain}', [WhiteLabelController::class, 'destroyDomain'])
+                ->name('domains.destroy')
+                ->middleware('hrmac:white-label.custom-domains.remove');
+
+            // SSL Provisioning
+            Route::post('/domains/{domain}/ssl/provision', [WhiteLabelController::class, 'provisionSsl'])
+                ->name('ssl.provision')
+                ->middleware('hrmac:white-label.ssl-provisioning.provision');
+            Route::post('/domains/{domain}/ssl/renew', [WhiteLabelController::class, 'renewSsl'])
+                ->name('ssl.renew')
+                ->middleware('hrmac:white-label.ssl-provisioning.renew');
+
+            // Branding
+            Route::get('/branding/{tenantId}', [WhiteLabelController::class, 'showBranding'])
+                ->name('branding.show')
+                ->middleware('hrmac:white-label.tenant-branding.view');
+            Route::post('/branding', [WhiteLabelController::class, 'updateBranding'])
+                ->name('branding.update')
+                ->middleware('hrmac:white-label.tenant-branding.manage');
+
+            // Custom CSS
+            Route::get('/css/{tenantId}', [WhiteLabelController::class, 'showCss'])
+                ->name('css.show')
+                ->middleware('hrmac:white-label.custom-css.view');
+            Route::post('/css', [WhiteLabelController::class, 'updateCss'])
+                ->name('css.update')
+                ->middleware('hrmac:white-label.custom-css.edit');
+
+            // Email Branding / DKIM
+            Route::get('/email-branding/{tenantId}', [WhiteLabelController::class, 'showEmailBranding'])
+                ->name('email-branding.show')
+                ->middleware('hrmac:white-label.tenant-email-branding.view');
+            Route::post('/email-branding/dkim', [WhiteLabelController::class, 'configureDkim'])
+                ->name('email-branding.dkim')
+                ->middleware('hrmac:white-label.tenant-email-branding.configure');
+            Route::post('/email-branding/dkim/{branding}/verify', [WhiteLabelController::class, 'verifyDkim'])
+                ->name('email-branding.dkim.verify')
+                ->middleware('hrmac:white-label.tenant-email-branding.verify');
+        });
+
+        // =========================================================================
+        // P-10: Backup & Restore
+        // =========================================================================
+        Route::prefix('backup')->name('platform.admin.backup.')->group(function () {
+            Route::get('/', [BackupController::class, 'dashboard'])
+                ->name('dashboard')
+                ->middleware('hrmac:backup-restore.backup-dashboard.view');
+            Route::get('/schedules', [BackupController::class, 'schedules'])
+                ->name('schedules')
+                ->middleware('hrmac:backup-restore.backup-schedules.view');
+            Route::post('/schedules', [BackupController::class, 'storeSchedule'])
+                ->name('schedules.store')
+                ->middleware('hrmac:backup-restore.backup-schedules.create');
+            Route::put('/schedules/{schedule}', [BackupController::class, 'updateSchedule'])
+                ->name('schedules.update')
+                ->middleware('hrmac:backup-restore.backup-schedules.update');
+            Route::delete('/schedules/{schedule}', [BackupController::class, 'destroySchedule'])
+                ->name('schedules.destroy')
+                ->middleware('hrmac:backup-restore.backup-schedules.delete');
+            Route::post('/manual', [BackupController::class, 'manualBackup'])
+                ->name('manual')
+                ->middleware('hrmac:backup-restore.manual-backups.create');
+            Route::post('/{backup}/restore', [BackupController::class, 'restore'])
+                ->name('restore')
+                ->middleware('hrmac:backup-restore.restore.restore');
+            Route::get('/storage', [BackupController::class, 'storage'])
+                ->name('storage')
+                ->middleware('hrmac:backup-restore.backup-storage.view');
+            Route::get('/retention', [BackupController::class, 'retention'])
+                ->name('retention')
+                ->middleware('hrmac:backup-restore.retention-policies.view');
+        });
+
+        // =========================================================================
+        // P-10: Status Page & Incidents
+        // =========================================================================
+        Route::prefix('status')->name('platform.admin.status.')->group(function () {
+            Route::get('/', [StatusPageController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:status-incidents.status-page.view');
+
+            // Components
+            Route::post('/components', [StatusPageController::class, 'storeComponent'])
+                ->name('components.store')
+                ->middleware('hrmac:status-incidents.service-components.manage');
+            Route::put('/components/{component}', [StatusPageController::class, 'updateComponent'])
+                ->name('components.update')
+                ->middleware('hrmac:status-incidents.service-components.manage');
+            Route::delete('/components/{component}', [StatusPageController::class, 'destroyComponent'])
+                ->name('components.destroy')
+                ->middleware('hrmac:status-incidents.service-components.manage');
+            Route::post('/components/{component}/status', [StatusPageController::class, 'setComponentStatus'])
+                ->name('components.status')
+                ->middleware('hrmac:status-incidents.service-components.set-status');
+
+            // Incidents
+            Route::get('/incidents', [StatusPageController::class, 'incidentsIndex'])
+                ->name('incidents')
+                ->middleware('hrmac:status-incidents.incidents.view');
+            Route::post('/incidents', [StatusPageController::class, 'storeIncident'])
+                ->name('incidents.store')
+                ->middleware('hrmac:status-incidents.incidents.create');
+            Route::put('/incidents/{incident}', [StatusPageController::class, 'updateIncident'])
+                ->name('incidents.update')
+                ->middleware('hrmac:status-incidents.incidents.update');
+            Route::post('/incidents/{incident}/resolve', [StatusPageController::class, 'resolveIncident'])
+                ->name('incidents.resolve')
+                ->middleware('hrmac:status-incidents.incidents.resolve');
+
+            // Postmortems
+            Route::post('/incidents/{incident}/postmortems', [StatusPageController::class, 'storePostmortem'])
+                ->name('postmortems.store')
+                ->middleware('hrmac:status-incidents.postmortems.create');
+            Route::post('/postmortems/{postmortem}/publish', [StatusPageController::class, 'publishPostmortem'])
+                ->name('postmortems.publish')
+                ->middleware('hrmac:status-incidents.postmortems.publish');
+
+            // SLA / Uptime
+            Route::get('/sla', [StatusPageController::class, 'sla'])
+                ->name('sla')
+                ->middleware('hrmac:status-incidents.sla-reporting.view');
+            Route::get('/uptime', [StatusPageController::class, 'uptime'])
+                ->name('uptime')
+                ->middleware('hrmac:status-incidents.uptime-monitoring.view');
+        });
+
+        // =========================================================================
+        // P-10: Platform Security
+        // =========================================================================
+        Route::prefix('security')->name('platform.admin.security.')->group(function () {
+            Route::get('/sessions', [PlatformSecurityController::class, 'sessions'])
+                ->name('sessions')
+                ->middleware('hrmac:platform-security.staff-sessions.view');
+            Route::post('/sessions/{sessionId}/logout', [PlatformSecurityController::class, 'forceLogout'])
+                ->name('sessions.logout')
+                ->middleware('hrmac:platform-security.staff-sessions.force-logout');
+
+            Route::get('/mfa', [PlatformSecurityController::class, 'mfaStatus'])
+                ->name('mfa')
+                ->middleware('hrmac:platform-security.staff-mfa.view');
+            Route::post('/mfa/{user}/enforce', [PlatformSecurityController::class, 'enforceMfa'])
+                ->name('mfa.enforce')
+                ->middleware('hrmac:platform-security.staff-mfa.enforce');
+            Route::post('/mfa/{user}/reset', [PlatformSecurityController::class, 'resetMfa'])
+                ->name('mfa.reset')
+                ->middleware('hrmac:platform-security.staff-mfa.reset');
+
+            Route::get('/sso', [PlatformSecurityController::class, 'sso'])
+                ->name('sso')
+                ->middleware('hrmac:platform-security.staff-sso.view');
+            Route::post('/sso', [PlatformSecurityController::class, 'configureSso'])
+                ->name('sso.configure')
+                ->middleware('hrmac:platform-security.staff-sso.configure');
+
+            Route::get('/ip-allowlist', [PlatformSecurityController::class, 'ipAllowlist'])
+                ->name('ip-allowlist')
+                ->middleware('hrmac:platform-security.ip-allowlist.view');
+            Route::post('/ip-allowlist', [PlatformSecurityController::class, 'addIp'])
+                ->name('ip-allowlist.store')
+                ->middleware('hrmac:platform-security.ip-allowlist.manage');
+            Route::delete('/ip-allowlist/{entry}', [PlatformSecurityController::class, 'removeIp'])
+                ->name('ip-allowlist.destroy')
+                ->middleware('hrmac:platform-security.ip-allowlist.manage');
+        });
+
+        // =========================================================================
+        // P-10: Security Center
+        // =========================================================================
+        Route::prefix('security-center')->name('platform.admin.security-center.')->group(function () {
+            Route::get('/', [SecurityCenterController::class, 'dashboard'])
+                ->name('dashboard')
+                ->middleware('hrmac:security-center.security-dashboard.view');
+
+            Route::get('/incidents', [SecurityCenterController::class, 'incidentsIndex'])
+                ->name('incidents')
+                ->middleware('hrmac:security-center.security-incidents.view');
+            Route::post('/incidents', [SecurityCenterController::class, 'storeIncident'])
+                ->name('incidents.store')
+                ->middleware('hrmac:security-center.security-incidents.create');
+            Route::post('/incidents/{incident}/notify', [SecurityCenterController::class, 'notifyTenants'])
+                ->name('incidents.notify')
+                ->middleware('hrmac:security-center.security-incidents.notify');
+
+            Route::get('/pentests', [SecurityCenterController::class, 'pentestsIndex'])
+                ->name('pentests')
+                ->middleware('hrmac:security-center.pentest-reports.view');
+            Route::post('/pentests', [SecurityCenterController::class, 'uploadPentest'])
+                ->name('pentests.upload')
+                ->middleware('hrmac:security-center.pentest-reports.upload');
+            Route::post('/pentests/{report}/share', [SecurityCenterController::class, 'shareReport'])
+                ->name('pentests.share')
+                ->middleware('hrmac:security-center.pentest-reports.share');
         });
 
         // =========================================================================

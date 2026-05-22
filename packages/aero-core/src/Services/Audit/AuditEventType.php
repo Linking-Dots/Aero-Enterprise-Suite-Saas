@@ -194,7 +194,7 @@ enum AuditEventType: string
     // P-9 — Invoicing Engine
     case INVOICE_CREATED = 'platform.invoice.created';
     case INVOICE_UPDATED = 'platform.invoice.updated';
-    case INVOICE_SENT = 'platform.invoice.sent';
+    case PLATFORM_INVOICE_SENT = 'platform.invoice.sent';
     case INVOICE_VOIDED = 'platform.invoice.voided';
     case INVOICE_PDF_DOWNLOADED = 'platform.invoice.pdf_downloaded';
     case INVOICE_SETTINGS_UPDATED = 'platform.invoice.settings_updated';
@@ -223,4 +223,48 @@ enum AuditEventType: string
     case PARTNER_COMMISSION_PAYOUT_PROCESSED = 'platform.partner.commission_payout_processed';
     case PARTNER_TENANT_REASSIGNED = 'platform.partner.tenant_reassigned';
     case PARTNER_PORTAL_CONFIGURED = 'platform.partner.portal_configured';
+
+    // P-10 — White-Label
+    case CUSTOM_DOMAIN_ADDED = 'platform.white_label.domain_added';
+    case CUSTOM_DOMAIN_VERIFIED = 'platform.white_label.domain_verified';
+    case CUSTOM_DOMAIN_REMOVED = 'platform.white_label.domain_removed';
+    case SSL_PROVISIONED = 'platform.white_label.ssl_provisioned';
+    case SSL_RENEWED = 'platform.white_label.ssl_renewed';
+    case TENANT_BRANDING_UPDATED = 'platform.white_label.branding_updated';
+    case TENANT_CSS_UPDATED = 'platform.white_label.css_updated';
+    case DKIM_CONFIGURED = 'platform.white_label.dkim_configured';
+    case DKIM_VERIFIED = 'platform.white_label.dkim_verified';
+
+    // P-10 — Backup & Restore
+    case BACKUP_SCHEDULE_CREATED = 'platform.backup.schedule_created';
+    case BACKUP_SCHEDULE_UPDATED = 'platform.backup.schedule_updated';
+    case BACKUP_SCHEDULE_DELETED = 'platform.backup.schedule_deleted';
+    case BACKUP_MANUAL_TRIGGERED = 'platform.backup.manual_triggered';
+    case BACKUP_RESTORE_INITIATED = 'platform.backup.restore_initiated';
+    case BACKUP_STORAGE_CONFIGURED = 'platform.backup.storage_configured';
+
+    // P-10 — Status & Incidents
+    case STATUS_COMPONENT_CREATED = 'platform.status.component_created';
+    case STATUS_COMPONENT_UPDATED = 'platform.status.component_updated';
+    case STATUS_COMPONENT_DELETED = 'platform.status.component_deleted';
+    case STATUS_COMPONENT_STATUS_SET = 'platform.status.component_status_set';
+    case STATUS_INCIDENT_CREATED = 'platform.status.incident_created';
+    case STATUS_INCIDENT_UPDATED = 'platform.status.incident_updated';
+    case STATUS_INCIDENT_RESOLVED = 'platform.status.incident_resolved';
+    case STATUS_POSTMORTEM_CREATED = 'platform.status.postmortem_created';
+    case STATUS_POSTMORTEM_PUBLISHED = 'platform.status.postmortem_published';
+
+    // P-10 — Platform Security
+    case STAFF_SESSION_FORCE_LOGOUT = 'platform.security.session_force_logout';
+    case STAFF_MFA_ENFORCED = 'platform.security.mfa_enforced';
+    case STAFF_MFA_RESET = 'platform.security.mfa_reset';
+    case STAFF_SSO_CONFIGURED = 'platform.security.sso_configured';
+    case IP_ALLOWLIST_ENTRY_ADDED = 'platform.security.ip_allowlist_added';
+    case IP_ALLOWLIST_ENTRY_REMOVED = 'platform.security.ip_allowlist_removed';
+
+    // P-10 — Security Center
+    case SECURITY_INCIDENT_CREATED = 'platform.security_center.incident_created';
+    case SECURITY_INCIDENT_TENANTS_NOTIFIED = 'platform.security_center.tenants_notified';
+    case PENTEST_REPORT_UPLOADED = 'platform.security_center.pentest_uploaded';
+    case PENTEST_REPORT_SHARED = 'platform.security_center.pentest_shared';
 }
