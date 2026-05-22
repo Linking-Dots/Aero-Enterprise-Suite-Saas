@@ -267,4 +267,81 @@ enum AuditEventType: string
     case SECURITY_INCIDENT_TENANTS_NOTIFIED = 'platform.security_center.tenants_notified';
     case PENTEST_REPORT_UPLOADED = 'platform.security_center.pentest_uploaded';
     case PENTEST_REPORT_SHARED = 'platform.security_center.pentest_shared';
+
+    // P-11 — Customer Success
+    case CS_HEALTH_SCORES_COMPUTED = 'platform.customer_success.health_scores_computed';
+    case CS_NPS_SURVEY_SENT = 'platform.customer_success.nps_survey_sent';
+    case CS_CSM_ASSIGNED = 'platform.customer_success.csm_assigned';
+    case CS_PLAYBOOK_EXECUTED = 'platform.customer_success.playbook_executed';
+
+    // P-11 — Help Center
+    case KB_ARTICLE_CREATED = 'platform.help_center.article_created';
+    case KB_ARTICLE_UPDATED = 'platform.help_center.article_updated';
+    case KB_ARTICLE_PUBLISHED = 'platform.help_center.article_published';
+    case KB_ARTICLE_DELETED = 'platform.help_center.article_deleted';
+    case TICKET_REPLIED = 'platform.help_center.ticket_replied';
+    case TICKET_ASSIGNED = 'platform.help_center.ticket_assigned';
+    case TICKET_ESCALATED = 'platform.help_center.ticket_escalated';
+    case TICKET_CLOSED = 'platform.help_center.ticket_closed';
+
+    // P-11 — Compliance
+    case DPA_SIGNED = 'platform.compliance.dpa_signed';
+    case TOS_PUBLISHED = 'platform.compliance.tos_published';
+    case TOS_RE_ACCEPTANCE_REQUIRED = 'platform.compliance.tos_re_acceptance_required';
+    case DSAR_FULFILLED = 'platform.compliance.dsar_fulfilled';
+
+    // P-11 — Multi-Region
+    case REGION_ENABLED = 'platform.multi_region.region_enabled';
+    case REGION_DISABLED = 'platform.multi_region.region_disabled';
+    case TENANT_REGION_ASSIGNED = 'platform.multi_region.tenant_assigned';
+    case REGION_CDN_CONFIGURED = 'platform.multi_region.cdn_configured';
+
+    // P-11 — Secrets Management
+    case KMS_KEY_ROTATED = 'platform.secrets.kms_key_rotated';
+    case TENANT_DEK_ROTATED = 'platform.secrets.tenant_dek_rotated';
+    case VAULT_SECRET_STORED = 'platform.secrets.vault_secret_stored';
+    case VAULT_SECRET_REVOKED = 'platform.secrets.vault_secret_revoked';
+
+    // P-11 — Observability
+    case OBSERVABILITY_ALERT_CREATED = 'platform.observability.alert_created';
+
+    // P-11 — Disaster Recovery
+    case DR_RUNBOOK_CREATED = 'platform.dr.runbook_created';
+    case DR_RUNBOOK_EXECUTED = 'platform.dr.runbook_executed';
+    case DR_RTO_RPO_CONFIGURED = 'platform.dr.rto_rpo_configured';
+    case DR_DRILL_SCHEDULED = 'platform.dr.drill_scheduled';
+
+    // P-11 — Enterprise SCIM
+    case SCIM_ENDPOINT_CONFIGURED = 'platform.scim.endpoint_configured';
+    case SCIM_TOKEN_ROTATED = 'platform.scim.token_rotated';
+
+    // P-11 — Contract Management
+    case MSA_CREATED = 'platform.contracts.msa_created';
+    case MSA_SIGNED = 'platform.contracts.msa_signed';
+    case ORDER_FORM_CREATED = 'platform.contracts.order_form_created';
+    case ORDER_FORM_SENT = 'platform.contracts.order_form_sent';
+    case ORDER_FORM_ACTIVATED = 'platform.contracts.order_form_activated';
+    case RATE_CARD_CREATED = 'platform.contracts.rate_card_created';
+
+    // P-11 — API Gateway
+    case API_RATE_LIMIT_UPDATED = 'platform.api_gateway.rate_limit_updated';
+    case API_QUOTA_CONFIGURED = 'platform.api_gateway.quota_configured';
+
+    // P-11 — Resource Provisioning
+    case DB_POOL_CREATED = 'platform.provisioning.db_pool_created';
+    case STORAGE_BACKEND_CREATED = 'platform.provisioning.storage_backend_created';
+    case AUTO_SCALING_CONFIGURED = 'platform.provisioning.auto_scaling_configured';
+
+    // P-11 — Release Management
+    case RELEASE_VERSION_PUBLISHED = 'platform.release.version_published';
+    case RELEASE_ROLLOUT_INITIATED = 'platform.release.rollout_initiated';
+    case RELEASE_ROLLED_BACK = 'platform.release.rolled_back';
+    case CHANGELOG_PUBLISHED = 'platform.release.changelog_published';
+
+    // P-11 — License Management
+    case LICENSE_KEY_GENERATED = 'platform.license.key_generated';
+    case LICENSE_KEY_REVOKED = 'platform.license.key_revoked';
+    case LICENSE_KEY_EXTENDED = 'platform.license.key_extended';
+    case LICENSE_ACTIVATED = 'platform.license.activated';
+    case LICENSE_DEACTIVATED = 'platform.license.deactivated';
 }

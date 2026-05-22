@@ -4,6 +4,27 @@ declare(strict_types=1);
 
 use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Aero\Platform\Http\Controllers\Admin\AccessLogController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ApiGatewayController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ComplianceController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ContractController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\CustomerSuccessController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\DisasterRecoveryController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\EnterpriseScimController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\HelpCenterController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\LicenseController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ObservabilityController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\RegionController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ReleaseManagementController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ResourceProvisioningController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\SecretsController;
+use Aero\Platform\Models\Enterprise\KbArticle;
+use Aero\Platform\Models\Enterprise\LicenseActivation;
+use Aero\Platform\Models\Enterprise\LicenseKey;
+use Aero\Platform\Models\Enterprise\MasterServiceAgreement;
+use Aero\Platform\Models\Enterprise\OrderForm;
+use Aero\Platform\Models\Enterprise\Region;
+use Aero\Platform\Models\Enterprise\ScimEndpoint;
+use Aero\Platform\Models\Enterprise\SuccessPlaybook;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
 use Aero\Platform\Http\Controllers\Admin\AnalyticsController;
@@ -2327,6 +2348,321 @@ Route::middleware('admin.domain')->group(function () {
             Route::post('/pentests/{report}/share', [SecurityCenterController::class, 'shareReport'])
                 ->name('pentests.share')
                 ->middleware('hrmac:security-center.pentest-reports.share');
+        });
+
+        // =========================================================================
+        // P-11: Customer Success
+        // =========================================================================
+        Route::prefix('customer-success')->name('platform.admin.customer-success.')->group(function () {
+            Route::get('/health', [CustomerSuccessController::class, 'health'])
+                ->name('health')
+                ->middleware('hrmac:customer-success.health-score.view');
+            Route::post('/health/compute', [CustomerSuccessController::class, 'computeHealth'])
+                ->name('health.compute')
+                ->middleware('hrmac:customer-success.health-score.compute');
+            Route::get('/nps', [CustomerSuccessController::class, 'nps'])
+                ->name('nps')
+                ->middleware('hrmac:customer-success.nps-csat.view');
+            Route::post('/nps/send', [CustomerSuccessController::class, 'sendNps'])
+                ->name('nps.send')
+                ->middleware('hrmac:customer-success.nps-csat.send');
+            Route::post('/csm-assign', [CustomerSuccessController::class, 'csmAssignment'])
+                ->name('csm.assign')
+                ->middleware('hrmac:customer-success.csm-assignment.assign');
+            Route::get('/playbooks', [CustomerSuccessController::class, 'playbooks'])
+                ->name('playbooks')
+                ->middleware('hrmac:customer-success.success-playbooks.view');
+            Route::post('/playbooks/{playbook}/execute', [CustomerSuccessController::class, 'executePlaybook'])
+                ->name('playbooks.execute')
+                ->middleware('hrmac:customer-success.success-playbooks.execute');
+        });
+
+        // =========================================================================
+        // P-11: Help Center
+        // =========================================================================
+        Route::prefix('help-center')->name('platform.admin.help-center.')->group(function () {
+            Route::get('/articles', [HelpCenterController::class, 'articles'])
+                ->name('articles')
+                ->middleware('hrmac:help-center.kb-articles.view');
+            Route::post('/articles', [HelpCenterController::class, 'storeArticle'])
+                ->name('articles.store')
+                ->middleware('hrmac:help-center.kb-articles.create');
+            Route::put('/articles/{article}', [HelpCenterController::class, 'updateArticle'])
+                ->name('articles.update')
+                ->middleware('hrmac:help-center.kb-articles.update');
+            Route::post('/articles/{article}/publish', [HelpCenterController::class, 'publishArticle'])
+                ->name('articles.publish')
+                ->middleware('hrmac:help-center.kb-articles.publish');
+            Route::delete('/articles/{article}', [HelpCenterController::class, 'deleteArticle'])
+                ->name('articles.delete')
+                ->middleware('hrmac:help-center.kb-articles.delete');
+            Route::get('/tickets', [HelpCenterController::class, 'tickets'])
+                ->name('tickets')
+                ->middleware('hrmac:help-center.tenant-tickets.view');
+            Route::post('/tickets/{ticket}/reply', [HelpCenterController::class, 'reply'])
+                ->name('tickets.reply')
+                ->middleware('hrmac:help-center.tenant-tickets.reply');
+            Route::post('/tickets/{ticket}/assign', [HelpCenterController::class, 'assign'])
+                ->name('tickets.assign')
+                ->middleware('hrmac:help-center.tenant-tickets.assign');
+            Route::post('/tickets/{ticket}/escalate', [HelpCenterController::class, 'escalate'])
+                ->name('tickets.escalate')
+                ->middleware('hrmac:help-center.tenant-tickets.escalate');
+            Route::post('/tickets/{ticket}/close', [HelpCenterController::class, 'close'])
+                ->name('tickets.close')
+                ->middleware('hrmac:help-center.tenant-tickets.close');
+        });
+
+        // =========================================================================
+        // P-11: Compliance & Legal
+        // =========================================================================
+        Route::prefix('compliance')->name('platform.admin.compliance.')->group(function () {
+            Route::get('/', [ComplianceController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:compliance-legal.dpa.view');
+            Route::post('/dpa/sign', [ComplianceController::class, 'recordDpaSigning'])
+                ->name('dpa.sign')
+                ->middleware('hrmac:compliance-legal.dpa.sign');
+            Route::post('/tos', [ComplianceController::class, 'publishTos'])
+                ->name('tos.publish')
+                ->middleware('hrmac:compliance-legal.tos-versions.publish');
+            Route::post('/tos/{tos}/require-acceptance', [ComplianceController::class, 'requireTosAcceptance'])
+                ->name('tos.require-acceptance')
+                ->middleware('hrmac:compliance-legal.tos-versions.require-acceptance');
+            Route::post('/dsar/{dsar}/fulfill', [ComplianceController::class, 'fulfillDsar'])
+                ->name('dsar.fulfill')
+                ->middleware('hrmac:compliance-legal.platform-dsar.fulfill');
+        });
+
+        // =========================================================================
+        // P-11: Multi-Region
+        // =========================================================================
+        Route::prefix('regions')->name('platform.admin.regions.')->group(function () {
+            Route::get('/', [RegionController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:multi-region.regions.view');
+            Route::post('/{region}/enable', [RegionController::class, 'enable'])
+                ->name('enable')
+                ->middleware('hrmac:multi-region.regions.enable');
+            Route::post('/{region}/disable', [RegionController::class, 'disable'])
+                ->name('disable')
+                ->middleware('hrmac:multi-region.regions.disable');
+            Route::post('/assign', [RegionController::class, 'assign'])
+                ->name('assign')
+                ->middleware('hrmac:multi-region.tenant-region-assignment.assign');
+            Route::put('/{region}/cdn', [RegionController::class, 'configureCdn'])
+                ->name('cdn.configure')
+                ->middleware('hrmac:multi-region.cdn-config.configure');
+        });
+
+        // =========================================================================
+        // P-11: Secrets Management
+        // =========================================================================
+        Route::prefix('secrets')->name('platform.admin.secrets.')->group(function () {
+            Route::get('/kms', [SecretsController::class, 'kms'])
+                ->name('kms')
+                ->middleware('hrmac:secrets-management.kms.view');
+            Route::post('/kms/{kmsKey}/rotate', [SecretsController::class, 'rotateKms'])
+                ->name('kms.rotate')
+                ->middleware('hrmac:secrets-management.kms.rotate');
+            Route::get('/tenant-deks', [SecretsController::class, 'tenantDeks'])
+                ->name('tenant-deks')
+                ->middleware('hrmac:secrets-management.tenant-deks.view');
+            Route::post('/tenant-deks/{dek}/rotate', [SecretsController::class, 'rotateTenantDek'])
+                ->name('tenant-deks.rotate')
+                ->middleware('hrmac:secrets-management.tenant-deks.rotate');
+            Route::get('/vault', [SecretsController::class, 'vault'])
+                ->name('vault')
+                ->middleware('hrmac:secrets-management.secrets-vault.view');
+            Route::post('/vault', [SecretsController::class, 'storeSecret'])
+                ->name('vault.store')
+                ->middleware('hrmac:secrets-management.secrets-vault.create');
+            Route::delete('/vault/{secret}', [SecretsController::class, 'revokeSecret'])
+                ->name('vault.revoke')
+                ->middleware('hrmac:secrets-management.secrets-vault.revoke');
+            Route::get('/audit', [SecretsController::class, 'audit'])
+                ->name('audit')
+                ->middleware('hrmac:secrets-management.secret-audit.view');
+        });
+
+        // =========================================================================
+        // P-11: Observability
+        // =========================================================================
+        Route::prefix('observability')->name('platform.admin.observability.')->group(function () {
+            Route::get('/apm', [ObservabilityController::class, 'apm'])
+                ->name('apm')
+                ->middleware('hrmac:observability.apm.view');
+            Route::get('/traces', [ObservabilityController::class, 'traces'])
+                ->name('traces')
+                ->middleware('hrmac:observability.traces.view');
+            Route::get('/metrics', [ObservabilityController::class, 'metrics'])
+                ->name('metrics')
+                ->middleware('hrmac:observability.metrics.view');
+            Route::get('/logs', [ObservabilityController::class, 'logs'])
+                ->name('logs')
+                ->middleware('hrmac:observability.logs-aggregation.view');
+            Route::get('/alerts', [ObservabilityController::class, 'alerts'])
+                ->name('alerts')
+                ->middleware('hrmac:observability.alerts.view');
+            Route::post('/alerts', [ObservabilityController::class, 'storeAlert'])
+                ->name('alerts.store')
+                ->middleware('hrmac:observability.alerts.manage');
+        });
+
+        // =========================================================================
+        // P-11: Disaster Recovery
+        // =========================================================================
+        Route::prefix('disaster-recovery')->name('platform.admin.dr.')->group(function () {
+            Route::get('/runbooks', [DisasterRecoveryController::class, 'runbooks'])
+                ->name('runbooks')
+                ->middleware('hrmac:disaster-recovery.dr-runbooks.view');
+            Route::post('/runbooks', [DisasterRecoveryController::class, 'storeRunbook'])
+                ->name('runbooks.store')
+                ->middleware('hrmac:disaster-recovery.dr-runbooks.create');
+            Route::post('/runbooks/{runbook}/execute', [DisasterRecoveryController::class, 'executeRunbook'])
+                ->name('runbooks.execute')
+                ->middleware('hrmac:disaster-recovery.dr-runbooks.execute');
+            Route::get('/rto-rpo', [DisasterRecoveryController::class, 'rtoRpo'])
+                ->name('rto-rpo')
+                ->middleware('hrmac:disaster-recovery.rto-rpo.view');
+            Route::put('/rto-rpo', [DisasterRecoveryController::class, 'setRtoRpo'])
+                ->name('rto-rpo.set')
+                ->middleware('hrmac:disaster-recovery.rto-rpo.configure');
+            Route::post('/drills', [DisasterRecoveryController::class, 'drDrills'])
+                ->name('drills.schedule')
+                ->middleware('hrmac:disaster-recovery.dr-drills.schedule');
+        });
+
+        // =========================================================================
+        // P-11: Enterprise SCIM
+        // =========================================================================
+        Route::prefix('enterprise-scim')->name('platform.admin.scim.')->group(function () {
+            Route::get('/endpoints', [EnterpriseScimController::class, 'endpoints'])
+                ->name('endpoints')
+                ->middleware('hrmac:enterprise-scim.scim-endpoints.view');
+            Route::post('/endpoints', [EnterpriseScimController::class, 'configureEndpoint'])
+                ->name('endpoints.configure')
+                ->middleware('hrmac:enterprise-scim.scim-endpoints.configure');
+            Route::post('/endpoints/{endpoint}/rotate-token', [EnterpriseScimController::class, 'rotateToken'])
+                ->name('endpoints.rotate-token')
+                ->middleware('hrmac:enterprise-scim.scim-endpoints.rotate-token');
+            Route::get('/{tenantId}/logs', [EnterpriseScimController::class, 'syncLogs'])
+                ->name('logs')
+                ->middleware('hrmac:enterprise-scim.scim-logs.view');
+        });
+
+        // =========================================================================
+        // P-11: Contract Management
+        // =========================================================================
+        Route::prefix('contracts')->name('platform.admin.contracts.')->group(function () {
+            Route::get('/', [ContractController::class, 'msa'])
+                ->name('index')
+                ->middleware('hrmac:contract-management.msa.view');
+            Route::post('/msa', [ContractController::class, 'storeMsa'])
+                ->name('msa.store')
+                ->middleware('hrmac:contract-management.msa.create');
+            Route::post('/msa/{msa}/sign', [ContractController::class, 'signMsa'])
+                ->name('msa.sign')
+                ->middleware('hrmac:contract-management.msa.sign');
+            Route::post('/order-forms', [ContractController::class, 'storeOrderForm'])
+                ->name('order-forms.store')
+                ->middleware('hrmac:contract-management.order-forms.create');
+            Route::post('/order-forms/{orderForm}/send', [ContractController::class, 'sendOrderForm'])
+                ->name('order-forms.send')
+                ->middleware('hrmac:contract-management.order-forms.send');
+            Route::post('/order-forms/{orderForm}/activate', [ContractController::class, 'activateOrderForm'])
+                ->name('order-forms.activate')
+                ->middleware('hrmac:contract-management.order-forms.sign');
+        });
+
+        // =========================================================================
+        // P-11: API Gateway
+        // =========================================================================
+        Route::prefix('api-gateway')->name('platform.admin.api-gateway.')->group(function () {
+            Route::get('/rate-limits', [ApiGatewayController::class, 'rateLimits'])
+                ->name('rate-limits')
+                ->middleware('hrmac:api-gateway.rate-limits.view');
+            Route::put('/rate-limits/{tenantId}', [ApiGatewayController::class, 'updateRateLimit'])
+                ->name('rate-limits.update')
+                ->middleware('hrmac:api-gateway.rate-limits.manage');
+            Route::get('/quotas', [ApiGatewayController::class, 'apiQuotas'])
+                ->name('quotas')
+                ->middleware('hrmac:api-gateway.api-quotas.view');
+            Route::post('/quotas', [ApiGatewayController::class, 'configureQuota'])
+                ->name('quotas.configure')
+                ->middleware('hrmac:api-gateway.api-quotas.manage');
+            Route::get('/usage/{tenantId}', [ApiGatewayController::class, 'usageAnalytics'])
+                ->name('usage')
+                ->middleware('hrmac:api-gateway.api-usage-analytics.view');
+        });
+
+        // =========================================================================
+        // P-11: Resource Provisioning
+        // =========================================================================
+        Route::prefix('provisioning')->name('platform.admin.provisioning.')->group(function () {
+            Route::get('/', [ResourceProvisioningController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:resource-provisioning.db-pools.view');
+            Route::get('/db-pools', [ResourceProvisioningController::class, 'dbPools'])
+                ->name('db-pools')
+                ->middleware('hrmac:resource-provisioning.db-pools.view');
+            Route::post('/db-pools', [ResourceProvisioningController::class, 'storeDbPool'])
+                ->name('db-pools.store')
+                ->middleware('hrmac:resource-provisioning.db-pools.manage');
+            Route::post('/storage', [ResourceProvisioningController::class, 'storeStorage'])
+                ->name('storage.store')
+                ->middleware('hrmac:resource-provisioning.storage-backends.manage');
+            Route::put('/auto-scaling', [ResourceProvisioningController::class, 'configureAutoScaling'])
+                ->name('auto-scaling.configure')
+                ->middleware('hrmac:resource-provisioning.auto-scaling.configure');
+        });
+
+        // =========================================================================
+        // P-11: Release Management
+        // =========================================================================
+        Route::prefix('releases')->name('platform.admin.enterprise.releases.')->group(function () {
+            Route::get('/', [ReleaseManagementController::class, 'index'])
+                ->name('index')
+                ->middleware('hrmac:release-management.versions.view');
+            Route::post('/', [ReleaseManagementController::class, 'publishVersion'])
+                ->name('store')
+                ->middleware('hrmac:release-management.versions.publish');
+            Route::post('/{version}/rollout', [ReleaseManagementController::class, 'rollout'])
+                ->name('rollout')
+                ->middleware('hrmac:release-management.tenant-updates.rollout');
+            Route::post('/rollouts/{rollout}/rollback', [ReleaseManagementController::class, 'rollback'])
+                ->name('rollback')
+                ->middleware('hrmac:release-management.tenant-updates.rollback');
+            Route::post('/changelog', [ReleaseManagementController::class, 'publishChangelog'])
+                ->name('changelog.publish')
+                ->middleware('hrmac:release-management.changelog.publish');
+        });
+
+        // =========================================================================
+        // P-11: License Management
+        // =========================================================================
+        Route::prefix('licenses')->name('platform.admin.enterprise.')->group(function () {
+            Route::get('/', [LicenseController::class, 'index'])
+                ->name('licenses.index')
+                ->middleware('hrmac:license-management.license-keys.view');
+            Route::post('/', [LicenseController::class, 'generate'])
+                ->name('licenses.generate')
+                ->middleware('hrmac:license-management.license-keys.generate');
+            Route::get('/{license}', [LicenseController::class, 'show'])
+                ->name('licenses.show')
+                ->middleware('hrmac:license-management.license-keys.view');
+            Route::post('/{license}/revoke', [LicenseController::class, 'revoke'])
+                ->name('licenses.revoke')
+                ->middleware('hrmac:license-management.license-keys.revoke');
+            Route::put('/{license}/extend', [LicenseController::class, 'extend'])
+                ->name('licenses.extend')
+                ->middleware('hrmac:license-management.license-keys.extend');
+            Route::get('/{license}/activations', [LicenseController::class, 'activations'])
+                ->name('licenses.activations')
+                ->middleware('hrmac:license-management.activations.view');
+            Route::post('/activations/{activation}/deactivate', [LicenseController::class, 'deactivate'])
+                ->name('licenses.act.deactivate')
+                ->middleware('hrmac:license-management.activations.deactivate');
         });
 
         // =========================================================================
