@@ -62,34 +62,32 @@ class AnnouncementService
 
     public function publish(Announcement $ann, User $actor): Announcement
     {
-        DB::transaction(function () use ($ann) {
+        return DB::transaction(function () use ($ann, $actor) {
             $ann->update(['status' => 'published', 'published_at' => now()]);
+            $this->audit->log(
+                AuditEventType::RECORD_UPDATED->value,
+                'published',
+                $ann,
+                'Announcement published'
+            );
+
+            return $ann->fresh();
         });
-
-        $this->audit->log(
-            AuditEventType::RECORD_UPDATED->value,
-            'published',
-            $ann,
-            'Announcement published'
-        );
-
-        return $ann->fresh();
     }
 
     public function archive(Announcement $ann, User $actor): Announcement
     {
-        DB::transaction(function () use ($ann) {
+        return DB::transaction(function () use ($ann, $actor) {
             $ann->update(['status' => 'archived']);
+            $this->audit->log(
+                AuditEventType::RECORD_UPDATED->value,
+                'archived',
+                $ann,
+                'Announcement archived'
+            );
+
+            return $ann->fresh();
         });
-
-        $this->audit->log(
-            AuditEventType::RECORD_UPDATED->value,
-            'archived',
-            $ann,
-            'Announcement archived'
-        );
-
-        return $ann->fresh();
     }
 
     public function delete(Announcement $ann, User $actor): void

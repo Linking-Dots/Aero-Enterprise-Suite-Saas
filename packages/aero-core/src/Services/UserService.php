@@ -99,18 +99,18 @@ class UserService
 
     public function toggleStatus(User $user, User $actor): User
     {
-        DB::transaction(function () use ($user) {
+        return DB::transaction(function () use ($user, $actor) {
             $user->update(['is_active' => ! $user->is_active]);
+            $action = $user->is_active ? 'activated' : 'deactivated';
+            $this->audit->log(
+                AuditEventType::RECORD_UPDATED->value,
+                $action,
+                $user,
+                'User status toggled'
+            );
+
+            return $user->fresh();
         });
-
-        $this->audit->log(
-            AuditEventType::RECORD_UPDATED->value,
-            $user->is_active ? 'activated' : 'deactivated',
-            $user,
-            'User status toggled'
-        );
-
-        return $user->fresh();
     }
 
     public function bulkDelete(array $ids, User $actor): int
