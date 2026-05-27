@@ -34,9 +34,10 @@ class UserService
     {
         return DB::transaction(function () use ($data, $actor) {
             $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'password' => Hash::make($data['password'] ?? Str::random(16)),
+                'name'      => $data['name'],
+                'user_name' => $data['user_name'] ?? Str::slug($data['name'], '_') . '_' . Str::random(4),
+                'email'     => $data['email'],
+                'password'  => Hash::make($data['password'] ?? Str::random(16)),
                 'is_active' => true,
             ]);
 

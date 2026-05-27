@@ -64,29 +64,22 @@ class CoreUserControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * P1 DEFECT: UserService::create only sets name/email/password/is_active
-     * but the users table has a NOT NULL constraint on user_name.
-     * The insert fails with a DB integrity error.
-     *
-     * This test documents the current (broken) behaviour.
-     * Fix: UserService::create must derive/pass user_name.
+     * UserService::create now derives user_name automatically from name.
      */
-    public function test_store_fails_due_to_missing_user_name_in_service(): void
+    public function test_store_creates_user_with_derived_user_name(): void
     {
         $admin = $this->makeSuperAdmin();
 
-        // Posting valid form data — the service ignores user_name, causing a 500
         $this->actingAs($admin)
             ->post(route('core.users.store'), [
                 'name'                  => 'New User',
                 'email'                 => 'newuser@example.com',
                 'password'              => 'Password1!',
                 'password_confirmation' => 'Password1!',
-                'user_name'             => 'new_user_001',
             ])
-            ->assertStatus(500); // P1: UserService::create does not set user_name
+            ->assertRedirect(route('core.users.index'));
 
-        $this->assertDatabaseMissing('users', ['email' => 'newuser@example.com']);
+        $this->assertDatabaseHas('users', ['email' => 'newuser@example.com']);
     }
 
     public function test_store_validates_required_fields(): void
@@ -118,22 +111,17 @@ class CoreUserControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * NOTE: CoreUserController::show calls $user->load(['roles','sessions','devices']).
-     * The 'sessions' relationship requires aero-auth package. In the package-only
-     * test environment the relationship is absent, so this test verifies the route
-     * is accessible but expects a 500 (missing relationship) — a P2 defect: the
-     * controller should gracefully handle absent dynamic relationships.
+     * CoreUserController::show gracefully handles absent dynamic relationships.
+     * The 'sessions' and 'devices' relationships are only loaded if they exist on the model.
      */
     public function test_show_route_is_accessible_for_authenticated_user(): void
     {
         $admin  = $this->makeSuperAdmin();
         $target = User::factory()->create();
 
-        // The controller loads 'sessions' (from aero-auth), absent here → 500.
-        // Asserting 500 documents the P2 defect rather than hiding it.
         $this->actingAs($admin)
             ->get(route('core.users.show', $target))
-            ->assertStatus(500);
+            ->assertOk();  // Inertia component exists; component file check skipped in pkg env
     }
 
     // =========================================================================
@@ -141,29 +129,19 @@ class CoreUserControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * NOTE (P1): The API route `DELETE /users/{id}` shadows `DELETE /users/{user}`
-     * (Inertia route) because it is registered first. Laravel implicit binding
-     * cannot match `{id}` → `User $user`, so the controller receives a blank
-     * User model and the delete is a no-op. The API route parameter should be
-     * renamed from `{id}` to `{user}` to fix this.
-     *
-     * This test documents the current (broken) behaviour and must be updated
-     * once the route fix is applied.
+     * Route collision fixed: API routes now use /api/users/* prefix.
+     * DELETE /users/{user} correctly soft-deletes the user.
      */
-    public function test_destroy_route_currently_shadowed_by_api_route(): void
+    public function test_destroy_soft_deletes_user(): void
     {
         $admin  = $this->makeSuperAdmin();
         $target = User::factory()->create();
 
-        // Route `core.users.destroy` generates /users/{id} which is intercepted
-        // by the API route first. The API route cannot bind {id}→User $user,
-        // so the delete is a no-op and only a redirect is returned.
         $this->actingAs($admin)
             ->delete(route('core.users.destroy', $target))
-            ->assertRedirect(); // 302 — no 500, but also no soft-delete (P1 bug)
+            ->assertRedirect(route('core.users.index'));
 
-        // Document: the user was NOT deleted (bug behaviour)
-        $this->assertDatabaseHas('users', ['id' => $target->id, 'deleted_at' => null]);
+        $this->assertSoftDeleted('users', ['id' => $target->id]);
     }
 
     public function test_cannot_delete_own_account_direct_service(): void

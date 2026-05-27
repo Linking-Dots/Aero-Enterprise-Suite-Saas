@@ -296,7 +296,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // USER MANAGEMENT ROUTES
     // ========================================================================
-    Route::prefix('users')->name('core.api.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
+    Route::prefix('api/users')->name('core.api.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
         // List & View
         Route::get('/', [CoreUserController::class, 'index'])->name('index');
         Route::get('/paginate', [CoreUserController::class, 'paginate'])->name('paginate');
@@ -359,7 +359,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-roles' capability can access these routes
-    Route::prefix('roles')->name('core.api.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
+    Route::prefix('api/roles')->name('core.api.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
         // View
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/export', [RoleController::class, 'exportRoles'])->name('export');

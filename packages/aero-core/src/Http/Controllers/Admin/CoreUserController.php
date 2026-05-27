@@ -48,7 +48,14 @@ class CoreUserController extends Controller
 
     public function show(User $user): Response
     {
-        $user->load(['roles', 'sessions', 'devices']);
+        $relationships = ['roles'];
+        if (method_exists($user, 'sessions')) {
+            $relationships[] = 'sessions';
+        }
+        if (method_exists($user, 'devices')) {
+            $relationships[] = 'devices';
+        }
+        $user->load($relationships);
 
         return Inertia::render('Core/Users/Show', ['user' => $user]);
     }

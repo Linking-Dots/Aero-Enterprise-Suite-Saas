@@ -82,24 +82,19 @@ class RoleControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * P1 DEFECT: The API route group (registered first) at PUT /roles/{id}
-     * calls RoleController::updateRole, which does not exist.
-     * The Inertia route at PUT /roles/{role} calls RoleController::update (correct).
-     * Because the API route shadows the Inertia route, all PUT /roles/{id} requests
-     * hit the non-existent method and return 500.
-     *
-     * This test documents the current broken behaviour.
-     * Fix: Rename API route methods (updateRole→update, deleteRole→destroy, storeRole→store)
-     * or separate API and Inertia routes by prefix.
+     * Route collision fixed: API routes now use /api/roles/* prefix.
+     * Inertia PUT /roles/{role} correctly calls RoleController::update.
      */
-    public function test_update_route_shadowed_by_api_calling_nonexistent_method(): void
+    public function test_update_role_succeeds(): void
     {
         $admin = $this->makeSuperAdmin();
         $role  = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
         $this->actingAs($admin)
             ->put(route('core.roles.update', $role), ['name' => 'Senior Editor'])
-            ->assertStatus(500); // P1: API route calls RoleController::updateRole (non-existent)
+            ->assertRedirect(route('core.roles.index'));
+
+        $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'Senior Editor']);
     }
 
     /**
@@ -124,17 +119,19 @@ class RoleControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * P1 DEFECT: Same API route shadowing issue — DELETE /roles/{id} hits
-     * RoleController::deleteRole (non-existent) → 500.
+     * Route collision fixed: API routes use /api/roles/* prefix.
+     * DELETE /roles/{role} correctly calls RoleController::destroy.
      */
-    public function test_destroy_route_shadowed_by_api_calling_nonexistent_method(): void
+    public function test_destroy_role_succeeds(): void
     {
         $admin = $this->makeSuperAdmin();
         $role  = Role::create(['name' => 'Temp', 'guard_name' => 'web']);
 
         $this->actingAs($admin)
             ->delete(route('core.roles.destroy', $role))
-            ->assertStatus(500); // P1: API route calls RoleController::deleteRole (non-existent)
+            ->assertRedirect(route('core.roles.index'));
+
+        $this->assertDatabaseMissing('roles', ['id' => $role->id]);
     }
 
     /**
