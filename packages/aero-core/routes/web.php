@@ -4,6 +4,7 @@ use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Controllers\Admin\ActivityController;
 use Aero\Core\Http\Controllers\Admin\AddonController;
 use Aero\Core\Http\Controllers\Admin\AnnouncementController;
+use Aero\Core\Http\Controllers\Admin\ApiKeyController;
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
 use Aero\Core\Http\Controllers\Admin\BackupConfigController;
 use Aero\Core\Http\Controllers\Admin\BackupController;
@@ -21,10 +22,12 @@ use Aero\Core\Http\Controllers\Admin\SystemHealthController;
 use Aero\Core\Http\Controllers\Admin\TagController;
 use Aero\Core\Http\Controllers\Admin\TrashController;
 use Aero\Core\Http\Controllers\Admin\UserPreferenceController;
+use Aero\Core\Http\Controllers\Admin\WebhookController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Notification\NotificationController;
 use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
+use Aero\Core\Http\Controllers\Profile\UserProfileController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
 use Aero\Core\Http\Controllers\Settings\BrandingSettingsController;
@@ -402,15 +405,41 @@ Route::middleware('auth:web')->group(function () {
     });
 
     // ========================================================================
-    // AUDIT LOGS
+    // AUDIT LOGS (CA-3 extended: security page, queue monitor, export)
     // ========================================================================
     Route::prefix('audit-logs')->name('core.audit-logs.')->middleware('hrmac:core.audit_logs.activity_logs.view')->group(function () {
         Route::get('/', [AuditLogController::class, 'index'])->name('index');
         Route::get('/activity', [AuditLogController::class, 'activityLogs'])->name('activity');
-        Route::get('/security', [AuditLogController::class, 'securityLogs'])->name('security');
         Route::get('/stats', [AuditLogController::class, 'stats'])->name('stats');
-        Route::post('/activity/export', [AuditLogController::class, 'exportActivityLogs'])->name('activity.export');
-        Route::post('/security/export', [AuditLogController::class, 'exportSecurityLogs'])->name('security.export');
+        Route::get('/export', [AuditLogController::class, 'export'])
+            ->middleware('hrmac:core.audit_logs.activity_logs.export')
+            ->name('export');
+        Route::post('/activity/export', [AuditLogController::class, 'exportActivityLogs'])
+            ->middleware('hrmac:core.audit_logs.activity_logs.export')
+            ->name('activity.export');
+        Route::post('/security/export', [AuditLogController::class, 'exportSecurityLogs'])
+            ->middleware('hrmac:core.audit_logs.security_logs.export')
+            ->name('security.export');
+
+        // Security log viewer (Inertia)
+        Route::get('/security', [AuditLogController::class, 'security'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.security_logs.view')
+            ->name('security');
+
+        // Queue / failed-jobs monitor
+        Route::get('/queues', [AuditLogController::class, 'queues'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.queue_monitor.view')
+            ->name('queues');
+        Route::post('/queues/retry/{id}', [AuditLogController::class, 'retryJob'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.queue_monitor.retry')
+            ->name('queues.retry');
+        Route::post('/queues/flush', [AuditLogController::class, 'flushQueue'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.queue_monitor.flush')
+            ->name('queues.flush');
     });
 
     // ========================================================================
@@ -517,6 +546,31 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/refresh', [SystemHealthController::class, 'refresh'])
             ->middleware('hrmac:core.system_health.overview.view')
             ->name('refresh');
+
+        // CA-3 additions: run diagnostics, sub-section pages, cache & scheduled tasks
+        Route::post('/run-checks', [SystemHealthController::class, 'runChecks'])
+            ->middleware('hrmac:core.system_health.overview.view')
+            ->name('run-checks');
+        Route::get('/performance', [SystemHealthController::class, 'performance'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.metrics.view')
+            ->name('performance');
+        Route::get('/cache', [SystemHealthController::class, 'cacheStatus'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.cache.view')
+            ->name('cache');
+        Route::post('/cache/clear', [SystemHealthController::class, 'clearCache'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.cache.view')
+            ->name('cache.clear');
+        Route::get('/scheduled-tasks', [SystemHealthController::class, 'scheduledTasks'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.services.view')
+            ->name('scheduled-tasks');
+        Route::post('/scheduled-tasks/run', [SystemHealthController::class, 'runTask'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.services.view')
+            ->name('scheduled-tasks.run');
     });
 
     // ========================================================================
@@ -722,9 +776,9 @@ Route::middleware('auth:web')->group(function () {
     // PROFILE ROUTES
     // ========================================================================
     Route::prefix('profile')->name('core.profile.')->group(function () {
-        Route::get('/', function () {
-            return redirect()->route('core.profile.security');
-        })->name('index');
+        Route::get('/', [UserProfileController::class, 'index'])->name('index');
+        Route::post('/update', [UserProfileController::class, 'update'])->name('update');
+        Route::post('/password', [UserProfileController::class, 'changePassword'])->name('password');
 
         Route::get('/security', function () {
             $user = auth()->user();
@@ -1021,6 +1075,45 @@ Route::middleware('auth:web')->group(function () {
         Route::delete('/empty-all', [TrashController::class, 'emptyAllTrash'])
             ->middleware('hrmac:core.trash.empty')
             ->name('empty-all');
+    });
+
+    // ========================================================================
+    // API KEYS (CA-4)
+    // ========================================================================
+    Route::prefix('api/keys')->name('core.api.keys.')->group(function () {
+        Route::get('/', [ApiKeyController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.api_webhooks.api_keys.view');
+        Route::post('/', [ApiKeyController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.api_webhooks.api_keys.create');
+        Route::post('/{id}/revoke', [ApiKeyController::class, 'revoke'])
+            ->name('revoke')
+            ->middleware('hrmac:core.api_webhooks.api_keys.revoke');
+    });
+
+    // ========================================================================
+    // WEBHOOKS (CA-4)
+    // ========================================================================
+    Route::prefix('api/webhooks')->name('core.api.webhooks.')->group(function () {
+        Route::get('/', [WebhookController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.view');
+        Route::post('/', [WebhookController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.create');
+        Route::put('/{id}', [WebhookController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.update');
+        Route::delete('/{id}', [WebhookController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.delete');
+        Route::post('/{id}/test', [WebhookController::class, 'test'])
+            ->name('test')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.test');
+        Route::get('/{id}/deliveries', [WebhookController::class, 'deliveries'])
+            ->name('deliveries')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.logs');
     });
 
     // FCM Token Update
