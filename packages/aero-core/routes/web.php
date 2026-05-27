@@ -28,6 +28,7 @@ use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
 use Aero\Core\Http\Controllers\Settings\BrandingSettingsController;
+use Aero\Core\Http\Controllers\Settings\EmailTemplateController;
 use Aero\Core\Http\Controllers\Settings\IpWhitelistController;
 use Aero\Core\Http\Controllers\Settings\LocalizationSettingsController;
 use Aero\Core\Http\Controllers\Settings\MailSettingsController;
@@ -631,6 +632,15 @@ Route::middleware('auth:web')->group(function () {
             Route::post('/test-ip', [IpWhitelistController::class, 'testIp'])->name('test-ip')->middleware('hrmac:core.settings.ip_whitelist.edit');
         });
 
+        // Email Templates
+        Route::prefix('email-templates')->name('email-templates.')->middleware('hrmac:core.settings.email_templates.view')->group(function () {
+            Route::get('/', [EmailTemplateController::class, 'index'])->name('index');
+            Route::post('/', [EmailTemplateController::class, 'store'])->name('store')->middleware('hrmac:core.settings.email_templates.create');
+            Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('update')->middleware('hrmac:core.settings.email_templates.edit');
+            Route::delete('/{template}', [EmailTemplateController::class, 'destroy'])->name('destroy')->middleware('hrmac:core.settings.email_templates.delete');
+            Route::get('/{template}/preview', [EmailTemplateController::class, 'preview'])->name('preview');
+        });
+
         // Domain Management (SaaS mode only - requires aero-platform)
         Route::prefix('domains')->name('domains.')->group(function () {
             // Only register domain routes if Platform is installed
@@ -667,12 +677,45 @@ Route::middleware('auth:web')->group(function () {
     // ORGANIZATION PROFILE ROUTES
     // ========================================================================
     Route::prefix('organization')->name('core.organization.')->group(function () {
-        Route::get('/profile', [OrganizationProfileController::class, 'index'])
-            ->name('profile.index')
+        // Company profile
+        Route::get('/profile', [OrganizationProfileController::class, 'profile'])
+            ->name('profile')
             ->middleware('hrmac:core.organization.org_profile.view');
-        Route::put('/profile', [OrganizationProfileController::class, 'update'])
+        Route::post('/profile', [OrganizationProfileController::class, 'updateProfile'])
             ->name('profile.update')
             ->middleware('hrmac:core.organization.org_profile.update');
+
+        // Tax / legal identity
+        Route::get('/identity', [OrganizationProfileController::class, 'identity'])
+            ->name('identity')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/identity', [OrganizationProfileController::class, 'updateIdentity'])
+            ->name('identity.update')
+            ->middleware('hrmac:core.organization.org_identity.update');
+
+        // Addresses
+        Route::get('/addresses', [OrganizationProfileController::class, 'addresses'])
+            ->name('addresses')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/addresses', [OrganizationProfileController::class, 'updateAddresses'])
+            ->name('addresses.update')
+            ->middleware('hrmac:core.organization.org_addresses.manage');
+
+        // Fiscal year
+        Route::get('/fiscal-year', [OrganizationProfileController::class, 'fiscalYear'])
+            ->name('fiscal-year')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/fiscal-year', [OrganizationProfileController::class, 'updateFiscalYear'])
+            ->name('fiscal-year.update')
+            ->middleware('hrmac:core.organization.fiscal_year.manage');
+
+        // Contacts
+        Route::get('/contacts', [OrganizationProfileController::class, 'contacts'])
+            ->name('contacts')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/contacts', [OrganizationProfileController::class, 'updateContacts'])
+            ->name('contacts.update')
+            ->middleware('hrmac:core.organization.org_contacts.manage');
     });
 
     // ========================================================================
