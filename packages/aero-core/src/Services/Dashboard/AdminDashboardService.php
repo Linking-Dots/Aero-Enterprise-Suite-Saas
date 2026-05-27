@@ -8,6 +8,7 @@ use Aero\Contracts\ModuleSummaryProvider;
 use Aero\Core\Models\Announcement;
 use Aero\Core\Models\AuditLog;
 use Aero\Core\Models\CompanySetting;
+use Aero\Core\Models\Module;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserDevice;
 use Aero\Core\Models\UserSession;
@@ -131,6 +132,32 @@ class AdminDashboardService
             str_contains($action, 'updated'), str_contains($action, 'modified') => 'info',
             default => 'info',
         };
+    }
+
+    /**
+     * Lightweight tenant stats for the dashboard index page.
+     *
+     * @return array{total_users: int, active_users: int, total_roles: int, modules_enabled: int}
+     */
+    public function getTenantStats(): array
+    {
+        try {
+            return [
+                'total_users' => User::count(),
+                'active_users' => User::where('is_active', true)->count(),
+                'total_roles' => \Spatie\Permission\Models\Role::count(),
+                'modules_enabled' => Module::where('is_active', true)->count(),
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [
+                'total_users' => 0,
+                'active_users' => 0,
+                'total_roles' => 0,
+                'modules_enabled' => 0,
+            ];
+        }
     }
 
     public function getCoreStats(): array

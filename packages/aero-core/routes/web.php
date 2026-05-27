@@ -3,6 +3,7 @@
 use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Controllers\Admin\ActivityController;
 use Aero\Core\Http\Controllers\Admin\AddonController;
+use Aero\Core\Http\Controllers\Admin\AnnouncementController;
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
 use Aero\Core\Http\Controllers\Admin\BackupConfigController;
 use Aero\Core\Http\Controllers\Admin\BackupController;
@@ -981,6 +982,103 @@ Route::middleware('auth:web')->group(function () {
 
     // FCM Token Update
     Route::post('/update-fcm-token', [CoreUserController::class, 'updateFcmToken'])->name('core.updateFcmToken');
+
+    // ========================================================================
+    // ANNOUNCEMENTS (CA-1 — Inertia/RedirectResponse routes)
+    // ========================================================================
+    Route::prefix('announcements')->name('core.announcements.')->group(function () {
+        Route::get('/', [AnnouncementController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.announcements.announcement_list.view');
+        Route::post('/', [AnnouncementController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.announcements.announcement_list.create');
+        Route::patch('/{announcement}', [AnnouncementController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.announcements.announcement_list.update');
+        Route::post('/{announcement}/publish', [AnnouncementController::class, 'publish'])
+            ->name('publish')
+            ->middleware('hrmac:core.announcements.announcement_list.publish');
+        Route::post('/{announcement}/archive', [AnnouncementController::class, 'archive'])
+            ->name('archive')
+            ->middleware('hrmac:core.announcements.announcement_list.archive');
+        Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.announcements.announcement_list.delete');
+    });
+
+    // ========================================================================
+    // USER MANAGEMENT — Inertia/RedirectResponse routes (CA-1)
+    // These complement the existing JSON API user routes above.
+    // ========================================================================
+    Route::prefix('users')->name('core.users.')->group(function () {
+        Route::get('/create', [CoreUserController::class, 'create'])
+            ->name('create')
+            ->middleware('hrmac:core.user_management.users.create');
+        Route::get('/invitations', [CoreUserController::class, 'invitations'])
+            ->name('invitations.index')
+            ->middleware('hrmac:core.user_management.user_invitations.view');
+        Route::post('/invitations', [CoreUserController::class, 'invite'])
+            ->name('invitations.store')
+            ->middleware('hrmac:core.user_management.user_invitations.invite');
+        Route::post('/invitations/{id}/resend', [CoreUserController::class, 'resendInvitation'])
+            ->name('invitations.resend')
+            ->middleware('hrmac:core.user_management.user_invitations.resend');
+        Route::delete('/invitations/{id}', [CoreUserController::class, 'cancelInvitation'])
+            ->name('invitations.cancel')
+            ->middleware('hrmac:core.user_management.user_invitations.cancel');
+        Route::post('/bulk-delete', [CoreUserController::class, 'bulkDelete'])
+            ->name('bulk-delete')
+            ->middleware('hrmac:core.user_management.users.bulk_delete');
+        Route::post('/bulk-assign-roles', [CoreUserController::class, 'bulkAssignRoles'])
+            ->name('bulk-assign-roles')
+            ->middleware('hrmac:core.user_management.users.bulk_assign_roles');
+        Route::post('/stop-impersonating', [CoreUserController::class, 'stopImpersonating'])
+            ->name('stop-impersonating');
+        Route::get('/{user}', [CoreUserController::class, 'show'])
+            ->name('show')
+            ->middleware('hrmac:core.user_management.users.view');
+        Route::get('/{user}/edit', [CoreUserController::class, 'edit'])
+            ->name('edit')
+            ->middleware('hrmac:core.user_management.users.edit');
+        Route::put('/{user}', [CoreUserController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.user_management.users.edit');
+        Route::delete('/{user}', [CoreUserController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.user_management.users.delete');
+        Route::post('/{user}/toggle-status', [CoreUserController::class, 'toggleStatus'])
+            ->name('toggle-status')
+            ->middleware('hrmac:core.user_management.users.activate');
+        Route::post('/{user}/impersonate', [CoreUserController::class, 'impersonate'])
+            ->name('impersonate')
+            ->middleware('hrmac:core.user_management.users.impersonate');
+    });
+
+    // ========================================================================
+    // ROLES — Inertia/RedirectResponse routes (CA-1)
+    // These complement the existing JSON API role routes above.
+    // ========================================================================
+    Route::prefix('roles')->name('core.roles.')->group(function () {
+        Route::get('/create', [RoleController::class, 'create'])
+            ->name('create')
+            ->middleware('hrmac:core.roles_permissions.roles.create');
+        Route::post('/', [RoleController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.roles_permissions.roles.create');
+        Route::get('/{role}/edit', [RoleController::class, 'edit'])
+            ->name('edit')
+            ->middleware('hrmac:core.roles_permissions.roles.edit');
+        Route::put('/{role}', [RoleController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.roles_permissions.roles.edit');
+        Route::delete('/{role}', [RoleController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.roles_permissions.roles.delete');
+        Route::post('/{role}/sync-permissions', [RoleController::class, 'syncPermissions'])
+            ->name('sync-permissions')
+            ->middleware('hrmac:core.roles_permissions.roles.permissions');
+    });
 
     // ========================================================================
     // ADD-ON MANAGEMENT — standalone mode only
