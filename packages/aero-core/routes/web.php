@@ -296,7 +296,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // USER MANAGEMENT ROUTES
     // ========================================================================
-    Route::prefix('users')->name('core.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
+    Route::prefix('users')->name('core.api.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
         // List & View
         Route::get('/', [CoreUserController::class, 'index'])->name('index');
         Route::get('/paginate', [CoreUserController::class, 'paginate'])->name('paginate');
@@ -359,7 +359,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-roles' capability can access these routes
-    Route::prefix('roles')->name('core.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
+    Route::prefix('roles')->name('core.api.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
         // View
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/export', [RoleController::class, 'exportRoles'])->name('export');
@@ -1012,6 +1012,12 @@ Route::middleware('auth:web')->group(function () {
     // These complement the existing JSON API user routes above.
     // ========================================================================
     Route::prefix('users')->name('core.users.')->group(function () {
+        Route::get('/', [CoreUserController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.user_management.users.view');
+        Route::post('/', [CoreUserController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.user_management.users.create');
         Route::get('/create', [CoreUserController::class, 'create'])
             ->name('create')
             ->middleware('hrmac:core.user_management.users.create');
@@ -1060,6 +1066,9 @@ Route::middleware('auth:web')->group(function () {
     // These complement the existing JSON API role routes above.
     // ========================================================================
     Route::prefix('roles')->name('core.roles.')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.roles_permissions.roles.view');
         Route::get('/create', [RoleController::class, 'create'])
             ->name('create')
             ->middleware('hrmac:core.roles_permissions.roles.create');
