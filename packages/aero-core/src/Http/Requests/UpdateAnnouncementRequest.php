@@ -6,7 +6,7 @@ namespace Aero\Core\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAnnouncementRequest extends FormRequest
+class UpdateAnnouncementRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,11 +19,11 @@ class StoreAnnouncementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'body' => ['required', 'string'],
-            'type' => ['required', 'in:info,warning,success,danger'],
-            'status' => ['required', 'in:draft,published,archived'],
-            'audience' => ['required', 'in:all,admins,employees'],
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'body' => ['sometimes', 'required', 'string'],
+            'type' => ['sometimes', 'required', 'in:info,warning,success,danger'],
+            'status' => ['sometimes', 'required', 'in:draft,published,archived'],
+            'audience' => ['sometimes', 'required', 'in:all,admins,employees'],
             'is_pinned' => ['boolean'],
             'published_at' => ['nullable', 'date'],
             'expires_at' => ['nullable', 'date', 'after:published_at'],
