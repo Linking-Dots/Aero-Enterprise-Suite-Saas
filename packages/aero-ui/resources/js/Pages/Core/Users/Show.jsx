@@ -7,109 +7,75 @@ import {
   Text,
   Card, CardContent,
   useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
-import { useHRMAC } from '../../../hooks/useHRMAC';
 
 export default function UsersShow({ user }) {
-  const toast = useToast();
-  const canActivate = useHRMAC('core.user_management.users.activate');
-  const canDeactivate = useHRMAC('core.user_management.users.deactivate');
-  const canDelete = useHRMAC('core.user_management.users.delete');
-  const canEdit = useHRMAC('core.user_management.users.edit');
+  const toast          = useToast();
+  const canActivate    = useHRMAC('core.user_management.users.activate');
+  const canDeactivate  = useHRMAC('core.user_management.users.deactivate');
+  const canDelete      = useHRMAC('core.user_management.users.delete');
+  const canEdit        = useHRMAC('core.user_management.users.edit');
   const canImpersonate = useHRMAC('core.user_management.users.impersonate');
 
-  const toggleStatus = async () => {
-    const activate = !!user.deleted_at || !user.active;
-    try {
-      const res = await fetch(route('core.users.toggleStatus', user.id), {
-        method: 'PUT',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-        body: JSON.stringify({ active: activate }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        toast.success(data.message);
-        router.reload();
-      }
-    } catch {
-      toast.error('Failed to update status');
-    }
-  };
-
-  const deleteUser = async () => {
-    if (!confirm('Deactivate this user?')) return;
-    try {
-      const res = await fetch(route('core.users.destroy', user.id), {
-        method: 'DELETE',
-        headers: {
-          Accept: 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-      });
-      if (res.ok) {
-        toast.success('User deactivated');
-        router.visit(route('core.users.index'));
-      }
-    } catch {
-      toast.error('Failed to delete user');
-    }
-  };
-
-  const impersonate = async () => {
-    try {
-      const res = await fetch(route('core.users.impersonate', user.id), {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-      });
-      if (res.ok) {
-        toast.success('Impersonating user...');
-        window.location.reload();
-      }
-    } catch {
-      toast.error('Failed to impersonate');
-    }
-  };
-
   const isActive = !user.deleted_at && user.active;
+
+  const toggleStatus = () => {
+    const activate = !isActive;
+    router.put(route('core.users.toggle-status', user.id), { active: activate }, {
+      onSuccess: () => {
+        toast.success(activate ? 'User activated.' : 'User deactivated.');
+        router.reload();
+      },
+      onError: () => toast.error('Failed to update status'),
+    });
+  };
+
+  const deleteUser = () => {
+    if (!confirm('Deactivate this user?')) return;
+    router.delete(route('core.users.destroy', user.id), {
+      onSuccess: () => {
+        toast.success('User deactivated.');
+        router.visit(route('core.users.index'));
+      },
+      onError: () => toast.error('Failed to delete user'),
+    });
+  };
+
+  const impersonate = () => {
+    router.post(route('core.users.impersonate', user.id), {}, {
+      onSuccess: () => toast.success('Impersonating user…'),
+      onError:   () => toast.error('Failed to impersonate'),
+    });
+  };
 
   return (
     <DetailPageLayout
       title={user.name}
       breadcrumb={[
         { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Users', href: route('core.users.index') },
+        { label: 'Users',     href: route('core.users.index') },
         { label: user.name },
       ]}
       description="User profile and account details."
       actions={
         <HStack gap={2}>
           {canEdit && (
-            <Button variant="secondary" onClick={() => router.visit(route('core.users.edit', user.id))}>
+            <Button intent="soft" onClick={() => router.visit(route('core.users.edit', user.id))}>
               Edit
             </Button>
           )}
           {(isActive ? canDeactivate : canActivate) && (
-            <Button variant={isActive ? 'warning' : 'success'} onClick={toggleStatus}>
+            <Button intent={isActive ? 'ghost' : 'soft'} onClick={toggleStatus}>
               {isActive ? 'Deactivate' : 'Activate'}
             </Button>
           )}
           {canDelete && (
-            <Button variant="danger" onClick={deleteUser}>
-              Delete
-            </Button>
+            <Button intent="danger" onClick={deleteUser}>Delete</Button>
           )}
           {canImpersonate && (
-            <Button variant="ghost" onClick={impersonate}>
-              Impersonate
-            </Button>
+            <Button intent="ghost" onClick={impersonate}>Impersonate</Button>
           )}
         </HStack>
       }
@@ -119,8 +85,8 @@ export default function UsersShow({ user }) {
           <CardContent>
             <VStack gap={3}>
               <HStack gap={2} align="center">
-                <Text variant="h4">{user.name}</Text>
-                <Badge variant={isActive ? 'success' : 'danger'}>
+                <Text size="lg">{user.name}</Text>
+                <Badge intent={isActive ? 'success' : 'danger'}>
                   {isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </HStack>
@@ -128,7 +94,7 @@ export default function UsersShow({ user }) {
               <VStack gap={1}>
                 <Text><strong>Email:</strong> {user.email}</Text>
                 {user.user_name && <Text><strong>Username:</strong> @{user.user_name}</Text>}
-                {user.phone && <Text><strong>Phone:</strong> {user.phone}</Text>}
+                {user.phone     && <Text><strong>Phone:</strong> {user.phone}</Text>}
                 <Text><strong>Created:</strong> {new Date(user.created_at).toLocaleString()}</Text>
                 {user.email_verified_at && (
                   <Text><strong>Verified:</strong> {new Date(user.email_verified_at).toLocaleString()}</Text>
@@ -136,13 +102,11 @@ export default function UsersShow({ user }) {
               </VStack>
 
               <div>
-                <Text variant="caption" className="mb-2">Roles</Text>
+                <Text tone="secondary" size="sm">Roles</Text>
                 <HStack gap={1} wrap>
-                  {user.roles?.length > 0 ? user.roles.map(r => (
-                    <Badge key={r.id} variant="secondary">{r.name}</Badge>
-                  )) : (
-                    <span className="text-muted">No roles assigned</span>
-                  )}
+                  {user.roles?.length > 0
+                    ? user.roles.map(r => <Badge key={r.id} intent="neutral">{r.name}</Badge>)
+                    : <Text tone="secondary" size="sm">No roles assigned</Text>}
                 </HStack>
               </div>
             </VStack>
