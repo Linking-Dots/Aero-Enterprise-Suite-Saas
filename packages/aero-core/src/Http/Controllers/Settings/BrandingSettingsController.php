@@ -6,14 +6,22 @@ use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\StoreBrandingSettingsRequest;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
+use Aero\Core\Services\Audit\AuditEventType;
+use Aero\Core\Services\Audit\AuditService;
+use Aero\Core\Services\SystemSettingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class BrandingSettingsController extends Controller
 {
+    public function __construct(
+        private readonly SystemSettingService $settings,
+        private readonly AuditService $audit,
+    ) {}
+
     public function index(Request $request): Response|SystemSettingResource
     {
         $setting = SystemSetting::current();
@@ -28,26 +36,65 @@ class BrandingSettingsController extends Controller
         ]);
     }
 
-    public function update(StoreBrandingSettingsRequest $request): JsonResponse
+    public function update(Request $request): JsonResponse|RedirectResponse
     {
+        $request->validate([
+            'app_name' => ['sometimes', 'string', 'max:100'],
+            'primary_color' => ['sometimes', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'sidebar_theme' => ['sometimes', 'in:dark,light'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'favicon' => ['nullable', 'image', 'max:512'],
+        ]);
+
         $setting = SystemSetting::current();
 
-        $validatedBranding = $request->validatedBranding();
+        // Handle file uploads to Spatie Media Library if files provided
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $setting->clearMediaCollection(SystemSetting::MEDIA_LOGO_LIGHT);
+            $setting->addMediaFromRequest('logo')->toMediaCollection(SystemSetting::MEDIA_LOGO_LIGHT);
+        }
 
+        if ($request->hasFile('favicon') && $request->file('favicon')->isValid()) {
+            $setting->clearMediaCollection(SystemSetting::MEDIA_FAVICON);
+            $setting->addMediaFromRequest('favicon')->toMediaCollection(SystemSetting::MEDIA_FAVICON);
+        }
+
+        // Persist scalar branding values
+        foreach (['app_name', 'primary_color', 'sidebar_theme'] as $key) {
+            if ($request->has($key)) {
+                $this->settings->set($key, $request->input($key));
+            }
+        }
+
+        // Also merge into the branding JSON column for backward compat
         $existingBranding = $setting->branding ?? [];
-        $mergedBranding = array_merge($existingBranding, $validatedBranding);
+        $brandingUpdate = array_filter([
+            'primary_color' => $request->input('primary_color'),
+            'sidebar_theme' => $request->input('sidebar_theme'),
+        ], fn ($v) => $v !== null);
 
-        $setting->update(['branding' => $mergedBranding]);
+        if (! empty($brandingUpdate)) {
+            $setting->update(['branding' => array_merge($existingBranding, $brandingUpdate)]);
+        }
 
-        $this->handleMediaUploads($setting, $request);
-        $this->handleMediaRemovals($setting, $request);
+        $this->audit->log(
+            AuditEventType::SETTINGS_UPDATED->value,
+            'updated',
+            null,
+            'Branding settings updated',
+            null,
+            null,
+            ['section' => 'branding']
+        );
 
-        $setting->refresh();
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Branding settings updated successfully.',
+                'branding' => $setting->refresh()->getBrandingPayload(),
+            ]);
+        }
 
-        return response()->json([
-            'message' => 'Branding settings updated successfully.',
-            'branding' => $setting->getBrandingPayload(),
-        ]);
+        return back()->with('success', 'Branding settings saved.');
     }
 
     private function handleMediaUploads(SystemSetting $setting, StoreBrandingSettingsRequest $request): void

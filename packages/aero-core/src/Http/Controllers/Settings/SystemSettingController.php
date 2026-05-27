@@ -8,8 +8,11 @@ use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\UpdateSystemSettingRequest;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
+use Aero\Core\Services\Audit\AuditEventType;
+use Aero\Core\Services\Audit\AuditService;
 use Aero\Core\Services\SystemSettingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,8 +21,9 @@ class SystemSettingController extends Controller
 {
     public function __construct(
         private readonly SystemSettingService $service,
+        private readonly AuditService $audit,
         private readonly MailSenderInterface $mailService,
-        private readonly SmsGatewayInterface $smsService
+        private readonly SmsGatewayInterface $smsService,
     ) {}
 
     public function index(Request $request): Response|SystemSettingResource
@@ -32,11 +36,40 @@ class SystemSettingController extends Controller
 
         return Inertia::render('Core/Settings/SystemSettings', [
             'title' => 'System Settings',
+            'settings' => $this->service->allAsArray(),
             'systemSettings' => SystemSettingResource::make($setting)->resolve(),
         ]);
     }
 
-    public function update(UpdateSystemSettingRequest $request): JsonResponse
+    public function update(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'app_name' => ['sometimes', 'string', 'max:100'],
+            'app_url' => ['sometimes', 'url'],
+            'support_email' => ['sometimes', 'email'],
+            'timezone' => ['sometimes', 'string'],
+            'date_format' => ['sometimes', 'string'],
+            'time_format' => ['sometimes', 'string'],
+        ]);
+
+        foreach ($validated as $key => $value) {
+            $this->service->set($key, $value);
+        }
+
+        $this->audit->log(
+            AuditEventType::SETTINGS_UPDATED->value,
+            'updated',
+            null,
+            'General settings updated',
+            null,
+            null,
+            ['keys' => array_keys($validated)]
+        );
+
+        return back()->with('success', 'Settings saved.');
+    }
+
+    public function updateFull(UpdateSystemSettingRequest $request): JsonResponse
     {
         $setting = SystemSetting::current();
 
@@ -75,7 +108,6 @@ class SystemSettingController extends Controller
             ]);
         }
 
-        // Return 422 for configuration errors so they display properly in the UI
         return response()->json([
             'success' => false,
             'message' => $result['message'],
@@ -91,10 +123,8 @@ class SystemSettingController extends Controller
             'phone' => ['required', 'string'],
         ]);
 
-        // Apply SMS settings from database
         $this->smsService->applySmsSettings();
 
-        // Send test SMS
         $result = $this->smsService->sendTestSms($request->input('phone'));
 
         if ($result['success']) {
@@ -104,7 +134,6 @@ class SystemSettingController extends Controller
             ]);
         }
 
-        // Return 422 for configuration errors so they display properly in the UI
         return response()->json([
             'success' => false,
             'message' => $result['message'],

@@ -103,6 +103,9 @@ enum AuditEventType: string
     case INVOICE_MARKED_PAID = 'platform.invoice.marked_paid';
     case PAYMENT_GATEWAY_UPDATED = 'platform.payment_gateway.updated';
 
+    // Tenant settings (CA-2)
+    case SETTINGS_UPDATED = 'core.settings.updated';
+
     // P-4 settings / users / roles
     case PLATFORM_SETTING_UPDATED = 'platform.setting.updated';
     case LANDLORD_USER_CREATED = 'platform.user.created';
