@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('expires_at')->nullable();
             $table->string('audience')->default('all'); // all|admins|employees
             $table->boolean('is_pinned')->default(false);
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

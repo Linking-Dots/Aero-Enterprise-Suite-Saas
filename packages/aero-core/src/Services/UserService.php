@@ -32,7 +32,7 @@ class UserService
 
     public function create(array $data, User $actor): User
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $actor) {
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -60,7 +60,7 @@ class UserService
 
     public function update(User $user, array $data, User $actor): User
     {
-        return DB::transaction(function () use ($user, $data) {
+        return DB::transaction(function () use ($user, $data, $actor) {
             $user->update(array_filter([
                 'name' => $data['name'] ?? null,
                 'email' => $data['email'] ?? null,
@@ -100,15 +100,15 @@ class UserService
     public function toggleStatus(User $user, User $actor): User
     {
         return DB::transaction(function () use ($user, $actor) {
-            $user->update(['is_active' => ! $user->is_active]);
-            $action = $user->is_active ? 'activated' : 'deactivated';
+            $newStatus = ! $user->is_active;
+            $action    = $newStatus ? 'activated' : 'deactivated';
+            $user->update(['is_active' => $newStatus]);
             $this->audit->log(
                 AuditEventType::RECORD_UPDATED->value,
                 $action,
                 $user,
                 'User status toggled'
             );
-
             return $user->fresh();
         });
     }
@@ -137,7 +137,7 @@ class UserService
 
     public function bulkAssignRoles(array $ids, array $roles, User $actor): int
     {
-        return DB::transaction(function () use ($ids, $roles) {
+        return DB::transaction(function () use ($ids, $roles, $actor) {
             $users = User::whereIn('id', $ids)->get();
 
             foreach ($users as $u) {

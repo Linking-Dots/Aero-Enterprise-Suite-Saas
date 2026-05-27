@@ -46,7 +46,7 @@ class AnnouncementService
 
     public function update(Announcement $ann, array $data, User $actor): Announcement
     {
-        return DB::transaction(function () use ($ann, $data) {
+        return DB::transaction(function () use ($ann, $data, $actor) {
             $ann->update($data);
 
             $this->audit->log(
