@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import {
   IndexPageLayout,
   DataTable,
@@ -17,26 +17,29 @@ import {
 import App from '../../App.jsx';
 
 export default function RolesIndex({ roles, users, can_manage_super_admin, error }) {
-  const toast = useToast();
-  const canCreate = useHRMAC('core.roles_permissions.roles.create');
-  const canEdit = useHRMAC('core.roles_permissions.roles.edit');
-  const canDelete = useHRMAC('core.roles_permissions.roles.delete');
-  const canAssign = useHRMAC('core.roles_permissions.roles.assign');
-  const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  const toast      = useToast();
+  const canCreate  = useHRMAC('core.roles_permissions.roles.create');
+  const canEdit    = useHRMAC('core.roles_permissions.roles.edit');
+  const canDelete  = useHRMAC('core.roles_permissions.roles.delete');
+  const canAssign  = useHRMAC('core.roles_permissions.roles.assign');
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [editingRole, setEditingRole] = useState(null);
+  const [showCreate,   setShowCreate]   = useState(false);
+  const [editingRole,  setEditingRole]  = useState(null);
   const [assignRoleId, setAssignRoleId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', description: '', default_dashboard: '', priority: 0 });
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [formData, setFormData] = useState({
+    name: '', description: '', default_dashboard: '', priority: 0,
+  });
 
   if (error) {
     return (
-      <IndexPageLayout title="Role Management" breadcrumb={[{ label: 'Dashboard', href: route('core.dashboard') }, { label: 'Roles' }]}>
-        <Card variant="danger">
+      <IndexPageLayout
+        title="Role Management"
+        breadcrumb={[{ label: 'Dashboard', href: route('core.dashboard') }, { label: 'Roles' }]}
+      >
+        <Card>
           <CardContent>
-            <Text variant="h4" className="text-danger">Error loading roles</Text>
-            <Text>{error.message}</Text>
+            <Text tone="secondary">Error loading roles: {error.message}</Text>
           </CardContent>
         </Card>
       </IndexPageLayout>
@@ -49,242 +52,135 @@ export default function RolesIndex({ roles, users, can_manage_super_admin, error
     setShowCreate(false);
   };
 
-  const handleCreate = async (e) => {
+  const handleCreate = e => {
     e.preventDefault();
-    try {
-      const res = await fetch(route('core.roles.store'), {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrf,
-        },
-        body: JSON.stringify(formData),
-      });
-      if (res.ok) {
-        toast.success('Role created successfully.');
-        resetForm();
-        router.reload({ only: ['roles'] });
-      } else {
-        const err = await res.json();
-        toast.error(err.message || Object.values(err.errors || {})[0]?.[0] || 'Failed to create role');
-      }
-    } catch {
-      toast.error('Network error');
-    }
+    router.post(route('core.roles.store'), formData, {
+      preserveState: true,
+      onSuccess: () => { toast.success('Role created.'); resetForm(); },
+      onError:   errors => { const first = Object.values(errors)[0]; toast.error(first || 'Failed to create role'); },
+    });
   };
 
-  const handleUpdate = async (e) => {
+  const handleUpdate = e => {
     e.preventDefault();
-    try {
-      const res = await fetch(route('core.roles.update', editingRole.id), {
-        method: 'PUT',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrf,
-        },
-        body: JSON.stringify(formData),
-      });
-      if (res.ok) {
-        toast.success('Role updated successfully.');
-        resetForm();
-        router.reload({ only: ['roles'] });
-      } else {
-        const err = await res.json();
-        toast.error(err.message || Object.values(err.errors || {})[0]?.[0] || 'Failed to update role');
-      }
-    } catch {
-      toast.error('Network error');
-    }
+    router.put(route('core.roles.update', editingRole.id), formData, {
+      preserveState: true,
+      onSuccess: () => { toast.success('Role updated.'); resetForm(); },
+      onError:   errors => { const first = Object.values(errors)[0]; toast.error(first || 'Failed to update role'); },
+    });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = id => {
     if (!confirm('Are you sure you want to delete this role?')) return;
-    try {
-      const res = await fetch(route('core.roles.delete', id), {
-        method: 'DELETE',
-        headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
-      });
-      if (res.ok) {
-        toast.success('Role deleted.');
-        router.reload({ only: ['roles'] });
-      } else {
-        const err = await res.json();
-        toast.error(err.message || 'Failed to delete role');
-      }
-    } catch {
-      toast.error('Network error');
-    }
+    router.delete(route('core.roles.destroy', id), {
+      onSuccess: () => toast.success('Role deleted.'),
+      onError:   () => toast.error('Failed to delete role'),
+    });
   };
 
-  const handleToggle = async (id, current) => {
-    try {
-      const res = await fetch(route('core.roles.toggle-status', id), {
-        method: 'PATCH',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrf,
-        },
-        body: JSON.stringify({ is_active: !current }),
-      });
-      if (res.ok) {
-        toast.success('Role status updated.');
-        router.reload({ only: ['roles'] });
-      }
-    } catch {
-      toast.error('Failed to toggle status');
-    }
-  };
-
-  const handleAssign = async (e) => {
+  const handleAssign = e => {
     e.preventDefault();
     if (!selectedUserId || !assignRoleId) return;
-    try {
-      const res = await fetch(route('core.roles.assign-user'), {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrf,
-        },
-        body: JSON.stringify({ user_id: selectedUserId, roles: [assignRoleId] }),
-      });
-      if (res.ok) {
-        toast.success('Role assigned successfully.');
-        setAssignRoleId(null);
-        setSelectedUserId('');
-        router.reload({ only: ['roles', 'users'] });
-      } else {
-        const err = await res.json();
-        toast.error(err.message || 'Failed to assign role');
-      }
-    } catch {
-      toast.error('Network error');
-    }
+    router.post(route('core.roles.assign-user'), { user_id: selectedUserId, roles: [assignRoleId] }, {
+      preserveState: true,
+      onSuccess: () => { toast.success('Role assigned.'); setAssignRoleId(null); setSelectedUserId(''); },
+      onError:   () => toast.error('Failed to assign role'),
+    });
   };
 
-  const openEdit = (role) => {
+  const openEdit = role => {
     setEditingRole(role);
     setFormData({
-      name: role.name,
-      description: role.description || '',
+      name:              role.name              || '',
+      description:       role.description       || '',
       default_dashboard: role.default_dashboard || '',
-      priority: role.priority || 0,
+      priority:          role.priority          || 0,
     });
-    setShowCreate(true);
-  };
-
-  const openCreate = () => {
-    resetForm();
     setShowCreate(true);
   };
 
   const columns = [
     {
-      key: 'name',
-      label: 'Name',
-      width: '20%',
-      render: (row) => (
+      key: 'name', label: 'Name', width: '20%',
+      render: row => (
         <HStack gap={2} align="center">
-          <Text weight="semibold">{row.name}</Text>
-          {row.is_protected && <Badge variant="warning">Protected</Badge>}
+          <Text size="sm">{row.name}</Text>
+          {row.is_protected && <Badge intent="warning" size="sm">Protected</Badge>}
         </HStack>
       ),
     },
+    { key: 'description', label: 'Description', width: '25%', render: row => row.description || '—' },
+    { key: 'users_count', label: 'Users',    width: '10%', render: row => row.users_count ?? 0 },
+    { key: 'priority',    label: 'Priority', width: '10%', render: row => row.priority ?? 0 },
     {
-      key: 'description',
-      label: 'Description',
-      width: '25%',
-      render: (row) => row.description || '—',
+      key: 'scope', label: 'Scope', width: '12%',
+      render: row => <Badge intent="neutral" size="sm">{row.scope || 'platform'}</Badge>,
     },
     {
-      key: 'users_count',
-      label: 'Users',
-      width: '10%',
-      render: (row) => row.users_count || 0,
-    },
-    {
-      key: 'priority',
-      label: 'Priority',
-      width: '10%',
-      render: (row) => row.priority ?? 0,
-    },
-    {
-      key: 'scope',
-      label: 'Scope',
-      width: '12%',
-      render: (row) => <Badge variant="secondary">{row.scope || 'platform'}</Badge>,
-    },
-    {
-      key: 'actions',
-      label: '',
-      width: '23%',
-      align: 'right',
-      render: (row) => (
+      key: 'actions', label: '', width: '23%', align: 'right',
+      render: row => (
         <HStack gap={2} justify="end">
           {canAssign && (
-            <Button variant="secondary" size="sm" onClick={() => { setAssignRoleId(row.id); setSelectedUserId(''); }}>
+            <Button intent="soft" size="sm" onClick={() => { setAssignRoleId(row.id); setSelectedUserId(''); }}>
               Assign
             </Button>
           )}
           {canEdit && (
-            <Button variant="secondary" size="sm" onClick={() => openEdit(row)}>
-              Edit
-            </Button>
+            <Button intent="soft" size="sm" onClick={() => openEdit(row)}>Edit</Button>
           )}
           {canDelete && !row.is_protected && (
-            <Button variant="danger" size="sm" onClick={() => handleDelete(row.id)}>
-              Delete
-            </Button>
+            <Button intent="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</Button>
           )}
         </HStack>
       ),
     },
   ];
 
-  const visibleRoles = can_manage_super_admin ? roles : roles.filter(r => r.name !== 'Super Administrator');
+  const visibleRoles = can_manage_super_admin
+    ? (roles ?? [])
+    : (roles ?? []).filter(r => r.name !== 'Super Administrator');
 
   return (
-    <IndexPageLayout
-      title="Role Management"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Roles' },
-      ]}
-      description="Manage roles and assign them to users."
-      actions={
-        canCreate && (
-          <Button variant="primary" onClick={openCreate}>
-            Create Role
-          </Button>
-        )
-      }
-    >
-      <VStack gap={4}>
-        <DataTable
-          columns={columns}
-          rows={visibleRoles}
-          empty="No roles found."
-        />
-      </VStack>
+    <>
+      <IndexPageLayout
+        title="Role Management"
+        breadcrumb={[
+          { label: 'Dashboard', href: route('core.dashboard') },
+          { label: 'Roles' },
+        ]}
+        description="Manage roles and assign them to users."
+        actions={
+          canCreate && (
+            <Button intent="primary" onClick={() => { resetForm(); setShowCreate(true); }}>
+              Create Role
+            </Button>
+          )
+        }
+        table={
+          <DataTable
+            columns={columns}
+            rows={visibleRoles}
+            empty="No roles found."
+          />
+        }
+      />
 
       {/* Create / Edit Modal */}
-      {showCreate && (
-        <Modal
-          title={editingRole ? 'Edit Role' : 'Create Role'}
-          onClose={resetForm}
-          footer={
-            <HStack gap={2}>
-              <Button variant="secondary" onClick={resetForm}>Cancel</Button>
-              <Button variant="primary" onClick={editingRole ? handleUpdate : handleCreate}>
-                {editingRole ? 'Save Changes' : 'Create Role'}
-              </Button>
-            </HStack>
-          }
-        >
-          <VStack gap={3} className="min-w-[400px]">
+      <Modal
+        open={showCreate}
+        title={editingRole ? 'Edit Role' : 'Create Role'}
+        onClose={resetForm}
+        footer={
+          <HStack gap={2}>
+            <Button intent="soft" onClick={resetForm}>Cancel</Button>
+            <Button intent="primary" onClick={editingRole ? handleUpdate : handleCreate}>
+              {editingRole ? 'Save Changes' : 'Create Role'}
+            </Button>
+          </HStack>
+        }
+      >
+        <form onSubmit={editingRole ? handleUpdate : handleCreate}>
+          <VStack gap={3}>
             <Input
               label="Role Name *"
               value={formData.name}
@@ -309,40 +205,43 @@ export default function RolesIndex({ roles, users, can_manage_super_admin, error
               onChange={e => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
             />
           </VStack>
-        </Modal>
-      )}
+        </form>
+      </Modal>
 
       {/* Assign Role Modal */}
-      {assignRoleId && (
-        <Modal
-          title="Assign Role to User"
-          onClose={() => { setAssignRoleId(null); setSelectedUserId(''); }}
-          footer={
-            <HStack gap={2}>
-              <Button variant="secondary" onClick={() => { setAssignRoleId(null); setSelectedUserId(''); }}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleAssign} disabled={!selectedUserId}>
-                Assign
-              </Button>
-            </HStack>
-          }
-        >
-          <VStack gap={3} className="min-w-[300px]">
-            <Text>Assigning: <strong>{roles.find(r => r.id === assignRoleId)?.name}</strong></Text>
+      <Modal
+        open={!!assignRoleId}
+        title="Assign Role to User"
+        onClose={() => { setAssignRoleId(null); setSelectedUserId(''); }}
+        footer={
+          <HStack gap={2}>
+            <Button intent="soft" onClick={() => { setAssignRoleId(null); setSelectedUserId(''); }}>
+              Cancel
+            </Button>
+            <Button intent="primary" onClick={handleAssign} disabled={!selectedUserId}>
+              Assign
+            </Button>
+          </HStack>
+        }
+      >
+        <form onSubmit={handleAssign}>
+          <VStack gap={3}>
+            <Text size="sm">
+              Assigning: <strong>{(roles ?? []).find(r => r.id === assignRoleId)?.name}</strong>
+            </Text>
             <Select
               label="Select User *"
               value={selectedUserId}
               onChange={e => setSelectedUserId(e.target.value)}
               options={[
-                { value: '', label: 'Choose a user...' },
-                ...users.map(u => ({ value: String(u.id), label: `${u.name} (${u.email})` })),
+                { value: '', label: 'Choose a user…' },
+                ...(users ?? []).map(u => ({ value: String(u.id), label: `${u.name} (${u.email})` })),
               ]}
             />
           </VStack>
-        </Modal>
-      )}
-    </IndexPageLayout>
+        </form>
+      </Modal>
+    </>
   );
 }
 
