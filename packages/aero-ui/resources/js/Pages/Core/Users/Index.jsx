@@ -238,8 +238,12 @@ export default function UsersIndex({ users, roles, filters, stats }) {
           {selectedIds.length > 0 && (
             <HStack gap={2}>
               <Text size="sm">{selectedIds.length} selected</Text>
-              <Button intent="soft"   size="sm" onClick={() => handleBulkToggle(true)}>Activate</Button>
-              <Button intent="ghost"  size="sm" onClick={() => handleBulkToggle(false)}>Deactivate</Button>
+              {canActivate && (
+                <Button intent="soft"  size="sm" onClick={() => handleBulkToggle(true)}>Activate</Button>
+              )}
+              {canActivate && (
+                <Button intent="ghost" size="sm" onClick={() => handleBulkToggle(false)}>Deactivate</Button>
+              )}
               {canBulkDelete && (
                 <Button intent="danger" size="sm" onClick={handleBulkDelete}>Delete</Button>
               )}

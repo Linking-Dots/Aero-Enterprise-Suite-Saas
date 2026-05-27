@@ -15,8 +15,10 @@ import {
 import App from '../../../App.jsx';
 
 export default function InvitationsIndex({ invitations }) {
-  const toast     = useToast();
-  const canInvite = useHRMAC('core.user_management.users.invite');
+  const toast      = useToast();
+  const canInvite  = useHRMAC('core.user_management.users.invite');
+  const canResend  = useHRMAC('core.user_management.user_invitations.resend');
+  const canCancel  = useHRMAC('core.user_management.user_invitations.cancel');
 
   const [showModal, setShowModal] = useState(false);
 
@@ -75,8 +77,12 @@ export default function InvitationsIndex({ invitations }) {
       render: row => (
         !row.accepted_at ? (
           <HStack gap={2} justify="end">
-            <Button intent="soft"   size="sm" onClick={() => resend(row.id)}>Resend</Button>
-            <Button intent="danger" size="sm" onClick={() => cancel(row.id)}>Cancel</Button>
+            {canResend && (
+              <Button intent="soft"   size="sm" onClick={() => resend(row.id)}>Resend</Button>
+            )}
+            {canCancel && (
+              <Button intent="danger" size="sm" onClick={() => cancel(row.id)}>Cancel</Button>
+            )}
           </HStack>
         ) : null
       ),

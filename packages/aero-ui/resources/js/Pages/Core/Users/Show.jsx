@@ -33,10 +33,10 @@ export default function UsersShow({ user }) {
   };
 
   const deleteUser = () => {
-    if (!confirm('Deactivate this user?')) return;
+    if (!confirm('Permanently delete this user? This cannot be undone.')) return;
     router.delete(route('core.users.destroy', user.id), {
       onSuccess: () => {
-        toast.success('User deactivated.');
+        toast.success('User deleted.');
         router.visit(route('core.users.index'));
       },
       onError: () => toast.error('Failed to delete user'),

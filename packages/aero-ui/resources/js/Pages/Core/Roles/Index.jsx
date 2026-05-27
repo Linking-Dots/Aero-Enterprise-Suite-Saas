@@ -101,7 +101,7 @@ export default function RolesIndex({ roles, users, can_manage_super_admin, error
 
   const columns = [
     {
-      key: 'name', label: 'Name', width: '20%',
+      key: 'name', label: 'Name', width: '18%',
       render: row => (
         <HStack gap={2} align="center">
           <Text size="sm">{row.name}</Text>
@@ -109,11 +109,14 @@ export default function RolesIndex({ roles, users, can_manage_super_admin, error
         </HStack>
       ),
     },
-    { key: 'description', label: 'Description', width: '25%', render: row => row.description || '—' },
-    { key: 'users_count', label: 'Users',    width: '10%', render: row => row.users_count ?? 0 },
-    { key: 'priority',    label: 'Priority', width: '10%', render: row => row.priority ?? 0 },
+    { key: 'description', label: 'Description', width: '22%', render: row => row.description || '—' },
+    { key: 'users_count',       label: 'Users',       width: '9%', render: row => row.users_count ?? 0 },
+    { key: 'permissions_count', label: 'Permissions', width: '9%', render: row => (
+      <Badge intent="neutral" size="sm">{row.permissions_count ?? 0}</Badge>
+    )},
+    { key: 'priority',          label: 'Priority',    width: '9%', render: row => row.priority ?? 0 },
     {
-      key: 'scope', label: 'Scope', width: '12%',
+      key: 'scope', label: 'Scope', width: '10%',
       render: row => <Badge intent="neutral" size="sm">{row.scope || 'platform'}</Badge>,
     },
     {

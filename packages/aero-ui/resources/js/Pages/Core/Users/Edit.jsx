@@ -1,12 +1,13 @@
-import { useForm } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import {
   FormPageLayout,
   Input,
-  Select,
   Button,
   HStack,
   VStack,
+  Text,
+  Card,
+  CardContent,
   useToast,
   Checkbox,
   useHRMAC,
@@ -42,7 +43,12 @@ export default function UsersEdit({ user, roles }) {
     });
   };
 
-  const roleOptions = (roles ?? []).map(r => ({ value: r.name, label: r.name }));
+  const toggleRole = name => {
+    const current = form.data.roles;
+    form.setData('roles',
+      current.includes(name) ? current.filter(r => r !== name) : [...current, name]
+    );
+  };
 
   return (
     <FormPageLayout
@@ -107,18 +113,26 @@ export default function UsersEdit({ user, roles }) {
             />
           )}
 
-          <Select
-            label="Roles"
-            multiple
-            value={form.data.roles}
-            onChange={e => {
-              const opts = Array.from(e.target.selectedOptions).map(o => o.value);
-              form.setData('roles', opts);
-            }}
-            options={roleOptions}
-            error={form.errors.roles}
-            placeholder="Select roles…"
-          />
+          <VStack gap={2}>
+            <Text size="sm">Roles</Text>
+            <Card>
+              <CardContent>
+                <HStack gap={3} wrap>
+                  {(roles ?? []).map(r => (
+                    <Checkbox
+                      key={r.id ?? r.name}
+                      label={r.name}
+                      checked={form.data.roles.includes(r.name)}
+                      onChange={() => toggleRole(r.name)}
+                    />
+                  ))}
+                </HStack>
+              </CardContent>
+            </Card>
+            {form.errors.roles && (
+              <Text tone="secondary" size="sm">{form.errors.roles}</Text>
+            )}
+          </VStack>
 
           <Checkbox
             label="Active"
