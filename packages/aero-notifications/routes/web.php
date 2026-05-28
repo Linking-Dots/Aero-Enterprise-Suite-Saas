@@ -62,6 +62,22 @@ Route::middleware(['web', 'auth:web'])->group(function () {
         });
 });
 
+// ── CA-3 Canonical admin routes (notifications.admin.* name prefix) ──────────
+Route::middleware(['web', 'auth:web'])->prefix('notifications/admin')->name('notifications.admin.')->group(function () {
+    Route::get('/channels', [NotificationSettingController::class, 'index'])
+        ->name('channels.index')->middleware('hrmac:core.notifications.channels.view');
+    Route::post('/channels', [NotificationSettingController::class, 'update'])
+        ->name('channels.update')->middleware('hrmac:core.notifications.channels.configure');
+    Route::get('/templates', [EmailTemplateController::class, 'index'])
+        ->name('templates.index')->middleware('hrmac:core.notifications.templates.view');
+    Route::post('/templates', [EmailTemplateController::class, 'store'])
+        ->name('templates.store')->middleware('hrmac:core.notifications.templates.create');
+    Route::put('/templates/{id}', [EmailTemplateController::class, 'update'])
+        ->name('templates.update')->middleware('hrmac:core.notifications.templates.edit');
+    Route::delete('/templates/{id}', [EmailTemplateController::class, 'destroy'])
+        ->name('templates.destroy')->middleware('hrmac:core.notifications.templates.delete');
+});
+
 // ── CA-7 Email Engine Admin Routes ────────────────────────────────────────────
 use Aero\Notifications\Http\Controllers\Admin\BounceController;
 use Aero\Notifications\Http\Controllers\Admin\DeliverabilityController;
