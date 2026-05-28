@@ -723,6 +723,26 @@ Route::middleware('auth:web')->group(function () {
                 return response()->json(['message' => 'Usage tracking not available'], 404);
             })->name('index');
         });
+
+        // ── CA-2: canonical short-name aliases ───────────────────────────────
+        Route::get('/system', [SystemSettingController::class, 'index'])
+            ->name('system')->middleware('hrmac:core.settings.general.view');
+        Route::get('/security', [SecuritySettingsController::class, 'index'])
+            ->name('security')->middleware('hrmac:core.settings.security.view');
+        Route::post('/security', [SecuritySettingsController::class, 'update'])
+            ->name('security.update')->middleware('hrmac:core.settings.security.edit');
+        Route::get('/localization', [LocalizationSettingsController::class, 'index'])
+            ->name('localization')->middleware('hrmac:core.settings.localization.view');
+        Route::get('/branding', [BrandingSettingsController::class, 'index'])
+            ->name('branding')->middleware('hrmac:core.settings.branding.view');
+        Route::get('/mail', [MailSettingsController::class, 'index'])
+            ->name('mail')->middleware('hrmac:core.settings.mail_settings.view');
+        Route::post('/mail/test', [MailSettingsController::class, 'testSend'])
+            ->name('mail.test')->middleware('hrmac:core.settings.mail_settings.test');
+        Route::get('/password-policy', [PasswordPolicyController::class, 'index'])
+            ->name('password-policy')->middleware('hrmac:core.settings.password_policy.view');
+        Route::get('/ip-whitelist', [IpWhitelistController::class, 'index'])
+            ->name('ip-whitelist')->middleware('hrmac:core.settings.ip_whitelist.view');
     });
 
     // Session management and 2FA routes are registered by AeroAuthServiceProvider.
@@ -1231,5 +1251,23 @@ Route::middleware('auth:web')->group(function () {
     Route::prefix('addons')->name('addons.')->group(function () {
         Route::get('/', [AddonController::class, 'index'])->name('index');
         Route::post('/install', [AddonController::class, 'install'])->name('install');
+    });
+
+    // ========================================================================
+    // MOBILE / PWA ROUTES (CA-7)
+    // ========================================================================
+    Route::prefix('mobile-pwa')->name('core.mobile.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.mobile_pwa.pwa_config.view');
+        Route::post('/pwa', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'updatePwa'])
+            ->name('pwa.update')
+            ->middleware('hrmac:core.mobile_pwa.pwa_config.configure');
+        Route::post('/push', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'updatePush'])
+            ->name('push.update')
+            ->middleware('hrmac:core.mobile_pwa.push_notifications.configure');
+        Route::post('/mobile-app', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'updateMobileApp'])
+            ->name('mobile-app.update')
+            ->middleware('hrmac:core.mobile_pwa.mobile_app_config.configure');
     });
 });
