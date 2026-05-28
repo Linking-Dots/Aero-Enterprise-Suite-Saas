@@ -205,6 +205,58 @@ class SystemHealthController extends Controller
     }
 
     /**
+     * CA-3: Storage usage Inertia page.
+     */
+    public function storageUsage(Request $request): Response
+    {
+        $diskTotal = disk_total_space(storage_path());
+        $diskFree = disk_free_space(storage_path());
+        $diskUsed = $diskTotal - $diskFree;
+
+        return Inertia::render('Core/SystemHealth/Storage', [
+            'storage' => [
+                'total_bytes' => $diskTotal,
+                'used_bytes' => $diskUsed,
+                'free_bytes' => $diskFree,
+                'used_percent' => $diskTotal > 0 ? round(($diskUsed / $diskTotal) * 100, 1) : 0,
+                'total_human' => $this->humanBytes($diskTotal),
+                'used_human' => $this->humanBytes($diskUsed),
+                'free_human' => $this->humanBytes($diskFree),
+            ],
+            'directories' => [
+                ['name' => 'App Storage',   'path' => storage_path('app'),        'size' => $this->dirSize(storage_path('app'))],
+                ['name' => 'Logs',          'path' => storage_path('logs'),       'size' => $this->dirSize(storage_path('logs'))],
+                ['name' => 'Public Assets', 'path' => storage_path('app/public'), 'size' => $this->dirSize(storage_path('app/public'))],
+            ],
+        ]);
+    }
+
+    private function humanBytes(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $i = 0;
+        while ($bytes >= 1024 && $i < count($units) - 1) {
+            $bytes /= 1024;
+            $i++;
+        }
+
+        return round($bytes, 2).' '.$units[$i];
+    }
+
+    private function dirSize(string $path): string
+    {
+        if (! is_dir($path)) {
+            return '0 B';
+        }
+        $size = 0;
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
+            $size += $file->getSize();
+        }
+
+        return $this->humanBytes($size);
+    }
+
+    /**
      * CA-3: Run a scheduled task immediately.
      */
     public function runTask(Request $request): RedirectResponse

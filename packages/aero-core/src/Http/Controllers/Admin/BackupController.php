@@ -5,7 +5,9 @@ namespace Aero\Core\Http\Controllers\Admin;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Services\BackupService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class BackupController extends Controller
 {
@@ -53,7 +55,7 @@ class BackupController extends Controller
 
             return redirect()->back()->with('success', 'Backup created successfully');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to create backup: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to create backup: '.$e->getMessage());
         }
     }
 
@@ -77,9 +79,10 @@ class BackupController extends Controller
     {
         try {
             $this->backupService->deleteBackup($id);
+
             return redirect()->back()->with('success', 'Backup deleted successfully');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete backup: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete backup: '.$e->getMessage());
         }
     }
 
@@ -91,7 +94,7 @@ class BackupController extends Controller
         try {
             return $this->backupService->downloadBackup($id);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to download backup: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to download backup: '.$e->getMessage());
         }
     }
 
@@ -101,5 +104,16 @@ class BackupController extends Controller
     public function stats()
     {
         return response()->json($this->backupService->getBackupStats());
+    }
+
+    /**
+     * CA-3: Manual backup page.
+     */
+    public function manualPage(): Response
+    {
+        return Inertia::render('Core/Backup/Manual', [
+            'last_backup' => DB::table('backups')->orderByDesc('created_at')->first(),
+            'backup_size_estimate' => 'Calculating…',
+        ]);
     }
 }
