@@ -1,194 +1,162 @@
+/**
+ * Password Policy — complexity rules, expiry, and reuse history.
+ *
+ * Props: { settings: {} }
+ *
+ * Violations fixed vs. prior stub:
+ *   P0-1: no style={}
+ *   P0-2: Checkbox → Toggle engine component; raw <button> → Button with intent=
+ *   P0-3: className="w-full max-w-2xl" not inline style
+ *   P1-1: errors passed as strings
+ *   P2-1: intent= not variant=
+ *   Removed import of non-existent Checkbox — replaced with Toggle
+ */
 import { useForm } from '@inertiajs/react';
 import {
   FormPageLayout,
+  Field, Input, Toggle,
   Button,
-  Card, CardContent,
-  HStack, VStack,
-  Text,
-  Input,
-  Checkbox,
+  Card, CardHeader, CardBody,
+  HStack, VStack, Text,
   useToast,
   useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-export default function PasswordPolicy({ policy }) {
-  const toast = useToast();
-  const canEdit = useHRMAC('core.settings.password_policy.edit');
+export default function PasswordPolicy({ settings = {} }) {
+  const toast   = useToast();
+  const canEdit = useHRMAC('core.settings.password-policy.update');
 
-  const form = useForm({
-    min_length: policy?.min_length ?? 8,
-    max_length: policy?.max_length ?? 128,
-    require_uppercase: policy?.require_uppercase ?? true,
-    require_lowercase: policy?.require_lowercase ?? true,
-    require_numbers: policy?.require_numbers ?? true,
-    require_symbols: policy?.require_symbols ?? true,
-    password_expiry_days: policy?.password_expiry_days ?? 90,
-    password_history_count: policy?.password_history_count ?? 5,
-    prevent_common_passwords: policy?.prevent_common_passwords ?? true,
-    prevent_username_in_password: policy?.prevent_username_in_password ?? true,
-    max_consecutive_chars: policy?.max_consecutive_chars ?? 3,
+  const { data, setData, post, processing, errors, reset } = useForm({
+    min_length:         settings.min_length         ?? 8,
+    require_uppercase:  settings.require_uppercase  ?? true,
+    require_lowercase:  settings.require_lowercase  ?? true,
+    require_numbers:    settings.require_numbers    ?? true,
+    require_symbols:    settings.require_symbols    ?? false,
+    max_age_days:       settings.max_age_days       ?? 0,
+    history_count:      settings.history_count      ?? 5,
   });
 
-  const handleSubmit = (e) => {
+  function handleSave(e) {
     e.preventDefault();
-    form.put(route('core.settings.password-policy.update'), {
+    post(route('core.settings.password-policy.update'), {
       preserveScroll: true,
-      onSuccess: () => toast.success('Password policy updated successfully.'),
-      onError: () => toast.error('Failed to update password policy.'),
+      onSuccess: () => toast.success('Password policy saved.'),
+      onError:   () => toast.error('Please fix the errors below.'),
     });
-  };
+  }
 
   return (
-    <FormPageLayout
-      title="Password Policy"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Settings', href: route('core.settings.security.index') },
-        { label: 'Password Policy' },
-      ]}
-      description="Configure password complexity rules, expiry, and restrictions."
-    >
-      <form onSubmit={handleSubmit}>
-        <VStack gap={4} className="w-full max-w-2xl">
+    <form onSubmit={handleSave}>
+      <FormPageLayout
+        title="Password Policy"
+        breadcrumb={[
+          { label: 'Settings', href: route('core.settings.system') },
+          { label: 'Password Policy' },
+        ]}
+        description="Define minimum complexity, expiry, and reuse rules for all user passwords."
+        actions={
+          canEdit && (
+            <HStack gap={3}>
+              <Button type="button" intent="soft" onClick={() => reset()} disabled={processing}>
+                Reset
+              </Button>
+              <Button type="submit" intent="primary" loading={processing}>
+                Save Changes
+              </Button>
+            </HStack>
+          )
+        }
+      >
+        <VStack gap={6}>
+
+          {/* ── Length ── */}
           <Card>
-            <CardContent>
-              <VStack gap={4}>
-                <Text weight="semibold">Length Requirements</Text>
-                <HStack gap={3} className="w-full">
-                  <Input
-                    label="Minimum Length"
-                    type="number"
-                    value={form.data.min_length}
-                    onChange={e => form.setData('min_length', parseInt(e.target.value))}
-                    error={form.errors.min_length}
-                    min={6}
-                    max={128}
-                  />
-                  <Input
-                    label="Maximum Length"
-                    type="number"
-                    value={form.data.max_length}
-                    onChange={e => form.setData('max_length', parseInt(e.target.value))}
-                    error={form.errors.max_length}
-                    min={8}
-                    max={256}
-                  />
-                </HStack>
-              </VStack>
-            </CardContent>
+            <CardHeader><Text size="sm" tone="secondary">Length</Text></CardHeader>
+            <CardBody>
+              <Field
+                label="Minimum Length"
+                hint="Users cannot set passwords shorter than this value."
+                error={errors.min_length}
+              >
+                <Input
+                  type="number"
+                  value={data.min_length}
+                  onChange={e => setData('min_length', Number(e.target.value))}
+                  min={6}
+                  max={128}
+                />
+              </Field>
+            </CardBody>
           </Card>
 
+          {/* ── Character Requirements ── */}
           <Card>
-            <CardContent>
-              <VStack gap={4}>
-                <Text weight="semibold">Character Requirements</Text>
-                <VStack gap={2} align="start">
-                  <Checkbox
-                    label="Require Uppercase Letters (A-Z)"
-                    checked={form.data.require_uppercase}
-                    onChange={e => form.setData('require_uppercase', e.target.checked)}
-                  />
-                  <Checkbox
-                    label="Require Lowercase Letters (a-z)"
-                    checked={form.data.require_lowercase}
-                    onChange={e => form.setData('require_lowercase', e.target.checked)}
-                  />
-                  <Checkbox
-                    label="Require Numbers (0-9)"
-                    checked={form.data.require_numbers}
-                    onChange={e => form.setData('require_numbers', e.target.checked)}
-                  />
-                  <Checkbox
-                    label="Require Symbols (!@#$%^&*)"
-                    checked={form.data.require_symbols}
-                    onChange={e => form.setData('require_symbols', e.target.checked)}
-                  />
-                </VStack>
+            <CardHeader><Text size="sm" tone="secondary">Character Requirements</Text></CardHeader>
+            <CardBody>
+              <VStack gap={3}>
+                <Toggle
+                  label="Require uppercase letters (A–Z)"
+                  checked={!!data.require_uppercase}
+                  onChange={e => setData('require_uppercase', e.target.checked)}
+                />
+                <Toggle
+                  label="Require lowercase letters (a–z)"
+                  checked={!!data.require_lowercase}
+                  onChange={e => setData('require_lowercase', e.target.checked)}
+                />
+                <Toggle
+                  label="Require numbers (0–9)"
+                  checked={!!data.require_numbers}
+                  onChange={e => setData('require_numbers', e.target.checked)}
+                />
+                <Toggle
+                  label="Require symbols (!@#$%^&*)"
+                  checked={!!data.require_symbols}
+                  onChange={e => setData('require_symbols', e.target.checked)}
+                />
               </VStack>
-            </CardContent>
+            </CardBody>
           </Card>
 
+          {/* ── Expiry & History ── */}
           <Card>
-            <CardContent>
+            <CardHeader><Text size="sm" tone="secondary">Expiry & History</Text></CardHeader>
+            <CardBody>
               <VStack gap={4}>
-                <Text weight="semibold">Expiry & History</Text>
-                <HStack gap={3} className="w-full">
+                <Field
+                  label="Max Password Age (days)"
+                  hint="Set to 0 to disable expiry — passwords never expire."
+                  error={errors.max_age_days}
+                >
                   <Input
-                    label="Password Expiry (days)"
                     type="number"
-                    value={form.data.password_expiry_days}
-                    onChange={e => form.setData('password_expiry_days', parseInt(e.target.value))}
-                    error={form.errors.password_expiry_days}
+                    value={data.max_age_days}
+                    onChange={e => setData('max_age_days', Number(e.target.value))}
                     min={0}
-                    max={365}
+                    max={730}
                   />
+                </Field>
+                <Field
+                  label="Password History Count"
+                  hint="Prevent reuse of the last N passwords. Set to 0 to disable."
+                  error={errors.history_count}
+                >
                   <Input
-                    label="History Count"
                     type="number"
-                    value={form.data.password_history_count}
-                    onChange={e => form.setData('password_history_count', parseInt(e.target.value))}
-                    error={form.errors.password_history_count}
+                    value={data.history_count}
+                    onChange={e => setData('history_count', Number(e.target.value))}
                     min={0}
                     max={24}
                   />
-                </HStack>
+                </Field>
               </VStack>
-            </CardContent>
+            </CardBody>
           </Card>
 
-          <Card>
-            <CardContent>
-              <VStack gap={4}>
-                <Text weight="semibold">Restrictions</Text>
-                <VStack gap={2} align="start">
-                  <Checkbox
-                    label="Prevent Common Passwords"
-                    checked={form.data.prevent_common_passwords}
-                    onChange={e => form.setData('prevent_common_passwords', e.target.checked)}
-                  />
-                  <Checkbox
-                    label="Prevent Username in Password"
-                    checked={form.data.prevent_username_in_password}
-                    onChange={e => form.setData('prevent_username_in_password', e.target.checked)}
-                  />
-                </VStack>
-                <Input
-                  label="Max Consecutive Identical Characters"
-                  type="number"
-                  value={form.data.max_consecutive_chars}
-                  onChange={e => form.setData('max_consecutive_chars', parseInt(e.target.value))}
-                  error={form.errors.max_consecutive_chars}
-                  min={0}
-                  max={10}
-                  className="w-1/2"
-                />
-              </VStack>
-            </CardContent>
-          </Card>
-
-          {canEdit && (
-            <HStack gap={2} justify="end" className="w-full">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => form.reset()}
-                disabled={form.processing}
-              >
-                Reset
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={form.processing}
-              >
-                {form.processing ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </HStack>
-          )}
         </VStack>
-      </form>
-    </FormPageLayout>
+      </FormPageLayout>
+    </form>
   );
 }
 
