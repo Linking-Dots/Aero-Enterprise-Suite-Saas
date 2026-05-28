@@ -1,186 +1,245 @@
 import { useState } from 'react';
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import {
   IndexPageLayout,
-  Card, CardHeader, CardBody,
-  Select,
-  HStack, VStack, Stack,
-  Text, Heading,
-  Badge,
+  DataTable,
   Button,
+  Badge,
+  Pagination,
+  HStack, VStack,
+  Text,
+  Field,
+  Input,
+  Select,
+  Toggle,
+  Modal,
+  Alert,
   useToast,
   useHRMAC,
+  Stat,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '../../App.jsx';
 
-export default function RetentionPoliciesIndex({ policies, entity_types, actions, schedules }) {
-  const toast = useToast();
-  const canCreate = useHRMAC('core.retention_policies.policies.create');
-  const canUpdate = useHRMAC('core.retention_policies.policies.update');
-  const canDelete = useHRMAC('core.retention_policies.policies.delete');
+const ACTION_INTENT   = { delete: 'danger', anonymize: 'warning' };
+const ENTITY_OPTIONS  = [
+  { value: 'audit_logs',    label: 'Audit Logs' },
+  { value: 'users',         label: 'Users' },
+  { value: 'employees',     label: 'Employees' },
+  { value: 'payroll',       label: 'Payroll' },
+  { value: 'leave_requests', label: 'Leave Requests' },
+  { value: 'notifications', label: 'Notifications' },
+];
+const ACTION_OPTIONS  = [
+  { value: 'delete',    label: 'Delete' },
+  { value: 'anonymize', label: 'Anonymize' },
+];
+
+const EMPTY_FORM = { entity_type: 'audit_logs', retain_for_days: 90, action: 'delete', is_active: true };
+
+export default function RetentionPoliciesIndex({ policies }) {
+  const toast      = useToast();
+  const canCreate  = useHRMAC('core.retention_policies.policies.create');
+  const canUpdate  = useHRMAC('core.retention_policies.policies.update');
+  const canDelete  = useHRMAC('core.retention_policies.policies.delete');
   const canExecute = useHRMAC('core.retention_policies.policies.execute');
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [editingPolicy, setEditingPolicy] = useState(null);
+  const [showModal,   setShowModal]   = useState(false);
+  const [editing,     setEditing]     = useState(null);
+  const [submitting,  setSubmitting]  = useState(false);
+  const [form,        setForm]        = useState(EMPTY_FORM);
 
-  const form = useForm({
-    entity_type: 'audit_logs',
-    action: 'delete',
-    retention_days: 30,
-    filters: {},
-    is_active: true,
-    schedule: 'daily',
-    notes: '',
-  });
+  const policyList = policies?.data ?? [];
 
-  const handleCreate = (e) => {
-    e.preventDefault();
-    form.post(route('core.retention-policies.store'), {
-      onSuccess: () => {
-        toast.success('Retention policy created successfully');
-        form.reset();
-        setShowCreate(false);
-        router.reload();
-      },
-      onError: () => {
-        toast.error('Failed to create retention policy');
-      },
-    });
+  const openCreate = () => {
+    setForm(EMPTY_FORM);
+    setEditing(null);
+    setShowModal(true);
   };
 
-  const handleUpdate = (policy, data) => {
-    router.put(route('core.retention-policies.update', { id: policy.id }), data, {
-      onSuccess: () => {
-        toast.success('Retention policy updated successfully');
-        setEditingPolicy(null);
-        router.reload();
-      },
-      onError: () => {
-        toast.error('Failed to update retention policy');
-      },
+  const openEdit = policy => {
+    setForm({
+      entity_type:    policy.entity_type,
+      retain_for_days: policy.retain_for_days,
+      action:         policy.action,
+      is_active:      !!policy.is_active,
     });
+    setEditing(policy);
+    setShowModal(true);
   };
 
-  const handleDelete = (policy) => {
-    if (confirm('Are you sure you want to delete this retention policy?')) {
-      router.delete(route('core.retention-policies.destroy', { id: policy.id }), {
-        onSuccess: () => {
-          toast.success('Retention policy deleted successfully');
-          router.reload();
-        },
+  const closeModal = () => { setShowModal(false); setEditing(null); };
+
+  const handleSave = () => {
+    setSubmitting(true);
+    if (editing) {
+      router.put(route('core.retention-policies.update', editing.id), form, {
+        preserveState: true,
+        onSuccess: () => { toast.success('Policy updated.'); closeModal(); },
+        onError:   () => toast.error('Failed to update policy.'),
+        onFinish:  () => setSubmitting(false),
+      });
+    } else {
+      router.post(route('core.retention-policies.store'), form, {
+        preserveState: true,
+        onSuccess: () => { toast.success('Policy created.'); closeModal(); },
+        onError:   () => toast.error('Failed to create policy.'),
+        onFinish:  () => setSubmitting(false),
       });
     }
   };
 
-  const handleExecute = (policy) => {
-    if (confirm('Are you sure you want to execute this retention policy? This will permanently delete data.')) {
-      router.post(route('core.retention-policies.execute', { id: policy.id }), {}, {
-        onSuccess: () => {
-          toast.success('Retention policy executed successfully');
-          router.reload();
-        },
-        onError: () => {
-          toast.error('Failed to execute retention policy');
-        },
-      });
-    }
+  const handleDelete = id => {
+    if (!confirm('Delete this retention policy?')) return;
+    router.delete(route('core.retention-policies.destroy', id), {
+      preserveState: true,
+      onSuccess: () => toast.success('Policy deleted.'),
+      onError:   () => toast.error('Failed to delete policy.'),
+    });
   };
 
-  const getActionColor = (action) => {
-    return action === 'delete' ? 'error' : 'warning';
+  const handleExecute = id => {
+    if (!confirm('Execute this policy now? Matching records will be processed immediately.')) return;
+    router.post(route('core.retention-policies.execute', id), {}, {
+      preserveState: true,
+      onSuccess: () => toast.success('Policy executed.'),
+      onError:   () => toast.error('Failed to execute policy.'),
+    });
   };
+
+  const columns = [
+    {
+      key: 'entity_type', label: 'Entity', width: '18%',
+      render: row => <Text size="sm">{row.entity_type}</Text>,
+    },
+    {
+      key: 'retain_for_days', label: 'Retain (days)', width: '14%',
+      render: row => <Text size="sm">{row.retain_for_days}</Text>,
+    },
+    {
+      key: 'action', label: 'Action', width: '12%',
+      render: row => (
+        <Badge intent={ACTION_INTENT[row.action] || 'neutral'}>{row.action}</Badge>
+      ),
+    },
+    {
+      key: 'is_active', label: 'Active', width: '10%',
+      render: row => (
+        <Badge intent={row.is_active ? 'success' : 'neutral'}>{row.is_active ? 'Yes' : 'No'}</Badge>
+      ),
+    },
+    {
+      key: 'last_executed_at', label: 'Last Executed', width: '18%',
+      render: row => (
+        <Text size="sm" tone="secondary">
+          {row.last_executed_at ? new Date(row.last_executed_at).toLocaleString() : '—'}
+        </Text>
+      ),
+    },
+    {
+      key: 'actions', label: '', width: '28%', align: 'right',
+      render: row => (
+        <HStack gap={2} justify="end">
+          {canExecute && row.is_active && (
+            <Button intent="soft" size="sm" onClick={() => handleExecute(row.id)}>
+              Execute Now
+            </Button>
+          )}
+          {canUpdate && (
+            <Button intent="ghost" size="sm" onClick={() => openEdit(row)}>Edit</Button>
+          )}
+          {canDelete && (
+            <Button intent="danger" size="sm" onClick={() => handleDelete(row.id)}>Delete</Button>
+          )}
+        </HStack>
+      ),
+    },
+  ];
 
   return (
-    <App title="Retention Policies">
-      <IndexPageLayout
-        title="Retention Policies"
-        breadcrumbs={[
-          { label: 'Core', href: route('core.dashboard') },
-          { label: 'Retention Policies' },
-        ]}
-      >
-        <VStack spacing={6}>
-          {canCreate && (
-            <Card>
-              <CardHeader>
-                <Heading size="md">Create New Policy</Heading>
-              </CardHeader>
-              <CardBody>
-                <form onSubmit={handleCreate}>
-                  <VStack spacing={4}>
-                    <Select
-                      label="Entity Type"
-                      value={form.data.entity_type}
-                      onChange={(e) => form.setData('entity_type', e.target.value)}
-                      options={Object.entries(entity_types).map(([key, label]) => ({ value: key, label }))}
-                    />
-                    <Select
-                      label="Action"
-                      value={form.data.action}
-                      onChange={(e) => form.setData('action', e.target.value)}
-                      options={Object.entries(actions).map(([key, label]) => ({ value: key, label }))}
-                    />
-                    <Select
-                      label="Schedule"
-                      value={form.data.schedule}
-                      onChange={(e) => form.setData('schedule', e.target.value)}
-                      options={Object.entries(schedules).map(([key, label]) => ({ value: key, label }))}
-                    />
-                    <Button type="submit" isLoading={form.processing}>
-                      Create Policy
-                    </Button>
-                  </VStack>
-                </form>
-              </CardBody>
-            </Card>
+    <IndexPageLayout
+      title="Retention Policies"
+      breadcrumb={[
+        { label: 'Dashboard', href: route('core.dashboard') },
+        { label: 'Retention Policies' },
+      ]}
+      description="Configure automatic data retention and purge rules."
+      actions={
+        canCreate && (
+          <Button intent="primary" leftIcon="plus" onClick={openCreate}>
+            New Policy
+          </Button>
+        )
+      }
+      kpis={[
+        <Stat key="total"  title="Policies"        value={policies?.total ?? 0}                                        icon="document" />,
+        <Stat key="active" title="Active"           value={policyList.filter(p => p.is_active).length}                 icon="check"    iconTone="success" />,
+        <Stat key="delete" title="Delete Actions"   value={policyList.filter(p => p.action === 'delete').length}       icon="trash"    iconTone="danger" />,
+        <Stat key="anon"   title="Anonymize Actions" value={policyList.filter(p => p.action === 'anonymize').length}   icon="lock"     iconTone="amber" />,
+      ]}
+      table={
+        <DataTable
+          columns={columns}
+          rows={policyList}
+          empty="No retention policies configured."
+        />
+      }
+      pagination={
+        policies?.last_page > 1 && (
+          <Pagination
+            page={policies.current_page}
+            total={policies.last_page}
+            onChange={page => router.get(route('core.retention-policies.index'), { page }, {
+              preserveState: true, preserveScroll: true, only: ['policies'],
+            })}
+          />
+        )
+      }
+    >
+      <Modal open={showModal} onClose={closeModal} title={editing ? 'Edit Policy' : 'New Retention Policy'} size="sm">
+        <VStack gap={4}>
+          <Field label="Entity Type" htmlFor="rp-entity">
+            <Select
+              id="rp-entity"
+              value={form.entity_type}
+              onChange={e => setForm(f => ({ ...f, entity_type: e.target.value }))}
+              options={ENTITY_OPTIONS}
+            />
+          </Field>
+          <Field label="Retain for (days)" htmlFor="rp-days" required>
+            <Input
+              id="rp-days"
+              type="number"
+              value={form.retain_for_days}
+              onChange={e => setForm(f => ({ ...f, retain_for_days: parseInt(e.target.value, 10) || 0 }))}
+              placeholder="90"
+            />
+          </Field>
+          <Field label="Action" htmlFor="rp-action">
+            <Select
+              id="rp-action"
+              value={form.action}
+              onChange={e => setForm(f => ({ ...f, action: e.target.value }))}
+              options={ACTION_OPTIONS}
+            />
+          </Field>
+          {form.action === 'delete' && (
+            <Alert intent="warning" title="Records matching this policy will be permanently deleted." />
           )}
-
-          <Card>
-            <CardHeader>
-              <Heading size="md">Active Policies</Heading>
-            </CardHeader>
-            <CardBody>
-              {policies.length === 0 ? (
-                <Text color="muted">No retention policies found</Text>
-              ) : (
-                <Stack spacing={3}>
-                  {policies.map((policy) => (
-                    <HStack key={policy.id} justify="space-between" align="center">
-                      <VStack align="start" spacing={1}>
-                        <HStack>
-                          <Text fontWeight="medium">{entity_types[policy.entity_type]}</Text>
-                          <Badge color={getActionColor(policy.action)}>{policy.action}</Badge>
-                          {policy.is_active && <Badge color="success">Active</Badge>}
-                        </HStack>
-                        <Text size="sm" color="muted">
-                          Retention: {policy.retention_days} days • Schedule: {policy.schedule} • Records processed: {policy.records_processed}
-                        </Text>
-                        {policy.next_run_at && (
-                          <Text size="sm" color="muted">
-                            Next run: {policy.next_run_at}
-                          </Text>
-                        )}
-                      </VStack>
-                      <HStack>
-                        {canExecute && (
-                          <Button size="sm" onClick={() => handleExecute(policy)}>
-                            Execute
-                          </Button>
-                        )}
-                        {canDelete && (
-                          <Button size="sm" variant="ghost" onClick={() => handleDelete(policy)}>
-                            Delete
-                          </Button>
-                        )}
-                      </HStack>
-                    </HStack>
-                  ))}
-                </Stack>
-              )}
-            </CardBody>
-          </Card>
+          <Toggle
+            label="Active"
+            checked={form.is_active}
+            onChange={v => setForm(f => ({ ...f, is_active: v }))}
+          />
+          <HStack gap={2} justify="end">
+            <Button intent="ghost" onClick={closeModal}>Cancel</Button>
+            <Button intent="primary" loading={submitting} onClick={handleSave}>
+              {editing ? 'Save Changes' : 'Create Policy'}
+            </Button>
+          </HStack>
         </VStack>
-      </IndexPageLayout>
-    </App>
+      </Modal>
+    </IndexPageLayout>
   );
 }
+
+RetentionPoliciesIndex.layout = page => <App title="Retention Policies">{page}</App>;
