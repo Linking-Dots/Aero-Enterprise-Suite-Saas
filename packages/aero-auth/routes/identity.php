@@ -60,4 +60,32 @@ Route::middleware(['auth:web'])->prefix('identity')->name('core.identity.')->gro
     Route::get('/login-activity', [LoginActivityController::class, 'index'])
         ->name('login-activity.index')
         ->middleware('hrmac:core.sso_identity.login_activity.view');
+
+    // OAuth Provider (Be an IdP)
+    Route::prefix('oauth-provider')->name('oauth-provider.')->group(function () {
+        Route::get('/', [\Aero\Auth\Http\Controllers\Admin\OAuthProviderController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.sso_identity.oauth_provider.view');
+        Route::post('/', [\Aero\Auth\Http\Controllers\Admin\OAuthProviderController::class, 'store'])
+            ->name('store')->middleware('hrmac:core.sso_identity.oauth_provider.create');
+        Route::post('/{id}/revoke', [\Aero\Auth\Http\Controllers\Admin\OAuthProviderController::class, 'revoke'])
+            ->name('revoke')->middleware('hrmac:core.sso_identity.oauth_provider.revoke');
+    });
+
+    // Verification
+    Route::prefix('verification')->name('verification.')->group(function () {
+        Route::get('/', [\Aero\Auth\Http\Controllers\Admin\VerificationConfigController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.sso_identity.verification.configure');
+        Route::post('/', [\Aero\Auth\Http\Controllers\Admin\VerificationConfigController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.sso_identity.verification.configure');
+        Route::post('/send-test', [\Aero\Auth\Http\Controllers\Admin\VerificationConfigController::class, 'sendTest'])
+            ->name('send-test')->middleware('hrmac:core.sso_identity.verification.send');
+    });
+
+    // Account Recovery
+    Route::prefix('account-recovery')->name('account-recovery.')->group(function () {
+        Route::get('/', [\Aero\Auth\Http\Controllers\Admin\AccountRecoveryController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.sso_identity.account_recovery.configure');
+        Route::post('/', [\Aero\Auth\Http\Controllers\Admin\AccountRecoveryController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.sso_identity.account_recovery.configure');
+    });
 });

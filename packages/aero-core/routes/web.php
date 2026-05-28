@@ -1270,4 +1270,149 @@ Route::middleware('auth:web')->group(function () {
             ->name('mobile-app.update')
             ->middleware('hrmac:core.mobile_pwa.mobile_app_config.configure');
     });
+
+    // ========================================================================
+    // HELP & SUPPORT (CA gaps)
+    // ========================================================================
+    Route::prefix('help')->name('core.help.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.help_support.help_center.view');
+        Route::get('/kb', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'knowledgeBase'])
+            ->name('kb')->middleware('hrmac:core.help_support.knowledge_base.view');
+        Route::get('/tickets', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'tickets'])
+            ->name('tickets.index')->middleware('hrmac:core.help_support.support_tickets.view');
+        Route::post('/tickets', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'storeTicket'])
+            ->name('tickets.store')->middleware('hrmac:core.help_support.support_tickets.create');
+        Route::get('/tours', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'tours'])
+            ->name('tours')->middleware('hrmac:core.help_support.onboarding_tours.view');
+        Route::get('/whats-new', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'whatsNew'])
+            ->name('whats-new')->middleware('hrmac:core.help_support.whats_new.view');
+        Route::get('/feedback', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'feedback'])
+            ->name('feedback.index')->middleware('hrmac:core.help_support.feedback.view');
+        Route::post('/feedback', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'submitFeedback'])
+            ->name('feedback.store')->middleware('hrmac:core.help_support.feedback.submit');
+        Route::post('/feedback/{id}/vote', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'voteFeedback'])
+            ->name('feedback.vote')->middleware('hrmac:core.help_support.feedback.vote');
+    });
+
+    // ========================================================================
+    // MAINTENANCE MODE (CA gaps)
+    // ========================================================================
+    Route::prefix('maintenance-mode')->name('core.maintenance.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.view');
+        Route::post('/enable', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'enable'])
+            ->name('enable')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.enable');
+        Route::post('/disable', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'disable'])
+            ->name('disable')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.disable');
+        Route::post('/update', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.configure');
+    });
+
+    // ========================================================================
+    // NUMBERING (CA gaps)
+    // ========================================================================
+    Route::prefix('numbering')->name('core.numbering.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.numbering.sequences.view');
+        Route::post('/sequences', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'storeSequence'])
+            ->name('sequences.store')->middleware('hrmac:core.numbering.sequences.create');
+        Route::post('/sequences/{entityType}/reset', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'resetSequence'])
+            ->name('sequences.reset')->middleware('hrmac:core.numbering.sequences.reset');
+        Route::post('/formats', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'storeFormat'])
+            ->name('formats.store')->middleware('hrmac:core.numbering.numbering_formats.manage');
+        Route::delete('/formats/{id}', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'destroyFormat'])
+            ->name('formats.destroy')->middleware('hrmac:core.numbering.numbering_formats.manage');
+    });
+
+    // ========================================================================
+    // PRINT TEMPLATES (CA gaps)
+    // ========================================================================
+    Route::prefix('print-templates')->name('core.print-templates.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.print_templates.templates.view');
+        Route::post('/', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'store'])
+            ->name('store')->middleware('hrmac:core.print_templates.templates.create');
+        Route::put('/{id}', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.print_templates.templates.update');
+        Route::delete('/{id}', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'destroy'])
+            ->name('destroy')->middleware('hrmac:core.print_templates.templates.delete');
+        Route::get('/{id}/preview', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'preview'])
+            ->name('preview')->middleware('hrmac:core.print_templates.templates.preview');
+    });
+
+    // ========================================================================
+    // SETTINGS — INTEGRATIONS (CA gaps)
+    // ========================================================================
+    Route::prefix('settings/integrations')->name('core.settings.integrations.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Settings\IntegrationsController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.settings.integrations.view');
+        Route::post('/{integration}', [\Aero\Core\Http\Controllers\Settings\IntegrationsController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.settings.integrations.configure');
+    });
+
+    // ========================================================================
+    // LICENSE MANAGEMENT (CA gaps — standalone only)
+    // ========================================================================
+    Route::prefix('license')->name('core.license.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.license_management.license_overview.view');
+        Route::get('/activate', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'activation'])
+            ->name('activation')->middleware('hrmac:core.license_management.license_activation.view');
+        Route::post('/activate', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'activate'])
+            ->name('activate')->middleware('hrmac:core.license_management.license_activation.activate');
+        Route::post('/deactivate', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'deactivate'])
+            ->name('deactivate')->middleware('hrmac:core.license_management.license_activation.deactivate');
+        Route::get('/features', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'features'])
+            ->name('features')->middleware('hrmac:core.license_management.license_features.view');
+        Route::get('/renewal', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'renewal'])
+            ->name('renewal')->middleware('hrmac:core.license_management.license_renewal.view');
+        Route::get('/updates', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'updates'])
+            ->name('updates')->middleware('hrmac:core.license_management.updates.check');
+    });
+
+    // ========================================================================
+    // API — PAT, RATE LIMITS, USAGE, DOCS (CA gaps)
+    // ========================================================================
+    Route::prefix('api/pat')->name('core.api.pat.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\PersonalAccessTokenController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.api_webhooks.pat.view');
+        Route::post('/', [\Aero\Core\Http\Controllers\Admin\PersonalAccessTokenController::class, 'store'])
+            ->name('store')->middleware('hrmac:core.api_webhooks.pat.create');
+        Route::post('/{id}/revoke', [\Aero\Core\Http\Controllers\Admin\PersonalAccessTokenController::class, 'revoke'])
+            ->name('revoke')->middleware('hrmac:core.api_webhooks.pat.revoke');
+    });
+
+    Route::get('/api/rate-limits', [\Aero\Core\Http\Controllers\Admin\RateLimitController::class, 'index'])
+        ->name('core.api.rate-limits.index')->middleware('hrmac:core.api_webhooks.rate_limits.view');
+    Route::post('/api/rate-limits', [\Aero\Core\Http\Controllers\Admin\RateLimitController::class, 'update'])
+        ->name('core.api.rate-limits.update')->middleware('hrmac:core.api_webhooks.rate_limits.configure');
+
+    Route::get('/api/usage', [\Aero\Core\Http\Controllers\Admin\ApiUsageController::class, 'index'])
+        ->name('core.api.usage.index')->middleware('hrmac:core.api_webhooks.api_usage.view');
+
+    Route::get('/api/docs', [\Aero\Core\Http\Controllers\Admin\ApiDocsController::class, 'index'])
+        ->name('core.api.docs.index')->middleware('hrmac:core.api_webhooks.api_docs.view');
+
+    // ========================================================================
+    // SYSTEM HEALTH — STORAGE (CA gaps)
+    // ========================================================================
+    Route::get('/system-health/storage', [\Aero\Core\Http\Controllers\Admin\SystemHealthController::class, 'storageUsage'])
+        ->name('core.system-health.storage')->middleware('hrmac:core.system_health.storage_usage.view');
+
+    // ========================================================================
+    // BACKUP — MANUAL PAGE (CA gaps)
+    // ========================================================================
+    Route::get('/backup/manual', [\Aero\Core\Http\Controllers\Admin\BackupController::class, 'manualPage'])
+        ->name('core.backup.manual')->middleware('hrmac:core.backup_restore.manual_backup.create');
+
+    // ========================================================================
+    // BANNERS (CA gaps)
+    // ========================================================================
+    Route::prefix('announcements/banners')->name('core.announcements.banners.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\AnnouncementController::class, 'banners'])
+            ->name('index')->middleware('hrmac:core.announcements.banners.view');
+        Route::post('/', [\Aero\Core\Http\Controllers\Admin\AnnouncementController::class, 'storeBanner'])
+            ->name('store')->middleware('hrmac:core.announcements.banners.manage');
+    });
 });
