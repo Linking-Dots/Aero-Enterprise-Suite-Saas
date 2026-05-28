@@ -205,15 +205,6 @@ export default function LoginActivityPage({ events, filters }) {
   );
 }
 
-// VStack needed inside column render — imported inline
-function VStack({ children, gap }) {
-  return (
-    <div className={`aeos-vstack gap-${gap ?? 0}`}>
-      {children}
-    </div>
-  );
-}
-
 LoginActivityPage.layout = page => (
   <App title="Login Activity">{page}</App>
 );
