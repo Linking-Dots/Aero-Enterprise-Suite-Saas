@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
   IndexPageLayout,
   Card,
@@ -102,7 +102,7 @@ export default function FormsIndex({ forms }) {
                         intent="ghost"
                         size="sm"
                         leftIcon={<RocketLaunchIcon className="w-3.5 h-3.5" />}
-                        onClick={() => window.location.href = route('core.forms.publish', form.id)}
+                        onClick={() => router.post(route('core.forms.publish', form.id))}
                       >
                         Publish
                       </Button>
@@ -112,7 +112,7 @@ export default function FormsIndex({ forms }) {
                         intent="ghost"
                         size="sm"
                         leftIcon={<EyeSlashIcon className="w-3.5 h-3.5" />}
-                        onClick={() => window.location.href = route('core.forms.unpublish', form.id)}
+                        onClick={() => router.post(route('core.forms.unpublish', form.id))}
                       >
                         Unpublish
                       </Button>
@@ -124,7 +124,7 @@ export default function FormsIndex({ forms }) {
                         leftIcon={<TrashIcon className="w-3.5 h-3.5" />}
                         onClick={() => {
                           if (confirm(`Are you sure you want to delete "${form.name}"?`)) {
-                            window.location.href = route('core.forms.destroy', form.id);
+                            router.delete(route('core.forms.destroy', form.id));
                           }
                         }}
                       >

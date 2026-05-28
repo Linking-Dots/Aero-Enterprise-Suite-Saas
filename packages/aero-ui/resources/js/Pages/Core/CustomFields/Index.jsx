@@ -1,26 +1,22 @@
-import { Link } from '@inertiajs/react';
-import { useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
-import App from '../../App';
+import { router, useForm } from '@inertiajs/react';
 import {
+  IndexPageLayout,
+  DataTable,
   Button,
-  Field,
+  Badge,
+  HStack,
+  VStack,
+  Text,
   Input,
-  Label,
   Select,
-  Textarea,
-  Toggle,
   Modal,
-  useToast,
-  useHRMAC,
+  Checkbox,
+  Field,
+  Textarea,
 } from '@aero/ui';
-import {
-  PlusIcon,
-  CheckIcon,
-  XMarkIcon,
-  PencilIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
+import App from '../../App.jsx';
+import { useHRMAC } from '../../../hooks/useHRMAC';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text' },
@@ -39,564 +35,335 @@ const FIELD_TYPES = [
 const ENTITY_TYPES = [
   { value: 'users', label: 'Users' },
   { value: 'employees', label: 'Employees' },
+  { value: 'departments', label: 'Departments' },
   { value: 'leaves', label: 'Leaves' },
   { value: 'contacts', label: 'Contacts' },
   { value: 'opportunities', label: 'Opportunities' },
 ];
 
-export default function CustomFieldsIndex({ fields, filters }) {
-  const { toast } = useToast();
+const emptyField = {
+  name: '',
+  entity_type: 'users',
+  field_type: 'text',
+  options: '',
+  validation_rules: '',
+  is_required: false,
+  is_unique: false,
+  is_searchable: true,
+  is_filterable: true,
+  sort_order: 0,
+  placeholder: '',
+  description: '',
+  is_active: true,
+};
+
+export default function CustomFieldsIndex({ fields, filters = {} }) {
   const canCreate = useHRMAC('custom_fields.definitions.create');
   const canUpdate = useHRMAC('custom_fields.definitions.update');
   const canDelete = useHRMAC('custom_fields.definitions.delete');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingField, setEditingField] = useState(null);
 
-  const createForm = useForm({
-    name: '',
-    entity_type: 'users',
-    field_type: 'text',
-    options: '',
-    validation_rules: '',
-    is_required: false,
-    is_unique: false,
-    is_searchable: true,
-    is_filterable: true,
-    sort_order: 0,
-    placeholder: '',
-    description: '',
-    is_active: true,
-  });
+  const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState(null);
 
-  const editForm = useForm({
-    name: '',
-    entity_type: '',
-    field_type: '',
-    options: '',
-    validation_rules: '',
-    is_required: false,
-    is_unique: false,
-    is_searchable: true,
-    is_filterable: true,
-    sort_order: 0,
-    placeholder: '',
-    description: '',
-    is_active: true,
-  });
+  const createForm = useForm({ ...emptyField });
+  const editForm = useForm({ ...emptyField });
 
-  const handleCreateSubmit = (e) => {
+  const handleCreate = (e) => {
     e.preventDefault();
-    createForm.post(route('core.custom-fields.store'), {
+    createForm.post(route('custom-fields.store'), {
       onSuccess: () => {
-        toast({
-          title: 'Success',
-          description: 'Custom field created successfully',
-        });
-        setIsCreateModalOpen(false);
+        setShowCreate(false);
         createForm.reset();
       },
-      onError: (errors) => {
-        toast({
-          title: 'Error',
-          description: 'Failed to create custom field',
-          variant: 'destructive',
-        });
-      },
     });
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    editForm.put(route('core.custom-fields.update', editingField.id), {
-      onSuccess: () => {
-        toast({
-          title: 'Success',
-          description: 'Custom field updated successfully',
-        });
-        setIsEditModalOpen(false);
-        setEditingField(null);
-      },
-      onError: () => {
-        toast({
-          title: 'Error',
-          description: 'Failed to update custom field',
-          variant: 'destructive',
-        });
-      },
-    });
-  };
-
-  const handleDelete = (id) => {
-    if (confirm('Are you sure you want to delete this custom field?')) {
-      router.delete(route('core.custom-fields.destroy', id), {
-        onSuccess: () => {
-          toast({
-            title: 'Success',
-            description: 'Custom field deleted successfully',
-          });
-        },
-      });
-    }
-  };
-
-  const openEditModal = (field) => {
-    setEditingField(field);
+  const openEdit = (field) => {
+    setEditing(field);
     editForm.setData({
-      name: field.name,
-      entity_type: field.entity_type,
-      field_type: field.field_type,
+      name: field.name ?? '',
+      entity_type: field.entity_type ?? 'users',
+      field_type: field.field_type ?? 'text',
       options: field.options ? JSON.stringify(field.options) : '',
       validation_rules: field.validation_rules ? JSON.stringify(field.validation_rules) : '',
-      is_required: field.is_required,
-      is_unique: field.is_unique,
-      is_searchable: field.is_searchable,
-      is_filterable: field.is_filterable,
-      sort_order: field.sort_order,
-      placeholder: field.placeholder || '',
-      description: field.description || '',
-      is_active: field.is_active,
+      is_required: !!field.is_required,
+      is_unique: !!field.is_unique,
+      is_searchable: !!field.is_searchable,
+      is_filterable: !!field.is_filterable,
+      sort_order: field.sort_order ?? 0,
+      placeholder: field.placeholder ?? '',
+      description: field.description ?? '',
+      is_active: field.is_active ?? true,
     });
-    setIsEditModalOpen(true);
   };
 
-  const handleFilterChange = (key, value) => {
-    router.get(route('core.custom-fields.index'), { ...filters, [key]: value }, {
+  const handleEdit = (e) => {
+    e.preventDefault();
+    if (!editing) return;
+    editForm.put(route('custom-fields.update', editing.id), {
+      onSuccess: () => setEditing(null),
+    });
+  };
+
+  const handleDelete = (field) => {
+    if (!confirm(`Delete custom field "${field.name}"?`)) return;
+    router.delete(route('custom-fields.destroy', field.id));
+  };
+
+  const handleFilter = (key, value) => {
+    router.get(route('custom-fields.index'), { ...filters, [key]: value }, {
       preserveState: true,
       preserveScroll: true,
     });
   };
 
-  return (
-    <App title="Custom Fields">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Custom Fields</h1>
-            <p className="text-muted-foreground">Manage custom field definitions for your entities</p>
-          </div>
-          {canCreate && (
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Add Field
+  const rows = fields?.data ?? fields ?? [];
+
+  const columns = [
+    {
+      key: 'name',
+      label: 'Name',
+      render: (row) => (
+        <VStack gap={0}>
+          <Text weight="semibold">{row.name}</Text>
+          {row.code && <Text size="sm" tone="secondary">{row.code}</Text>}
+        </VStack>
+      ),
+    },
+    {
+      key: 'entity_type',
+      label: 'Entity',
+      render: (row) => <Badge variant="secondary">{row.entity_type}</Badge>,
+    },
+    {
+      key: 'field_type',
+      label: 'Type',
+      render: (row) => <Badge variant="info">{row.field_type_label || row.field_type}</Badge>,
+    },
+    {
+      key: 'is_required',
+      label: 'Required',
+      render: (row) => row.is_required ? <Badge variant="warning">Required</Badge> : '—',
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (row) => (
+        <Badge variant={row.is_active ? 'success' : 'warning'}>
+          {row.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      label: '',
+      align: 'right',
+      render: (row) => (
+        <HStack gap={2} justify="end">
+          {canUpdate && (
+            <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+              Edit
             </Button>
           )}
-        </div>
+          {canDelete && (
+            <Button variant="danger" size="sm" onClick={() => handleDelete(row)}>
+              Delete
+            </Button>
+          )}
+        </HStack>
+      ),
+    },
+  ];
 
-        <div className="flex gap-4">
+  const renderFieldForm = (form) => (
+    <VStack gap={4}>
+      <Field label="Field Name" required>
+        <Input
+          value={form.data.name}
+          onChange={(e) => form.setData('name', e.target.value)}
+          placeholder="e.g., Blood Type"
+          error={form.errors.name}
+        />
+      </Field>
+
+      <HStack gap={3}>
+        <Field label="Entity Type" required>
+          <Select
+            value={form.data.entity_type}
+            onChange={(e) => form.setData('entity_type', e.target.value)}
+            options={ENTITY_TYPES}
+          />
+        </Field>
+        <Field label="Field Type" required>
+          <Select
+            value={form.data.field_type}
+            onChange={(e) => form.setData('field_type', e.target.value)}
+            options={FIELD_TYPES}
+          />
+        </Field>
+        <Field label="Sort Order">
+          <Input
+            type="number"
+            value={form.data.sort_order}
+            onChange={(e) => form.setData('sort_order', parseInt(e.target.value) || 0)}
+          />
+        </Field>
+      </HStack>
+
+      <Field label="Placeholder">
+        <Input
+          value={form.data.placeholder}
+          onChange={(e) => form.setData('placeholder', e.target.value)}
+        />
+      </Field>
+
+      <Field label="Description">
+        <Textarea
+          value={form.data.description}
+          onChange={(e) => form.setData('description', e.target.value)}
+          rows={2}
+        />
+      </Field>
+
+      {(form.data.field_type === 'select' || form.data.field_type === 'multi_select') && (
+        <Field label="Options (JSON array)">
+          <Textarea
+            value={form.data.options}
+            onChange={(e) => form.setData('options', e.target.value)}
+            placeholder='["Option 1", "Option 2", "Option 3"]'
+            rows={2}
+          />
+        </Field>
+      )}
+
+      <Field label="Validation Rules (JSON)">
+        <Textarea
+          value={form.data.validation_rules}
+          onChange={(e) => form.setData('validation_rules', e.target.value)}
+          placeholder='{"min": 1, "max": 100}'
+          rows={2}
+        />
+      </Field>
+
+      <HStack gap={4}>
+        <Checkbox
+          checked={form.data.is_required}
+          onChange={(checked) => form.setData('is_required', checked)}
+          label="Required"
+        />
+        <Checkbox
+          checked={form.data.is_unique}
+          onChange={(checked) => form.setData('is_unique', checked)}
+          label="Unique"
+        />
+        <Checkbox
+          checked={form.data.is_searchable}
+          onChange={(checked) => form.setData('is_searchable', checked)}
+          label="Searchable"
+        />
+        <Checkbox
+          checked={form.data.is_filterable}
+          onChange={(checked) => form.setData('is_filterable', checked)}
+          label="Filterable"
+        />
+        <Checkbox
+          checked={form.data.is_active}
+          onChange={(checked) => form.setData('is_active', checked)}
+          label="Active"
+        />
+      </HStack>
+    </VStack>
+  );
+
+  return (
+    <IndexPageLayout
+      title="Custom Fields"
+      breadcrumb={[
+        { label: 'Dashboard', href: route('core.dashboard') },
+        { label: 'Custom Fields' },
+      ]}
+      description="Define custom field definitions for your entities."
+      actions={
+        canCreate && (
+          <Button variant="primary" onClick={() => setShowCreate(true)}>
+            Add Field
+          </Button>
+        )
+      }
+    >
+      <VStack gap={4}>
+        <HStack gap={3} align="end">
           <Input
             placeholder="Search fields..."
             value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            className="max-w-xs"
+            onChange={(e) => handleFilter('search', e.target.value)}
+            className="flex-1"
           />
           <Select
             value={filters.entity_type || ''}
-            onValueChange={(value) => handleFilterChange('entity_type', value)}
-          >
-            <SelectTrigger className="max-w-xs">
-              <SelectValue placeholder="Filter by entity type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Entity Types</SelectItem>
-              {ENTITY_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            onChange={(e) => handleFilter('entity_type', e.target.value)}
+            options={[
+              { value: '', label: 'All Entity Types' },
+              ...ENTITY_TYPES,
+            ]}
+          />
+        </HStack>
 
-        <div className="rounded-md border">
-          <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead className="[&_tr]:border-b">
-                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Code</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Entity Type</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Type</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Required</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Active</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fields.data.map((field) => (
-                  <tr key={field.id} className="border-b transition-colors hover:bg-muted/50">
-                    <td className="p-4 align-middle font-medium">{field.name}</td>
-                    <td className="p-4 align-middle text-muted-foreground">{field.code}</td>
-                    <td className="p-4 align-middle capitalize">{field.entity_type}</td>
-                    <td className="p-4 align-middle">{field.field_type_label}</td>
-                    <td className="p-4 align-middle">
-                      {field.is_required ? (
-                        <CheckIcon className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XMarkIcon className="h-4 w-4 text-gray-400" />
-                      )}
-                    </td>
-                    <td className="p-4 align-middle">
-                      {field.is_active ? (
-                        <CheckIcon className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XMarkIcon className="h-4 w-4 text-gray-400" />
-                      )}
-                    </td>
-                    <td className="p-4 align-middle text-right">
-                      <div className="flex justify-end gap-2">
-                        {canUpdate && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditModal(field)}
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {canDelete && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(field.id)}
-                          >
-                            <TrashIcon className="h-4 w-4 text-red-500" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <DataTable
+          columns={columns}
+          rows={rows}
+          empty="No custom fields defined."
+        />
+
+        {fields?.last_page > 1 && (
+          <div className="flex justify-center">
+            <Text size="sm">
+              Page {fields.current_page} of {fields.last_page}
+            </Text>
           </div>
-        </div>
+        )}
+      </VStack>
 
-        {/* Create Modal */}
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Custom Field</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Field Name *</Label>
-                  <Input
-                    id="name"
-                    value={createForm.data.name}
-                    onChange={(e) => createForm.setData('name', e.target.value)}
-                    error={createForm.errors.name}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="entity_type">Entity Type *</Label>
-                  <Select
-                    value={createForm.data.entity_type}
-                    onValueChange={(value) => createForm.setData('entity_type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ENTITY_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+      {/* Create Modal */}
+      <Modal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="Add Custom Field"
+        size="lg"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleCreate} disabled={createForm.processing}>
+              {createForm.processing ? 'Creating...' : 'Create Field'}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreate}>
+          {renderFieldForm(createForm)}
+        </form>
+      </Modal>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="field_type">Field Type *</Label>
-                  <Select
-                    value={createForm.data.field_type}
-                    onValueChange={(value) => createForm.setData('field_type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FIELD_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sort_order">Sort Order</Label>
-                  <Input
-                    id="sort_order"
-                    type="number"
-                    value={createForm.data.sort_order}
-                    onChange={(e) => createForm.setData('sort_order', parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="placeholder">Placeholder</Label>
-                <Input
-                  id="placeholder"
-                  value={createForm.data.placeholder}
-                  onChange={(e) => createForm.setData('placeholder', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={createForm.data.description}
-                  onChange={(e) => createForm.setData('description', e.target.value)}
-                />
-              </div>
-
-              {(createForm.data.field_type === 'select' || createForm.data.field_type === 'multi_select') && (
-                <div className="space-y-2">
-                  <Label htmlFor="options">Options (JSON array)</Label>
-                  <Textarea
-                    id="options"
-                    placeholder='["Option 1", "Option 2", "Option 3"]'
-                    value={createForm.data.options}
-                    onChange={(e) => createForm.setData('options', e.target.value)}
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="validation_rules">Validation Rules (JSON object)</Label>
-                <Textarea
-                  id="validation_rules"
-                  placeholder='{"min": 1, "max": 100}'
-                  value={createForm.data.validation_rules}
-                  onChange={(e) => createForm.setData('validation_rules', e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_required"
-                    checked={createForm.data.is_required}
-                    onCheckedChange={(checked) => createForm.setData('is_required', checked)}
-                  />
-                  <Label htmlFor="is_required">Required</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_unique"
-                    checked={createForm.data.is_unique}
-                    onCheckedChange={(checked) => createForm.setData('is_unique', checked)}
-                  />
-                  <Label htmlFor="is_unique">Unique</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_searchable"
-                    checked={createForm.data.is_searchable}
-                    onCheckedChange={(checked) => createForm.setData('is_searchable', checked)}
-                  />
-                  <Label htmlFor="is_searchable">Searchable</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_filterable"
-                    checked={createForm.data.is_filterable}
-                    onCheckedChange={(checked) => createForm.setData('is_filterable', checked)}
-                  />
-                  <Label htmlFor="is_filterable">Filterable</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={createForm.data.is_active}
-                    onCheckedChange={(checked) => createForm.setData('is_active', checked)}
-                  />
-                  <Label htmlFor="is_active">Active</Label>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createForm.processing}>
-                  {createForm.processing ? 'Creating...' : 'Create Field'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Modal */}
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Custom Field</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit_name">Field Name *</Label>
-                  <Input
-                    id="edit_name"
-                    value={editForm.data.name}
-                    onChange={(e) => editForm.setData('name', e.target.value)}
-                    error={editForm.errors.name}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit_entity_type">Entity Type *</Label>
-                  <Select
-                    value={editForm.data.entity_type}
-                    onValueChange={(value) => editForm.setData('entity_type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ENTITY_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit_field_type">Field Type *</Label>
-                  <Select
-                    value={editForm.data.field_type}
-                    onValueChange={(value) => editForm.setData('field_type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FIELD_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit_sort_order">Sort Order</Label>
-                  <Input
-                    id="edit_sort_order"
-                    type="number"
-                    value={editForm.data.sort_order}
-                    onChange={(e) => editForm.setData('sort_order', parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit_placeholder">Placeholder</Label>
-                <Input
-                  id="edit_placeholder"
-                  value={editForm.data.placeholder}
-                  onChange={(e) => editForm.setData('placeholder', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit_description">Description</Label>
-                <Textarea
-                  id="edit_description"
-                  value={editForm.data.description}
-                  onChange={(e) => editForm.setData('description', e.target.value)}
-                />
-              </div>
-
-              {(editForm.data.field_type === 'select' || editForm.data.field_type === 'multi_select') && (
-                <div className="space-y-2">
-                  <Label htmlFor="edit_options">Options (JSON array)</Label>
-                  <Textarea
-                    id="edit_options"
-                    placeholder='["Option 1", "Option 2", "Option 3"]'
-                    value={editForm.data.options}
-                    onChange={(e) => editForm.setData('options', e.target.value)}
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="edit_validation_rules">Validation Rules (JSON object)</Label>
-                <Textarea
-                  id="edit_validation_rules"
-                  placeholder='{"min": 1, "max": 100}'
-                  value={editForm.data.validation_rules}
-                  onChange={(e) => editForm.setData('validation_rules', e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="edit_is_required"
-                    checked={editForm.data.is_required}
-                    onCheckedChange={(checked) => editForm.setData('is_required', checked)}
-                  />
-                  <Label htmlFor="edit_is_required">Required</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="edit_is_unique"
-                    checked={editForm.data.is_unique}
-                    onCheckedChange={(checked) => editForm.setData('is_unique', checked)}
-                  />
-                  <Label htmlFor="edit_is_unique">Unique</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="edit_is_searchable"
-                    checked={editForm.data.is_searchable}
-                    onCheckedChange={(checked) => editForm.setData('is_searchable', checked)}
-                  />
-                  <Label htmlFor="edit_is_searchable">Searchable</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="edit_is_filterable"
-                    checked={editForm.data.is_filterable}
-                    onCheckedChange={(checked) => editForm.setData('is_filterable', checked)}
-                  />
-                  <Label htmlFor="edit_is_filterable">Filterable</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="edit_is_active"
-                    checked={editForm.data.is_active}
-                    onCheckedChange={(checked) => editForm.setData('is_active', checked)}
-                  />
-                  <Label htmlFor="edit_is_active">Active</Label>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={editForm.processing}>
-                  {editForm.processing ? 'Updating...' : 'Update Field'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </App>
+      {/* Edit Modal */}
+      <Modal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title="Edit Custom Field"
+        size="lg"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button variant="primary" onClick={handleEdit} disabled={editForm.processing}>
+              {editForm.processing ? 'Updating...' : 'Update Field'}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleEdit}>
+          {renderFieldForm(editForm)}
+        </form>
+      </Modal>
+    </IndexPageLayout>
   );
 }
 

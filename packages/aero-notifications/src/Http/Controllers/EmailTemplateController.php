@@ -33,7 +33,14 @@ class EmailTemplateController extends Controller
         $templates = $this->templateService->getTemplates($filters);
         $categories = $this->templateService->getCategories();
 
-        return Inertia::render('Core/Settings/EmailTemplates/Index', [
+        // CA-3: serve the simplified Notifications/Templates view when the request
+        // arrives via the admin.notifications.templates.* route group.
+        $routeName = optional($request->route())->getName();
+        $component = $routeName && str_starts_with($routeName, 'admin.notifications.templates.')
+            ? 'Core/Notifications/Templates'
+            : 'Core/Settings/EmailTemplates/Index';
+
+        return Inertia::render($component, [
             'templates' => $templates,
             'categories' => $categories,
             'filters' => $filters,

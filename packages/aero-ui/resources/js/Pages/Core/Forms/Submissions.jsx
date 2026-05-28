@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
   IndexPageLayout,
   Button,
@@ -37,7 +37,7 @@ export default function FormsSubmissions({ form, submissions, status }) {
           intent="ghost"
           size="sm"
           leftIcon="eye"
-          onClick={() => window.location.href = route('core.forms.submissions.show', { form: form.id, submission: submission.id })}
+          onClick={() => router.get(route('core.forms.submissions.show', { form: form.id, submission: submission.id }))}
         >
           View
         </Button>
@@ -48,7 +48,7 @@ export default function FormsSubmissions({ form, submissions, status }) {
             leftIcon="trash"
             onClick={() => {
               if (confirm('Are you sure you want to delete this submission?')) {
-                window.location.href = route('core.forms.submissions.destroy', { form: form.id, submission: submission.id });
+                router.delete(route('core.forms.submissions.destroy', { form: form.id, submission: submission.id }));
               }
             }}
           >
@@ -65,7 +65,7 @@ export default function FormsSubmissions({ form, submissions, status }) {
       breadcrumb={[{ label: 'Forms', href: route('core.forms.index') }, { label: form.name, href: route('core.forms.edit', form.id) }, { label: 'Submissions' }]}
       actions={
         canExport && (
-          <Button intent="secondary" leftIcon="download" onClick={() => window.location.href = route('core.forms.submissions.export', form.id)}>
+          <Button intent="secondary" leftIcon="download" onClick={() => window.open(route('core.forms.submissions.export', form.id), '_blank')}>
             Export CSV
           </Button>
         )
@@ -73,7 +73,7 @@ export default function FormsSubmissions({ form, submissions, status }) {
       filters={
         <Select
           value={status || ''}
-          onChange={(e) => window.location.href = route('core.forms.submissions.index', { form: form.id, status: e.target.value || undefined })}
+          onChange={(e) => router.get(route('core.forms.submissions.index', { form: form.id, status: e.target.value || undefined }), {}, { preserveState: true, preserveScroll: true })}
           options={[
             { value: '', label: 'All Status' },
             { value: 'submitted', label: 'Submitted' },

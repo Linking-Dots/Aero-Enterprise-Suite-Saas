@@ -1,4 +1,4 @@
-import { useForm, Link } from '@inertiajs/react';
+import { useForm, Link, router } from '@inertiajs/react';
 import {
   FormPageLayout,
   Field,
@@ -37,16 +37,16 @@ export default function FormsEdit({ form }) {
   };
 
   const handlePublish = () => {
-    window.location.href = route('core.forms.publish', form.id);
+    router.post(route('core.forms.publish', form.id));
   };
 
   const handleUnpublish = () => {
-    window.location.href = route('core.forms.unpublish', form.id);
+    router.post(route('core.forms.unpublish', form.id));
   };
 
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete "${form.name}"?`)) {
-      window.location.href = route('core.forms.destroy', form.id);
+      router.delete(route('core.forms.destroy', form.id));
     }
   };
 

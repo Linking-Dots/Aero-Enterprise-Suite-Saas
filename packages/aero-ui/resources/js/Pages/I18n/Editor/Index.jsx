@@ -237,8 +237,8 @@ export default function TranslationEditorIndex({
         {/* Filters */}
         <Card>
           <CardContent>
-            <HStack gap={3}>
-              <VStack gap={1} style={{ minWidth: 200 }}>
+            <HStack gap={3} align="end">
+              <VStack gap={1} className="min-w-[200px]">
                 <Text size="sm" tone="secondary">Language</Text>
                 <Select
                   value={selectedLanguage}
@@ -251,7 +251,7 @@ export default function TranslationEditorIndex({
                   <option value="ar">Arabic</option>
                 </Select>
               </VStack>
-              <VStack gap={1} style={{ minWidth: 200 }}>
+              <VStack gap={1} className="min-w-[200px]">
                 <Text size="sm" tone="secondary">Namespace</Text>
                 <Input
                   value={selectedNamespace}
@@ -259,7 +259,7 @@ export default function TranslationEditorIndex({
                   placeholder="e.g., core"
                 />
               </VStack>
-              <VStack gap={1} style={{ minWidth: 200 }}>
+              <VStack gap={1} className="min-w-[200px]">
                 <Text size="sm" tone="secondary">Group</Text>
                 <Input
                   value={selectedGroup}
@@ -270,7 +270,6 @@ export default function TranslationEditorIndex({
               <Button
                 intent="primary"
                 onClick={handleFilter}
-                style={{ marginTop: 16 }}
               >
                 Filter
               </Button>

@@ -5,7 +5,6 @@ import {
   DataTable,
   Button,
   Badge,
-  Pagination,
   HStack,
   Input,
   Select,
@@ -14,36 +13,38 @@ import {
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-const EVENT_TYPE_OPTIONS = [
-  { value: '',                  label: 'All Event Types' },
-  { value: 'login',             label: 'Login' },
-  { value: 'logout',            label: 'Logout' },
+const SECURITY_EVENT_OPTIONS = [
+  { value: '',                  label: 'All Security Events' },
   { value: 'login_failed',      label: 'Login Failed' },
+  { value: 'login_success',     label: 'Login Success' },
+  { value: 'logout',            label: 'Logout' },
   { value: 'password_changed',  label: 'Password Changed' },
-  { value: 'created',           label: 'Created' },
-  { value: 'updated',           label: 'Updated' },
-  { value: 'deleted',           label: 'Deleted' },
-  { value: 'exported',          label: 'Exported' },
-  { value: 'impersonated',      label: 'Impersonated' },
+  { value: 'mfa_failed',        label: 'MFA Failed' },
+  { value: 'mfa_success',       label: 'MFA Success' },
+  { value: 'suspicious',        label: 'Suspicious Activity' },
+  { value: 'impersonated',      label: 'Impersonation' },
+  { value: 'permission_denied', label: 'Permission Denied' },
+  { value: 'token_revoked',     label: 'Token Revoked' },
 ];
 
-const EVENT_INTENT = {
-  login:            'success',
-  logout:           'neutral',
-  login_failed:     'danger',
-  password_changed: 'warning',
-  created:          'success',
-  updated:          'neutral',
-  deleted:          'danger',
-  exported:         'warning',
-  impersonated:     'amber',
+const SECURITY_INTENT = {
+  login_failed:      'danger',
+  login_success:     'success',
+  logout:            'neutral',
+  password_changed:  'warning',
+  mfa_failed:        'danger',
+  mfa_success:       'success',
+  suspicious:        'danger',
+  impersonated:      'amber',
+  permission_denied: 'warning',
+  token_revoked:     'warning',
 };
 
-export default function AuditLogsIndex({ logs, filters }) {
-  const [search,     setSearch]     = useState(filters?.search     ?? '');
-  const [eventType,  setEventType]  = useState(filters?.event_type ?? '');
-  const [dateFrom,   setDateFrom]   = useState(filters?.from       ?? '');
-  const [dateTo,     setDateTo]     = useState(filters?.to         ?? '');
+export default function AuditLogsSecurity({ logs, filters }) {
+  const [search,    setSearch]    = useState(filters?.search     ?? '');
+  const [eventType, setEventType] = useState(filters?.event_type ?? '');
+  const [dateFrom,  setDateFrom]  = useState(filters?.from       ?? '');
+  const [dateTo,    setDateTo]    = useState(filters?.to         ?? '');
 
   const applyFilters = (page = 1) => {
     const params = { page };
@@ -52,7 +53,7 @@ export default function AuditLogsIndex({ logs, filters }) {
     if (dateFrom)  params.from       = dateFrom;
     if (dateTo)    params.to         = dateTo;
 
-    router.get(route('core.audit-logs.activity'), params, {
+    router.get(route('core.audit-logs.security'), params, {
       preserveState: true,
       preserveScroll: true,
       only: ['logs', 'filters'],
@@ -64,7 +65,7 @@ export default function AuditLogsIndex({ logs, filters }) {
     setEventType('');
     setDateFrom('');
     setDateTo('');
-    router.get(route('core.audit-logs.activity'), {}, {
+    router.get(route('core.audit-logs.security'), {}, {
       preserveState: true,
       preserveScroll: true,
       only: ['logs', 'filters'],
@@ -83,9 +84,9 @@ export default function AuditLogsIndex({ logs, filters }) {
     {
       key: 'event_type',
       label: 'Event',
-      width: '14%',
+      width: '16%',
       render: row => (
-        <Badge intent={EVENT_INTENT[row.event_type] ?? 'neutral'}>
+        <Badge intent={SECURITY_INTENT[row.event_type] ?? 'neutral'}>
           {row.event_type || '—'}
         </Badge>
       ),
@@ -93,16 +94,18 @@ export default function AuditLogsIndex({ logs, filters }) {
     {
       key: 'action',
       label: 'Action',
-      width: '20%',
+      width: '18%',
       render: row => <Text size="sm">{row.action || '—'}</Text>,
     },
     {
       key: 'subject_label',
       label: 'Subject',
-      width: '18%',
+      width: '16%',
       render: row => (
         <Text size="sm" tone="secondary">
-          {row.subject_label ? row.subject_label.slice(0, 40) + (row.subject_label.length > 40 ? '…' : '') : '—'}
+          {row.subject_label
+            ? row.subject_label.slice(0, 40) + (row.subject_label.length > 40 ? '…' : '')
+            : '—'}
         </Text>
       ),
     },
@@ -115,7 +118,7 @@ export default function AuditLogsIndex({ logs, filters }) {
     {
       key: 'created_at',
       label: 'Time',
-      width: '16%',
+      width: '18%',
       render: row => (
         <Mono size="sm">
           {row.created_at ? new Date(row.created_at).toLocaleString() : '—'}
@@ -126,13 +129,13 @@ export default function AuditLogsIndex({ logs, filters }) {
 
   return (
     <IndexPageLayout
-      title="Activity Logs"
+      title="Security Logs"
       breadcrumb={[
         { label: 'Dashboard', href: route('core.dashboard') },
         { label: 'Audit Logs', href: route('core.audit-logs.activity') },
-        { label: 'Activity' },
+        { label: 'Security' },
       ]}
-      description="Full record of all actor activity across the platform."
+      description="Security-related events: login failures, suspicious activity, permission violations."
       filters={
         <HStack gap={3} align="end" wrap>
           <Input
@@ -145,7 +148,7 @@ export default function AuditLogsIndex({ logs, filters }) {
           <Select
             value={eventType}
             onChange={e => setEventType(e.target.value)}
-            options={EVENT_TYPE_OPTIONS}
+            options={SECURITY_EVENT_OPTIONS}
           />
           <Input
             type="date"
@@ -167,7 +170,7 @@ export default function AuditLogsIndex({ logs, filters }) {
         <DataTable
           columns={columns}
           rows={logs?.data ?? []}
-          empty="No activity logs found. Try adjusting your filters."
+          empty="No security events found."
         />
       }
       pagination={
@@ -201,6 +204,6 @@ export default function AuditLogsIndex({ logs, filters }) {
   );
 }
 
-AuditLogsIndex.layout = page => (
-  <App title="Activity Logs">{page}</App>
+AuditLogsSecurity.layout = page => (
+  <App title="Security Logs">{page}</App>
 );
