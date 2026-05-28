@@ -20,6 +20,7 @@ class AnnouncementService
         return Announcement::with('author')
             ->when($filters['search'] ?? null, fn ($q, $s) => $q->where('title', 'like', "%{$s}%"))
             ->when($filters['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
+            ->when($filters['audience'] ?? null, fn ($q, $s) => $q->where('audience', $s))
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
@@ -46,7 +47,7 @@ class AnnouncementService
 
     public function update(Announcement $ann, array $data, User $actor): Announcement
     {
-        return DB::transaction(function () use ($ann, $data, $actor) {
+        return DB::transaction(function () use ($ann, $data) {
             $ann->update($data);
 
             $this->audit->log(
@@ -62,7 +63,7 @@ class AnnouncementService
 
     public function publish(Announcement $ann, User $actor): Announcement
     {
-        return DB::transaction(function () use ($ann, $actor) {
+        return DB::transaction(function () use ($ann) {
             $ann->update(['status' => 'published', 'published_at' => now()]);
             $this->audit->log(
                 AuditEventType::RECORD_UPDATED->value,
@@ -77,7 +78,7 @@ class AnnouncementService
 
     public function archive(Announcement $ann, User $actor): Announcement
     {
-        return DB::transaction(function () use ($ann, $actor) {
+        return DB::transaction(function () use ($ann) {
             $ann->update(['status' => 'archived']);
             $this->audit->log(
                 AuditEventType::RECORD_UPDATED->value,

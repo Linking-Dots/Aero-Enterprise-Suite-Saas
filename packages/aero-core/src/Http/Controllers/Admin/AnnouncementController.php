@@ -58,4 +58,24 @@ class AnnouncementController extends Controller
 
         return back()->with('success', 'Announcement deleted.');
     }
+
+    public function banners(Request $request): Response
+    {
+        $banners = $this->announcementService->list(
+            array_merge($request->only('search', 'status'), ['audience' => 'banner'])
+        );
+
+        return Inertia::render('Core/Announcements/Banners', [
+            'banners' => $banners,
+            'filters' => $request->only('search', 'status'),
+        ]);
+    }
+
+    public function storeBanner(StoreAnnouncementRequest $request): RedirectResponse
+    {
+        $data = array_merge($request->validated(), ['audience' => 'banner', 'type' => 'warning']);
+        $this->announcementService->create($data, $request->user());
+
+        return back()->with('success', 'Banner created.');
+    }
 }
