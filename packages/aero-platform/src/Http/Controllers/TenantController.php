@@ -137,8 +137,11 @@ class TenantController extends Controller
             'subdomain' => [
                 'required',
                 'string',
+                'min:3',
                 'max:63',
                 'regex:/^[a-z0-9][a-z0-9-]*[a-z0-9]$/i',
+                // Plan 03 T6 — block platform-infrastructure subdomains
+                Rule::notIn(config('tenancy.reserved_subdomains', [])),
                 Rule::unique('tenants', 'subdomain'),
             ],
             'email' => ['required', 'email', 'max:255'],
@@ -429,7 +432,14 @@ class TenantController extends Controller
     public function checkSubdomain(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'subdomain' => ['required', 'string', 'max:63'],
+            'subdomain' => [
+                'required',
+                'string',
+                'min:3',
+                'max:63',
+                // Plan 03 T6 — block platform-infrastructure subdomains
+                Rule::notIn(config('tenancy.reserved_subdomains', [])),
+            ],
         ]);
 
         $subdomain = strtolower($validated['subdomain']);

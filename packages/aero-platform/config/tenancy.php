@@ -19,6 +19,53 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Reserved Subdomains (Plan 03 Task 6 — subdomain hijack guard)
+    |--------------------------------------------------------------------------
+    |
+    | A tenant must not be allowed to register a subdomain that collides with
+    | platform infrastructure DNS (mail., smtp., static., etc.). The Phase 1
+    | audit identified the previous reserved list (admin, www, api) as
+    | dangerously incomplete — a tenant could register 'mail.aeos365.com' and
+    | intercept platform mail.
+    |
+    | Operators can extend this list via config override without re-deploying
+    | the package. Order doesn't matter; matching is case-insensitive (the
+    | validator lowercases the input first).
+    |
+    */
+
+    'reserved_subdomains' => [
+        // Generic admin / API surfaces
+        'admin', 'www', 'api', 'app', 'apps',
+        // Mail infrastructure
+        'mail', 'smtp', 'imap', 'pop', 'pop3', 'webmail',
+        // CDN / static
+        'cdn', 'static', 'media', 'assets', 'images', 'img',
+        // Platform identity
+        'central', 'platform', 'landlord', 'tenant',
+        // Support / status
+        'support', 'status', 'help', 'docs', 'doc', 'documentation',
+        // Realtime / broadcast
+        'ws', 'websocket', 'broadcast', 'pusher', 'socket',
+        // Analytics / metrics
+        'stats', 'metrics', 'analytics', 'dashboard', 'monitor', 'monitoring',
+        // Network infrastructure
+        'ftp', 'sftp', 'ssh', 'ns1', 'ns2', 'ns3', 'ns4', 'dns',
+        // System / root
+        'root', 'system', 'sys', 'core', 'kernel',
+        // Laravel UI tools
+        'horizon', 'telescope', 'pulse', 'pulse-server',
+        // Auth surfaces
+        'auth', 'sso', 'oauth', 'login', 'logout', 'register', 'signup',
+        // Common service names
+        'blog', 'news', 'shop', 'store', 'billing', 'payments',
+        'test', 'demo', 'staging', 'preview', 'dev', 'sandbox',
+        // Reserved single-letter / minimal
+        'a', 'b', 'c', 'x', 'y', 'z',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Central Domains
     |--------------------------------------------------------------------------
     |
