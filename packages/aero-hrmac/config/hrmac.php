@@ -20,18 +20,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Super Admin Roles
+    | Super Admin Roles (Plan 04 Task 2 — guard-scoped)
     |--------------------------------------------------------------------------
     |
     | Users with these roles bypass all module access checks.
-    | They have full access to all modules, sub-modules, components, and actions.
+    | Phase 1 audit flagged the previous flat string array as brittle:
+    | a tenant role literally named "Super Administrator" could in principle
+    | satisfy the same config list as a landlord role. Guard scoping makes
+    | the bypass surface explicit per authentication context.
+    |
+    | Keys MUST match auth guards configured in config/auth.php.
     |
     */
 
     'super_admin_roles' => [
-        'Super Administrator',
-        'super-admin',
-        'tenant_super_administrator',
+        // Landlord/Platform guard — central DB users only
+        'landlord' => [
+            'Platform Super Administrator',
+            'platform-super-admin',
+        ],
+        // Tenant/web guard — per-tenant DB users only
+        'web' => [
+            'Tenant Super Administrator',
+            'tenant_super_administrator',
+            'Super Administrator',  // legacy — kept for backwards compat during rollout
+            'super-admin',          // legacy
+        ],
+        // API guard (token auth, if applicable)
+        'api' => [
+            // none by default — API tokens should be scoped to specific permissions
+        ],
     ],
 
     /*

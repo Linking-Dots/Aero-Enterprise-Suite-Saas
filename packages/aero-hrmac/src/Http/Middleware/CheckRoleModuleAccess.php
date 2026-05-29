@@ -177,22 +177,37 @@ class CheckRoleModuleAccess
     }
 
     /**
-     * Check if user is a super admin.
+     * Check if user is a super admin for the currently-active guard.
+     *
+     * Plan 04 T2 — guard-scoped super-admin check. The previous flat
+     * string match would have let a tenant user with a role literally
+     * named "Super Administrator" pass a landlord-guarded route.
      */
     protected function isSuperAdmin($user): bool
     {
-        $superAdminRoles = config('hrmac.super_admin_roles', [
-            'Super Administrator',
-            'super-admin',
-            'tenant_super_administrator',
-        ]);
+        $guard = $this->resolveActiveGuard();
+        $rolesConfig = config('hrmac.super_admin_roles', []);
 
-        // Check for hasAnyRole first (supports array of roles)
+        // Guard-scoped (new format: ['landlord' => [...], 'web' => [...]])
+        if (is_array($rolesConfig) && isset($rolesConfig[$guard])) {
+            $superAdminRoles = $rolesConfig[$guard];
+        } else {
+            // Legacy flat format fallback (deprecated — kept for transitional configs)
+            $superAdminRoles = is_array($rolesConfig) && array_is_list($rolesConfig)
+                ? $rolesConfig
+                : [];
+        }
+
+        if (empty($superAdminRoles)) {
+            return false;
+        }
+
+        // Prefer hasAnyRole (Spatie) — supports array
         if (method_exists($user, 'hasAnyRole')) {
             return $user->hasAnyRole($superAdminRoles);
         }
 
-        // Fallback to hasRole with individual checks
+        // Fallback per-role check
         if (method_exists($user, 'hasRole')) {
             foreach ($superAdminRoles as $role) {
                 if ($user->hasRole($role)) {
@@ -202,6 +217,19 @@ class CheckRoleModuleAccess
         }
 
         return false;
+    }
+
+    /**
+     * Resolve the auth guard the current request is authenticated against.
+     */
+    protected function resolveActiveGuard(): string
+    {
+        foreach (['landlord', 'web', 'api'] as $guard) {
+            if (Auth::guard($guard)->check()) {
+                return $guard;
+            }
+        }
+        return 'web';
     }
 
     /**
