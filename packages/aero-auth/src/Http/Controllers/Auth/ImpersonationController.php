@@ -4,6 +4,7 @@ namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Core\Models\User;
+use Aero\Core\Support\SafeRedirect;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantImpersonationToken;
 use Illuminate\Http\JsonResponse;
@@ -178,8 +179,22 @@ class ImpersonationController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        // Redirect to the intended URL or dashboard
-        $redirectUrl = $impersonationToken->redirect_url ?? '/dashboard';
+        // Plan 05 T3 — guard against open redirect via attacker-controlled
+        // redirect_url. The token's redirect_url comes from the platform-admin
+        // side, but if an attacker ever managed to forge or tamper with a
+        // token, an external URL there would phish the impersonated user.
+        // Falls back to /dashboard when the path isn't a safe relative URL.
+        $requestedUrl = $impersonationToken->redirect_url ?? '/dashboard';
+        $redirectUrl = SafeRedirect::isSafePath($requestedUrl) ? $requestedUrl : '/dashboard';
+
+        if ($redirectUrl !== $requestedUrl) {
+            Log::warning('Impersonation token redirect_url was unsafe; falling back to /dashboard', [
+                'token_redirect_url' => $requestedUrl,
+                'user_id'            => $user->id,
+                'tenant_id'          => $currentTenantId,
+                'ip'                 => $request->ip(),
+            ]);
+        }
 
         return redirect($redirectUrl)
             ->with('warning', 'You are being impersonated by a platform administrator. All actions are being logged.');
