@@ -76,14 +76,17 @@ return [
     'tenancy' => [
         'tenant_aware' => true,
         'uses_tenant_db' => true,
-        'central_tables' => [
-            'platform_locales',
-            'platform_translations',
-        ],
+        // Plan 07 (aero-i18n) Task 1 — declarations now match the shipped
+        // migration shape (`languages` + `translations`). Phase 1 audit
+        // found the previous block declared `platform_locales`,
+        // `platform_translations`, `tenant_locales`, `tenant_translations`,
+        // `locale_preferences` — none of which exist as migrations. The
+        // migrations 2026_05_05_000000 and 2026_05_05_000001 create the
+        // two tables below, on the tenant connection.
+        'central_tables' => [],
         'tenant_tables' => [
-            'tenant_locales',
-            'tenant_translations',
-            'locale_preferences',
+            'languages',
+            'translations',
         ],
     ],
 ];
