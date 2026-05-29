@@ -1390,6 +1390,33 @@ class ProvisionTenant implements ShouldQueue
                 return;
             }
 
+            // Plan 03 T12 — additional safety check: the name MUST start with the
+            // configured tenant prefix AND must NOT match the central DB. This
+            // closes the regex-loophole risk: even if a malformed subdomain or
+            // corrupted tenant record produces a name that passes the regex
+            // above, the prefix guard prevents accidentally dropping a
+            // production central / system / shared database.
+            $expectedPrefix = config('tenancy.database.prefix', 'tenant');
+            $centralDb = config('database.connections.central.database');
+
+            if ($expectedPrefix !== '' && ! str_starts_with($databaseName, (string) $expectedPrefix)) {
+                $this->logStep(
+                    "   → REFUSED to drop '{$databaseName}': does not start with tenant prefix '{$expectedPrefix}'",
+                    ['database' => $databaseName, 'expected_prefix' => $expectedPrefix],
+                    'error'
+                );
+                return;
+            }
+
+            if ($centralDb !== null && $databaseName === $centralDb) {
+                $this->logStep(
+                    "   → REFUSED to drop '{$databaseName}': matches the central database",
+                    ['database' => $databaseName, 'central' => $centralDb],
+                    'error'
+                );
+                return;
+            }
+
             \DB::statement("DROP DATABASE IF EXISTS `{$databaseName}`");
 
             $this->logStep("   → Database '{$databaseName}' dropped successfully", ['database' => $databaseName], 'warning');
