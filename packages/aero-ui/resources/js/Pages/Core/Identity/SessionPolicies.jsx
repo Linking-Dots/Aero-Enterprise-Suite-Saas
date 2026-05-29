@@ -15,7 +15,7 @@ import App from '../../App.jsx';
 
 export default function SessionPoliciesPage({ policy }) {
   const toast   = useToast();
-  const canEdit = useHRMAC('core.sso_identity.session_policies.edit');
+  const canEdit = useHRMAC('auth.sso_identity.session_policies.edit');
 
   const form = useForm({
     session_lifetime_minutes:         policy?.session_lifetime_minutes          ?? 480,

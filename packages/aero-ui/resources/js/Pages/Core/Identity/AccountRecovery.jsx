@@ -20,7 +20,7 @@ import App from '../../App.jsx';
 export default function AccountRecoveryPage({ config = {} }) {
   const toast   = useToast();
   const { errors } = usePage().props;
-  const canEdit = useHRMAC('core.sso_identity.account_recovery.edit');
+  const canEdit = useHRMAC('auth.sso_identity.account_recovery.edit');
 
   const [form, setForm] = useState({
     recovery_codes_enabled:        config.recovery_codes_enabled        ?? true,

@@ -27,7 +27,7 @@ function Section({ title, children }) {
 
 export default function OidcConfig({ config }) {
   const toast = useToast();
-  const canEdit = useHRMAC('core.sso_identity.sso_oidc.update');
+  const canEdit = useHRMAC('auth.sso_identity.sso_oidc.update');
 
   const { data, setData, post, processing, errors } = useForm({
     is_enabled:     config?.is_enabled     ?? false,

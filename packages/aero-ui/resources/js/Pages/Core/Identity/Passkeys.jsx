@@ -13,7 +13,7 @@ import App from '../../App.jsx';
 
 export default function PasskeysPage({ config }) {
   const toast   = useToast();
-  const canEdit = useHRMAC('core.sso_identity.passkeys.edit');
+  const canEdit = useHRMAC('auth.sso_identity.passkeys.edit');
 
   const form = useForm({
     is_enabled:           config?.is_enabled           ?? false,

@@ -20,8 +20,8 @@ export default function ScimPage({ is_enabled, scim_url, has_token }) {
   const { props } = usePage();
   const flash = props.flash ?? {};
 
-  const canEdit   = useHRMAC('core.sso_identity.scim_provisioning.edit');
-  const canRotate = useHRMAC('core.sso_identity.scim_provisioning.rotate_token');
+  const canEdit   = useHRMAC('auth.sso_identity.scim_provisioning.edit');
+  const canRotate = useHRMAC('auth.sso_identity.scim_provisioning.rotate_token');
 
   const [copied, setCopied] = useState(false);
   const [tokenCopied, setTokenCopied] = useState(false);

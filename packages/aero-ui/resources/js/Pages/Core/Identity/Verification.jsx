@@ -32,7 +32,7 @@ const TEST_CHANNEL_OPTIONS = [
 export default function VerificationPage({ config = {} }) {
   const toast   = useToast();
   const { errors } = usePage().props;
-  const canEdit = useHRMAC('core.sso_identity.verification.edit');
+  const canEdit = useHRMAC('auth.sso_identity.verification.edit');
 
   const [form, setForm] = useState({
     email_verification_required:  config.email_verification_required  ?? true,

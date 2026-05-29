@@ -28,8 +28,8 @@ function Section({ title, children }) {
 
 export default function SamlConfig({ config, metadata_url }) {
   const toast = useToast();
-  const canEdit = useHRMAC('core.sso_identity.sso_saml.update');
-  const canTest = useHRMAC('core.sso_identity.sso_saml.test');
+  const canEdit = useHRMAC('auth.sso_identity.sso_saml.update');
+  const canTest = useHRMAC('auth.sso_identity.sso_saml.test');
 
   const [testing, setTesting] = useState(false);
 

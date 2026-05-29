@@ -26,8 +26,8 @@ const SCOPE_OPTIONS = [
 
 export default function OAuthProviderPage({ apps = [], flash = {} }) {
   const toast     = useToast();
-  const canCreate = useHRMAC('core.sso_identity.oauth.create');
-  const canRevoke = useHRMAC('core.sso_identity.oauth.revoke');
+  const canCreate = useHRMAC('auth.sso_identity.oauth.create');
+  const canRevoke = useHRMAC('auth.sso_identity.oauth.revoke');
 
   const [modalOpen, setModalOpen]     = useState(false);
   const [copiedField, setCopiedField] = useState(null);

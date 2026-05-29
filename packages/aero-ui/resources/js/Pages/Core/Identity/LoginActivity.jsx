@@ -56,7 +56,7 @@ function eventTypeIntent(type) {
 }
 
 export default function LoginActivityPage({ events, filters }) {
-  const canView = useHRMAC('core.sso_identity.login_activity.view');
+  const canView = useHRMAC('auth.sso_identity.login_activity.view');
 
   const [search,    setSearch]    = useState(filters?.search     ?? '');
   const [status,    setStatus]    = useState(filters?.status     ?? '');

@@ -32,9 +32,9 @@ function methodLabel(value) {
 
 export default function MfaPoliciesPage({ policies, roles }) {
   const toast     = useToast();
-  const canCreate = useHRMAC('core.sso_identity.mfa_policies.create');
-  const canEdit   = useHRMAC('core.sso_identity.mfa_policies.edit');
-  const canDelete = useHRMAC('core.sso_identity.mfa_policies.delete');
+  const canCreate = useHRMAC('auth.sso_identity.mfa_policies.create');
+  const canEdit   = useHRMAC('auth.sso_identity.mfa_policies.edit');
+  const canDelete = useHRMAC('auth.sso_identity.mfa_policies.delete');
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState(null);

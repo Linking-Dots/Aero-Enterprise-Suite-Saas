@@ -20,7 +20,7 @@ const PROVIDERS = [
 
 function ProviderCard({ providerKey, label, intent, config }) {
   const toast = useToast();
-  const canEdit = useHRMAC('core.sso_identity.social_login.update');
+  const canEdit = useHRMAC('auth.sso_identity.social_login.update');
 
   const [form, setForm] = useState({
     is_enabled:    config?.is_enabled    ?? false,

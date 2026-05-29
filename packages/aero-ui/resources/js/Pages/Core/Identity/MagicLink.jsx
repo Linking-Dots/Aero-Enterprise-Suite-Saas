@@ -16,7 +16,7 @@ import App from '../../App.jsx';
 
 export default function MagicLinkPage({ config }) {
   const toast    = useToast();
-  const canEdit  = useHRMAC('core.sso_identity.magic_link.edit');
+  const canEdit  = useHRMAC('auth.sso_identity.magic_link.edit');
 
   const form = useForm({
     is_enabled:      config?.is_enabled      ?? false,
