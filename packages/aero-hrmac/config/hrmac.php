@@ -196,13 +196,20 @@ return [
         'paths' => [
             'vendor/aero/*/config/module.php',
             'modules/*/config/module.php',
+            // Plan 04 T4 — monorepo dev path (composer-path autoload bridges
+            // this back to vendor/aero/* at runtime, but discovery scans the
+            // source so docs/audits also work without `composer install`).
+            'packages/aero-*/config/module.php',
         ],
 
         // Whether to validate module configs during discovery
         'validate' => true,
 
-        // Required fields in module.php config
-        'required_fields' => ['module_key', 'label', 'scope'],
+        // Required fields in module.php config (Plan 04 T4 fix).
+        // Previously listed ['module_key', 'label', 'scope'] which mismatched
+        // every shipped config (which all use 'code'/'name'/'scope'). That made
+        // the validator warn on every package and erode signal/noise ratio.
+        'required_fields' => ['code', 'name', 'scope'],
     ],
 
     /*
