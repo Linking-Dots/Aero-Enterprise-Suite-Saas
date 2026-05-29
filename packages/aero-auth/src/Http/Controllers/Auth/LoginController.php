@@ -94,26 +94,34 @@ class LoginController extends Controller
             'remember' => 'boolean',
         ]);
 
-        $email = $request->email;
+        $email = strtolower((string) $request->email);
         $password = $request->password;
         $remember = $request->boolean('remember');
 
-        // Check rate limiting
-        $key = 'login.'.$request->ip();
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
+        // Plan 05 T2 — per-IP rate limit (existing) + NEW per-email rate limit.
+        // Previously a single per-IP key let an attacker probe many email
+        // addresses from one IP within the 5-attempt window. Adding a
+        // per-email key (sha1-hashed so PII isn't serialized into cache;
+        // lowercased so case can't bypass) closes the cross-account probe.
+        $ipKey = 'login.ip.'.$request->ip();
+        $emailKey = 'login.email.'.sha1($email);
 
-            $this->authService->logAuthenticationEvent(
-                null,
-                'login_rate_limited',
-                'failure',
-                $request,
-                ['email' => $email, 'retry_after' => $seconds]
-            );
+        foreach ([$ipKey, $emailKey] as $key) {
+            if (RateLimiter::tooManyAttempts($key, 5)) {
+                $seconds = RateLimiter::availableIn($key);
 
-            throw ValidationException::withMessages([
-                'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
-            ]);
+                $this->authService->logAuthenticationEvent(
+                    null,
+                    'login_rate_limited',
+                    'failure',
+                    $request,
+                    ['email' => $email, 'retry_after' => $seconds, 'key' => $key]
+                );
+
+                throw ValidationException::withMessages([
+                    'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
+                ]);
+            }
         }
 
         // Check if account is locked
@@ -136,7 +144,9 @@ class LoginController extends Controller
 
         // Validate credentials
         if (! $user || ! Hash::check($password, $user->password)) {
-            RateLimiter::hit($key, 60); // 1 minute decay
+            // Plan 05 T2 — hit BOTH keys so locking is symmetric
+            RateLimiter::hit($ipKey, 60);      // 1 min decay per IP
+            RateLimiter::hit($emailKey, 900);  // 15 min decay per email (stronger — attacker can't rotate IPs to brute one account)
 
             $this->authService->recordFailedAttempt(
                 $email,
@@ -219,8 +229,9 @@ class LoginController extends Controller
             ]);
         }
 
-        // Clear rate limiting on successful login
-        RateLimiter::clear($key);
+        // Clear BOTH rate-limit keys on successful login (Plan 05 T2)
+        RateLimiter::clear($ipKey);
+        RateLimiter::clear($emailKey);
 
         // Login user
         Auth::login($user, $remember);
