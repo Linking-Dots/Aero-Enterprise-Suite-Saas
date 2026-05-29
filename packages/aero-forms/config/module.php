@@ -34,6 +34,17 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Submodules (Plan 11 — declared surface aligned with implementation)
+    |--------------------------------------------------------------------------
+    |
+    | Phase 1 audit declared 3 components (forms, submissions, templates)
+    | but only 2 controllers ship (FormController, FormSubmissionController).
+    | Module description also mentioned "PDF generation" — no PDF service exists.
+    |
+    | Trimmed to the implemented surface; roadmap items captured below.
+    */
     'submodules' => [
         [
             'code' => 'forms',
@@ -68,19 +79,16 @@ return [
                         ['code' => 'export', 'name' => 'Export Submissions'],
                     ],
                 ],
-                [
-                    'code' => 'templates',
-                    'name' => 'Form Templates',
-                    'type' => 'page',
-                    'route' => '/form-templates',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Templates'],
-                        ['code' => 'create', 'name' => 'Create Template'],
-                        ['code' => 'update', 'name' => 'Update Template'],
-                        ['code' => 'delete', 'name' => 'Delete Template'],
-                    ],
-                ],
             ],
         ],
+    ],
+
+    /*
+    | Roadmap items intentionally NOT declared until they ship.
+    */
+    'roadmap' => [
+        'templates' => 'Reusable form blueprints — FormTemplate model + controller + migration to be built. Until then operators clone an existing form.',
+        'pdf_generation' => 'Render a submission to PDF (dompdf/mpdf). FormPdfService scaffold deferred — operators export submissions as CSV today.',
+        'conditional_logic' => 'Show/hide fields based on other-field values. The form schema accepts a "when" key today but FormBuilderService does not yet resolve it.',
     ],
 ];
