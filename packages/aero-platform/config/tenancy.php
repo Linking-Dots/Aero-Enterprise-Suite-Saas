@@ -154,8 +154,8 @@ return [
 
     'bootstrappers' => [
         \Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
-        // \Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class, // Disabled - file/database cache drivers don't support tagging
-        // \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Disabled - causing "Undefined array key 'local'" error
+        \Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class, // Re-enabled (Phase 0 T4) — REQUIRES CACHE_STORE=redis (tagging support)
+        // \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Re-enabled in Phase 0 T5 once 'filesystem' config block is added below
         \Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
     ],
 
