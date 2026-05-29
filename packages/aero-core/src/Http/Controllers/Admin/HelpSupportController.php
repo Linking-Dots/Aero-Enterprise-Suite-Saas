@@ -3,12 +3,19 @@
 namespace Aero\Core\Http\Controllers\Admin;
 
 use Aero\Core\Http\Controllers\Controller;
+use Aero\Core\Models\FeedbackItem;
+use Aero\Core\Models\SupportTicket;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Plan 02 T5 — Phase 1 audit found this controller queried support_tickets
+ * and feedback_items tables that didn't exist. Migrations 2026_05_29_000100
+ * and 2026_05_29_000101 create them; this controller now uses Eloquent
+ * (SupportTicket / FeedbackItem) instead of raw DB::table().
+ */
 class HelpSupportController extends Controller
 {
     public function index(): Response
@@ -28,10 +35,11 @@ class HelpSupportController extends Controller
 
     public function tickets(Request $request): Response
     {
-        $tickets = DB::table('support_tickets')
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
+        $tickets = SupportTicket::query()
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->with(['requester:id,name,email', 'assignee:id,name'])
             ->orderByDesc('created_at')
-            ->paginate(25)
+            ->paginate($this->boundedPerPage($request, 25, 100))
             ->withQueryString();
 
         return Inertia::render('Core/Help/Tickets', [
@@ -48,11 +56,9 @@ class HelpSupportController extends Controller
             'priority' => ['required', 'in:low,normal,high,urgent'],
         ]);
 
-        DB::table('support_tickets')->insert(array_merge($data, [
-            'status'     => 'open',
-            'user_id'    => $request->user()->id,
-            'created_at' => now(),
-            'updated_at' => now(),
+        SupportTicket::create(array_merge($data, [
+            'status'  => 'open',
+            'user_id' => $request->user()->id,
         ]));
 
         return back()->with('success', 'Support ticket submitted.');
@@ -74,14 +80,17 @@ class HelpSupportController extends Controller
 
     public function feedback(Request $request): Response
     {
-        $items = DB::table('feedback_items')
-            ->orderByDesc('votes')->orderByDesc('created_at')
-            ->paginate(25)
+        $items = FeedbackItem::query()
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->type, fn ($q, $t) => $q->where('type', $t))
+            ->with('user:id,name')
+            ->mostVoted()
+            ->paginate($this->boundedPerPage($request, 25, 100))
             ->withQueryString();
 
         return Inertia::render('Core/Help/Feedback', [
             'items'   => $items,
-            'filters' => $request->only('status'),
+            'filters' => $request->only(['status', 'type']),
         ]);
     }
 
@@ -93,12 +102,10 @@ class HelpSupportController extends Controller
             'type'        => ['required', 'in:feature,bug,improvement'],
         ]);
 
-        DB::table('feedback_items')->insert(array_merge($data, [
-            'user_id'    => $request->user()->id,
-            'votes'      => 0,
-            'status'     => 'open',
-            'created_at' => now(),
-            'updated_at' => now(),
+        FeedbackItem::create(array_merge($data, [
+            'user_id' => $request->user()->id,
+            'votes'   => 0,
+            'status'  => 'open',
         ]));
 
         return back()->with('success', 'Feedback submitted.');
@@ -106,7 +113,8 @@ class HelpSupportController extends Controller
 
     public function voteFeedback(int $id, Request $request): \Illuminate\Http\RedirectResponse
     {
-        DB::table('feedback_items')->where('id', $id)->increment('votes');
+        FeedbackItem::where('id', $id)->increment('votes');
+
         return back()->with('success', 'Vote recorded.');
     }
 
