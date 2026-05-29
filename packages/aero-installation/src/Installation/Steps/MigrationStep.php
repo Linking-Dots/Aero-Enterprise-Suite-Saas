@@ -52,6 +52,16 @@ class MigrationStep extends BaseInstallationStep
         $migrated = [];
         $output = [];
 
+        // Plan 09 T3 — refuse to destroy a dirty schema.
+        // The migrate:fresh calls below DROP ALL TABLES. If the operator
+        // accidentally re-runs the installer on a database that already
+        // has data (perhaps a production DB they pointed at by mistake),
+        // every table gets wiped. The pre-check below requires either:
+        //   (a) empty database (no application tables present), OR
+        //   (b) explicit migrations history (table was provisioned by us)
+        // — refuses anything else with a clear error.
+        $this->assertSchemaIsSafeToMigrate();
+
         if ($this->mode === 'saas') {
             // SaaS Mode: Run only platform package migrations
             $this->log('Running platform package migrations (SaaS mode)');
@@ -128,6 +138,79 @@ class MigrationStep extends BaseInstallationStep
             'by_tag' => $output,
             'total_migrated' => $migrated,
         ];
+    }
+
+    /**
+     * Pre-flight check: refuse to run destructive migrate:fresh on a dirty schema.
+     *
+     * Plan 09 T3 — Phase 1 audit data-loss prevention. Allowable states:
+     *   - Empty database (no application tables) → safe to install fresh
+     *   - Migrations table populated by US → safe to refresh
+     * Anything else (tables present without migrations history) means the
+     * operator pointed at an existing production DB by mistake. Throws.
+     *
+     * Override with FORCE_CLEAN_INSTALL=true env var when intentionally
+     * wiping a corrupt half-installed DB.
+     */
+    protected function assertSchemaIsSafeToMigrate(): void
+    {
+        // Operator escape hatch — only honored if explicitly set
+        if (env('FORCE_CLEAN_INSTALL', false)) {
+            $this->log('Skipping dirty-schema guard (FORCE_CLEAN_INSTALL=true)');
+            return;
+        }
+
+        try {
+            $driver = DB::connection()->getDriverName();
+            $tableCount = match ($driver) {
+                'mysql', 'mariadb' => (int) DB::scalar(
+                    'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ?',
+                    [DB::connection()->getDatabaseName()]
+                ),
+                'pgsql' => (int) DB::scalar(
+                    "SELECT COUNT(*) FROM pg_tables WHERE schemaname = current_schema()"
+                ),
+                'sqlite' => (int) DB::scalar(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+                ),
+                default => 0, // Unknown driver — let it proceed and hope
+            };
+
+            // Brand new DB → safe
+            if ($tableCount === 0) {
+                return;
+            }
+
+            $hasMigrationsTable = Schema::hasTable('migrations');
+
+            // Tables present but no migrations history → we did NOT create this schema
+            if (! $hasMigrationsTable) {
+                throw new \RuntimeException(
+                    "Refusing to run migrate:fresh: the target database contains {$tableCount} table(s) ".
+                    "but no `migrations` history table. This database was NOT provisioned by AEOS365. ".
+                    "Re-installing here would DESTROY {$tableCount} tables of unknown data. ".
+                    "Either point at an empty database OR set FORCE_CLEAN_INSTALL=true to override."
+                );
+            }
+
+            // migrations table exists — count rows to distinguish "tables empty" from "history present"
+            $migrationCount = DB::table('migrations')->count();
+            if ($migrationCount === 0 && $tableCount > 1) {
+                throw new \RuntimeException(
+                    "Refusing to run migrate:fresh: `migrations` table is empty but {$tableCount} other table(s) exist. ".
+                    "Schema is dirty (created by something other than our migrations). ".
+                    "Either drop the database manually OR set FORCE_CLEAN_INSTALL=true to override."
+                );
+            }
+
+            $this->log("Schema check passed: {$tableCount} tables, {$migrationCount} tracked migrations — safe to refresh");
+        } catch (\RuntimeException $e) {
+            // Re-throw our own guard exceptions
+            throw $e;
+        } catch (\Throwable $e) {
+            // Connection or query failure — let validate() / execute() surface the real error
+            $this->warn('Dirty-schema guard could not run: '.$e->getMessage());
+        }
     }
 
     /**
