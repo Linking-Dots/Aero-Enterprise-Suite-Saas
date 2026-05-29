@@ -144,6 +144,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Filesystem (Phase 0 T5)
+    |--------------------------------------------------------------------------
+    |
+    | Required by Stancl FilesystemTenancyBootstrapper. The disks listed here
+    | get a tenant-suffixed root at runtime; uploads to disk('local') and
+    | disk('public') become tenant-isolated paths under storage/app/.
+    |
+    | Operator must ensure config/filesystems.php defines 'local' and 'public'
+    | disks (Laravel defaults). For S3 deployments, also list 's3'.
+    |
+    */
+
+    'filesystem' => [
+        'suffix_base' => 'tenant',
+        'disks' => [
+            'local',
+            'public',
+            's3',
+        ],
+        'root_override' => [
+            'local'  => '%storage_path%/app/',
+            'public' => '%storage_path%/app/public/',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Bootstrappers
     |--------------------------------------------------------------------------
     |
@@ -155,7 +182,7 @@ return [
     'bootstrappers' => [
         \Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
         \Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class, // Re-enabled (Phase 0 T4) — REQUIRES CACHE_STORE=redis (tagging support)
-        // \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Re-enabled in Phase 0 T5 once 'filesystem' config block is added below
+        \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Re-enabled (Phase 0 T5) — requires 'filesystem' config block above
         \Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
     ],
 
