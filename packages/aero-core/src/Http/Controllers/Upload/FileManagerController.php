@@ -11,6 +11,35 @@ use Inertia\Response;
 class FileManagerController extends Controller
 {
     /**
+     * Disks the file manager is allowed to browse.
+     *
+     * Plan 02 T11 — closes the tenant filesystem leak. Phase 0 T5 already
+     * enabled Stancl FilesystemTenancyBootstrapper which auto-tenant-prefixes
+     * `local` and `public` paths. The remaining concern was that the
+     * controller accepted `?disk=$ANYTHING` from the query string — an
+     * attacker could pass `?disk=s3` (a non-tenant-aware disk) and read
+     * across boundaries. Whitelisting closes that.
+     *
+     * Operators wanting to expose additional disks must add them here.
+     */
+    private const ALLOWED_DISKS = ['local', 'public'];
+
+    /**
+     * Resolve the disk to use from request input, defaulting to public
+     * and rejecting unknown disks. Returns a Filesystem instance.
+     */
+    private function resolveDisk(Request $request): \Illuminate\Contracts\Filesystem\Filesystem
+    {
+        $disk = $request->get('disk', 'public');
+
+        if (! in_array($disk, self::ALLOWED_DISKS, true)) {
+            abort(422, "Disk '{$disk}' is not exposed to the file manager.");
+        }
+
+        return Storage::disk($disk);
+    }
+
+    /**
      * Display the file manager page.
      */
     public function index(): Response
@@ -26,11 +55,10 @@ class FileManagerController extends Controller
     public function browse(Request $request)
     {
         $path = $request->get('path', '');
-        $disk = $request->get('disk', 'public');
         $perPage = $request->get('per_page', 50);
 
         try {
-            $storage = Storage::disk($disk);
+            $storage = $this->resolveDisk($request);
 
             // Get directories and files
             $directories = collect($storage->directories($path))
@@ -78,15 +106,16 @@ class FileManagerController extends Controller
             'path' => 'nullable|string',
         ]);
 
-        $disk = $request->get('disk', 'public');
         $path = $request->get('path', 'uploads');
+        $disk = $request->get('disk', 'public');
+        // Plan 02 T11 — fail fast on disallowed disks before file upload work
+        $storage = $this->resolveDisk($request);
 
         try {
             $file = $request->file('file');
             $filename = $file->getClientOriginalName();
 
             // Ensure unique filename
-            $storage = Storage::disk($disk);
             $fullPath = $path.'/'.$filename;
 
             if ($storage->exists($fullPath)) {
@@ -121,10 +150,9 @@ class FileManagerController extends Controller
     public function destroy(Request $request, string $id)
     {
         $path = base64_decode($id);
-        $disk = $request->get('disk', 'public');
 
         try {
-            $storage = Storage::disk($disk);
+            $storage = $this->resolveDisk($request);
 
             if ($storage->exists($path)) {
                 // Check if it's a directory
@@ -155,10 +183,8 @@ class FileManagerController extends Controller
      */
     public function stats(Request $request)
     {
-        $disk = $request->get('disk', 'public');
-
         try {
-            $storage = Storage::disk($disk);
+            $storage = $this->resolveDisk($request);
 
             // Count files and calculate total size
             $totalSize = 0;
