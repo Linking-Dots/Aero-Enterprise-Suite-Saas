@@ -30,6 +30,22 @@ abstract class TenantModel extends Model
         return (string) $this->getKey();
     }
 
+    /**
+     * First-class accessor for the tenant_id attribute (Plan 01 T3).
+     *
+     * Many consumers reach for $model->tenant_id directly which works but
+     * gives no type signature and no central place to add fallback logic
+     * (e.g., derive from currently-active tenancy if column absent).
+     *
+     * Returns null when the attribute is unset — useful in test fixtures
+     * and standalone-mode rows where tenant_id is irrelevant.
+     */
+    public function getTenantId(): ?string
+    {
+        $value = $this->getAttribute('tenant_id');
+        return $value === null ? null : (string) $value;
+    }
+
     protected static function boot(): void
     {
         parent::boot();
