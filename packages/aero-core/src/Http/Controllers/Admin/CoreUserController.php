@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Http\Controllers\Admin;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\StoreUserRequest;
 use Aero\Core\Http\Requests\UpdateUserRequest;
@@ -16,9 +17,16 @@ use Spatie\Permission\Models\Role;
 
 class CoreUserController extends Controller
 {
+    /**
+     * Plan 02 T3 — Phase 1 audit found this controller had ZERO calls to
+     * AuditService despite mutating user lifecycle (create/update/delete/
+     * toggle/impersonate). Every mutating action now logs via the injected
+     * AuditService so compliance dashboards can reconstruct who did what.
+     */
     public function __construct(
         private UserService $userService,
         private UserInvitationService $invitationService,
+        private AuditServiceInterface $audit,
     ) {}
 
     public function index(Request $request): Response
@@ -41,7 +49,16 @@ class CoreUserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $this->userService->create($request->validated(), $request->user());
+        $user = $this->userService->create($request->validated(), $request->user());
+
+        $this->audit->log(
+            event: 'core.user.created',
+            action: 'created',
+            subject: $user instanceof User ? $user : null,
+            description: 'User account created',
+            after: $request->safe()->except(['password', 'password_confirmation']),
+            metadata: ['actor_id' => $request->user()?->id],
+        );
 
         return redirect()->route('core.users.index')->with('success', 'User created.');
     }
@@ -70,7 +87,19 @@ class CoreUserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
+        $before = $user->only(['name', 'email', 'is_active']);
+
         $this->userService->update($user, $request->validated(), $request->user());
+
+        $this->audit->log(
+            event: 'core.user.updated',
+            action: 'updated',
+            subject: $user->fresh(),
+            description: 'User account updated',
+            before: $before,
+            after: $request->safe()->except(['password', 'password_confirmation']),
+            metadata: ['actor_id' => $request->user()?->id],
+        );
 
         return redirect()->route('core.users.show', $user)->with('success', 'User updated.');
     }
@@ -78,14 +107,38 @@ class CoreUserController extends Controller
     public function destroy(User $user, Request $request): RedirectResponse
     {
         abort_if($user->id === $request->user()->id, 403, 'Cannot delete yourself.');
+
+        $snapshot = $user->only(['id', 'name', 'email']);
+
         $this->userService->delete($user, $request->user());
+
+        $this->audit->log(
+            event: 'core.user.deleted',
+            action: 'deleted',
+            subject: null,
+            description: "User '{$snapshot['email']}' deleted",
+            before: $snapshot,
+            metadata: ['actor_id' => $request->user()?->id, 'target_user_id' => $snapshot['id']],
+        );
 
         return redirect()->route('core.users.index')->with('success', 'User deleted.');
     }
 
     public function toggleStatus(User $user, Request $request): RedirectResponse
     {
+        $previousStatus = $user->is_active;
+
         $this->userService->toggleStatus($user, $request->user());
+
+        $this->audit->log(
+            event: 'core.user.status_toggled',
+            action: $previousStatus ? 'deactivated' : 'activated',
+            subject: $user->fresh(),
+            description: "User '{$user->email}' " . ($previousStatus ? 'deactivated' : 'activated'),
+            before: ['is_active' => $previousStatus],
+            after: ['is_active' => ! $previousStatus],
+            metadata: ['actor_id' => $request->user()?->id],
+        );
 
         return back()->with('success', 'User status updated.');
     }
@@ -93,7 +146,16 @@ class CoreUserController extends Controller
     public function bulkDelete(Request $request): RedirectResponse
     {
         $request->validate(['ids' => ['required', 'array']]);
-        $count = $this->userService->bulkDelete($request->input('ids', []), $request->user());
+        $ids = $request->input('ids', []);
+        $count = $this->userService->bulkDelete($ids, $request->user());
+
+        $this->audit->log(
+            event: 'core.user.bulk_deleted',
+            action: 'bulk_deleted',
+            subject: null,
+            description: "{$count} users deleted in bulk",
+            metadata: ['actor_id' => $request->user()?->id, 'target_user_ids' => $ids, 'count' => $count],
+        );
 
         return back()->with('success', "{$count} users deleted.");
     }
@@ -103,13 +165,42 @@ class CoreUserController extends Controller
         $request->validate(['ids' => ['required', 'array'], 'roles' => ['required', 'array']]);
         $count = $this->userService->bulkAssignRoles($request->ids, $request->roles, $request->user());
 
+        $this->audit->log(
+            event: 'core.user.bulk_roles_assigned',
+            action: 'bulk_roles_assigned',
+            subject: null,
+            description: "Roles assigned to {$count} users",
+            metadata: [
+                'actor_id' => $request->user()?->id,
+                'target_user_ids' => $request->ids,
+                'roles' => $request->roles,
+                'count' => $count,
+            ],
+        );
+
         return back()->with('success', "Roles assigned to {$count} users.");
     }
 
     public function impersonate(User $user, Request $request): RedirectResponse
     {
         abort_if($user->hasRole('super-admin'), 403, 'Cannot impersonate super-admin.');
-        session(['impersonating' => $user->id, 'impersonator' => $request->user()->id]);
+
+        $impersonator = $request->user();
+
+        $this->audit->log(
+            event: 'core.user.impersonate_started',
+            action: 'impersonate_started',
+            subject: $user,
+            description: "Admin '{$impersonator?->email}' started impersonating '{$user->email}'",
+            metadata: [
+                'actor_id' => $impersonator?->id,
+                'target_user_id' => $user->id,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ],
+        );
+
+        session(['impersonating' => $user->id, 'impersonator' => $impersonator->id]);
         auth()->login($user);
 
         return redirect()->route('core.dashboard')->with('info', "Impersonating {$user->name}.");
@@ -118,10 +209,22 @@ class CoreUserController extends Controller
     public function stopImpersonating(Request $request): RedirectResponse
     {
         $impersonatorId = session('impersonator');
+        $impersonatedId = session('impersonating');
         session()->forget(['impersonating', 'impersonator']);
         if ($impersonatorId) {
             auth()->loginUsingId($impersonatorId);
         }
+
+        $this->audit->log(
+            event: 'core.user.impersonate_stopped',
+            action: 'impersonate_stopped',
+            subject: null,
+            description: 'Impersonation ended',
+            metadata: [
+                'actor_id' => $impersonatorId,
+                'target_user_id' => $impersonatedId,
+            ],
+        );
 
         return redirect()->route('core.dashboard');
     }
