@@ -208,6 +208,10 @@ class ProvisionTenant implements ShouldQueue
 
             // Re-throw to trigger the failed() method
             throw $e;
+        } finally {
+            // Plan 03 T11 — always restore the cPanel config so the next job
+            // on the same queue worker doesn't inherit this tenant's BYOC creds.
+            $this->restoreCpanelConfig();
         }
     }
 
@@ -308,11 +312,27 @@ class ProvisionTenant implements ShouldQueue
     }
 
     /**
+     * Snapshot of the cPanel config that was in place BEFORE this job overlaid
+     * BYOC credentials. Captured by injectCpanelConfigFromDb() and restored by
+     * restoreCpanelConfig() — see Plan 03 T11.
+     *
+     * @var array<string, mixed>|null
+     */
+    protected ?array $originalCpanelConfig = null;
+
+    /**
      * Inject cPanel credentials from platform_settings into the runtime config
      * so that CpanelDatabaseManager::callCpanelApi() picks them up automatically.
      *
      * DB credentials take priority over .env values.
      * If a field is empty in the DB the existing config/env value is kept.
+     *
+     * Plan 03 T11 — Phase 1 audit X-4: this overlay was process-global. A
+     * queue worker processing multiple tenants per run would carry tenant A's
+     * cPanel credentials into tenant B's provisioning unless overridden. This
+     * method now captures the pre-overlay state into $originalCpanelConfig;
+     * restoreCpanelConfig() in the finally branch puts it back so each job
+     * leaves the runtime config exactly as it found it.
      */
     protected function injectCpanelConfigFromDb(): void
     {
@@ -332,6 +352,17 @@ class ProvisionTenant implements ShouldQueue
             'cpanel_db_user' => 'tenancy.cpanel.db_user',
         ];
 
+        // Plan 03 T11 — snapshot ORIGINAL values so we can restore them
+        // when the job ends. Only snapshot once per job run (subsequent
+        // injectCpanelConfigFromDb() calls during the same job keep the
+        // original baseline).
+        if ($this->originalCpanelConfig === null) {
+            $this->originalCpanelConfig = [];
+            foreach ($map as $configKey) {
+                $this->originalCpanelConfig[$configKey] = config($configKey);
+            }
+        }
+
         foreach ($map as $dbKey => $configKey) {
             if (! empty($settings[$dbKey])) {
                 config([$configKey => $settings[$dbKey]]);
@@ -342,6 +373,27 @@ class ProvisionTenant implements ShouldQueue
             'host' => config('tenancy.cpanel.host'),
             'user' => config('tenancy.cpanel.username'),
         ]);
+    }
+
+    /**
+     * Restore cPanel config to the state it was in before this job started.
+     *
+     * Plan 03 T11 — closes the cross-job BYOC credential leak. Called from
+     * both the success path and the failed() callback so that whether the
+     * job completes, throws, or is force-killed by Horizon, the next job
+     * picked up by the same worker starts with a clean slate.
+     */
+    protected function restoreCpanelConfig(): void
+    {
+        if ($this->originalCpanelConfig === null) {
+            return;
+        }
+
+        foreach ($this->originalCpanelConfig as $configKey => $originalValue) {
+            config([$configKey => $originalValue]);
+        }
+
+        $this->originalCpanelConfig = null;
     }
 
     /**
@@ -1498,6 +1550,11 @@ class ProvisionTenant implements ShouldQueue
                     'error' => $markError->getMessage(),
                 ], 'critical');
             }
+        } finally {
+            // Plan 03 T11 — rollbackDatabase() above re-overlays cPanel
+            // credentials via injectCpanelConfigFromDb(); make sure they
+            // don't leak into the next job on this worker.
+            $this->restoreCpanelConfig();
         }
     }
 
