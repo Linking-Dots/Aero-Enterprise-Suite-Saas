@@ -49,8 +49,23 @@ class ImpersonationController extends Controller
         tenancy()->initialize($tenantModel);
 
         try {
-            // Find super admin first, fall back to the oldest user
-            $user = User::whereHas('roles', fn ($q) => $q->where('name', 'Super Administrator'))
+            // Plan 05 T4 — find super admin via the canonical config list
+            // (same source as CheckRoleModuleAccess middleware uses), NOT
+            // via hardcoded 'Super Administrator' string match. Phase 1
+            // audit flagged the single-name lookup as brittle: if the
+            // tenant renamed their super-admin role or used a different
+            // canonical name ('tenant_super_administrator', 'super-admin',
+            // 'Tenant Super Administrator'), the lookup would silently
+            // fall through to "oldest user" — risk of impersonating a
+            // non-admin and leaking those privileges.
+            $superAdminRoleNames = config('hrmac.super_admin_roles.web', [
+                'Tenant Super Administrator',
+                'tenant_super_administrator',
+                'Super Administrator',
+                'super-admin',
+            ]);
+
+            $user = User::whereHas('roles', fn ($q) => $q->whereIn('name', $superAdminRoleNames))
                 ->orderBy('id')
                 ->first()
                 ?? User::orderBy('id')->first();
