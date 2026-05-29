@@ -256,7 +256,22 @@ class AuthEventSubscriber
     }
 
     /**
-     * Log activity using Spatie Activity Log.
+     * Log auth activity through the canonical AuditService.
+     *
+     * Plan 05 (aero-auth) Task 5 — Phase 1 audit found three competing audit
+     * channels in the auth package:
+     *   1. AuditService::log() — used by LoginController logout
+     *   2. authService.logAuthenticationEvent() — writes to authentication_events table
+     *   3. Spatie activity()->log() — used here in AuthEventSubscriber
+     *   4. Log::channel('auth')->info() — also used here
+     *
+     * Channels 1 & 2 are canonical (structured + queryable). Channel 3 (Spatie)
+     * is being phased out across the codebase. This refactor swaps Spatie for
+     * AuditService so EVERY auth event lands in the same place compliance
+     * dashboards query.
+     *
+     * The Log::channel('auth') calls in individual handlers stay — they're for
+     * SIEM tailing / short-term ops dashboards, not for compliance.
      */
     protected function logActivity($user, string $event, string $description, array $properties = []): void
     {
@@ -265,17 +280,20 @@ class AuthEventSubscriber
         }
 
         try {
-            activity()
-                ->causedBy($user)
-                ->performedOn($user)
-                ->withProperties(array_merge($properties, [
+            app(\Aero\Contracts\AuditServiceInterface::class)->log(
+                event: 'auth.'.$event,
+                action: $event,
+                subject: $user,
+                description: $description,
+                metadata: array_merge($properties, [
                     'event_type' => $event,
                     'timestamp' => now()->toIso8601String(),
-                ]))
-                ->event($event)
-                ->log($description);
-        } catch (\Exception $e) {
-            Log::warning('Failed to log auth activity', [
+                ]),
+            );
+        } catch (\Throwable $e) {
+            // Audit failure must not break the auth flow — fall back to the
+            // log channel so the signal isn't lost entirely.
+            Log::warning('Failed to log auth activity via AuditService', [
                 'error' => $e->getMessage(),
                 'event' => $event,
                 'user_id' => $user->id,
