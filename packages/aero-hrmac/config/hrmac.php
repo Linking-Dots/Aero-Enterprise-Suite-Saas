@@ -75,6 +75,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Enforcement Toggles (Plan 04 Task 3)
+    |--------------------------------------------------------------------------
+    |
+    | enforce_is_active — when true (default), RoleModuleAccessService filters
+    | Module / SubModule / Component / Action lookups by is_active=true.
+    | A row with is_active=false denies access even to users who hold the
+    | role grant. Set false ONLY for admin debugging or emergency unbypass.
+    |
+    | The actual is_active filtering lives in RoleModuleAccessService — see
+    | userCanAccessModule(), userCanAccessSubModule(), userCanAccessAction().
+    |
+    */
+
+    'enforce_is_active' => env('HRMAC_ENFORCE_IS_ACTIVE', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Landing Routes
     |--------------------------------------------------------------------------
     |
