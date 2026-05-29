@@ -1579,8 +1579,12 @@ class ProvisionTenant implements ShouldQueue
                 'updated_at' => now(),
             ];
 
-            // Store in central database audit_logs table
-            DB::connection('mysql')->table('audit_logs')->insert($auditData);
+            // Plan 03 T5 — write through the central connection (NOT hardcoded
+            // 'mysql'). Standalone deployments and Postgres SaaS clusters use
+            // different connection names; the canonical 'central' alias is
+            // declared in config/database.php and always points to the right
+            // place regardless of driver / host name.
+            DB::connection('central')->table('audit_logs')->insert($auditData);
         } catch (Throwable $e) {
             // Don't fail provisioning if audit logging fails
             Log::warning('Failed to store provisioning audit event', [
