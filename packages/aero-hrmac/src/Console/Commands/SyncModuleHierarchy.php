@@ -57,10 +57,27 @@ class SyncModuleHierarchy extends Command
         $this->moduleDiscovery = $moduleDiscovery;
     }
 
+    /**
+     * Advisory lock key for hrmac:sync-modules.
+     *
+     * Plan 04 T5 — prevents concurrent runs from racing on
+     * updateOrCreate() and producing duplicate (module_id, code) rows.
+     */
+    protected const SYNC_LOCK_KEY = 'aero:hrmac:sync-modules';
+
     public function handle(): int
     {
         $this->info('🚀 HRMAC: Starting Module Hierarchy Sync...');
         $this->newLine();
+
+        // Plan 04 T5 — acquire advisory lock to serialize concurrent runs.
+        // On MySQL this uses GET_LOCK; sqlite (tests) gracefully no-ops.
+        if (! $this->acquireSyncLock()) {
+            $this->warn('⚠️  Another hrmac:sync-modules run is in progress. Aborting to avoid duplicate rows.');
+            return self::FAILURE;
+        }
+
+        try {
 
         // Schema validation
         if (! $this->validateSchema()) {
@@ -141,6 +158,48 @@ class SyncModuleHierarchy extends Command
             $this->error('Stack trace: '.$e->getTraceAsString());
 
             return self::FAILURE;
+        }
+
+        } finally {
+            // Plan 04 T5 — release advisory lock no matter what
+            $this->releaseSyncLock();
+        }
+    }
+
+    /**
+     * Try to acquire the advisory sync lock.
+     * Returns true if acquired or if the driver doesn't support advisory locks
+     * (sqlite, test harness) — those drivers are inherently single-process so
+     * the race we guard against can't happen.
+     */
+    protected function acquireSyncLock(): bool
+    {
+        try {
+            $driver = DB::connection()->getDriverName();
+            if ($driver !== 'mysql' && $driver !== 'mariadb') {
+                return true; // sqlite/pgsql — no advisory lock needed in test/dev
+            }
+
+            $result = DB::selectOne('SELECT GET_LOCK(?, 30) AS ok', [self::SYNC_LOCK_KEY]);
+            return (bool) ($result->ok ?? false);
+        } catch (\Throwable) {
+            return true; // Don't block the sync if lock subsystem is unavailable
+        }
+    }
+
+    /**
+     * Release the advisory sync lock. Safe to call even if not held.
+     */
+    protected function releaseSyncLock(): void
+    {
+        try {
+            $driver = DB::connection()->getDriverName();
+            if ($driver !== 'mysql' && $driver !== 'mariadb') {
+                return;
+            }
+            DB::statement('SELECT RELEASE_LOCK(?)', [self::SYNC_LOCK_KEY]);
+        } catch (\Throwable) {
+            // best-effort release
         }
     }
 
