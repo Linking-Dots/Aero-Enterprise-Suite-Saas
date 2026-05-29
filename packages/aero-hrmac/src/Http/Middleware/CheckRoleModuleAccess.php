@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\HRMAC\Http\Middleware;
 
 use Aero\Contracts\RoleModuleAccessInterface;
+use Aero\HRMAC\Services\HrmacAuditService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +43,8 @@ class CheckRoleModuleAccess
     ];
 
     public function __construct(
-        protected RoleModuleAccessInterface $roleModuleAccessService
+        protected RoleModuleAccessInterface $roleModuleAccessService,
+        protected HrmacAuditService $audit,
     ) {}
 
     /**
@@ -83,6 +85,10 @@ class CheckRoleModuleAccess
         $hasAccess = $this->checkAccess($user, $moduleCode, $subModuleCode, $componentCode, $actionCode);
 
         if (! $hasAccess) {
+            // Plan 04 T1 — persist denial to hrmac_audit_log (queryable)
+            $this->audit->logDenial($request, $user, $moduleCode, $subModuleCode, $componentCode, $actionCode);
+
+            // Keep the Log channel write for short-term ops dashboards / SIEM tailing
             Log::warning('Role module access denied', [
                 'user_id' => $user->id,
                 'path' => $path,
