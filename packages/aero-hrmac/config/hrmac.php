@@ -1,6 +1,10 @@
 <?php
 
 declare(strict_types=1);
+use Aero\Core\Models\User;
+use Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess;
+use Aero\HRMAC\Http\Middleware\SmartLandingRedirect;
+use Aero\HRMAC\Models\Role;
 
 return [
     /*
@@ -14,8 +18,8 @@ return [
     */
 
     'models' => [
-        'role' => \Aero\HRMAC\Models\Role::class,
-        'user' => \Aero\Core\Models\User::class,
+        'role' => Role::class,
+        'user' => User::class,
     ],
 
     /*
@@ -176,8 +180,8 @@ return [
     */
 
     'middleware' => [
-        'role.access' => \Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess::class,
-        'smart.landing' => \Aero\HRMAC\Http\Middleware\SmartLandingRedirect::class,
+        'role.access' => CheckRoleModuleAccess::class,
+        'smart.landing' => SmartLandingRedirect::class,
     ],
 
     /*
@@ -185,21 +189,25 @@ return [
     | Module Discovery Configuration
     |--------------------------------------------------------------------------
     |
-    | Configure paths for module discovery. The ModuleDiscoveryService
-    | scans these paths for config/module.php files.
+    | Paths the ModuleDiscoveryService scans for config/module.php files.
+    | Production discovery is vendor-only (Audit D13):
+    |   - vendor/aero/{pkg}/config/module.php — composer-installed Aero packages.
+    |     Standalone deployments use composer-path symlinks which resolve this
+    |     glob to the actual packages/aero-* source directories transparently.
+    |   - modules/{pkg}/config/module.php — operator-installed add-ons (standalone
+    |     mode primarily; SaaS rarely uses this).
+    |
+    | Plan 04 T4 previously included packages/aero-* glob for monorepo dev
+    | convenience but Audit D13 reversed: a modules:sync run from a production
+    | host must never scan a packages/ directory that does not exist in
+    | deployed artifacts.
     |
     */
 
     'discovery' => [
-        // Paths to scan for module.php config files
-        // {path} is relative to application base path
         'paths' => [
             'vendor/aero/*/config/module.php',
             'modules/*/config/module.php',
-            // Plan 04 T4 — monorepo dev path (composer-path autoload bridges
-            // this back to vendor/aero/* at runtime, but discovery scans the
-            // source so docs/audits also work without `composer install`).
-            'packages/aero-*/config/module.php',
         ],
 
         // Whether to validate module configs during discovery
