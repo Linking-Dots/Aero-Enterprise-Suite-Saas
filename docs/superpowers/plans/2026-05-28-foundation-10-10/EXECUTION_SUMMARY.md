@@ -58,16 +58,22 @@ T7 (Horizon install) and T8 (Sentry install) explicitly deferred — operator ru
 | **11 forms** (`8f86ed11b`) | *(no critical tag — declared surface aligned)* | Trimmed 3 declared components → 2 to match `FormController` + `FormSubmissionController`. `templates`, `pdf_generation`, `conditional_logic` moved to `config['roadmap']` |
 | **12 workflow** (`683e294bf`) | `aero-workflow-10-10-critical-tasks` | **🚨 Package-boundary violation closed** — polymorphic `workflowable_id`/`workflowable_type` added to `workflow_instances` with backfill from legacy `leaves.workflow_instance_id`. `escalate` action deferred to roadmap pending `WorkflowSlaMonitorJob` |
 
-### Plans 13-16 — stub packages (operator decision pending)
+### Plans 13-16 — stub packages (REMOVED via Branch A on 2026-05-30)
 
-| Plan | Package | Status | Plan recommendation |
-|---|---|---|---|
-| 13 | aero-automation | STUB (2 files) | Branch A (remove) — overlaps with aero-workflow + Laravel scheduler |
-| 14 | aero-booking | STUB (2 files) | Branch A (remove) — evaluate Cal.com/Calendly integration first |
-| 15 | aero-time-tracking | STUB (2 files) | Branch A (remove) — likely redundant with aero-hrm Attendance |
-| 16 | aero-mobile | STUB (2 files) | Branch A (remove) — aero-ui is already responsive; PWA optional |
+| Plan | Package | Commit |
+|---|---|---|
+| 13 | aero-automation | `c14e9f8c4` |
+| 14 | aero-booking | `4a3122c4d` |
+| 15 | aero-time-tracking | `98978187e` |
+| 16 | aero-mobile | `19a002f40` |
 
-These four were never implemented. Operator decides Branch A (delete) or Branch B (build, ~8-12 days each).
+All four were 3-file scaffolds (composer.json + config/module.php + ServiceProvider) with NO controllers/models/migrations/routes/tests. Verified zero composer-require references across the 3 repos and zero source-code imports of their namespaces before deletion. Plan documents 13-16 deleted with the packages — git history preserves the scaffolds at the prior commit if a future maintainer wants to re-bootstrap.
+
+Plan READMEs noted the overlap with already-shipped surface that made them redundant:
+  - automation → Laravel Scheduler + aero-workflow + aero-notifications/Webhook
+  - booking → Cal.com/Calendly integration (1d vs 10d build)
+  - time-tracking → aero-hrm Attendance + Overtime + Leaves
+  - mobile → aero-ui already responsive; FCM lives in aero-notifications push_engine submodule
 
 ---
 
@@ -98,9 +104,6 @@ Each plan README documents the deferred tasks. Headlines:
 - **06 ui**: the 346 inline-style migration; Vitest + Playwright test infrastructure; HRMAC frontend adoption push for sensitive pages
 - **07/08/09**: per-plan READMEs
 
-### Stub packages (operator branch decision)
-`automation`, `booking`, `time-tracking`, `mobile` — each plan has Branch A / Branch B alternatives. Recommendation: Branch A unless a real customer use case has materialized.
-
 ### HRM
 Explicitly deferred per the original scope decision — separate dedicated push when foundation is solid.
 
@@ -130,7 +133,8 @@ Every commit is independently revertable. Tests are RED only in two intentional 
 
 Ordered by impact / effort:
 
-1. **Plans 13-16 decision** — pick Branch A (remove) or Branch B (build) for the 4 stubs. Branch A is ~4 quick commits.
-2. **Plan 06 T2** — the 346-file inline-style migration. Best executed by subagent-driven mode, one `Pages/{module}/` directory per subagent.
-3. **HRM** — deferred from the original push. Open the next major plan when the foundation tags are stable in production.
-4. **Non-critical follow-ups** — pick per-package as customer-facing pain materializes; the critical-tasks tags mean none of these are urgent.
+1. **Plan 06 T2** — the 346-file inline-style migration. Best executed by subagent-driven mode, one `Pages/{module}/` directory per subagent.
+2. **HRM** — deferred from the original push. Open the next major plan when the foundation tags are stable in production.
+3. **Non-critical follow-ups** — pick per-package as customer-facing pain materializes; the critical-tasks tags mean none of these are urgent.
+
+**Stub packages removed 2026-05-30** — see updated "Plans 13-16" section above.
