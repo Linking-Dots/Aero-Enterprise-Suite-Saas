@@ -108,7 +108,7 @@ function SecurityHero() {
         <VStack gap={4}>
           <p className="aeos-pub-label">Legal</p>
           <h1 className="aeos-pub-h1">Security Policy</h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             How aeos365 protects your data — from encryption at rest to incident response,
             penetration testing, and vulnerability disclosure.
           </p>
@@ -172,7 +172,7 @@ function SecurityCTA() {
   return (
     <Section size="md" bg="surface">
       <Container>
-        <HStack gap={4} align="center" style={{ justifyContent: 'space-between' }}>
+        <HStack gap={4} align="center" className="aeos-justify-between">
           <VStack gap={2}>
             <p className="aeos-pub-label">Security questions?</p>
             <Text tone="secondary">

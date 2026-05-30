@@ -134,10 +134,10 @@ function FeaturesCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Ready to explore?</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               See every module in action.
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 520 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
               Book a personalized walkthrough with our team, or jump straight into the
               interactive demo and explore the platform yourself.
             </p>

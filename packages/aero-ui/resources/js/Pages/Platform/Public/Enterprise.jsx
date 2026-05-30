@@ -225,7 +225,7 @@ function EnterpriseFAQSection() {
           title="Common enterprise questions, answered."
           align="center"
         />
-        <VStack gap={0} style={{ maxWidth: 760, margin: '0 auto' }}>
+        <VStack gap={0} className="aeos-content-extra-wide">
           <Accordion items={ENTERPRISE_FAQ} />
         </VStack>
       </Container>
@@ -241,10 +241,10 @@ function EnterpriseCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Get started</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Ready to transform your enterprise operations?
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 520 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
               Our enterprise team is standing by to understand your requirements and
               help you design the right deployment model.
             </p>

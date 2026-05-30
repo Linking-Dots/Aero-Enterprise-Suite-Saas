@@ -78,7 +78,7 @@ export function SidebarShell({
               }}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              <Bars3Icon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+              <Bars3Icon className="aeos-icon-sm" />
             </button>
             {topbar}
             <span className="aeos-shell-flex-spacer" />
@@ -160,7 +160,7 @@ export function FloatingShell({
               onClick={toggle}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              <Bars3Icon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+              <Bars3Icon className="aeos-icon-sm" />
             </button>
           </div>
         )}

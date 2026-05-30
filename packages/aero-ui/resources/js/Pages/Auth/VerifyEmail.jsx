@@ -28,7 +28,7 @@ export default function VerifyEmail({ status }) {
           Resend verification email
         </Button>
 
-        <Text tone="secondary" size="sm" style={{ textAlign: 'center' }}>
+        <Text tone="secondary" size="sm" className="aeos-text-center">
           <Link href={route('logout')} method="post" as="button" className="al-link">
             Sign out
           </Link>

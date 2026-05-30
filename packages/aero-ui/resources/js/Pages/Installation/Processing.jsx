@@ -71,7 +71,7 @@ export default function Processing({ mode }) {
   });
 
   return (
-    <VStack gap={5} align="center" style={{ textAlign: 'center' }}>
+    <VStack gap={5} align="center" className="aeos-text-center">
       <Box style={{ position: 'relative', width: 80, height: 80 }}>
         <Box style={{
           position: 'absolute', inset: 0, borderRadius: '50%',

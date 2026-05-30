@@ -166,7 +166,7 @@ function SearchResultCard({ result }) {
               <Badge intent="neutral" size="sm">{result.type}</Badge>
             </HStack>
             {result.subtitle && (
-              <Text size="sm" tone="muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Text size="sm" tone="muted" className="aeos-truncate">
                 {result.subtitle}
               </Text>
             )}

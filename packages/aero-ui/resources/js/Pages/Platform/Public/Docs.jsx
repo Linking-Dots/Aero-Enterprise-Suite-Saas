@@ -59,7 +59,7 @@ function DocsHero() {
             Everything you need to{' '}
             <span className="aeos-pub-gradient-text">build with aeos365.</span>
           </h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             Guides, API references, quick-start tutorials, and integration recipes —
             organized by module so you can go from onboarding to production in hours, not days.
           </p>
@@ -112,7 +112,7 @@ function DocCategories() {
                 <Icon name={cat.icon} size={24} className={`aeos-pub-accent-text--${cat.accent}`} />
                 <h3 className="aeos-pub-h3">{cat.title}</h3>
                 <Text tone="secondary">{cat.desc}</Text>
-                <HStack gap={2} align="center" style={{ justifyContent: 'space-between' }}>
+                <HStack gap={2} align="center" className="aeos-justify-between">
                   <Text tone="tertiary" size="xs">{cat.articles} articles</Text>
                   <a href="#" className={`aeos-pub-accent-text--${cat.accent}`}>→</a>
                 </HStack>
@@ -162,7 +162,7 @@ function PopularArticles() {
         <VStack gap={2} style={{ maxWidth: 720, margin: '0 auto' }}>
           {POPULAR_ARTICLES.map((art) => (
             <Card key={art.title}>
-              <HStack gap={4} align="center" style={{ justifyContent: 'space-between' }}>
+              <HStack gap={4} align="center" className="aeos-justify-between">
                 <VStack gap={1}>
                   <Text>{art.title}</Text>
                   <HStack gap={2}>
@@ -215,10 +215,10 @@ function DocsCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Ready to build?</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Start your workspace today.
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 480 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow-2">
               Full documentation access comes with every account — no extra plan needed.
               Sign up and explore the platform in minutes.
             </p>

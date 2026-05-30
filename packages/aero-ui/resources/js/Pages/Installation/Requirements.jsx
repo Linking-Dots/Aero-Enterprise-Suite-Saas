@@ -34,8 +34,8 @@ function CheckRow({ label, passed, optional, note }) {
 
 function Section({ title, children }) {
   return (
-    <div style={{ marginBottom: '1.5rem' }}>
-      <p className="aeos-eyebrow aeos-eyebrow-primary" style={{ marginBottom: 8 }}>{title}</p>
+    <div className="aeos-mb-3">
+      <p className="aeos-eyebrow aeos-eyebrow-primary aeos-mb-1">{title}</p>
       <div style={{ border: '1px solid var(--aeos-divider)', borderRadius: 'var(--aeos-r-lg)', overflow: 'hidden' }}>
         {children}
       </div>
@@ -70,8 +70,8 @@ export default function Requirements({ mode, checks: initialChecks, canProceed: 
       <p className="il-desc">Checking that your server meets the minimum requirements to run aeos365.</p>
 
       {canProceed
-        ? <Alert intent="success" title="All requirements met" style={{ marginBottom: '1.5rem' }}>Your server is ready to proceed with the installation.</Alert>
-        : <Alert intent="danger"  title="Requirements not met" style={{ marginBottom: '1.5rem' }}>Fix the failing items below, then click Re-check.</Alert>
+        ? <Alert intent="success" title="All requirements met" className="aeos-mb-3">Your server is ready to proceed with the installation.</Alert>
+        : <Alert intent="danger"  title="Requirements not met" className="aeos-mb-3">Fix the failing items below, then click Re-check.</Alert>
       }
 
       {php && (

@@ -1,144 +1,165 @@
-import { Link, router } from '@inertiajs/react';
+import { useState } from 'react';
+import { router } from '@inertiajs/react';
 import {
   IndexPageLayout,
-  Card,
-  CardContent,
+  DataTable,
   Button,
   Badge,
-  EmptyState,
+  Pagination,
   HStack,
-  VStack,
-  Text,
+  Text, Mono,
+  Input,
+  Select,
+  useToast,
   useHRMAC,
 } from '@aero/ui';
-import {
-  PlusIcon,
-  PencilIcon,
-  QueueListIcon,
-  RocketLaunchIcon,
-  EyeSlashIcon,
-  TrashIcon,
-  DocumentIcon,
-  CalendarIcon,
-  ClipboardDocumentListIcon,
-} from '@heroicons/react/24/outline';
 import App from '../../App.jsx';
 
-export default function FormsIndex({ forms }) {
+export default function FormsIndex({ forms, filters = {} }) {
+  const toast     = useToast();
   const canCreate = useHRMAC('forms.forms.create');
+  const canEdit   = useHRMAC('forms.forms.edit');
   const canDelete = useHRMAC('forms.forms.delete');
-  const canPublish = useHRMAC('forms.forms.publish');
+
+  const [search, setSearch] = useState(filters.search || '');
+  const [status, setStatus] = useState(filters.status || '');
+
+  const applyFilters = () => {
+    router.get(route('core.forms.index'), { search, status }, {
+      preserveState: true, preserveScroll: true, only: ['forms', 'filters'],
+    });
+  };
+
+  const resetFilters = () => {
+    setSearch(''); setStatus('');
+    router.get(route('core.forms.index'), {}, {
+      preserveState: true, preserveScroll: true, only: ['forms', 'filters'],
+    });
+  };
+
+  const handleDelete = (form) => {
+    if (!confirm(`Delete form "${form.title}"?`)) return;
+    router.delete(route('core.forms.destroy', form.id), {
+      onSuccess: () => toast.success('Form deleted.'),
+      onError:   () => toast.error('Failed to delete form.'),
+    });
+  };
+
+  const statusBadgeIntent = (s) => {
+    const map = { published: 'success', draft: 'neutral', archived: 'warning' };
+    return map[s] ?? 'neutral';
+  };
+
+  const columns = [
+    {
+      key: 'title', label: 'Title', width: '25%',
+      render: (row) => <Text size="sm">{row.title}</Text>,
+    },
+    {
+      key: 'slug', label: 'Slug', width: '18%',
+      render: (row) => <Mono size="sm" tone="secondary">{row.slug}</Mono>,
+    },
+    {
+      key: 'status', label: 'Status', width: '12%',
+      render: (row) => (
+        <Badge intent={statusBadgeIntent(row.status)}>
+          {row.status || 'draft'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'submissions_count', label: 'Submissions', width: '13%',
+      render: (row) => row.submissions_count ?? 0,
+    },
+    {
+      key: 'created_at', label: 'Created', width: '12%',
+      render: (row) => new Date(row.created_at).toLocaleDateString(),
+    },
+    {
+      key: 'actions', label: '', width: '20%', align: 'right',
+      render: (row) => (
+        <HStack gap={2} justify="end">
+          <Button
+            intent="ghost" size="sm" leftIcon="queueList"
+            onClick={() => router.get(route('core.forms.submissions.index', row.id))}
+          >
+            Submissions
+          </Button>
+          {canEdit && (
+            <Button
+              intent="soft" size="sm" leftIcon="pencil"
+              onClick={() => router.get(route('core.forms.edit', row.id))}
+            >
+              Edit
+            </Button>
+          )}
+          {canDelete && (
+            <Button intent="danger" size="sm" onClick={() => handleDelete(row)}>
+              Delete
+            </Button>
+          )}
+        </HStack>
+      ),
+    },
+  ];
 
   return (
     <IndexPageLayout
       title="Forms"
+      breadcrumb={[
+        { label: 'Dashboard', href: route('core.dashboard') },
+        { label: 'Forms' },
+      ]}
+      description="Manage forms and view submissions."
       actions={
         canCreate && (
-          <Link href={route('core.forms.create')}>
-            <Button intent="primary" leftIcon={<PlusIcon className="w-4 h-4" />}>
-              Create Form
-            </Button>
-          </Link>
+          <Button intent="primary" leftIcon="plus" onClick={() => router.get(route('core.forms.create'))}>
+            Create Form
+          </Button>
         )
       }
-    >
-      {forms.length === 0 ? (
-        <EmptyState
-          icon={<ClipboardDocumentListIcon className="w-12 h-12" />}
-          title="No forms yet"
-          description="Create your first form to get started."
-          action={
-            canCreate && (
-              <Link href={route('core.forms.create')}>
-                <Button intent="primary">Create Form</Button>
-              </Link>
-            )
-          }
+      filters={
+        <HStack gap={3} align="end" wrap>
+          <Input
+            placeholder="Search forms…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && applyFilters()}
+            leftIcon="search"
+          />
+          <Select
+            value={status}
+            onChange={e => setStatus(e.target.value)}
+            options={[
+              { value: '',          label: 'All Statuses' },
+              { value: 'draft',     label: 'Draft' },
+              { value: 'published', label: 'Published' },
+              { value: 'archived',  label: 'Archived' },
+            ]}
+          />
+          <Button intent="primary" onClick={applyFilters}>Filter</Button>
+          <Button intent="ghost"   onClick={resetFilters}>Reset</Button>
+        </HStack>
+      }
+      table={
+        <DataTable
+          columns={columns}
+          rows={forms?.data || forms || []}
+          empty="No forms found."
         />
-      ) : (
-        <VStack gap={3}>
-          {forms.map((form) => (
-            <Card key={form.id} interactive>
-              <CardContent>
-                <HStack gap={3} align="center" justify="space-between">
-                  <VStack gap={1}>
-                    <HStack gap={2} align="center">
-                      <Text as="h3">{form.name}</Text>
-                      {form.is_published && (
-                        <Badge intent="success">Published</Badge>
-                      )}
-                    </HStack>
-                    {form.description && (
-                      <Text tone="secondary">{form.description}</Text>
-                    )}
-                    <HStack gap={4}>
-                      <HStack gap={1}>
-                        <DocumentIcon className="w-3 h-3" />
-                        <Text tone="tertiary">{form.submission_count || 0} submissions</Text>
-                      </HStack>
-                      {form.expires_at && (
-                        <HStack gap={1}>
-                          <CalendarIcon className="w-3 h-3" />
-                          <Text tone="tertiary">
-                            Expires: {new Date(form.expires_at).toLocaleDateString()}
-                          </Text>
-                        </HStack>
-                      )}
-                    </HStack>
-                  </VStack>
-                  <HStack gap={1}>
-                    <Link href={route('core.forms.edit', form.id)}>
-                      <Button intent="ghost" size="sm" leftIcon={<PencilIcon className="w-3.5 h-3.5" />}>
-                        Edit
-                      </Button>
-                    </Link>
-                    <Link href={route('core.forms.submissions.index', form.id)}>
-                      <Button intent="ghost" size="sm" leftIcon={<QueueListIcon className="w-3.5 h-3.5" />}>
-                        Submissions
-                      </Button>
-                    </Link>
-                    {canPublish && !form.is_published && (
-                      <Button
-                        intent="ghost"
-                        size="sm"
-                        leftIcon={<RocketLaunchIcon className="w-3.5 h-3.5" />}
-                        onClick={() => router.post(route('core.forms.publish', form.id))}
-                      >
-                        Publish
-                      </Button>
-                    )}
-                    {canPublish && form.is_published && (
-                      <Button
-                        intent="ghost"
-                        size="sm"
-                        leftIcon={<EyeSlashIcon className="w-3.5 h-3.5" />}
-                        onClick={() => router.post(route('core.forms.unpublish', form.id))}
-                      >
-                        Unpublish
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        intent="ghost"
-                        size="sm"
-                        leftIcon={<TrashIcon className="w-3.5 h-3.5" />}
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to delete "${form.name}"?`)) {
-                            router.delete(route('core.forms.destroy', form.id));
-                          }
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </HStack>
-                </HStack>
-              </CardContent>
-            </Card>
-          ))}
-        </VStack>
-      )}
-    </IndexPageLayout>
+      }
+      pagination={
+        forms?.last_page > 1 && (
+          <Pagination
+            page={forms.current_page}
+            total={forms.last_page}
+            onChange={page => router.get(route('core.forms.index'), { page, search, status }, {
+              preserveState: true, preserveScroll: true, only: ['forms'],
+            })}
+          />
+        )
+      }
+    />
   );
 }
 

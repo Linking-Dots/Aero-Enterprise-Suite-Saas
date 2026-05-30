@@ -91,7 +91,7 @@ function ComparisonTable() {
           title="What's included in every plan."
           align="center"
         />
-        <div style={{ overflowX: 'auto' }}>
+        <div className="aeos-overflow-x-auto">
           <table className="aeos-pub-comparison-table">
             <thead>
               <tr>
@@ -142,7 +142,7 @@ function PricingFAQ() {
           title="Common questions about pricing."
           align="center"
         />
-        <VStack gap={0} style={{ maxWidth: 760, margin: '0 auto' }}>
+        <VStack gap={0} className="aeos-content-extra-wide">
           <Accordion items={items} />
         </VStack>
       </Container>
@@ -158,11 +158,11 @@ function PricingCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Start today</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Not sure which plan is right?{' '}
               <span className="aeos-pub-gradient-text">Talk to us.</span>
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 520 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
               Our team can help you pick the right plan and walk you through the platform.
               No pressure, no sales scripts — just honest answers.
             </p>

@@ -67,7 +67,7 @@ export default function ActivityIndex({ title, activities, stats, filters }) {
       <VStack gap={4}>
         {/* Stats Cards */}
         <HStack gap={4}>
-          <Card style={{ flex: 1 }}>
+          <Card className="aeos-flex-1">
             <CardContent>
               <VStack gap={2}>
                 <Text tone="secondary" size="sm">Total Activities</Text>
@@ -75,7 +75,7 @@ export default function ActivityIndex({ title, activities, stats, filters }) {
               </VStack>
             </CardContent>
           </Card>
-          <Card style={{ flex: 1 }}>
+          <Card className="aeos-flex-1">
             <CardContent>
               <VStack gap={2}>
                 <Text tone="secondary" size="sm">Today</Text>
@@ -83,7 +83,7 @@ export default function ActivityIndex({ title, activities, stats, filters }) {
               </VStack>
             </CardContent>
           </Card>
-          <Card style={{ flex: 1 }}>
+          <Card className="aeos-flex-1">
             <CardContent>
               <VStack gap={2}>
                 <Text tone="secondary" size="sm">This Week</Text>
@@ -101,7 +101,7 @@ export default function ActivityIndex({ title, activities, stats, filters }) {
                 placeholder="Search activities..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ flex: 1 }}
+                className="aeos-flex-1"
               />
               <TextField
                 label="Module"

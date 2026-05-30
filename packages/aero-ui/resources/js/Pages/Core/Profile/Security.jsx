@@ -34,7 +34,7 @@ export default function ProfileSecurity({ user }) {
           <CardContent>
             <HStack gap={4} align="center">
               <Avatar name={user.name} src={user.avatar_url} size="lg" />
-              <VStack gap={0} style={{ flex: 1 }}>
+              <VStack gap={0} className="aeos-flex-1">
                 <Text size="lg" weight="semibold">{user.name}</Text>
                 <Mono tone="tertiary">{user.email}</Mono>
               </VStack>

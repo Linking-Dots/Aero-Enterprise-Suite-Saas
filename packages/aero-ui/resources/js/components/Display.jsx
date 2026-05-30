@@ -316,7 +316,7 @@ export function Tag({
           onClick={onRemove}
           aria-label="Remove"
         >
-          <XMarkIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+          <XMarkIcon className="aeos-icon-xs" />
         </button>
       )}
     </span>
@@ -438,11 +438,11 @@ const ALERT_DEFAULT_ICON = {
 };
 
 const ALERT_ICON_MAP = {
-  sparkles: <SparklesIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  info: <InformationCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  checkCircle: <CheckCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  alertTriangle: <ExclamationTriangleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  alertCircle: <ExclamationCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  sparkles: <SparklesIcon className="aeos-icon-sm" />,
+  info: <InformationCircleIcon className="aeos-icon-sm" />,
+  checkCircle: <CheckCircleIcon className="aeos-icon-sm" />,
+  alertTriangle: <ExclamationTriangleIcon className="aeos-icon-sm" />,
+  alertCircle: <ExclamationCircleIcon className="aeos-icon-sm" />,
 };
 
 /**
@@ -487,7 +487,7 @@ export function Alert({
           onClick={onClose}
           aria-label="Dismiss alert"
         >
-          <XMarkIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+          <XMarkIcon className="aeos-icon-sm" />
         </button>
       )}
     </div>

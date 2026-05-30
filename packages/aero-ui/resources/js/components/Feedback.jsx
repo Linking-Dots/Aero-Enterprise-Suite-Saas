@@ -16,10 +16,10 @@ export function useToast() {
 
 /* ── Toast component ──────────────────────────────────────────── */
 const TOAST_ICON = {
-  info: <SparklesIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  success: <CheckCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  warning: <ExclamationTriangleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
-  danger: <ExclamationCircleIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />,
+  info: <SparklesIcon className="aeos-icon-sm" />,
+  success: <CheckCircleIcon className="aeos-icon-sm" />,
+  warning: <ExclamationTriangleIcon className="aeos-icon-sm" />,
+  danger: <ExclamationCircleIcon className="aeos-icon-sm" />,
 };
 
 export function Toast({ intent = 'info', title, icon, onClose, children, className }) {
@@ -45,7 +45,7 @@ export function Toast({ intent = 'info', title, icon, onClose, children, classNa
       </div>
       {onClose && (
         <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Dismiss">
-          <XMarkIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+          <XMarkIcon className="aeos-icon-xs" />
         </button>
       )}
     </div>

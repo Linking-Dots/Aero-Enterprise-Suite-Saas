@@ -125,7 +125,7 @@ export default function SearchIndexManagement({ indexStatus, searchableModels, s
                       }}
                     >
                       <Icon name="document" size={20} />
-                      <div style={{ flex: 1 }}>
+                      <div className="aeos-flex-1">
                         <Text>{model.name}</Text>
                         <Text size="sm" tone="secondary">
                           {model.document_count || 0} documents indexed

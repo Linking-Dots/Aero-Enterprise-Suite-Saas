@@ -5,95 +5,87 @@ import {
   DataTable,
   Button,
   Badge,
-  HStack,
-  VStack,
+  Pagination,
+  HStack, VStack,
   Text,
   Input,
   Select,
-  Modal,
-  Checkbox,
   Field,
+  Toggle,
   Textarea,
+  Modal,
+  useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
-import { useHRMAC } from '../../../hooks/useHRMAC';
 
 const FIELD_TYPES = [
-  { value: 'text', label: 'Text' },
-  { value: 'number', label: 'Number' },
-  { value: 'email', label: 'Email' },
-  { value: 'date', label: 'Date' },
-  { value: 'datetime', label: 'Date Time' },
-  { value: 'boolean', label: 'Yes/No' },
-  { value: 'select', label: 'Dropdown' },
-  { value: 'multi_select', label: 'Multi Select' },
-  { value: 'textarea', label: 'Text Area' },
-  { value: 'file', label: 'File Upload' },
-  { value: 'currency', label: 'Currency' },
+  { value: 'text',      label: 'Text' },
+  { value: 'number',    label: 'Number' },
+  { value: 'email',     label: 'Email' },
+  { value: 'date',      label: 'Date' },
+  { value: 'select',    label: 'Select / Dropdown' },
+  { value: 'checkbox',  label: 'Checkbox' },
+  { value: 'textarea',  label: 'Textarea' },
 ];
 
 const ENTITY_TYPES = [
-  { value: 'users', label: 'Users' },
-  { value: 'employees', label: 'Employees' },
+  { value: 'employees',   label: 'Employees' },
   { value: 'departments', label: 'Departments' },
-  { value: 'leaves', label: 'Leaves' },
-  { value: 'contacts', label: 'Contacts' },
-  { value: 'opportunities', label: 'Opportunities' },
+  { value: 'users',       label: 'Users' },
+  { value: 'contacts',    label: 'Contacts' },
+  { value: 'projects',    label: 'Projects' },
 ];
 
 const emptyField = {
-  name: '',
-  entity_type: 'users',
-  field_type: 'text',
-  options: '',
-  validation_rules: '',
+  label:       '',
+  field_type:  'text',
   is_required: false,
-  is_unique: false,
-  is_searchable: true,
-  is_filterable: true,
-  sort_order: 0,
+  sort_order:  0,
   placeholder: '',
   description: '',
-  is_active: true,
+  options:     '',
 };
 
-export default function CustomFieldsIndex({ fields, filters = {} }) {
+export default function CustomFieldsIndex({ entity_types = [], selected_entity = '', fields = [] }) {
+  const toast     = useToast();
   const canCreate = useHRMAC('custom_fields.definitions.create');
   const canUpdate = useHRMAC('custom_fields.definitions.update');
   const canDelete = useHRMAC('custom_fields.definitions.delete');
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const [entityFilter, setEntityFilter] = useState(selected_entity || '');
+  const [showCreate,   setShowCreate]   = useState(false);
+  const [editing,      setEditing]      = useState(null);
 
-  const createForm = useForm({ ...emptyField });
-  const editForm = useForm({ ...emptyField });
+  const createForm = useForm({ ...emptyField, entity_type: entityFilter || '' });
+  const editForm   = useForm({ ...emptyField, entity_type: '' });
+
+  const applyEntityFilter = (val) => {
+    setEntityFilter(val);
+    router.get(route('custom-fields.index'), { entity_type: val }, {
+      preserveState: true, preserveScroll: true, only: ['fields', 'selected_entity'],
+    });
+  };
 
   const handleCreate = (e) => {
     e.preventDefault();
     createForm.post(route('custom-fields.store'), {
-      onSuccess: () => {
-        setShowCreate(false);
-        createForm.reset();
-      },
+      onSuccess: () => { setShowCreate(false); createForm.reset(); toast.success('Field created.'); },
+      onError:   () => toast.error('Failed to create field.'),
     });
   };
 
   const openEdit = (field) => {
     setEditing(field);
     editForm.setData({
-      name: field.name ?? '',
-      entity_type: field.entity_type ?? 'users',
-      field_type: field.field_type ?? 'text',
-      options: field.options ? JSON.stringify(field.options) : '',
-      validation_rules: field.validation_rules ? JSON.stringify(field.validation_rules) : '',
+      label:       field.label       ?? field.name ?? '',
+      field_type:  field.field_type  ?? 'text',
       is_required: !!field.is_required,
-      is_unique: !!field.is_unique,
-      is_searchable: !!field.is_searchable,
-      is_filterable: !!field.is_filterable,
-      sort_order: field.sort_order ?? 0,
+      sort_order:  field.sort_order  ?? 0,
       placeholder: field.placeholder ?? '',
       description: field.description ?? '',
-      is_active: field.is_active ?? true,
+      options:     field.options ? (typeof field.options === 'string' ? field.options : JSON.stringify(field.options)) : '',
+      entity_type: field.entity_type ?? '',
     });
   };
 
@@ -101,72 +93,49 @@ export default function CustomFieldsIndex({ fields, filters = {} }) {
     e.preventDefault();
     if (!editing) return;
     editForm.put(route('custom-fields.update', editing.id), {
-      onSuccess: () => setEditing(null),
+      onSuccess: () => { setEditing(null); toast.success('Field updated.'); },
+      onError:   () => toast.error('Failed to update field.'),
     });
   };
 
   const handleDelete = (field) => {
-    if (!confirm(`Delete custom field "${field.name}"?`)) return;
-    router.delete(route('custom-fields.destroy', field.id));
-  };
-
-  const handleFilter = (key, value) => {
-    router.get(route('custom-fields.index'), { ...filters, [key]: value }, {
-      preserveState: true,
-      preserveScroll: true,
+    if (!confirm(`Delete field "${field.label || field.name}"?`)) return;
+    router.delete(route('custom-fields.destroy', field.id), {
+      onSuccess: () => toast.success('Field deleted.'),
+      onError:   () => toast.error('Failed to delete field.'),
     });
   };
 
-  const rows = fields?.data ?? fields ?? [];
-
   const columns = [
     {
-      key: 'name',
-      label: 'Name',
-      render: (row) => (
-        <VStack gap={0}>
-          <Text weight="semibold">{row.name}</Text>
-          {row.code && <Text size="sm" tone="secondary">{row.code}</Text>}
-        </VStack>
-      ),
+      key: 'label', label: 'Label', width: '25%',
+      render: (row) => <Text size="sm">{row.label || row.name}</Text>,
     },
     {
-      key: 'entity_type',
-      label: 'Entity',
-      render: (row) => <Badge variant="secondary">{row.entity_type}</Badge>,
+      key: 'field_type', label: 'Type', width: '15%',
+      render: (row) => <Badge intent="neutral">{row.field_type_label || row.field_type}</Badge>,
     },
     {
-      key: 'field_type',
-      label: 'Type',
-      render: (row) => <Badge variant="info">{row.field_type_label || row.field_type}</Badge>,
+      key: 'is_required', label: 'Required', width: '12%',
+      render: (row) => row.is_required
+        ? <Badge intent="warning">Required</Badge>
+        : <Text tone="secondary" size="sm">—</Text>,
     },
     {
-      key: 'is_required',
-      label: 'Required',
-      render: (row) => row.is_required ? <Badge variant="warning">Required</Badge> : '—',
+      key: 'sort_order', label: 'Order', width: '10%',
+      render: (row) => row.sort_order ?? 0,
     },
     {
-      key: 'is_active',
-      label: 'Status',
-      render: (row) => (
-        <Badge variant={row.is_active ? 'success' : 'warning'}>
-          {row.is_active ? 'Active' : 'Inactive'}
-        </Badge>
-      ),
-    },
-    {
-      key: 'actions',
-      label: '',
-      align: 'right',
+      key: 'actions', label: '', width: '22%', align: 'right',
       render: (row) => (
         <HStack gap={2} justify="end">
           {canUpdate && (
-            <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+            <Button intent="soft" size="sm" leftIcon="pencil" onClick={() => openEdit(row)}>
               Edit
             </Button>
           )}
           {canDelete && (
-            <Button variant="danger" size="sm" onClick={() => handleDelete(row)}>
+            <Button intent="danger" size="sm" onClick={() => handleDelete(row)}>
               Delete
             </Button>
           )}
@@ -175,173 +144,132 @@ export default function CustomFieldsIndex({ fields, filters = {} }) {
     },
   ];
 
+  const entityOptions = [
+    { value: '', label: 'All Entity Types' },
+    ...(entity_types.length
+      ? entity_types.map(et => typeof et === 'string' ? { value: et, label: et } : et)
+      : ENTITY_TYPES
+    ),
+  ];
+
+  const fieldRows = Array.isArray(fields) ? fields : (fields?.data ?? []);
+
   const renderFieldForm = (form) => (
     <VStack gap={4}>
-      <Field label="Field Name" required>
+      <Field label="Label" htmlFor="cf-label" error={form.errors.label} required>
         <Input
-          value={form.data.name}
-          onChange={(e) => form.setData('name', e.target.value)}
-          placeholder="e.g., Blood Type"
-          error={form.errors.name}
+          id="cf-label"
+          value={form.data.label}
+          onChange={e => form.setData('label', e.target.value)}
+          placeholder="e.g. Blood Type"
+          error={!!form.errors.label}
         />
       </Field>
-
       <HStack gap={3}>
-        <Field label="Entity Type" required>
+        <Field label="Field Type" htmlFor="cf-type" error={form.errors.field_type} required>
           <Select
-            value={form.data.entity_type}
-            onChange={(e) => form.setData('entity_type', e.target.value)}
-            options={ENTITY_TYPES}
-          />
-        </Field>
-        <Field label="Field Type" required>
-          <Select
+            id="cf-type"
             value={form.data.field_type}
-            onChange={(e) => form.setData('field_type', e.target.value)}
+            onChange={e => form.setData('field_type', e.target.value)}
             options={FIELD_TYPES}
           />
         </Field>
-        <Field label="Sort Order">
+        <Field label="Sort Order" htmlFor="cf-order" error={form.errors.sort_order}>
           <Input
+            id="cf-order"
             type="number"
             value={form.data.sort_order}
-            onChange={(e) => form.setData('sort_order', parseInt(e.target.value) || 0)}
+            onChange={e => form.setData('sort_order', parseInt(e.target.value) || 0)}
           />
         </Field>
       </HStack>
-
-      <Field label="Placeholder">
+      <Field label="Placeholder" htmlFor="cf-placeholder" error={form.errors.placeholder}>
         <Input
+          id="cf-placeholder"
           value={form.data.placeholder}
-          onChange={(e) => form.setData('placeholder', e.target.value)}
+          onChange={e => form.setData('placeholder', e.target.value)}
+          placeholder="Optional placeholder text"
         />
       </Field>
-
-      <Field label="Description">
-        <Textarea
-          value={form.data.description}
-          onChange={(e) => form.setData('description', e.target.value)}
-          rows={2}
-        />
-      </Field>
-
-      {(form.data.field_type === 'select' || form.data.field_type === 'multi_select') && (
-        <Field label="Options (JSON array)">
+      {(form.data.field_type === 'select') && (
+        <Field label="Options (one per line or JSON array)" htmlFor="cf-options" error={form.errors.options}>
           <Textarea
+            id="cf-options"
             value={form.data.options}
-            onChange={(e) => form.setData('options', e.target.value)}
-            placeholder='["Option 1", "Option 2", "Option 3"]'
-            rows={2}
+            onChange={e => form.setData('options', e.target.value)}
+            placeholder='["Option A","Option B"]'
+            rows={3}
           />
         </Field>
       )}
-
-      <Field label="Validation Rules (JSON)">
-        <Textarea
-          value={form.data.validation_rules}
-          onChange={(e) => form.setData('validation_rules', e.target.value)}
-          placeholder='{"min": 1, "max": 100}'
-          rows={2}
-        />
-      </Field>
-
-      <HStack gap={4}>
-        <Checkbox
-          checked={form.data.is_required}
-          onChange={(checked) => form.setData('is_required', checked)}
-          label="Required"
-        />
-        <Checkbox
-          checked={form.data.is_unique}
-          onChange={(checked) => form.setData('is_unique', checked)}
-          label="Unique"
-        />
-        <Checkbox
-          checked={form.data.is_searchable}
-          onChange={(checked) => form.setData('is_searchable', checked)}
-          label="Searchable"
-        />
-        <Checkbox
-          checked={form.data.is_filterable}
-          onChange={(checked) => form.setData('is_filterable', checked)}
-          label="Filterable"
-        />
-        <Checkbox
-          checked={form.data.is_active}
-          onChange={(checked) => form.setData('is_active', checked)}
-          label="Active"
-        />
-      </HStack>
+      <Toggle
+        label="Required"
+        checked={form.data.is_required}
+        onChange={checked => form.setData('is_required', checked)}
+      />
     </VStack>
   );
 
   return (
-    <IndexPageLayout
-      title="Custom Fields"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Custom Fields' },
-      ]}
-      description="Define custom field definitions for your entities."
-      actions={
-        canCreate && (
-          <Button variant="primary" onClick={() => setShowCreate(true)}>
-            Add Field
-          </Button>
-        )
-      }
-    >
-      <VStack gap={4}>
-        <HStack gap={3} align="end">
-          <Input
-            placeholder="Search fields..."
-            value={filters.search || ''}
-            onChange={(e) => handleFilter('search', e.target.value)}
-            className="flex-1"
+    <>
+      <IndexPageLayout
+        title="Custom Fields"
+        breadcrumb={[
+          { label: 'Dashboard', href: route('core.dashboard') },
+          { label: 'Custom Fields' },
+        ]}
+        description="Define custom fields for entities across the platform."
+        actions={
+          canCreate && (
+            <Button intent="primary" leftIcon="plus" onClick={() => setShowCreate(true)}>
+              Add Field
+            </Button>
+          )
+        }
+        filters={
+          <HStack gap={3} align="end" wrap>
+            <Select
+              value={entityFilter}
+              onChange={e => applyEntityFilter(e.target.value)}
+              options={entityOptions}
+            />
+          </HStack>
+        }
+        table={
+          <DataTable
+            columns={columns}
+            rows={fieldRows}
+            empty="No custom fields defined."
           />
-          <Select
-            value={filters.entity_type || ''}
-            onChange={(e) => handleFilter('entity_type', e.target.value)}
-            options={[
-              { value: '', label: 'All Entity Types' },
-              ...ENTITY_TYPES,
-            ]}
-          />
-        </HStack>
-
-        <DataTable
-          columns={columns}
-          rows={rows}
-          empty="No custom fields defined."
-        />
-
-        {fields?.last_page > 1 && (
-          <div className="flex justify-center">
-            <Text size="sm">
-              Page {fields.current_page} of {fields.last_page}
-            </Text>
-          </div>
-        )}
-      </VStack>
+        }
+        pagination={
+          fields?.last_page > 1 && (
+            <Pagination
+              page={fields.current_page}
+              total={fields.last_page}
+              onChange={page => router.get(route('custom-fields.index'), { page, entity_type: entityFilter }, {
+                preserveState: true, preserveScroll: true, only: ['fields'],
+              })}
+            />
+          )
+        }
+      />
 
       {/* Create Modal */}
       <Modal
         open={showCreate}
         onClose={() => setShowCreate(false)}
         title="Add Custom Field"
-        size="lg"
         footer={
-          <>
-            <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleCreate} disabled={createForm.processing}>
-              {createForm.processing ? 'Creating...' : 'Create Field'}
+          <HStack gap={2} justify="end">
+            <Button intent="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button intent="primary" loading={createForm.processing} onClick={handleCreate}>
+              Create Field
             </Button>
-          </>
+          </HStack>
         }
       >
-        <form onSubmit={handleCreate}>
-          {renderFieldForm(createForm)}
-        </form>
+        <form onSubmit={handleCreate}>{renderFieldForm(createForm)}</form>
       </Modal>
 
       {/* Edit Modal */}
@@ -349,22 +277,19 @@ export default function CustomFieldsIndex({ fields, filters = {} }) {
         open={!!editing}
         onClose={() => setEditing(null)}
         title="Edit Custom Field"
-        size="lg"
         footer={
-          <>
-            <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
-            <Button variant="primary" onClick={handleEdit} disabled={editForm.processing}>
-              {editForm.processing ? 'Updating...' : 'Update Field'}
+          <HStack gap={2} justify="end">
+            <Button intent="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button intent="primary" loading={editForm.processing} onClick={handleEdit}>
+              Update Field
             </Button>
-          </>
+          </HStack>
         }
       >
-        <form onSubmit={handleEdit}>
-          {renderFieldForm(editForm)}
-        </form>
+        <form onSubmit={handleEdit}>{renderFieldForm(editForm)}</form>
       </Modal>
-    </IndexPageLayout>
+    </>
   );
 }
 
-CustomFieldsIndex.layout = (page) => <App title="Custom Fields">{page}</App>;
+CustomFieldsIndex.layout = page => <App title="Custom Fields">{page}</App>;

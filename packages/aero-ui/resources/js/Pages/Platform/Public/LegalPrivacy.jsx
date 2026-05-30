@@ -104,7 +104,7 @@ function PrivacyHero() {
         <VStack gap={4}>
           <p className="aeos-pub-label">Legal</p>
           <h1 className="aeos-pub-h1">Privacy Policy</h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             We take your privacy seriously. This policy describes what data we collect,
             how we use it, and what rights you have over your information.
           </p>
@@ -158,7 +158,7 @@ function PrivacyCTA() {
   return (
     <Section size="md" bg="surface">
       <Container>
-        <HStack gap={4} align="center" style={{ justifyContent: 'space-between' }}>
+        <HStack gap={4} align="center" className="aeos-justify-between">
           <VStack gap={2}>
             <p className="aeos-pub-label">Privacy questions?</p>
             <Text tone="secondary">

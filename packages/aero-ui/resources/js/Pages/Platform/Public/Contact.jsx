@@ -33,7 +33,7 @@ function ContactHero() {
             We would love to hear{' '}
             <span className="aeos-pub-gradient-text">from you.</span>
           </h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             Whether you are evaluating aeos365, need technical assistance, or want
             to explore a partnership — our team is ready to help. Choose the channel
             that fits your need best.
@@ -218,7 +218,7 @@ function ContactFormSection() {
                         style={{ width: '100%', resize: 'vertical', minHeight: '120px' }}
                       />
                     </Field>
-                    <HStack gap={3} align="center" style={{ justifyContent: 'space-between' }}>
+                    <HStack gap={3} align="center" className="aeos-justify-between">
                       <Text tone="tertiary" size="xs">
                         By submitting you agree to our{' '}
                         <a href="/legal/privacy" className="aeos-pub-accent-text--cyan">Privacy Policy</a>.
@@ -248,7 +248,7 @@ function ContactFAQ() {
           title="Common questions about contacting us."
           align="center"
         />
-        <VStack gap={0} style={{ maxWidth: 760, margin: '0 auto' }}>
+        <VStack gap={0} className="aeos-content-extra-wide">
           <Accordion items={CONTACT_FAQ} />
         </VStack>
       </Container>

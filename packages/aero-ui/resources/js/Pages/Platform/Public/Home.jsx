@@ -71,7 +71,7 @@ function TrustBar() {
   return (
     <Section size="sm">
       <Container>
-        <p className="aeos-pub-label" style={{ textAlign: 'center' }}>
+        <p className="aeos-pub-label aeos-text-center">
           Trusted by forward-thinking enterprises
         </p>
       </Container>
@@ -189,7 +189,7 @@ function CTASection() {
         <Card>
           <VStack gap={5} align="center">
             <p className="aeos-pub-label">Get started today</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Ready to unify your enterprise?{' '}
               <span className="aeos-pub-gradient-text">Start in minutes.</span>
             </h2>

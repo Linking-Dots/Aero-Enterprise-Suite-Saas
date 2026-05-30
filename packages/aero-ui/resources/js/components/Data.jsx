@@ -34,11 +34,11 @@ export function KPI({ label, value, delta, deltaTrend, sparkline, loading }) {
       {delta && (
         <div className={cx('aeos-kpi-delta', deltaTrend ?? 'neutral')}>
           {deltaTrend === 'up' ? (
-            <ArrowUpIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+            <ArrowUpIcon className="aeos-icon-xs" />
           ) : deltaTrend === 'down' ? (
-            <ArrowDownIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+            <ArrowDownIcon className="aeos-icon-xs" />
           ) : (
-            <TrendingUpIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+            <TrendingUpIcon className="aeos-icon-xs" />
           )}
           {delta}
         </div>
@@ -196,7 +196,7 @@ export function DataTable({
 }
 
 /** EmptyState — centred placeholder for empty content areas. */
-export function EmptyState({ icon = <InboxIcon style={{ width: 'var(--aeos-icon-xl)', height: 'var(--aeos-icon-xl)' }} />, title, description, action, className }) {
+export function EmptyState({ icon = <InboxIcon className="aeos-icon-xl" />, title, description, action, className }) {
   return (
     <div className={cx('aeos-empty-state', className)}>
       <div className="aeos-empty-icon">

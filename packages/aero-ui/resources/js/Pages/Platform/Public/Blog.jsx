@@ -39,7 +39,7 @@ function BlogHero() {
             Field notes for teams scaling{' '}
             <span className="aeos-pub-gradient-text">faster than their playbook.</span>
           </h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             Long-form strategy, practical templates, and real stories from operators
             building resilient organizations with aeos365.
           </p>
@@ -155,10 +155,10 @@ function Newsletter() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Stay in the loop</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               New articles, straight to your inbox.
             </h2>
-            <p className="aeos-pub-body" style={{ textAlign: 'center' }}>
+            <p className="aeos-pub-body aeos-text-center">
               No noise — only high-signal pieces on ERP, operations, and the platform.
             </p>
             {done ? (
