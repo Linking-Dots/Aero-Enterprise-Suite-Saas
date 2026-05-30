@@ -90,6 +90,7 @@ return [
                         ['code' => 'suspend', 'name' => 'Suspend Tenant'],
                         ['code' => 'activate', 'name' => 'Activate Tenant'],
                         ['code' => 'impersonate', 'name' => 'Impersonate Tenant'],
+                        ['code' => 'forget', 'name' => 'GDPR Right to be Forgotten'],
                     ],
                 ],
                 [
