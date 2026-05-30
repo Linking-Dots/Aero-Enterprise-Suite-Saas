@@ -549,6 +549,20 @@ class HandleInertiaRequests extends Middleware
      */
     protected function getSubscribedModuleCodes(): array
     {
+        // Axis C C2 — cache per tenant; this runs on EVERY authenticated page load.
+        // Invalidated on ProductSubscriptionChanged (see ResyncTenantModuleCatalog).
+        $tenantId = (function_exists('tenant') && tenant()) ? tenant()->getTenantKey() : 'none';
+
+        return Cache::remember("tenant_subscribed_modules:{$tenantId}", 600, function (): array {
+            return $this->computeSubscribedModuleCodes();
+        });
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function computeSubscribedModuleCodes(): array
+    {
         try {
             // Always include core modules
             $modules = ['core', 'platform'];

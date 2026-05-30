@@ -9,6 +9,7 @@ use Aero\Platform\Models\Tenant;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -42,6 +43,11 @@ class ResyncTenantModuleCatalog implements ShouldQueue
         if (! $tenant) {
             return;
         }
+
+        // Axis C C2 — bust the per-tenant subscribed-modules cache read on every
+        // page load by HandleInertiaRequests, so the new catalog is reflected
+        // immediately rather than after the 600s TTL.
+        Cache::forget("tenant_subscribed_modules:{$tenant->getTenantKey()}");
 
         try {
             tenancy()->initialize($tenant);
