@@ -28,6 +28,7 @@ use Aero\Platform\Console\Commands\ExpireGracePeriods;
 use Aero\Platform\Console\Commands\ProcessPendingSubscriptionChanges;
 use Aero\Platform\Console\Commands\ProcessSubscriptionRenewals;
 use Aero\Platform\Console\Commands\PurgeExpiredTenants;
+use Aero\Platform\Console\Commands\PurgeSuspendedRoleAccess;
 use Aero\Platform\Console\Commands\SetupApplication;
 use Aero\Platform\Console\Commands\TenantCreate;
 use Aero\Platform\Console\Commands\TenantFlush;
@@ -59,7 +60,9 @@ use Aero\Platform\Http\Middleware\SetDatabaseConnectionFromDomain;
 use Aero\Platform\Http\Middleware\SmartLandingRedirect;
 use Aero\Platform\Http\Middleware\TenantSuperAdmin;
 use Aero\Platform\Http\Middleware\TrustHosts;
+use Aero\Platform\Listeners\ReactivateRoleAccessOnResubscribe;
 use Aero\Platform\Listeners\ResyncTenantModuleCatalog;
+use Aero\Platform\Listeners\SuspendUnsubscribedRoleAccess;
 use Aero\Platform\Listeners\TenantCreatedListener;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Plan;
@@ -311,6 +314,12 @@ class AeroPlatformServiceProvider extends ServiceProvider
         ProductSubscription::observe(ProductSubscriptionObserver::class);
         Event::listen(ProductSubscriptionChanged::class, ResyncTenantModuleCatalog::class);
 
+        // Audit D17 — soft-suspend role grants on unsubscribe; restore on re-subscribe.
+        // SuspendUnsubscribedRoleAccess marks rows suspended (30-day grace; no access at runtime).
+        // ReactivateRoleAccessOnResubscribe flips them back to active within the grace window.
+        Event::listen(ProductSubscriptionChanged::class, SuspendUnsubscribedRoleAccess::class);
+        Event::listen(ProductSubscriptionChanged::class, ReactivateRoleAccessOnResubscribe::class);
+
         // Configure Cashier to use our unified Subscription model as the single source of truth
         // This eliminates drift between Cashier-managed Stripe data and lifecycle-managed fields.
         Cashier::useSubscriptionModel(Subscription::class);
@@ -388,6 +397,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 ProcessPendingSubscriptionChanges::class,
                 ProcessSubscriptionRenewals::class,
                 ExpireGracePeriods::class,
+                PurgeSuspendedRoleAccess::class, // D17: daily hard-delete after 30-day grace
             ]);
         }
 
