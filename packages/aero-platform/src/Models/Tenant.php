@@ -432,6 +432,46 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Module codes this tenant is currently entitled to.
+     *
+     * Returns the union of:
+     *   - hrmac baseline_modules config (always-on foundation packages)
+     *   - module_code from every active product_subscription
+     *
+     * "Active" follows ProductSubscription::scopeActive() — status=active AND
+     * not past ends_at. Trialing subscriptions also count (they grant runtime
+     * access). Per Audit D15.
+     *
+     * Used by SyncModuleHierarchy when --scope=tenant to filter the discovered
+     * modules to only those the tenant has paid for.
+     *
+     * @return array<int, string>
+     */
+    public function getSubscribedProductModulesAttribute(): array
+    {
+        $baseline = config('hrmac.baseline_modules', []);
+
+        $productCodes = ProductSubscription::query()
+            ->where('tenant_id', $this->id)
+            ->where(function ($q): void {
+                $q->where(function ($sub): void {
+                    $sub->where('status', 'active')
+                        ->where(function ($e): void {
+                            $e->whereNull('ends_at')->orWhere('ends_at', '>', now());
+                        });
+                })->orWhere(function ($sub): void {
+                    $sub->where('status', 'trialing')
+                        ->where('trial_ends_at', '>', now());
+                });
+            })
+            ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
+            ->pluck('products.module_code')
+            ->all();
+
+        return array_values(array_unique(array_merge($baseline, $productCodes)));
+    }
+
+    /**
      * Get the owner information from the data column.
      *
      * Owner info is stored in data JSON to avoid schema changes

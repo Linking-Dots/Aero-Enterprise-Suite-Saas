@@ -186,6 +186,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Baseline Modules (Audit D15)
+    |--------------------------------------------------------------------------
+    |
+    | Modules that are ALWAYS included in a tenant's catalog regardless of
+    | product subscriptions. These are the foundation packages every tenant
+    | needs: identity, access control, UI shell, etc.
+    |
+    | When --scope=tenant runs sync, the discovered modules are filtered to
+    | (baseline_modules ∪ tenant's active product_subscriptions.products.module_code).
+    |
+    */
+    'baseline_modules' => ['core', 'auth', 'ui', 'i18n', 'notifications', 'hrmac'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Module Discovery Configuration
     |--------------------------------------------------------------------------
     |

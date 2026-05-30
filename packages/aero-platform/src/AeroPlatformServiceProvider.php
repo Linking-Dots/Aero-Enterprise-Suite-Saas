@@ -33,6 +33,7 @@ use Aero\Platform\Console\Commands\TenantCreate;
 use Aero\Platform\Console\Commands\TenantFlush;
 use Aero\Platform\Console\Commands\TenantHealth;
 use Aero\Platform\Console\Commands\TenantMigrate;
+use Aero\Platform\Events\ProductSubscriptionChanged;
 use Aero\Platform\Http\Middleware\BootstrapGuard;
 use Aero\Platform\Http\Middleware\CheckMaintenanceMode;
 use Aero\Platform\Http\Middleware\CheckModuleAccess;
@@ -58,12 +59,15 @@ use Aero\Platform\Http\Middleware\SetDatabaseConnectionFromDomain;
 use Aero\Platform\Http\Middleware\SmartLandingRedirect;
 use Aero\Platform\Http\Middleware\TenantSuperAdmin;
 use Aero\Platform\Http\Middleware\TrustHosts;
+use Aero\Platform\Listeners\ResyncTenantModuleCatalog;
 use Aero\Platform\Listeners\TenantCreatedListener;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Observers\PlanAuditObserver;
+use Aero\Platform\Observers\ProductSubscriptionObserver;
 use Aero\Platform\Observers\SubscriptionObserver;
 use Aero\Platform\Policies\PlanPolicy;
 use Aero\Platform\Policies\TenantPolicy;
@@ -301,6 +305,11 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Register audit observers
         Plan::observe(PlanAuditObserver::class);
         Subscription::observe(SubscriptionObserver::class);
+
+        // Audit D15 — product subscription lifecycle drives tenant module catalog.
+        // Observer fires ProductSubscriptionChanged; listener re-syncs the catalog.
+        ProductSubscription::observe(ProductSubscriptionObserver::class);
+        Event::listen(ProductSubscriptionChanged::class, ResyncTenantModuleCatalog::class);
 
         // Configure Cashier to use our unified Subscription model as the single source of truth
         // This eliminates drift between Cashier-managed Stripe data and lifecycle-managed fields.
@@ -1051,6 +1060,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     // Platform migrations are self-sufficient for platform feature tests.
                     $platformFiles = collect($files)->filter(function ($path, $name) {
                         $normalizedPath = realpath($path) ?: $path;
+
                         return str_starts_with($normalizedPath, $this->platformMigrationsPath);
                     });
 
