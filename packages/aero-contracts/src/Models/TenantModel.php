@@ -55,13 +55,12 @@ abstract class TenantModel extends Model
                 return;
             }
 
-            try {
-                AeroMode::assertTenantContext(static::class);
-            } catch (\LogicException $e) {
-                throw $e;
-            } catch (\Throwable) {
-                // AeroMode not yet configured (early boot, tests) — allow
-            }
+            // Fail CLOSED (Axis A A10). assertTenantContext() is a no-op when no
+            // checker is configured (early boot / tests). When configured, the
+            // checker (set by aero-core) does its own narrow early-boot allowance
+            // and throws LogicException out of context — let it propagate; never
+            // swallow it, which previously let queries run with no context guard.
+            AeroMode::assertTenantContext(static::class);
         });
     }
 }

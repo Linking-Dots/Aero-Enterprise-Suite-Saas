@@ -291,19 +291,22 @@ class AeroCoreServiceProvider extends ServiceProvider
             // without importing aero-core helpers directly.
             AeroMode::setModeResolver(fn () => is_saas_mode());
             AeroMode::setTenantContextChecker(function (string $modelClass) {
-                try {
-                    $scope = app(TenantScopeInterface::class);
-                    if (! $scope->inTenantContext()) {
-                        throw new \LogicException(
-                            $modelClass . ' queried outside of tenant context. ' .
-                            'Ensure this runs after tenancy middleware. ' .
-                            'For central-DB models extend CentralModel instead.'
-                        );
-                    }
-                } catch (\LogicException $e) {
-                    throw $e;
-                } catch (\Throwable) {
-                    // TenantScopeInterface unavailable during early boot — allow
+                // Fail CLOSED (Axis A A10). Previously a catch-all swallowed any
+                // non-LogicException — so a container/resolution fault let the query
+                // run against whatever connection was active, the exact cross-tenant
+                // access the guard exists to block. The ONLY legitimate allowance is
+                // genuine early boot before the scope is bound; narrow it to that.
+                if (! app()->bound(TenantScopeInterface::class)) {
+                    return;
+                }
+
+                $scope = app(TenantScopeInterface::class);
+                if (! $scope->inTenantContext()) {
+                    throw new \LogicException(
+                        $modelClass . ' queried outside of tenant context. ' .
+                        'Ensure this runs after tenancy middleware. ' .
+                        'For central-DB models extend CentralModel instead.'
+                    );
                 }
             });
 
