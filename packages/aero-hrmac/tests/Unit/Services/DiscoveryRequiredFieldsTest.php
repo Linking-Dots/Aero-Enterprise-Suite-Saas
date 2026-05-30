@@ -31,15 +31,21 @@ class DiscoveryRequiredFieldsTest extends TestCase
         );
     }
 
-    public function test_packages_aero_glob_path_is_in_discovery_paths(): void
+    /**
+     * Audit D13 reversal of Plan 04 T4: discovery is vendor-only in production.
+     * Standalone deployments use composer-path symlinks that resolve
+     * vendor/aero/* → packages/aero-* at install time, so the explicit packages/
+     * glob was redundant and a leak hazard.
+     */
+    public function test_packages_aero_glob_path_is_not_in_discovery_paths(): void
     {
         $config = require dirname(__DIR__, 3).'/config/hrmac.php';
 
-        $this->assertContains(
+        $this->assertNotContains(
             'packages/aero-*/config/module.php',
             $config['discovery']['paths'],
-            'Monorepo dev path must be in discovery paths so audits and '.
-            'tooling find module configs without composer install.'
+            'Audit D13: monorepo dev path must NOT be in discovery paths. '.
+            'Production discovery is vendor-only; standalone uses composer-path symlinks.'
         );
     }
 
