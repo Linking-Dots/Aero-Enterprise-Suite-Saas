@@ -24,7 +24,7 @@
 | B8 | Frontend mode signal SaaS-only | Always emit `props.aero = {mode: aero_mode()}` in both modes | ⚠️ task |
 
 **Verified clean (no task — recorded so they aren't re-audited):**
-- ✅ No `use Aero\Platform\…` / fully-qualified `Aero\Platform\` references in ANY standalone-eligible package (core, auth, installation, i18n, notifications, hrmac, ui, hrm). No class-not-found risk.
+- ⚠️ **CORRECTION (2026-05-30, during execution):** the original "no `Aero\Platform\` references" claim was a FALSE-CLEAN — the audit grep was fooled by backslash escaping (searched single-backslash, missed double-backslash string literals). Reality: **5 files hard-import `use Aero\Platform\...;`** — aero-auth's AdminSetup/Impersonation/Login/UserController (Tenant, TenantImpersonationToken, platform Http Requests+Resources, IdentifyDomainContext) and aero-hrm's `AeroHrmServiceProvider` (AeroPlatformServiceProvider). These are genuine class-not-found risks in standalone. **B4's `StandaloneParityGuardTest` ratchet (budget 5) now locks the count + blocks new ones; decoupling these 5 is open Axis-B debt (see B9 below).** Guarded `class_exists('Aero\\Platform\\...')` soft-references remain the sanctioned pattern and are fine.
 - ✅ `LicenseService` (aero-core) is parity-correct: `status()` short-circuits to `'saas'` in SaaS (never license-checks); standalone has domain binding, cache, online check, and a 72h **offline grace** fallback (the audit's "offline fallback deferred" note is stale — grace is implemented).
 - ✅ `aero_mode()` (helpers.php) is parity-safe: the `central`-connection schema fallback is wrapped in try/catch and correctly defaults to `standalone` when `central` is absent. Primary source is the `aeos.mode` file.
 - ✅ `SyncModuleHierarchy` tenant-catalog filter (Audit D15) is guarded by `function_exists('tenancy') && tenancy()->initialized` → skipped in standalone → all modules sync. Parity-safe.
@@ -186,6 +186,18 @@ SaaS migrates tenant tables via `tenancy.php` `migration_parameters` paths; stan
 - [ ] Always share `'aero' => ['mode' => aero_mode()]` (both modes), not only under `is_saas_mode() && tenant()`.
 - [ ] Grep aero-ui for `props.aero?.mode` / mode branches; ensure both `'saas'` and `'standalone'` are handled.
 - [ ] Commit: `fix(ui): always emit aero.mode prop for explicit standalone frontend branch (B8)`
+
+---
+
+## Task B9 — Decouple aero-auth + aero-hrm from aero-platform (NEW — found during B4 execution)
+
+5 files hard-import `Aero\Platform\` classes in standalone-eligible packages:
+- `aero-auth/Http/Controllers/Auth/{AdminSetup,Impersonation,Login,User}Controller.php` — import `Tenant`, `TenantImpersonationToken`, platform Http `Requests`/`Resources`, `IdentifyDomainContext`.
+- `aero-hrm/AeroHrmServiceProvider.php` — imports `AeroPlatformServiceProvider`.
+
+**Approach:** move the shared Tenant/impersonation contracts + Http Requests/Resources to aero-contracts or aero-core (or gate the platform-only controllers behind `class_exists`/SaaS-only route registration); have aero-hrm reference a contract, not the concrete platform provider. Lower `StandaloneParityGuardTest::PLATFORM_IMPORT_BUDGET` per file decoupled until 0.
+
+**Status:** ⚠️ open debt — ratchet (B4) prevents regression; decoupling is a multi-file refactor best done as its own focused unit (not landed in this pass).
 
 ---
 
