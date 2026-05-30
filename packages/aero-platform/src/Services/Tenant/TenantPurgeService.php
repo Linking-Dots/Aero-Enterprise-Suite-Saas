@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Services\Tenant;
 
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Support\TenantDatabaseDropGuard;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -79,6 +80,11 @@ class TenantPurgeService
 
             return;
         }
+
+        // Shared safety guard (Axis A A9). The daily auto-purge path previously
+        // had NO prefix/central guard — the most-automated drop was the least
+        // protected. Refuse to proceed on an unsafe/central-matching name.
+        TenantDatabaseDropGuard::assertSafe((string) $tenant->database()->getName());
 
         try {
             // Initialize tenancy to access tenant database

@@ -6,6 +6,7 @@ namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Support\TenantDatabaseDropGuard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -100,48 +101,17 @@ class TenantForgetService
      */
     protected function dropTenantDatabase(string $tenantId, string $subdomain, string $databaseName): void
     {
-        // Guard 1: allow only safe characters (alphanumeric, underscore, dash).
-        if (! preg_match('/^[a-zA-Z0-9_\-]+$/', $databaseName)) {
-            Log::error('TenantForgetService: unsafe database name refused', [
+        // Shared safety guard (Axis A A9): safe chars + tenant prefix + not central.
+        try {
+            TenantDatabaseDropGuard::assertSafe($databaseName);
+        } catch (\RuntimeException $e) {
+            Log::error('TenantForgetService: '.$e->getMessage(), [
                 'tenant_id' => $tenantId,
                 'subdomain' => $subdomain,
                 'database_name' => $databaseName,
             ]);
 
-            throw new \RuntimeException(
-                "GDPR forget aborted: database name '{$databaseName}' contains unsafe characters."
-            );
-        }
-
-        // Guard 2: name must start with the configured tenant prefix.
-        $expectedPrefix = config('tenancy.database.prefix', 'tenant');
-
-        if ($expectedPrefix !== '' && ! str_starts_with($databaseName, (string) $expectedPrefix)) {
-            Log::error('TenantForgetService: database name does not carry tenant prefix — refused', [
-                'tenant_id' => $tenantId,
-                'subdomain' => $subdomain,
-                'database_name' => $databaseName,
-                'expected_prefix' => $expectedPrefix,
-            ]);
-
-            throw new \RuntimeException(
-                "GDPR forget aborted: database '{$databaseName}' does not start with tenant prefix '{$expectedPrefix}'."
-            );
-        }
-
-        // Guard 3: must not match the central database name.
-        $centralDb = config('database.connections.central.database');
-
-        if ($centralDb !== null && $databaseName === $centralDb) {
-            Log::error('TenantForgetService: refusing to drop central database', [
-                'tenant_id' => $tenantId,
-                'subdomain' => $subdomain,
-                'database_name' => $databaseName,
-            ]);
-
-            throw new \RuntimeException(
-                "GDPR forget aborted: database '{$databaseName}' matches the central database — refusing."
-            );
+            throw $e;
         }
 
         try {

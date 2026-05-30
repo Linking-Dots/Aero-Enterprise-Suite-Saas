@@ -1434,38 +1434,17 @@ class ProvisionTenant implements ShouldQueue
 
             $this->logStep("   → Dropping database: {$databaseName}", ['database' => $databaseName], 'warning');
 
-            // Validate database name to prevent SQL injection.
-            // Dashes are allowed (UUID-based names) because the name is always backtick-quoted.
-            if (! preg_match('/^[a-zA-Z0-9_\-]+$/', $databaseName)) {
-                $this->logStep("   → Rejected unsafe database name: {$databaseName}", [], 'error');
-
-                return;
-            }
-
-            // Plan 03 T12 — additional safety check: the name MUST start with the
-            // configured tenant prefix AND must NOT match the central DB. This
-            // closes the regex-loophole risk: even if a malformed subdomain or
-            // corrupted tenant record produces a name that passes the regex
-            // above, the prefix guard prevents accidentally dropping a
-            // production central / system / shared database.
-            $expectedPrefix = config('tenancy.database.prefix', 'tenant');
-            $centralDb = config('database.connections.central.database');
-
-            if ($expectedPrefix !== '' && ! str_starts_with($databaseName, (string) $expectedPrefix)) {
+            // Shared safety guard (Axis A A9): safe chars + tenant prefix + not
+            // central. Non-throwing here — we're already on an error/rollback path.
+            // Plan 03 T12 closed the regex-loophole + central-DB risk; this now
+            // routes through the single guard shared with Forget/Purge.
+            if (! \Aero\Platform\Support\TenantDatabaseDropGuard::isSafe($databaseName)) {
                 $this->logStep(
-                    "   → REFUSED to drop '{$databaseName}': does not start with tenant prefix '{$expectedPrefix}'",
-                    ['database' => $databaseName, 'expected_prefix' => $expectedPrefix],
+                    "   → REFUSED to drop '{$databaseName}': failed tenant DB drop guard (unsafe chars, missing tenant prefix, or central DB)",
+                    ['database' => $databaseName],
                     'error'
                 );
-                return;
-            }
 
-            if ($centralDb !== null && $databaseName === $centralDb) {
-                $this->logStep(
-                    "   → REFUSED to drop '{$databaseName}': matches the central database",
-                    ['database' => $databaseName, 'central' => $centralDb],
-                    'error'
-                );
                 return;
             }
 
