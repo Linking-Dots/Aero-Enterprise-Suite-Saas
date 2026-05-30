@@ -435,8 +435,10 @@ class TenantController extends Controller
             'subdomain' => [
                 'required',
                 'string',
-                'min:3',
-                'max:63',
+                // Axis A A7 — shared length bounds + the single reserved list
+                // (config). No second hardcoded reserved array below.
+                'min:'.config('tenancy.subdomain.min_length', 3),
+                'max:'.config('tenancy.subdomain.max_length', 63),
                 // Plan 03 T6 — block platform-infrastructure subdomains
                 Rule::notIn(config('tenancy.reserved_subdomains', [])),
             ],
@@ -452,14 +454,8 @@ class TenantController extends Controller
             ]);
         }
 
-        // Check reserved subdomains
-        $reserved = ['admin', 'api', 'app', 'www', 'mail', 'smtp', 'ftp', 'cdn', 'static', 'assets', 'help', 'support', 'billing', 'status'];
-        if (in_array($subdomain, $reserved)) {
-            return response()->json([
-                'available' => false,
-                'message' => 'This subdomain is reserved.',
-            ]);
-        }
+        // Reserved-subdomain enforcement lives in the validation rule above
+        // (config('tenancy.reserved_subdomains')) — single source of truth.
 
         // Check if subdomain is taken by any tenant (active, pending, or failed)
         // Note: We show as "taken" even for pending/failed to prevent conflicts

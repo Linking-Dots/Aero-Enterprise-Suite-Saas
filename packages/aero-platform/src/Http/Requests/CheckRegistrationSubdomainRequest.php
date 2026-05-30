@@ -26,8 +26,10 @@ class CheckRegistrationSubdomainRequest extends FormRequest
             'subdomain' => [
                 'required',
                 'string',
-                'min:3',
-                'max:63',
+                // Axis A A7 — shared length bounds (same as RegistrationDetailsRequest)
+                // so the availability probe can't accept what register later rejects.
+                'min:'.config('tenancy.subdomain.min_length', 3),
+                'max:'.config('tenancy.subdomain.max_length', 63),
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 Rule::notIn(config('tenancy.reserved_subdomains', [])),
             ],

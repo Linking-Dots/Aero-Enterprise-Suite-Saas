@@ -53,8 +53,10 @@ class RegistrationDetailsRequest extends FormRequest
             'subdomain' => [
                 'required',
                 'string',
-                'min:3',
-                'max:40',
+                // Axis A A7 — single source of truth for length (shared with the
+                // availability probe) so the probe and the register call agree.
+                'min:'.config('tenancy.subdomain.min_length', 3),
+                'max:'.config('tenancy.subdomain.max_length', 63),
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 // Plan 03 T6 — block platform-infrastructure subdomains
                 Rule::notIn(config('tenancy.reserved_subdomains', [])),

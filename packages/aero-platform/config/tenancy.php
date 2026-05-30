@@ -66,6 +66,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Subdomain Rules (Axis A A7 — single source of truth)
+    |--------------------------------------------------------------------------
+    |
+    | Length bounds shared by every subdomain validator (the registration
+    | availability probe AND the actual register call) so they can never
+    | disagree on what is allowed. Reserved names live in reserved_subdomains
+    | above — there is no second hardcoded list.
+    |
+    */
+    'subdomain' => [
+        'min_length' => 3,
+        'max_length' => 63,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Central Domains
     |--------------------------------------------------------------------------
     |
