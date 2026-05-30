@@ -73,6 +73,34 @@ if (! function_exists('is_standalone_mode')) {
     }
 }
 
+if (! function_exists('central_connection')) {
+    /**
+     * Resolve the connection name for central/landlord data (Axis B B2).
+     *
+     * SaaS: 'central' — registered by AeroPlatformServiceProvider against the
+     *       landlord database. Tenant data lives in per-tenant databases; central
+     *       data (tenants, plans, subscriptions, platform_* tables) lives here.
+     *
+     * Standalone: the DEFAULT connection. aero-platform is not installed, so the
+     *       'central' connection is never registered and there is exactly ONE
+     *       database — "central" and "tenant" data coexist in it. Returning the
+     *       default connection lets central-flavoured code (AuditService,
+     *       CentralModel subclasses shipped in standalone packages) run without a
+     *       'Database connection [central] not configured' fatal.
+     *
+     * This is the single resolver every central reference should route through
+     * instead of the literal 'central' string.
+     */
+    function central_connection(): string
+    {
+        if (is_saas_mode() && config('database.connections.central') !== null) {
+            return 'central';
+        }
+
+        return config('database.default');
+    }
+}
+
 if (! function_exists('getRuntimeModules')) {
     /**
      * Get all runtime-loaded modules for injection into Blade templates.
