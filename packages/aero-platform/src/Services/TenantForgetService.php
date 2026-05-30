@@ -7,6 +7,7 @@ namespace Aero\Platform\Services;
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Support\TenantDatabaseDropGuard;
+use Aero\Platform\Support\TenantTeardownSequencer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -34,6 +35,7 @@ class TenantForgetService
 {
     public function __construct(
         private readonly AuditServiceInterface $audit,
+        private readonly TenantTeardownSequencer $sequencer,
     ) {}
 
     /**
@@ -50,33 +52,37 @@ class TenantForgetService
         $email = $tenant->email ?? null;
         $databaseName = $this->resolveDatabaseName($tenant);
 
-        DB::transaction(function () use ($tenant, $tenantId, $subdomain, $email, $databaseName, $reason, $requestedByUserId): void {
-            // 1. Audit BEFORE deletion (no FK to dangle; AuditService stores raw values).
-            $this->audit->log(
-                event: 'platform.tenant.forgotten',
-                action: 'forgotten',
-                subject: null,
-                description: "GDPR right-to-be-forgotten executed for tenant {$subdomain} ({$tenantId})",
-                before: null,
-                after: null,
-                metadata: [
-                    'tenant_id' => $tenantId,
-                    'subdomain' => $subdomain,
-                    'email' => $email,
-                    'reason' => $reason,
-                    'requested_by_user_id' => $requestedByUserId,
-                    'executed_at' => now()->toIso8601String(),
-                ],
-            );
+        // Atomic-as-possible teardown (Axis A A4): audit + row delete commit
+        // FIRST, then drop the DB outside the transaction; on drop failure the
+        // orphaned DB is reconciled rather than leaving a committed delete paired
+        // with a live database (DDL can't be rolled back inside the transaction).
+        $this->sequencer->teardown(
+            databaseName: $databaseName,
+            deleteCentralRows: function () use ($tenant, $tenantId, $subdomain, $email, $reason, $requestedByUserId): void {
+                // Audit BEFORE deletion (no FK to dangle; AuditService stores raw values).
+                $this->audit->log(
+                    event: 'platform.tenant.forgotten',
+                    action: 'forgotten',
+                    subject: null,
+                    description: "GDPR right-to-be-forgotten executed for tenant {$subdomain} ({$tenantId})",
+                    before: null,
+                    after: null,
+                    metadata: [
+                        'tenant_id' => $tenantId,
+                        'subdomain' => $subdomain,
+                        'email' => $email,
+                        'reason' => $reason,
+                        'requested_by_user_id' => $requestedByUserId,
+                        'executed_at' => now()->toIso8601String(),
+                    ],
+                );
 
-            // 2. Drop tenant DB (with safety guards).
-            if ($databaseName !== null) {
-                $this->dropTenantDatabase($tenantId, $subdomain, $databaseName);
-            }
-
-            // 3. Hard-delete the tenants row. forceDelete() bypasses SoftDeletes.
-            $tenant->forceDelete();
-        });
+                // Hard-delete the tenants row. forceDelete() bypasses SoftDeletes.
+                $tenant->forceDelete();
+            },
+            dropDatabase: fn () => $this->dropTenantDatabase($tenantId, $subdomain, (string) $databaseName),
+            context: ['tenant_id' => $tenantId, 'subdomain' => $subdomain],
+        );
     }
 
     /**

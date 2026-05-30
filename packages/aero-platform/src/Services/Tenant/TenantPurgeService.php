@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 class TenantPurgeService
 {
     public function __construct(
-        protected TenantRetentionService $retentionService
+        protected TenantRetentionService $retentionService,
     ) {}
 
     /**
@@ -48,17 +48,22 @@ class TenantPurgeService
             'deleted_at' => $tenant->deleted_at,
         ]);
 
-        DB::transaction(function () use ($tenant) {
-            // Step 1: Drop tenant database
-            $this->dropTenantDatabase($tenant);
+        // Teardown ordering (Axis A A11). DROP DATABASE is DDL and auto-commits,
+        // so the previous DB::transaction() wrapping the drop + row deletes gave
+        // illusory atomicity. The purge drop uses Stancl tenants:delete, which
+        // resolves the tenant by id — so the tenant row MUST still exist when it
+        // runs. Therefore: drop the DB FIRST (outside any transaction), then
+        // delete the central rows in their own transaction.
+        //
+        // Failure window is self-healing: if the row delete fails after a
+        // successful drop, the tenant stays soft-deleted/retention-expired and
+        // the next scheduled purge re-runs — dropTenantDatabase() early-returns on
+        // a non-existent DB and the rows are deleted on the retry. No orphan leaks.
+        $this->dropTenantDatabase($tenant);
 
-            // Step 2: Delete tenant domains
+        DB::transaction(function () use ($tenant): void {
             $tenant->domains()->forceDelete();
-
-            // Step 3: Delete related records (subscriptions, etc.)
             $tenant->subscriptions()->forceDelete();
-
-            // Step 4: Permanently delete tenant record
             $tenant->forceDelete();
         });
 
