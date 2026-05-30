@@ -157,6 +157,11 @@ class HandleInertiaRequests extends Middleware
                 'environment' => config('app.env', 'production'),
             ],
             'context' => 'tenant',
+            // Axis B B8 — always expose the deployment mode so shared aero-ui
+            // components have an explicit 'saas'|'standalone' signal in BOTH modes
+            // (previously aero.mode existed only in SaaS+tenant context, leaving
+            // standalone with undefined → silent mis-renders).
+            'aero' => ['mode' => aero_mode()],
             'systemSettings' => $systemSettingsPayload,
             'branding' => $branding,
             'theme' => [
