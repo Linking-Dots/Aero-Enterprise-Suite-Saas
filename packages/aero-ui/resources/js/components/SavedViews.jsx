@@ -136,7 +136,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
         side="bottom"
         align="end"
       >
-        <div className="aeos-saved-views-dropdown" style={{ width: 320 }}>
+        <div className="aeos-saved-views-dropdown aeos-w-320">
           <div className="aeos-saved-views-header">
             <h4 className="aeos-text-sm font-medium">Saved Views</h4>
             {canCreate && (

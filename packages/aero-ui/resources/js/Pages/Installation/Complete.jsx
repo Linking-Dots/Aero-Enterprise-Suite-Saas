@@ -36,7 +36,7 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
           <div key={key} className="il-review-row">
             <span className="il-review-key">{key}</span>
             {key === 'Application URL'
-              ? <a href={val} className="il-review-val" style={{ color: 'var(--aeos-primary)' }}>{val}</a>
+              ? <a href={val} className="il-review-val aeos-text-primary-color">{val}</a>
               : <span className="il-review-val">{val}</span>
             }
           </div>

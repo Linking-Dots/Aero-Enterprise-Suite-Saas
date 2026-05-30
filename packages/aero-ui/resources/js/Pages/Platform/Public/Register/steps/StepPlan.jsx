@@ -291,7 +291,7 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
               <HStack gap={3} align="center">
                 <Text weight="semibold" as="span">Total</Text>
                 <Flex1 />
-                <Text weight="bold" as="span" size="lg" style={{ color: 'var(--aeos-primary)' }}>{formatPrice(total)}/{suffix}</Text>
+                <Text weight="bold" as="span" size="lg" className="aeos-text-primary-color">{formatPrice(total)}/{suffix}</Text>
               </HStack>
 
               {billing === 'monthly' && yearlySavings > 0 && (

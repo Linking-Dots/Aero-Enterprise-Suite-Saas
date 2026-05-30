@@ -97,7 +97,7 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
             />
           </Field>
         </Box>
-        <Box style={{ width: 200 }}>
+        <Box className="aeos-w-200">
           <Field label="Timezone" htmlFor="timezone" required>
             <Select
               id="timezone"
@@ -118,7 +118,7 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
                 <Input id="mail_host" value={form.mail_host} onChange={e => set('mail_host', e.target.value)} leftIcon="mail" placeholder="smtp.mailgun.org" />
               </Field>
             </Box>
-            <Box style={{ width: 100 }}>
+            <Box className="aeos-w-100">
               <Field label="Port" htmlFor="mail_port">
                 <Input id="mail_port" type="number" value={form.mail_port} onChange={e => set('mail_port', e.target.value)} />
               </Field>

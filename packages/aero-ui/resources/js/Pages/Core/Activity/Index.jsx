@@ -108,7 +108,7 @@ export default function ActivityIndex({ title, activities, stats, filters }) {
                 select
                 value={selectedModule}
                 onChange={(e) => setSelectedModule(e.target.value)}
-                style={{ width: 200 }}
+                className="aeos-w-200"
               >
                 <option value="">All Modules</option>
                 <option value="users">Users</option>
@@ -121,7 +121,7 @@ export default function ActivityIndex({ title, activities, stats, filters }) {
                 select
                 value={selectedAction}
                 onChange={(e) => setSelectedAction(e.target.value)}
-                style={{ width: 200 }}
+                className="aeos-w-200"
               >
                 <option value="">All Actions</option>
                 <option value="created">Created</option>

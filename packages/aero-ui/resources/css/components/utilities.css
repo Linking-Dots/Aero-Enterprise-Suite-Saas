@@ -37,6 +37,34 @@
 .aeos-col-span-2 { grid-column: span 2; }
 .aeos-col-span-4 { grid-column: span 4; }
 
+/* ── Color shortcuts (replaces `style={{ color: 'var(--aeos-X)' }}` patterns) */
+.aeos-text-primary-color  { color: var(--aeos-primary); }
+.aeos-border-divider      { border-color: var(--aeos-divider); }
+
+/* ── Token-mode chip (replaces `style={{ borderColor: 'var(--aeos-divider)', background: 'var(--aeos-bg-surface)', color: 'var(--aeos-text-secondary)' }}` — 2 sites) */
+.aeos-surface-chip {
+  border-color: var(--aeos-divider);
+  background: var(--aeos-bg-surface);
+  color: var(--aeos-text-secondary);
+}
+
+/* ── Code-block / API-docs sample (replaces the 7-property dark-bg JetBrains-Mono pattern — 3 sites) */
+.aeos-code-block {
+  background: #0D1117;
+  color: #E6EDF3;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.8125rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.65;
+}
+
+/* ── Fixed pixel widths (rare — use sparingly, prefer percentages or content-* helpers) */
+.aeos-w-100 { width: 100px; }
+.aeos-w-200 { width: 200px; }
+.aeos-w-320 { width: 320px; }
+
 /* ── Overflow helpers (replaces `style={{ overflowX: 'auto' }}` — 4 sites) */
 .aeos-overflow-x-auto { overflow-x: auto; }
 .aeos-overflow-y-auto { overflow-y: auto; }

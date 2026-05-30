@@ -219,11 +219,11 @@ function ApiContent() {
                 <VStack gap={3}>
                   <h2 className="aeos-pub-h2">Pagination & Filtering</h2>
                   <Text tone="secondary">All list endpoints support cursor-based pagination:</Text>
-                  <pre style={{ background: '#0D1117', color: '#E6EDF3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '0.875rem 1.25rem', fontSize: '0.8125rem', fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65 }}>
+                  <pre className="aeos-code-block">
                     {'GET /v2/employees?page=1&per_page=25&sort=created_at&order=desc'}
                   </pre>
                   <Text tone="secondary">Response envelope:</Text>
-                  <pre style={{ background: '#0D1117', color: '#E6EDF3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '0.875rem 1.25rem', fontSize: '0.8125rem', fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65 }}>
+                  <pre className="aeos-code-block">
                     {'{\n  "data": [...],\n  "meta": {\n    "current_page": 1,\n    "per_page": 25,\n    "total": 840,\n    "last_page": 34\n  }\n}'}
                   </pre>
                 </VStack>
@@ -258,7 +258,7 @@ function ApiContent() {
                     aeos365 provides a minimum 12-month deprecation notice before removing any API version.
                     The Sunset header is included in responses from deprecated endpoints:
                   </Text>
-                  <pre style={{ background: '#0D1117', color: '#E6EDF3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '0.875rem 1.25rem', fontSize: '0.8125rem', fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65 }}>
+                  <pre className="aeos-code-block">
                     {'Sunset: Sat, 01 Nov 2026 00:00:00 GMT'}
                   </pre>
                 </VStack>

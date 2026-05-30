@@ -89,7 +89,7 @@ export default function Database({ mode, savedDatabase, connections }) {
                 />
               </Field>
             </Box>
-            <Box style={{ width: 100 }}>
+            <Box className="aeos-w-100">
               <Field label="Port" htmlFor="port" required>
                 <Input id="port" type="number" value={form.port} onChange={e => set('port', e.target.value)} />
               </Field>
