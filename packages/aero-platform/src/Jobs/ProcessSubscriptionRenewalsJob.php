@@ -36,6 +36,9 @@ class ProcessSubscriptionRenewalsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Dedicated billing queue (Axis C C3) — isolated from user-facing + provisioning work. */
+    public string $queue = 'billing';
+
     /**
      * Execute the job.
      */

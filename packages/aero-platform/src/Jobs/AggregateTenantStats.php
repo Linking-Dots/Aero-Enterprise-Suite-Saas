@@ -30,6 +30,9 @@ class AggregateTenantStats implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Dedicated maintenance queue (Axis C C3) — keeps long batch work off 'default'. */
+    public string $queue = 'maintenance';
+
     /**
      * The number of times the job may be attempted.
      */

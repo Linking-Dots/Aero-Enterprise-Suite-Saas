@@ -31,6 +31,9 @@ class ReconcileOrphanedTenantDatabase implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
+    /** Dedicated maintenance queue (Axis C C3). */
+    public string $queue = 'maintenance';
+
     public int $tries = 5;
 
     /** @var array<int,int> */

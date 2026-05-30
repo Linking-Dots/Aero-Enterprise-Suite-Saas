@@ -146,3 +146,26 @@ php artisan tenants:run cache:clear --tenant=acme
 | `Undefined array key 'local'` in Stancl FilesystemTenancyBootstrapper | `tenancy.filesystem` config block missing (Phase 0 T5) | Confirm `packages/aero-platform/config/tenancy.php` has the filesystem block |
 | Cross-tenant cache hits | `CACHE_STORE` not `redis` | Set `CACHE_STORE=redis` in `.env`; restart workers |
 | `composer install` fails on symlinked package | Path repo broken | Re-run from monorepo root, confirm `composer.json` `repositories[].url` is correct |
+
+## Queue topology & throughput (Axis C C3)
+
+Heavy/slow jobs run on dedicated queues so a surge on one cannot starve fast,
+user-facing jobs:
+
+| Queue | Jobs | Notes |
+|---|---|---|
+| `provisioning` | `ProvisionTenant` (timeout 600s) | One slow tenant create must not block the rest. |
+| `maintenance` | `AggregateTenantStats`, `ReconcileOrphanedTenantDatabase` | Long batch / cleanup work. |
+| `billing` | `ProcessSubscriptionRenewalsJob`, `RetryFailedPaymentsJob` | Stripe-bound; isolate from interactive work. |
+| `security`, `notifications`, `emails`, `error-reporting` | auth mail, notifications, error reports | Fast, latency-sensitive. |
+| `default` | everything else | |
+
+Give each queue its own worker pool (Horizon `config/horizon.php` supervisors, or
+separate `php artisan queue:work --queue=...` supervisor programs). Size pools from:
+
+    workers_needed ≈ (peak jobs/sec for the queue) × (avg job duration in seconds)
+
+e.g. notifications at 20 jobs/sec × 0.2s avg ≈ 4 workers; provisioning at 0.1
+jobs/sec × 120s avg ≈ 12 concurrent slots at peak. Measure avg durations in
+Horizon (or `failed_jobs`/telemetry) and re-size; never let `provisioning` and
+`notifications` share a pool.
