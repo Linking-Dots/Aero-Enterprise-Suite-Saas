@@ -47,6 +47,14 @@ class EnsureTenantIsActive
         if ($tenant->status === Tenant::STATUS_SUSPENDED) {
             $reason = $tenant->data['suspended_reason'] ?? 'Your account has been suspended';
 
+            // API requests (Axis A A8) get JSON, not the HTML suspended page.
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $reason,
+                    'suspended_at' => $tenant->data['suspended_at'] ?? now()->toIso8601String(),
+                ], 403);
+            }
+
             return response()->view('errors.tenant-suspended', [
                 'message' => $reason,
                 'suspended_at' => $tenant->data['suspended_at'] ?? now()->toIso8601String(),

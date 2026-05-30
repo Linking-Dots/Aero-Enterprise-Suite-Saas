@@ -654,9 +654,12 @@ class AeroCoreServiceProvider extends ServiceProvider
             // Register HandleInertiaRequests middleware to web middleware group
             $router->pushMiddlewareToGroup('web', HandleInertiaRequests::class);
 
-            // In SaaS mode, add tenant.active middleware to web group (after auth)
+            // In SaaS mode, block suspended/archived/failed tenants on BOTH the web
+            // AND api groups (Axis A A8). Previously only 'web' was gated, so a
+            // suspended tenant's Sanctum token could still reach /api/* endpoints.
             if (is_saas_mode() && class_exists('Aero\\Platform\\Http\\Middleware\\EnsureTenantIsActive')) {
                 $router->pushMiddlewareToGroup('web', 'Aero\\Platform\\Http\\Middleware\\EnsureTenantIsActive');
+                $router->pushMiddlewareToGroup('api', 'Aero\\Platform\\Http\\Middleware\\EnsureTenantIsActive');
             }
 
             // Enforce license validity on every web request (standalone mode only; SaaS is a no-op)
