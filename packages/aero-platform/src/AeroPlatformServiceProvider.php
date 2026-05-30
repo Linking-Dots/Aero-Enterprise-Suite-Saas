@@ -22,6 +22,7 @@ use Aero\Notifications\Services\Mail\MailService;
 use Aero\Notifications\Services\Sms\SmsGatewayService;
 use Aero\Platform\Auth\LandlordAuthContext;
 use Aero\Platform\Bootstrappers\CachePrefixTenancyBootstrapper;
+use Aero\Platform\Bootstrappers\FailClosedQueueTenancyBootstrapper;
 use Aero\Platform\Console\Commands\CleanupFailedInstallation;
 use Aero\Platform\Console\Commands\EnsureSuperAdmin;
 use Aero\Platform\Console\Commands\ExpireGracePeriods;
@@ -115,6 +116,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
+use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 
@@ -325,14 +327,25 @@ class AeroPlatformServiceProvider extends ServiceProvider
         Cashier::useSubscriptionModel(Subscription::class);
         Cashier::useCustomerModel(Tenant::class);
 
-        // Override tenancy bootstrappers after all providers registered
-        // FilesystemTenancyBootstrapper disabled - causes "Undefined array key 'local'" error
-        // Using custom CachePrefixTenancyBootstrapper instead of stancl's CacheTenancyBootstrapper
-        // because file/database cache drivers don't support tagging
+        // Authoritative runtime tenancy bootstrapper list (Axis A A5, 2026-05-30).
+        // This MUST match config/tenancy.php — kept in sync; the runtime test
+        // TenancyRuntimeConfigTest asserts the BOOTED list (not the file) so this
+        // can never silently drift again.
+        //
+        //  - CachePrefixTenancyBootstrapper: driver-agnostic per-tenant cache key
+        //    prefix (works on array/file/database/redis — no tagging requirement),
+        //    chosen over Stancl's CacheTenancyBootstrapper which needs a tagging store.
+        //  - FilesystemTenancyBootstrapper: per-tenant storage roots. Previously
+        //    stripped here with a stale "Undefined array key 'local'" note — that bug
+        //    was fixed by adding the tenancy.filesystem config block (Phase 0 T5);
+        //    WITHOUT this, tenant uploads share one root = cross-tenant file leak.
+        //  - FailClosedQueueTenancyBootstrapper (Audit D5c): refuses jobs for
+        //    suspended/deleted tenants instead of the stock bootstrapper.
         Config::set('tenancy.bootstrappers', [
             DatabaseTenancyBootstrapper::class,
-            CachePrefixTenancyBootstrapper::class, // Works with all cache drivers
-            QueueTenancyBootstrapper::class,
+            CachePrefixTenancyBootstrapper::class,
+            FilesystemTenancyBootstrapper::class,
+            FailClosedQueueTenancyBootstrapper::class,
         ]);
 
         // CRITICAL: Override central_domains to include the platform domain and admin subdomain

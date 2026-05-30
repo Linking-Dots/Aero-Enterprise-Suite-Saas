@@ -253,8 +253,12 @@ return [
 
     'bootstrappers' => [
         \Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
-        \Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class, // Re-enabled (Phase 0 T4) — REQUIRES CACHE_STORE=redis (tagging support)
-        \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Re-enabled (Phase 0 T5) — requires 'filesystem' config block above
+        // Driver-agnostic per-tenant cache key prefix (Axis A A5). Works on any
+        // cache driver — chosen over Stancl's CacheTenancyBootstrapper which requires
+        // a tagging store (Redis/Memcached). Keep this in sync with the runtime list
+        // set in AeroPlatformServiceProvider::boot(); TenancyRuntimeConfigTest pins it.
+        \Aero\Platform\Bootstrappers\CachePrefixTenancyBootstrapper::class,
+        \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Per-tenant storage roots (Phase 0 T5) — requires 'filesystem' config block above
         \Aero\Platform\Bootstrappers\FailClosedQueueTenancyBootstrapper::class, // Audit D5c — refuses jobs for suspended/deleted tenants instead of running them against a missing DB
     ],
 
