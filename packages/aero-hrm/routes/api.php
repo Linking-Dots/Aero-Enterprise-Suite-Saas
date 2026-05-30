@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use Aero\HRM\Http\Controllers\Api\AttendanceApiController;
+use Aero\HRM\Http\Controllers\Api\DepartmentApiController;
+use Aero\HRM\Http\Controllers\Api\DesignationApiController;
 use Aero\HRM\Http\Controllers\Api\EmployeeApiController;
 use Aero\HRM\Http\Controllers\Api\LeaveApiController;
+use Aero\HRM\Http\Controllers\Api\PayslipApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,5 +62,21 @@ Route::prefix('api/hrm')
 
         Route::post('/attendance/clock-out', [AttendanceApiController::class, 'clockOut'])
             ->name('attendance.clock-out');
+
+        // ── Payslips (Audit D24) ──────────────────────────────────────
+        // Own-scope by default; admin override via hrm.payroll.payslips.list.view.
+        Route::get('/payslips', [PayslipApiController::class, 'index'])
+            ->name('payslips.index');
+
+        Route::get('/payslips/{payslip}', [PayslipApiController::class, 'show'])
+            ->name('payslips.show');
+
+        // ── Department / Designation lookups (Audit D24) ──────────────
+        // Read-only metadata for mobile signup flows + integration forms.
+        Route::get('/departments', [DepartmentApiController::class, 'index'])
+            ->name('departments.index');
+
+        Route::get('/designations', [DesignationApiController::class, 'index'])
+            ->name('designations.index');
 
     });
