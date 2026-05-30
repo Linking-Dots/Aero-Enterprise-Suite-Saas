@@ -164,7 +164,7 @@ export default function Processing({ mode }) {
       {error && (
         <Alert intent="danger" title="Installation error" style={{ textAlign: 'left', width: '100%' }}>
           {error}
-          <Box style={{ marginTop: 12 }}>
+          <Box className="aeos-mt-2">
             <Button intent="ghost" size="sm" onClick={retry}>Retry</Button>
           </Box>
         </Alert>

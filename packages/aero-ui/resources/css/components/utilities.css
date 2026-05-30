@@ -27,6 +27,15 @@
 
 /* ── Flex justify (replaces `style={{ justifyContent: 'space-between' }}` — 7 sites) */
 .aeos-justify-between { justify-content: space-between; }
+.aeos-justify-center  { justify-content: center; }
+.aeos-justify-end     { justify-content: flex-end; }
+
+/* ── Margin reset (replaces `style={{ margin: 0 }}` — 2 sites) */
+.aeos-m-0 { margin: 0; }
+
+/* ── Grid column spans (replaces `style={{ gridColumn: 'span N' }}` — 4 sites) */
+.aeos-col-span-2 { grid-column: span 2; }
+.aeos-col-span-4 { grid-column: span 4; }
 
 /* ── Overflow helpers (replaces `style={{ overflowX: 'auto' }}` — 4 sites) */
 .aeos-overflow-x-auto { overflow-x: auto; }

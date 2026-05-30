@@ -186,7 +186,7 @@ export default function SearchOverlay() {
               onMouseEnter={() => setSelectedIndex(i)}
             >
               {mapResultIcon(result.icon, result.type)}
-              <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="aeos-flex-1">
                 <Text style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {result.title}
                 </Text>

@@ -91,7 +91,7 @@ export default function Dashboard({ dashboardStats = {}, recentActivity = [], te
       }
     >
       {/* Welcome banner */}
-      <Card className="dash-welcome" style={{ gridColumn: 'span 4' }}>
+      <Card className="dash-welcome aeos-col-span-4">
         <HStack gap={4} align="center">
           <Avatar
             initials={(user?.name ?? 'U').split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase()}
@@ -119,7 +119,7 @@ export default function Dashboard({ dashboardStats = {}, recentActivity = [], te
       ))}
 
       {/* Recent activity */}
-      <Card style={{ gridColumn: 'span 2' }}>
+      <Card className="aeos-col-span-2">
         <VStack gap={4}>
           <HStack gap={2} align="center">
             <Eyebrow tone="primary">Activity</Eyebrow>
@@ -145,7 +145,7 @@ export default function Dashboard({ dashboardStats = {}, recentActivity = [], te
       </Card>
 
       {/* Quick actions */}
-      <Card style={{ gridColumn: 'span 2' }}>
+      <Card className="aeos-col-span-2">
         <VStack gap={4}>
           <Eyebrow tone="primary">Quick Actions</Eyebrow>
           <VStack gap={2}>
@@ -157,7 +157,7 @@ export default function Dashboard({ dashboardStats = {}, recentActivity = [], te
       </Card>
 
       {/* System info */}
-      <Card style={{ gridColumn: 'span 4' }}>
+      <Card className="aeos-col-span-4">
         <HStack gap={6} wrap="wrap">
           <VStack gap={1}>
             <Eyebrow tone="primary">Workspace</Eyebrow>

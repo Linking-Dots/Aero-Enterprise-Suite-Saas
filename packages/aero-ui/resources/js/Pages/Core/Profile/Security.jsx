@@ -46,7 +46,7 @@ export default function ProfileSecurity({ user }) {
         </Card>
 
         {/* Security links */}
-        <Text weight="semibold" style={{ marginBottom: 12 }}>Security</Text>
+        <Text weight="semibold" className="aeos-mb-2">Security</Text>
         <VStack gap={3}>
           <SecurityLink
             title="Two-Factor Authentication"

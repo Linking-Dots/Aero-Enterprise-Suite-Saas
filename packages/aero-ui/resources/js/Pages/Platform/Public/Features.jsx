@@ -80,7 +80,7 @@ function ModuleGridSection() {
         </HStack>
 
         {/* Module cards */}
-        <div className="aeos-pub-module-grid" style={{ marginTop: '2rem' }}>
+        <div className="aeos-pub-module-grid aeos-mt-lg">
           {filtered.map((mod) => (
             <PublicFeatureCard
               key={mod.id}

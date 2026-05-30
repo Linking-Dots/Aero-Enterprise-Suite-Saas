@@ -131,7 +131,7 @@ function Governance() {
     <Section size="lg">
       <Container>
         <HStack gap={8} align="start">
-          <VStack gap={4} style={{ flex: '1' }}>
+          <VStack gap={4} className="aeos-flex-1">
             <p className="aeos-pub-label aeos-pub-accent-text--amber">Governance & compliance</p>
             <h2 className="aeos-pub-h2">
               Operate with confidence in regulated environments.
@@ -200,7 +200,7 @@ function Integrations() {
           lead="aeos365 integrates with the tools enterprise teams already rely on. REST API, webhooks, and pre-built connectors make the integration story seamless."
           align="center"
         />
-        <HStack gap={3} wrap align="center" style={{ justifyContent: 'center' }}>
+        <HStack gap={3} wrap align="center" className="aeos-justify-center">
           {INTEGRATIONS.map((i) => (
             <Card key={i.name} className="aeos-pub-trust-chip">
               <VStack gap={1} align="center">
