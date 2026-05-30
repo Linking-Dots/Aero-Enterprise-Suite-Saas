@@ -465,6 +465,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
                 });
             })
             ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
+            ->where('products.is_active', true)
             ->pluck('products.module_code')
             ->all();
 
