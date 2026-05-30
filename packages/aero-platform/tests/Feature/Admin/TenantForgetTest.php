@@ -37,47 +37,63 @@ class TenantForgetTest extends TestCase
 
     public function runDatabaseMigrations(): void
     {
-        $this->beforeRefreshingDatabase();
+        $this->shareSqliteAcrossConnections();
         $this->refreshTestDatabase();
-        $this->afterRefreshingDatabase();
     }
 
     private function shareSqliteAcrossConnections(): void
     {
-        $sqliteConfig = [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-            'foreign_key_constraints' => true,
-        ];
-
+        $cfg = ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'foreign_key_constraints' => false];
         config([
-            'database.connections.mysql' => $sqliteConfig,
-            'database.connections.central' => $sqliteConfig,
+            'database.connections.mysql' => $cfg,
+            'database.connections.central' => $cfg,
             'tenancy.database.central_connection' => 'sqlite',
+            'tenancy.database.managers' => [
+                'sqlite' => \Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
+                'mysql' => \Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
+            ],
+            'tenancy.database.prefix' => '',
+            'tenancy.database.suffix' => '',
         ]);
-
+        $this->app['db']->purge('sqlite');
         $this->app['db']->purge('mysql');
         $this->app['db']->purge('central');
-
         $pdo = $this->app['db']->connection('sqlite')->getPdo();
         $this->app['db']->connection('mysql')->setPdo($pdo);
         $this->app['db']->connection('central')->setPdo($pdo);
     }
 
+    protected function refreshTestDatabase(): void
+    {
+        \Illuminate\Support\Facades\Schema::dropAllTables();
+
+        $packages = realpath(__DIR__.'/../../../..');
+
+        foreach ([
+            $packages.'/aero-core/database/migrations',
+            $packages.'/aero-auth/database/migrations',
+            $packages.'/aero-hrmac/database/migrations',
+            $packages.'/aero-platform/database/migrations',
+        ] as $path) {
+            $migrator = $this->app['migrator'];
+            $migrator->setConnection('sqlite');
+            if (! $migrator->repositoryExists()) {
+                $migrator->getRepository()->createRepository();
+            }
+            $migrator->run([$path]);
+        }
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->shareSqliteAcrossConnections();
 
-        $role = Role::firstOrCreate(
-            ['name' => 'Super Administrator', 'guard_name' => 'landlord'],
-        );
+        \Aero\Contracts\AeroMode::reset();
 
+        // No Role assignment — tests use Gate::before to bypass HRMAC for happy
+        // path; the "without permission" test stubs the Gate directly. The role
+        // wiring is exercised separately in HRMAC tests.
         $this->admin = LandlordUser::factory()->create();
-        $this->admin->assignRole($role);
-
-        $this->plan = Plan::factory()->create(['is_active' => true]);
     }
 
     // =========================================================================
@@ -88,7 +104,7 @@ class TenantForgetTest extends TestCase
     {
         $tenant = Tenant::factory()->active()->create();
 
-        $this->postJson(route('platform.admin.tenants.forget', $tenant->id), [
+        $this->postJson(route('admin.tenants.forget', $tenant->id), [
             'reason' => 'GDPR erasure request received from data subject.',
             'confirm' => '1',
         ])->assertUnauthorized();
@@ -106,7 +122,7 @@ class TenantForgetTest extends TestCase
         $tenant = Tenant::factory()->active()->create();
 
         $this->actingAs($this->admin, 'landlord')
-            ->postJson(route('platform.admin.tenants.forget', $tenant->id), [
+            ->postJson(route('admin.tenants.forget', $tenant->id), [
                 'reason' => 'GDPR erasure request received from data subject.',
                 'confirm' => '1',
             ])->assertForbidden();
@@ -123,7 +139,7 @@ class TenantForgetTest extends TestCase
         $tenant = Tenant::factory()->active()->create();
 
         $this->actingAs($this->admin, 'landlord')
-            ->postJson(route('platform.admin.tenants.forget', $tenant->id), [
+            ->postJson(route('admin.tenants.forget', $tenant->id), [
                 'confirm' => '1',
                 // reason intentionally omitted
             ])->assertUnprocessable()
@@ -141,7 +157,7 @@ class TenantForgetTest extends TestCase
         $tenant = Tenant::factory()->active()->create();
 
         $this->actingAs($this->admin, 'landlord')
-            ->postJson(route('platform.admin.tenants.forget', $tenant->id), [
+            ->postJson(route('admin.tenants.forget', $tenant->id), [
                 'reason' => 'short',
                 'confirm' => '1',
             ])->assertUnprocessable()
@@ -159,7 +175,7 @@ class TenantForgetTest extends TestCase
         $tenant = Tenant::factory()->active()->create();
 
         $this->actingAs($this->admin, 'landlord')
-            ->postJson(route('platform.admin.tenants.forget', $tenant->id), [
+            ->postJson(route('admin.tenants.forget', $tenant->id), [
                 'reason' => 'GDPR erasure request received from data subject.',
                 // confirm intentionally omitted
             ])->assertUnprocessable()
@@ -193,7 +209,7 @@ class TenantForgetTest extends TestCase
         $this->app->instance(TenantForgetService::class, $spy);
 
         $response = $this->actingAs($this->admin, 'landlord')
-            ->postJson(route('platform.admin.tenants.forget', $tenantId), [
+            ->postJson(route('admin.tenants.forget', $tenantId), [
                 'reason' => 'GDPR erasure request received from data subject.',
                 'confirm' => '1',
             ]);
@@ -217,13 +233,15 @@ class TenantForgetTest extends TestCase
         $tenant = Tenant::factory()->active()->create();
         $tenantId = (string) $tenant->getTenantKey();
 
-        // Resolve the real service (real AuditService injected by the container).
-        /** @var TenantForgetService $service */
-        $service = $this->app->make(TenantForgetService::class);
+        // Subclass to no-op the actual DROP DATABASE — sqlite doesn't support
+        // it. Audit + forceDelete are still exercised by the parent forget().
+        $service = new class($this->app->make(\Aero\Contracts\AuditServiceInterface::class)) extends TenantForgetService {
+            protected function dropTenantDatabase(string $tenantId, string $subdomain, string $databaseName): void
+            {
+                // intentionally no-op in test
+            }
+        };
 
-        // The tenant has no real database in the sqlite-memory test environment.
-        // resolveDatabaseName() returns null when database()->getName() is empty/throws,
-        // so the DROP DATABASE path is safely skipped — only the audit + forceDelete run.
         $service->forget($tenant, 'GDPR erasure request received from data subject.', $this->admin->id);
 
         // Audit row must exist in platform_audit_logs (central connection, platform scope).

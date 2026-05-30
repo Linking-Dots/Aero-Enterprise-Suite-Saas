@@ -98,7 +98,7 @@ class TenantForgetService
      *
      * @throws Throwable On hard failure (bad name format, central-DB collision, SQL error).
      */
-    private function dropTenantDatabase(string $tenantId, string $subdomain, string $databaseName): void
+    protected function dropTenantDatabase(string $tenantId, string $subdomain, string $databaseName): void
     {
         // Guard 1: allow only safe characters (alphanumeric, underscore, dash).
         if (! preg_match('/^[a-zA-Z0-9_\-]+$/', $databaseName)) {
