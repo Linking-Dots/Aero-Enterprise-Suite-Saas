@@ -2002,4 +2002,63 @@ return [
             ],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Per-Submodule Licensing Tiers (HRM Push H.T3)
+    |--------------------------------------------------------------------------
+    |
+    | Phase 1 audit found HRM only declared module-level 'min_plan' => 'basic',
+    | making it impossible to tier the package as Basic/Pro/Enterprise. This
+    | block maps each submodule code → the minimum plan tier required.
+    |
+    | Plan tier order (low → high):
+    |   'free' < 'basic' < 'professional' < 'enterprise'
+    |
+    | A tenant on tier T can access any submodule whose min tier is <= T.
+    | HrmTierLicenseService resolves the required tier for a submodule code
+    | and HrmTierLicenseMiddleware enforces the comparison at request time.
+    |
+    | Operators wanting custom packaging override this in a host-level config
+    | publish: `config/aero-hrm-licensing.php` takes precedence at runtime.
+    |
+    */
+
+    'tier_licensing' => [
+
+        // Free tier — minimal self-service for very small teams
+        'employee-self-service' => 'free',
+
+        // Basic tier — core HR for small businesses
+        'employees'             => 'basic',
+        'attendance'            => 'basic',
+        'leaves'                => 'basic',
+        'announcements'         => 'basic',
+        'events'                => 'basic',
+
+        // Professional tier — payroll & performance for growing teams
+        'payroll'               => 'professional',
+        'expenses'              => 'professional',
+        'performance'           => 'professional',
+        'training'              => 'professional',
+        'assets'                => 'professional',
+        'disciplinary'          => 'professional',
+        'recruitment'           => 'professional',
+        'compensation-planning' => 'professional',
+        'overtime'              => 'professional',
+        'benefits'              => 'professional',
+
+        // Enterprise tier — analytics, succession, advanced HR ops
+        'hr-analytics'          => 'enterprise',
+        'succession-planning'   => 'enterprise',
+        'career-pathing'        => 'enterprise',
+        'feedback-360'          => 'enterprise',
+        'workforce-planning'    => 'enterprise',
+        'grievances'            => 'enterprise',
+        'exit-interviews'       => 'enterprise',
+        'pulse-surveys'         => 'enterprise',
+        'ai-analytics'          => 'enterprise',
+        'dei-analytics'         => 'enterprise',
+        'employee-history'      => 'enterprise',
+    ],
 ];
