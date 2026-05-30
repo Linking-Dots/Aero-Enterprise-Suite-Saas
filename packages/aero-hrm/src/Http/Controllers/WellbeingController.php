@@ -10,6 +10,7 @@ use Aero\HRM\Services\AIAnalytics\BurnoutRiskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -38,23 +39,33 @@ class WellbeingController extends Controller
                 })
                 ->values();
 
+            // Axis C C1 — aggregate in SQL, not by loading the whole table into PHP.
+            // Driver-aware month bucket (mysql/sqlite/pgsql) for the 6-month trend.
+            $monthExpr = match (DB::connection()->getDriverName()) {
+                'sqlite' => "strftime('%Y-%m', burnout_calculated_at)",
+                'pgsql' => "to_char(burnout_calculated_at, 'YYYY-MM')",
+                default => "DATE_FORMAT(burnout_calculated_at, '%Y-%m')",
+            };
+
             $riskTrend = EmployeeRiskScore::query()
                 ->whereNotNull('burnout_calculated_at')
                 ->where('burnout_calculated_at', '>=', now()->subMonths(6)->startOfMonth())
-                ->orderBy('burnout_calculated_at')
-                ->get()
-                ->groupBy(fn (EmployeeRiskScore $risk) => $risk->burnout_calculated_at?->format('Y-m'))
-                ->map(function (Collection $group, string $month): array {
-                    return [
-                        'month' => $month,
-                        'average_risk' => round((float) $group->avg('burnout_risk_score'), 2),
-                        'high_risk_count' => $group->where('burnout_risk_score', '>=', 60)->count(),
-                        'total' => $group->count(),
-                    ];
-                })
-                ->values();
+                ->selectRaw("{$monthExpr} as month")
+                ->selectRaw('ROUND(AVG(burnout_risk_score), 2) as average_risk')
+                ->selectRaw('SUM(CASE WHEN burnout_risk_score >= 60 THEN 1 ELSE 0 END) as high_risk_count')
+                ->selectRaw('COUNT(*) as total')
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
 
-            $allScores = EmployeeRiskScore::query()->whereNotNull('burnout_risk_score')->get();
+            // Single-row conditional aggregate instead of loading every score row.
+            $stats = EmployeeRiskScore::query()
+                ->whereNotNull('burnout_risk_score')
+                ->selectRaw('COUNT(*) as total_monitored')
+                ->selectRaw('SUM(CASE WHEN burnout_risk_score >= 60 THEN 1 ELSE 0 END) as high_risk')
+                ->selectRaw('SUM(CASE WHEN burnout_risk_score >= 40 AND burnout_risk_score < 60 THEN 1 ELSE 0 END) as medium_risk')
+                ->selectRaw('SUM(CASE WHEN burnout_risk_score < 40 THEN 1 ELSE 0 END) as low_risk')
+                ->first();
 
             return Inertia::render('HRM/Wellbeing/Dashboard', [
                 'title' => 'Wellbeing & Burnout Monitor',
@@ -62,10 +73,10 @@ class WellbeingController extends Controller
                 'departmentRiskSummary' => $departmentRiskSummary,
                 'riskTrend' => $riskTrend,
                 'stats' => [
-                    'high_risk' => $allScores->where('burnout_risk_score', '>=', 60)->count(),
-                    'medium_risk' => $allScores->whereBetween('burnout_risk_score', [40, 59.99])->count(),
-                    'low_risk' => $allScores->where('burnout_risk_score', '<', 40)->count(),
-                    'total_monitored' => $allScores->count(),
+                    'high_risk' => (int) ($stats->high_risk ?? 0),
+                    'medium_risk' => (int) ($stats->medium_risk ?? 0),
+                    'low_risk' => (int) ($stats->low_risk ?? 0),
+                    'total_monitored' => (int) ($stats->total_monitored ?? 0),
                 ],
             ]);
         } catch (Throwable $exception) {
