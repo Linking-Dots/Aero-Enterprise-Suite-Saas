@@ -191,15 +191,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Filesystem (Phase 0 T5)
+    | Filesystem (Phase 0 T5 + Audit D5a)
     |--------------------------------------------------------------------------
     |
     | Required by Stancl FilesystemTenancyBootstrapper. The disks listed here
-    | get a tenant-suffixed root at runtime; uploads to disk('local') and
-    | disk('public') become tenant-isolated paths under storage/app/.
+    | get a tenant-suffixed root at runtime; uploads to disk('local'),
+    | disk('public'), and disk('s3') become tenant-isolated paths.
     |
-    | Operator must ensure config/filesystems.php defines 'local' and 'public'
-    | disks (Laravel defaults). For S3 deployments, also list 's3'.
+    | For local/public: root_override sets the disk root to a per-tenant
+    | subdirectory under storage/app/.
+    |
+    | For S3: the bootstrapper prepends `tenant-{id}/` to every key. This is
+    | the PREFIX strategy — single bucket, per-tenant key namespace. An
+    | alternative (per-tenant BUCKET) is documented at `s3_strategy` below
+    | and requires custom provisioning per tenant create.
+    |
+    | Operator must ensure config/filesystems.php defines 'local', 'public',
+    | and 's3' disks. The s3 disk must have valid AWS credentials, region,
+    | and bucket configured via env (AWS_*).
     |
     */
 
@@ -218,6 +227,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | S3 Tenancy Strategy (Audit D5a)
+    |--------------------------------------------------------------------------
+    |
+    | How tenant data is isolated on S3:
+    |   - 'prefix' (default): single bucket, every key is namespaced as
+    |     tenant-{id}/path/to/file. Cheap, no per-tenant provisioning, but
+    |     cross-tenant data leak risk if a bug bypasses the prefix.
+    |   - 'bucket': per-tenant bucket (tenant-{id}-aeos365). More isolation,
+    |     requires bucket creation on tenant provisioning + IAM scoping.
+    |     Use this for tenants with strict data-residency requirements.
+    |
+    */
+    's3_strategy' => env('TENANCY_S3_STRATEGY', 'prefix'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Bootstrappers
     |--------------------------------------------------------------------------
     |
@@ -230,7 +255,7 @@ return [
         \Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
         \Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class, // Re-enabled (Phase 0 T4) — REQUIRES CACHE_STORE=redis (tagging support)
         \Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class, // Re-enabled (Phase 0 T5) — requires 'filesystem' config block above
-        \Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
+        \Aero\Platform\Bootstrappers\FailClosedQueueTenancyBootstrapper::class, // Audit D5c — refuses jobs for suspended/deleted tenants instead of running them against a missing DB
     ],
 
     /*
