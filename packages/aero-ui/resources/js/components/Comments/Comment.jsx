@@ -63,7 +63,7 @@ export default function Comment({ comment, onEdit, onDelete, onReply, currentUse
               alt={comment.user?.name}
               size="md"
             />
-            <VStack gap={1} style={{ flex: 1 }}>
+            <VStack gap={1} className="aeos-flex-1">
               <HStack gap={2} align="center" justify="space-between">
                 <HStack gap={2} align="center">
                   <Text weight="medium">{comment.user?.name}</Text>
@@ -101,7 +101,7 @@ export default function Comment({ comment, onEdit, onDelete, onReply, currentUse
                   variant="ghost"
                   onClick={() => setShowReactions(!showReactions)}
                 >
-                  <Icon name="face-smile" style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+                  <Icon name="face-smile" className="aeos-icon-sm" />
                 </Button>
                 <Button
                   size="sm"

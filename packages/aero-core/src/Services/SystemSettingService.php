@@ -9,6 +9,61 @@ use Illuminate\Support\Facades\Crypt;
 
 class SystemSettingService
 {
+    /**
+     * Return all settings as a flat associative array suitable for Inertia props.
+     * Reads the single SystemSetting row and flattens its JSON columns.
+     */
+    public function allAsArray(): array
+    {
+        $setting = SystemSetting::current();
+
+        return [
+            'app_name' => $setting->company_name ?? config('app.name'),
+            'app_url' => config('app.url'),
+            'support_email' => $setting->support_email ?? '',
+            'timezone' => $setting->timezone ?? config('app.timezone', 'UTC'),
+            'date_format' => $setting->metadata['date_format'] ?? 'DD/MM/YYYY',
+            'time_format' => $setting->metadata['time_format'] ?? 'HH:mm',
+        ];
+    }
+
+    /**
+     * Get a single setting value by key.
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        $setting = SystemSetting::current();
+        $flat = $this->allAsArray();
+
+        return $flat[$key] ?? $default;
+    }
+
+    /**
+     * Set a single setting value by key.
+     * Maps flat keys to the appropriate SystemSetting column or JSON sub-key.
+     */
+    public function set(string $key, mixed $value): void
+    {
+        $setting = SystemSetting::current();
+
+        $directColumns = [
+            'app_name' => 'company_name',
+            'support_email' => 'support_email',
+            'timezone' => 'timezone',
+        ];
+
+        if (isset($directColumns[$key])) {
+            $setting->update([$directColumns[$key] => $value]);
+
+            return;
+        }
+
+        // Store unknown keys in metadata JSON column
+        $metadata = $setting->metadata ?? [];
+        $metadata[$key] = $value;
+        $setting->update(['metadata' => $metadata]);
+    }
+
     public function update(SystemSetting $setting, array $payload, array $files = []): SystemSetting
     {
         $branding = array_merge($setting->branding ?? [], $payload['branding'] ?? []);

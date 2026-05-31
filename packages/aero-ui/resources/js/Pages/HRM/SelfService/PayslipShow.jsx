@@ -115,7 +115,7 @@ export default function SelfServicePayslipShow({ payslip }) {
 
           <div
             className="flex flex-col gap-2 pt-4 mt-4 border-t"
-            style={{ borderColor: 'var(--aeos-divider)' }}
+            className="aeos-border-divider"
           >
             <HStack gap={4} align="center">
               <Box grow />

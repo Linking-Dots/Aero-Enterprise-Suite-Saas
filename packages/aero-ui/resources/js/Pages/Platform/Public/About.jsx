@@ -105,7 +105,7 @@ function MissionVision() {
   return (
     <Section size="lg" bg="surface">
       <Container>
-        <p className="aeos-pub-label" style={{ textAlign: 'center' }}>Mission & Vision</p>
+        <p className="aeos-pub-label aeos-text-center">Mission & Vision</p>
         <HStack gap={8} align="start">
           <VStack gap={4}>
             <Eyebrow tone="primary">Our Mission</Eyebrow>
@@ -228,11 +228,11 @@ function AboutCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Join us</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Build with a team that{' '}
               <span className="aeos-pub-gradient-text">means it.</span>
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 520 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
               We are hiring across engineering, design, product, and customer success.
               If you want to work on software that matters to real organizations — come build with us.
             </p>

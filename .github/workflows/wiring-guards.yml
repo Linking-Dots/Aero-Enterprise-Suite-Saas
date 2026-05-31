@@ -1,0 +1,63 @@
+name: Wiring Guards
+
+# Phase 0 Task 12 of foundation 10/10 push.
+#
+# Runs the regression guards established by Phase 0:
+#   - FacadeDisciplineTest    — no direct Cache::/Session::/Storage::disk('local')
+#                              in feature packages (foundation whitelisted)
+#   - EnvShapeTest            — production-shaped .env.example
+#   - SingleTenantIdentificationTest — no duplicate IdentifyTenant
+#
+# These tests ship initially RED (Phase 1 audit found violations). Per-package
+# plans (02-aero-core, 03-aero-platform, etc.) resolve them; this guard
+# prevents regressions.
+
+on:
+  pull_request:
+    branches: [main, develop, "feature/**"]
+  push:
+    branches: [main, develop]
+
+jobs:
+  facade-discipline:
+    name: Facade discipline + env shape + tenancy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          path: monorepo
+
+      - name: Checkout SaaS host (sibling repo, if available)
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: ${{ github.repository_owner }}/aeos365
+          path: aeos365
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, redis, gd, intl, bcmath
+          coverage: none
+
+      - name: Install host dependencies
+        if: hashFiles('aeos365/composer.json') != ''
+        working-directory: aeos365
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run Wiring tests (host)
+        if: hashFiles('aeos365/phpunit.xml') != ''
+        working-directory: aeos365
+        run: vendor/bin/phpunit --filter='Tests\\Feature\\Wiring\\'
+
+      - name: Run aero-core unit tests
+        working-directory: monorepo/packages/aero-core
+        run: |
+          if [ -f vendor/bin/phpunit ]; then
+            vendor/bin/phpunit tests/Unit
+          else
+            echo "::notice::aero-core has no local vendor — covered by host PHPUnit run above"
+          fi

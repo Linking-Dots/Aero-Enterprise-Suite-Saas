@@ -3,6 +3,8 @@
 use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Controllers\Admin\ActivityController;
 use Aero\Core\Http\Controllers\Admin\AddonController;
+use Aero\Core\Http\Controllers\Admin\AnnouncementController;
+use Aero\Core\Http\Controllers\Admin\ApiKeyController;
 use Aero\Core\Http\Controllers\Admin\AuditLogController;
 use Aero\Core\Http\Controllers\Admin\BackupConfigController;
 use Aero\Core\Http\Controllers\Admin\BackupController;
@@ -20,13 +22,16 @@ use Aero\Core\Http\Controllers\Admin\SystemHealthController;
 use Aero\Core\Http\Controllers\Admin\TagController;
 use Aero\Core\Http\Controllers\Admin\TrashController;
 use Aero\Core\Http\Controllers\Admin\UserPreferenceController;
+use Aero\Core\Http\Controllers\Admin\WebhookController;
 use Aero\Core\Http\Controllers\DashboardController;
 use Aero\Core\Http\Controllers\Navigation\UserNavigationController;
 use Aero\Core\Http\Controllers\Notification\NotificationController;
 use Aero\Core\Http\Controllers\Profile\NotificationPreferenceController;
+use Aero\Core\Http\Controllers\Profile\UserProfileController;
 use Aero\Core\Http\Controllers\Profile\UserProfileImageController;
 use Aero\Core\Http\Controllers\Search\GlobalSearchController;
 use Aero\Core\Http\Controllers\Settings\BrandingSettingsController;
+use Aero\Core\Http\Controllers\Settings\EmailTemplateController;
 use Aero\Core\Http\Controllers\Settings\IpWhitelistController;
 use Aero\Core\Http\Controllers\Settings\LocalizationSettingsController;
 use Aero\Core\Http\Controllers\Settings\MailSettingsController;
@@ -295,7 +300,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // USER MANAGEMENT ROUTES
     // ========================================================================
-    Route::prefix('users')->name('core.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
+    Route::prefix('api/users')->name('core.api.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
         // List & View
         Route::get('/', [CoreUserController::class, 'index'])->name('index');
         Route::get('/paginate', [CoreUserController::class, 'paginate'])->name('paginate');
@@ -358,7 +363,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-roles' capability can access these routes
-    Route::prefix('roles')->name('core.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
+    Route::prefix('api/roles')->name('core.api.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
         // View
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/export', [RoleController::class, 'exportRoles'])->name('export');
@@ -400,15 +405,41 @@ Route::middleware('auth:web')->group(function () {
     });
 
     // ========================================================================
-    // AUDIT LOGS
+    // AUDIT LOGS (CA-3 extended: security page, queue monitor, export)
     // ========================================================================
     Route::prefix('audit-logs')->name('core.audit-logs.')->middleware('hrmac:core.audit_logs.activity_logs.view')->group(function () {
         Route::get('/', [AuditLogController::class, 'index'])->name('index');
         Route::get('/activity', [AuditLogController::class, 'activityLogs'])->name('activity');
-        Route::get('/security', [AuditLogController::class, 'securityLogs'])->name('security');
         Route::get('/stats', [AuditLogController::class, 'stats'])->name('stats');
-        Route::post('/activity/export', [AuditLogController::class, 'exportActivityLogs'])->name('activity.export');
-        Route::post('/security/export', [AuditLogController::class, 'exportSecurityLogs'])->name('security.export');
+        Route::get('/export', [AuditLogController::class, 'export'])
+            ->middleware('hrmac:core.audit_logs.activity_logs.export')
+            ->name('export');
+        Route::post('/activity/export', [AuditLogController::class, 'exportActivityLogs'])
+            ->middleware('hrmac:core.audit_logs.activity_logs.export')
+            ->name('activity.export');
+        Route::post('/security/export', [AuditLogController::class, 'exportSecurityLogs'])
+            ->middleware('hrmac:core.audit_logs.security_logs.export')
+            ->name('security.export');
+
+        // Security log viewer (Inertia)
+        Route::get('/security', [AuditLogController::class, 'security'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.security_logs.view')
+            ->name('security');
+
+        // Queue / failed-jobs monitor
+        Route::get('/queues', [AuditLogController::class, 'queues'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.queue_monitor.view')
+            ->name('queues');
+        Route::post('/queues/retry/{id}', [AuditLogController::class, 'retryJob'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.queue_monitor.retry')
+            ->name('queues.retry');
+        Route::post('/queues/flush', [AuditLogController::class, 'flushQueue'])
+            ->withoutMiddleware('hrmac:core.audit_logs.activity_logs.view')
+            ->middleware('hrmac:core.audit_logs.queue_monitor.flush')
+            ->name('queues.flush');
     });
 
     // ========================================================================
@@ -515,6 +546,31 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/refresh', [SystemHealthController::class, 'refresh'])
             ->middleware('hrmac:core.system_health.overview.view')
             ->name('refresh');
+
+        // CA-3 additions: run diagnostics, sub-section pages, cache & scheduled tasks
+        Route::post('/run-checks', [SystemHealthController::class, 'runChecks'])
+            ->middleware('hrmac:core.system_health.overview.view')
+            ->name('run-checks');
+        Route::get('/performance', [SystemHealthController::class, 'performance'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.metrics.view')
+            ->name('performance');
+        Route::get('/cache', [SystemHealthController::class, 'cacheStatus'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.cache.view')
+            ->name('cache');
+        Route::post('/cache/clear', [SystemHealthController::class, 'clearCache'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.cache.view')
+            ->name('cache.clear');
+        Route::get('/scheduled-tasks', [SystemHealthController::class, 'scheduledTasks'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.services.view')
+            ->name('scheduled-tasks');
+        Route::post('/scheduled-tasks/run', [SystemHealthController::class, 'runTask'])
+            ->withoutMiddleware('hrmac:core.system_health.overview.view')
+            ->middleware('hrmac:core.system_health.services.view')
+            ->name('scheduled-tasks.run');
     });
 
     // ========================================================================
@@ -630,6 +686,15 @@ Route::middleware('auth:web')->group(function () {
             Route::post('/test-ip', [IpWhitelistController::class, 'testIp'])->name('test-ip')->middleware('hrmac:core.settings.ip_whitelist.edit');
         });
 
+        // Email Templates
+        Route::prefix('email-templates')->name('email-templates.')->middleware('hrmac:core.settings.email_templates.view')->group(function () {
+            Route::get('/', [EmailTemplateController::class, 'index'])->name('index');
+            Route::post('/', [EmailTemplateController::class, 'store'])->name('store')->middleware('hrmac:core.settings.email_templates.create');
+            Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('update')->middleware('hrmac:core.settings.email_templates.edit');
+            Route::delete('/{template}', [EmailTemplateController::class, 'destroy'])->name('destroy')->middleware('hrmac:core.settings.email_templates.delete');
+            Route::get('/{template}/preview', [EmailTemplateController::class, 'preview'])->name('preview');
+        });
+
         // Domain Management (SaaS mode only - requires aero-platform)
         Route::prefix('domains')->name('domains.')->group(function () {
             // Only register domain routes if Platform is installed
@@ -658,6 +723,26 @@ Route::middleware('auth:web')->group(function () {
                 return response()->json(['message' => 'Usage tracking not available'], 404);
             })->name('index');
         });
+
+        // ── CA-2: canonical short-name aliases ───────────────────────────────
+        Route::get('/system', [SystemSettingController::class, 'index'])
+            ->name('system')->middleware('hrmac:core.settings.general.view');
+        Route::get('/security', [SecuritySettingsController::class, 'index'])
+            ->name('security')->middleware('hrmac:core.settings.security.view');
+        Route::post('/security', [SecuritySettingsController::class, 'update'])
+            ->name('security.update')->middleware('hrmac:core.settings.security.edit');
+        Route::get('/localization', [LocalizationSettingsController::class, 'index'])
+            ->name('localization')->middleware('hrmac:core.settings.localization.view');
+        Route::get('/branding', [BrandingSettingsController::class, 'index'])
+            ->name('branding')->middleware('hrmac:core.settings.branding.view');
+        Route::get('/mail', [MailSettingsController::class, 'index'])
+            ->name('mail')->middleware('hrmac:core.settings.mail_settings.view');
+        Route::post('/mail/test', [MailSettingsController::class, 'testSend'])
+            ->name('mail.test')->middleware('hrmac:core.settings.mail_settings.test');
+        Route::get('/password-policy', [PasswordPolicyController::class, 'index'])
+            ->name('password-policy')->middleware('hrmac:core.settings.password_policy.view');
+        Route::get('/ip-whitelist', [IpWhitelistController::class, 'index'])
+            ->name('ip-whitelist')->middleware('hrmac:core.settings.ip_whitelist.view');
     });
 
     // Session management and 2FA routes are registered by AeroAuthServiceProvider.
@@ -666,21 +751,54 @@ Route::middleware('auth:web')->group(function () {
     // ORGANIZATION PROFILE ROUTES
     // ========================================================================
     Route::prefix('organization')->name('core.organization.')->group(function () {
-        Route::get('/profile', [OrganizationProfileController::class, 'index'])
-            ->name('profile.index')
+        // Company profile
+        Route::get('/profile', [OrganizationProfileController::class, 'profile'])
+            ->name('profile')
             ->middleware('hrmac:core.organization.org_profile.view');
-        Route::put('/profile', [OrganizationProfileController::class, 'update'])
+        Route::post('/profile', [OrganizationProfileController::class, 'updateProfile'])
             ->name('profile.update')
             ->middleware('hrmac:core.organization.org_profile.update');
+
+        // Tax / legal identity
+        Route::get('/identity', [OrganizationProfileController::class, 'identity'])
+            ->name('identity')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/identity', [OrganizationProfileController::class, 'updateIdentity'])
+            ->name('identity.update')
+            ->middleware('hrmac:core.organization.org_identity.update');
+
+        // Addresses
+        Route::get('/addresses', [OrganizationProfileController::class, 'addresses'])
+            ->name('addresses')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/addresses', [OrganizationProfileController::class, 'updateAddresses'])
+            ->name('addresses.update')
+            ->middleware('hrmac:core.organization.org_addresses.manage');
+
+        // Fiscal year
+        Route::get('/fiscal-year', [OrganizationProfileController::class, 'fiscalYear'])
+            ->name('fiscal-year')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/fiscal-year', [OrganizationProfileController::class, 'updateFiscalYear'])
+            ->name('fiscal-year.update')
+            ->middleware('hrmac:core.organization.fiscal_year.manage');
+
+        // Contacts
+        Route::get('/contacts', [OrganizationProfileController::class, 'contacts'])
+            ->name('contacts')
+            ->middleware('hrmac:core.organization.org_profile.view');
+        Route::post('/contacts', [OrganizationProfileController::class, 'updateContacts'])
+            ->name('contacts.update')
+            ->middleware('hrmac:core.organization.org_contacts.manage');
     });
 
     // ========================================================================
     // PROFILE ROUTES
     // ========================================================================
     Route::prefix('profile')->name('core.profile.')->group(function () {
-        Route::get('/', function () {
-            return redirect()->route('core.profile.security');
-        })->name('index');
+        Route::get('/', [UserProfileController::class, 'index'])->name('index');
+        Route::post('/update', [UserProfileController::class, 'update'])->name('update');
+        Route::post('/password', [UserProfileController::class, 'changePassword'])->name('password');
 
         Route::get('/security', function () {
             $user = auth()->user();
@@ -979,8 +1097,153 @@ Route::middleware('auth:web')->group(function () {
             ->name('empty-all');
     });
 
+    // ========================================================================
+    // API KEYS (CA-4)
+    // ========================================================================
+    Route::prefix('api/keys')->name('core.api.keys.')->group(function () {
+        Route::get('/', [ApiKeyController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.api_webhooks.api_keys.view');
+        Route::post('/', [ApiKeyController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.api_webhooks.api_keys.create');
+        Route::post('/{id}/revoke', [ApiKeyController::class, 'revoke'])
+            ->name('revoke')
+            ->middleware('hrmac:core.api_webhooks.api_keys.revoke');
+    });
+
+    // ========================================================================
+    // WEBHOOKS (CA-4)
+    // ========================================================================
+    Route::prefix('api/webhooks')->name('core.api.webhooks.')->group(function () {
+        Route::get('/', [WebhookController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.view');
+        Route::post('/', [WebhookController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.create');
+        Route::put('/{id}', [WebhookController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.update');
+        Route::delete('/{id}', [WebhookController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.delete');
+        Route::post('/{id}/test', [WebhookController::class, 'test'])
+            ->name('test')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.test');
+        Route::get('/{id}/deliveries', [WebhookController::class, 'deliveries'])
+            ->name('deliveries')
+            ->middleware('hrmac:core.api_webhooks.webhooks_outbound.logs');
+    });
+
     // FCM Token Update
     Route::post('/update-fcm-token', [CoreUserController::class, 'updateFcmToken'])->name('core.updateFcmToken');
+
+    // ========================================================================
+    // ANNOUNCEMENTS (CA-1 — Inertia/RedirectResponse routes)
+    // ========================================================================
+    Route::prefix('announcements')->name('core.announcements.')->group(function () {
+        Route::get('/', [AnnouncementController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.announcements.announcement_list.view');
+        Route::post('/', [AnnouncementController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.announcements.announcement_list.create');
+        Route::patch('/{announcement}', [AnnouncementController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.announcements.announcement_list.update');
+        Route::post('/{announcement}/publish', [AnnouncementController::class, 'publish'])
+            ->name('publish')
+            ->middleware('hrmac:core.announcements.announcement_list.publish');
+        Route::post('/{announcement}/archive', [AnnouncementController::class, 'archive'])
+            ->name('archive')
+            ->middleware('hrmac:core.announcements.announcement_list.archive');
+        Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.announcements.announcement_list.delete');
+    });
+
+    // ========================================================================
+    // USER MANAGEMENT — Inertia/RedirectResponse routes (CA-1)
+    // These complement the existing JSON API user routes above.
+    // ========================================================================
+    Route::prefix('users')->name('core.users.')->group(function () {
+        Route::get('/', [CoreUserController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.user_management.users.view');
+        Route::post('/', [CoreUserController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.user_management.users.create');
+        Route::get('/create', [CoreUserController::class, 'create'])
+            ->name('create')
+            ->middleware('hrmac:core.user_management.users.create');
+        Route::get('/invitations', [CoreUserController::class, 'invitations'])
+            ->name('invitations.index')
+            ->middleware('hrmac:core.user_management.user_invitations.view');
+        Route::post('/invitations', [CoreUserController::class, 'invite'])
+            ->name('invitations.store')
+            ->middleware('hrmac:core.user_management.user_invitations.invite');
+        Route::post('/invitations/{id}/resend', [CoreUserController::class, 'resendInvitation'])
+            ->name('invitations.resend')
+            ->middleware('hrmac:core.user_management.user_invitations.resend');
+        Route::delete('/invitations/{id}', [CoreUserController::class, 'cancelInvitation'])
+            ->name('invitations.cancel')
+            ->middleware('hrmac:core.user_management.user_invitations.cancel');
+        Route::post('/bulk-delete', [CoreUserController::class, 'bulkDelete'])
+            ->name('bulk-delete')
+            ->middleware('hrmac:core.user_management.users.bulk_delete');
+        Route::post('/bulk-assign-roles', [CoreUserController::class, 'bulkAssignRoles'])
+            ->name('bulk-assign-roles')
+            ->middleware('hrmac:core.user_management.users.bulk_assign_roles');
+        Route::post('/stop-impersonating', [CoreUserController::class, 'stopImpersonating'])
+            ->name('stop-impersonating');
+        Route::get('/{user}', [CoreUserController::class, 'show'])
+            ->name('show')
+            ->middleware('hrmac:core.user_management.users.view');
+        Route::get('/{user}/edit', [CoreUserController::class, 'edit'])
+            ->name('edit')
+            ->middleware('hrmac:core.user_management.users.edit');
+        Route::put('/{user}', [CoreUserController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.user_management.users.edit');
+        Route::delete('/{user}', [CoreUserController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.user_management.users.delete');
+        Route::post('/{user}/toggle-status', [CoreUserController::class, 'toggleStatus'])
+            ->name('toggle-status')
+            ->middleware('hrmac:core.user_management.users.activate');
+        Route::post('/{user}/impersonate', [CoreUserController::class, 'impersonate'])
+            ->name('impersonate')
+            ->middleware('hrmac:core.user_management.users.impersonate');
+    });
+
+    // ========================================================================
+    // ROLES — Inertia/RedirectResponse routes (CA-1)
+    // These complement the existing JSON API role routes above.
+    // ========================================================================
+    Route::prefix('roles')->name('core.roles.')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.roles_permissions.roles.view');
+        Route::get('/create', [RoleController::class, 'create'])
+            ->name('create')
+            ->middleware('hrmac:core.roles_permissions.roles.create');
+        Route::post('/', [RoleController::class, 'store'])
+            ->name('store')
+            ->middleware('hrmac:core.roles_permissions.roles.create');
+        Route::get('/{role}/edit', [RoleController::class, 'edit'])
+            ->name('edit')
+            ->middleware('hrmac:core.roles_permissions.roles.edit');
+        Route::put('/{role}', [RoleController::class, 'update'])
+            ->name('update')
+            ->middleware('hrmac:core.roles_permissions.roles.edit');
+        Route::delete('/{role}', [RoleController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('hrmac:core.roles_permissions.roles.delete');
+        Route::post('/{role}/sync-permissions', [RoleController::class, 'syncPermissions'])
+            ->name('sync-permissions')
+            ->middleware('hrmac:core.roles_permissions.roles.permissions');
+    });
 
     // ========================================================================
     // ADD-ON MANAGEMENT — standalone mode only
@@ -988,5 +1251,168 @@ Route::middleware('auth:web')->group(function () {
     Route::prefix('addons')->name('addons.')->group(function () {
         Route::get('/', [AddonController::class, 'index'])->name('index');
         Route::post('/install', [AddonController::class, 'install'])->name('install');
+    });
+
+    // ========================================================================
+    // MOBILE / PWA ROUTES (CA-7)
+    // ========================================================================
+    Route::prefix('mobile-pwa')->name('core.mobile.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'index'])
+            ->name('index')
+            ->middleware('hrmac:core.mobile_pwa.pwa_config.view');
+        Route::post('/pwa', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'updatePwa'])
+            ->name('pwa.update')
+            ->middleware('hrmac:core.mobile_pwa.pwa_config.configure');
+        Route::post('/push', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'updatePush'])
+            ->name('push.update')
+            ->middleware('hrmac:core.mobile_pwa.push_notifications.configure');
+        Route::post('/mobile-app', [\Aero\Core\Http\Controllers\Admin\MobileController::class, 'updateMobileApp'])
+            ->name('mobile-app.update')
+            ->middleware('hrmac:core.mobile_pwa.mobile_app_config.configure');
+    });
+
+    // ========================================================================
+    // HELP & SUPPORT (CA gaps)
+    // ========================================================================
+    Route::prefix('help')->name('core.help.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.help_support.help_center.view');
+        Route::get('/kb', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'knowledgeBase'])
+            ->name('kb')->middleware('hrmac:core.help_support.knowledge_base.view');
+        Route::get('/tickets', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'tickets'])
+            ->name('tickets.index')->middleware('hrmac:core.help_support.support_tickets.view');
+        Route::post('/tickets', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'storeTicket'])
+            ->name('tickets.store')->middleware('hrmac:core.help_support.support_tickets.create');
+        Route::get('/tours', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'tours'])
+            ->name('tours')->middleware('hrmac:core.help_support.onboarding_tours.view');
+        Route::get('/whats-new', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'whatsNew'])
+            ->name('whats-new')->middleware('hrmac:core.help_support.whats_new.view');
+        Route::get('/feedback', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'feedback'])
+            ->name('feedback.index')->middleware('hrmac:core.help_support.feedback.view');
+        Route::post('/feedback', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'submitFeedback'])
+            ->name('feedback.store')->middleware('hrmac:core.help_support.feedback.submit');
+        Route::post('/feedback/{id}/vote', [\Aero\Core\Http\Controllers\Admin\HelpSupportController::class, 'voteFeedback'])
+            ->name('feedback.vote')->middleware('hrmac:core.help_support.feedback.vote');
+    });
+
+    // ========================================================================
+    // MAINTENANCE MODE (CA gaps)
+    // ========================================================================
+    Route::prefix('maintenance-mode')->name('core.maintenance.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.view');
+        Route::post('/enable', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'enable'])
+            ->name('enable')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.enable');
+        Route::post('/disable', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'disable'])
+            ->name('disable')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.disable');
+        Route::post('/update', [\Aero\Core\Http\Controllers\Admin\MaintenanceModeController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.maintenance_mode.maintenance_toggle.configure');
+    });
+
+    // ========================================================================
+    // NUMBERING (CA gaps)
+    // ========================================================================
+    Route::prefix('numbering')->name('core.numbering.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.numbering.sequences.view');
+        Route::post('/sequences', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'storeSequence'])
+            ->name('sequences.store')->middleware('hrmac:core.numbering.sequences.create');
+        Route::post('/sequences/{entityType}/reset', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'resetSequence'])
+            ->name('sequences.reset')->middleware('hrmac:core.numbering.sequences.reset');
+        Route::post('/formats', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'storeFormat'])
+            ->name('formats.store')->middleware('hrmac:core.numbering.numbering_formats.manage');
+        Route::delete('/formats/{id}', [\Aero\Core\Http\Controllers\Admin\NumberingController::class, 'destroyFormat'])
+            ->name('formats.destroy')->middleware('hrmac:core.numbering.numbering_formats.manage');
+    });
+
+    // ========================================================================
+    // PRINT TEMPLATES (CA gaps)
+    // ========================================================================
+    Route::prefix('print-templates')->name('core.print-templates.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.print_templates.templates.view');
+        Route::post('/', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'store'])
+            ->name('store')->middleware('hrmac:core.print_templates.templates.create');
+        Route::put('/{id}', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.print_templates.templates.update');
+        Route::delete('/{id}', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'destroy'])
+            ->name('destroy')->middleware('hrmac:core.print_templates.templates.delete');
+        Route::get('/{id}/preview', [\Aero\Core\Http\Controllers\Admin\PrintTemplateController::class, 'preview'])
+            ->name('preview')->middleware('hrmac:core.print_templates.templates.preview');
+    });
+
+    // ========================================================================
+    // SETTINGS — INTEGRATIONS (CA gaps)
+    // ========================================================================
+    Route::prefix('settings/integrations')->name('core.settings.integrations.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Settings\IntegrationsController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.settings.integrations.view');
+        Route::post('/{integration}', [\Aero\Core\Http\Controllers\Settings\IntegrationsController::class, 'update'])
+            ->name('update')->middleware('hrmac:core.settings.integrations.configure');
+    });
+
+    // ========================================================================
+    // LICENSE MANAGEMENT (CA gaps — standalone only)
+    // ========================================================================
+    Route::prefix('license')->name('core.license.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.license_management.license_overview.view');
+        Route::get('/activate', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'activation'])
+            ->name('activation')->middleware('hrmac:core.license_management.license_activation.view');
+        Route::post('/activate', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'activate'])
+            ->name('activate')->middleware('hrmac:core.license_management.license_activation.activate');
+        Route::post('/deactivate', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'deactivate'])
+            ->name('deactivate')->middleware('hrmac:core.license_management.license_activation.deactivate');
+        Route::get('/features', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'features'])
+            ->name('features')->middleware('hrmac:core.license_management.license_features.view');
+        Route::get('/renewal', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'renewal'])
+            ->name('renewal')->middleware('hrmac:core.license_management.license_renewal.view');
+        Route::get('/updates', [\Aero\Core\Http\Controllers\Admin\LicenseManagementController::class, 'updates'])
+            ->name('updates')->middleware('hrmac:core.license_management.updates.check');
+    });
+
+    // ========================================================================
+    // API — PAT, RATE LIMITS, USAGE, DOCS (CA gaps)
+    // ========================================================================
+    Route::prefix('api/pat')->name('core.api.pat.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\PersonalAccessTokenController::class, 'index'])
+            ->name('index')->middleware('hrmac:core.api_webhooks.pat.view');
+        Route::post('/', [\Aero\Core\Http\Controllers\Admin\PersonalAccessTokenController::class, 'store'])
+            ->name('store')->middleware('hrmac:core.api_webhooks.pat.create');
+        Route::post('/{id}/revoke', [\Aero\Core\Http\Controllers\Admin\PersonalAccessTokenController::class, 'revoke'])
+            ->name('revoke')->middleware('hrmac:core.api_webhooks.pat.revoke');
+    });
+
+    Route::get('/api/rate-limits', [\Aero\Core\Http\Controllers\Admin\RateLimitController::class, 'index'])
+        ->name('core.api.rate-limits.index')->middleware('hrmac:core.api_webhooks.rate_limits.view');
+    Route::post('/api/rate-limits', [\Aero\Core\Http\Controllers\Admin\RateLimitController::class, 'update'])
+        ->name('core.api.rate-limits.update')->middleware('hrmac:core.api_webhooks.rate_limits.configure');
+
+    Route::get('/api/usage', [\Aero\Core\Http\Controllers\Admin\ApiUsageController::class, 'index'])
+        ->name('core.api.usage.index')->middleware('hrmac:core.api_webhooks.api_usage.view');
+
+    Route::get('/api/docs', [\Aero\Core\Http\Controllers\Admin\ApiDocsController::class, 'index'])
+        ->name('core.api.docs.index')->middleware('hrmac:core.api_webhooks.api_docs.view');
+
+    // ========================================================================
+    // SYSTEM HEALTH — STORAGE (CA gaps)
+    // ========================================================================
+    Route::get('/system-health/storage', [\Aero\Core\Http\Controllers\Admin\SystemHealthController::class, 'storageUsage'])
+        ->name('core.system-health.storage')->middleware('hrmac:core.system_health.storage_usage.view');
+
+    // ========================================================================
+    // BACKUP — MANUAL PAGE (CA gaps)
+    // ========================================================================
+    Route::get('/backup/manual', [\Aero\Core\Http\Controllers\Admin\BackupController::class, 'manualPage'])
+        ->name('core.backup.manual')->middleware('hrmac:core.backup_restore.manual_backup.create');
+
+    // ========================================================================
+    // BANNERS (CA gaps)
+    // ========================================================================
+    Route::prefix('announcements/banners')->name('core.announcements.banners.')->group(function () {
+        Route::get('/', [\Aero\Core\Http\Controllers\Admin\AnnouncementController::class, 'banners'])
+            ->name('index')->middleware('hrmac:core.announcements.banners.view');
+        Route::post('/', [\Aero\Core\Http\Controllers\Admin\AnnouncementController::class, 'storeBanner'])
+            ->name('store')->middleware('hrmac:core.announcements.banners.manage');
     });
 });

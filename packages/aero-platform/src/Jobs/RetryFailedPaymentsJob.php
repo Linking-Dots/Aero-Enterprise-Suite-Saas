@@ -4,37 +4,58 @@ namespace Aero\Platform\Jobs;
 
 use Aero\Notifications\Services\Mail\MailService;
 use Aero\Notifications\Services\Sms\SmsService;
+use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\Tenant;
+use Aero\Platform\Services\Billing\SubscriptionBillingService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Plan 03 (aero-platform) Task 3 of foundation 10/10 push.
+ *
+ * REWRITTEN to close two production bugs:
+ *   B-2: queried subscriptions.tenant_id (column gone — polymorphic billable
+ *        means this returned zero rows, so past_due tenants NEVER auto-recovered)
+ *   B-2: attemptPaymentCharge() was `rand(0, 100) > 60` — fake stub with
+ *        40% random "success" rate. A real subscription that was past_due
+ *        could randomly flip back to active without any payment occurring.
+ *
+ * Now uses Eloquent Subscription model + SubscriptionBillingService::retryPayment()
+ * which integrates with Cashier/Stripe properly or throws when no gateway
+ * is configured (instead of pretending success).
+ */
 class RetryFailedPaymentsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * Maximum number of retry attempts
+     * Maximum number of retry attempts.
      */
     protected int $maxRetries = 3;
 
-    /**
-     * Execute the job.
-     */
+    public function __construct()
+    {
+        $this->onQueue('billing'); // Axis C C3
+    }
+
     public function handle(): void
     {
         Log::info('RetryFailedPaymentsJob: Starting failed payment retry processing');
 
-        // Get subscriptions with failed payments that need retry
-        $failedPayments = DB::table('subscriptions')
+        $failedPayments = Subscription::query()
             ->where('status', 'past_due')
             ->where('retry_count', '<', $this->maxRetries)
-            ->whereDate('next_retry_at', '<=', now())
-            ->whereNull('deleted_at')
+            ->where(function ($q) {
+                $q->whereNull('next_retry_at')
+                  ->orWhere('next_retry_at', '<=', now());
+            })
+            ->where('billable_type', Tenant::class)
             ->get();
 
         Log::info("RetryFailedPaymentsJob: Found {$failedPayments->count()} failed payments to retry");
@@ -42,7 +63,7 @@ class RetryFailedPaymentsJob implements ShouldQueue
         foreach ($failedPayments as $subscription) {
             try {
                 $this->retryPayment($subscription);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error("RetryFailedPaymentsJob: Failed to retry payment for subscription {$subscription->id}", [
                     'error' => $e->getMessage(),
                     'subscription_id' => $subscription->id,
@@ -54,60 +75,44 @@ class RetryFailedPaymentsJob implements ShouldQueue
     }
 
     /**
-     * Retry payment for a specific subscription
-     *
-     * @param  object  $subscription
+     * Retry payment for a specific subscription.
      */
-    protected function retryPayment($subscription): void
+    protected function retryPayment(Subscription $subscription): void
     {
-        $retryCount = $subscription->retry_count + 1;
+        $retryCount = (int) $subscription->retry_count + 1;
         $isLastAttempt = $retryCount >= $this->maxRetries;
 
-        // Get tenant and plan information
-        $tenant = DB::table('tenants')->find($subscription->tenant_id);
-        $plan = DB::table('plans')->find($subscription->plan_id);
+        $tenant = $subscription->tenant; // polymorphic accessor
+        $plan = $subscription->plan_id ? Plan::find($subscription->plan_id) : null;
 
         if (! $tenant || ! $plan) {
             Log::warning("RetryFailedPaymentsJob: Tenant or plan not found for subscription {$subscription->id}");
-
             return;
         }
 
-        // TODO: Integrate with payment gateway (Stripe/Paddle) to retry charge
-        // For now, we'll simulate the retry logic
         $paymentSuccessful = $this->attemptPaymentCharge($subscription);
 
         if ($paymentSuccessful) {
-            // Payment successful - update subscription status
-            DB::table('subscriptions')
-                ->where('id', $subscription->id)
-                ->update([
-                    'status' => 'active',
-                    'retry_count' => 0,
-                    'next_retry_at' => null,
-                    'updated_at' => now(),
-                ]);
+            $subscription->forceFill([
+                'status' => 'active',
+                'retry_count' => 0,
+                'next_retry_at' => null,
+            ])->save();
 
             $this->sendPaymentSuccessNotification($tenant, $subscription);
 
             Log::info("RetryFailedPaymentsJob: Payment retry successful for subscription {$subscription->id}");
         } else {
-            // Payment failed - update retry info
             $nextRetryDelay = $this->calculateNextRetryDelay($retryCount);
 
-            DB::table('subscriptions')
-                ->where('id', $subscription->id)
-                ->update([
-                    'retry_count' => $retryCount,
-                    'next_retry_at' => $isLastAttempt ? null : now()->addSeconds($nextRetryDelay),
-                    'updated_at' => now(),
-                ]);
+            $subscription->forceFill([
+                'retry_count' => $retryCount,
+                'next_retry_at' => $isLastAttempt ? null : now()->addSeconds($nextRetryDelay),
+            ])->save();
 
             if ($isLastAttempt) {
-                // Final retry failed - take action
                 $this->handleFinalRetryFailure($tenant, $subscription, $plan);
             } else {
-                // Send retry notification
                 $this->sendPaymentRetryNotification($tenant, $subscription, $retryCount);
             }
 
@@ -116,61 +121,57 @@ class RetryFailedPaymentsJob implements ShouldQueue
     }
 
     /**
-     * Attempt to charge the payment method
+     * Attempt to charge the payment method.
      *
-     * @param  object  $subscription
+     * Plan 03 T3: previously was `rand(0, 100) > 60` — a fake 40% random
+     * success rate that could mark genuinely-past-due subscriptions active
+     * without ANY payment occurring. Now delegates to SubscriptionBillingService
+     * which uses Cashier/Stripe when configured, or throws when not.
      */
-    protected function attemptPaymentCharge($subscription): bool
+    protected function attemptPaymentCharge(Subscription $subscription): bool
     {
-        // TODO: Integrate with payment gateway
-        // This is a placeholder that should be replaced with actual payment gateway integration
+        try {
+            /** @var SubscriptionBillingService $billing */
+            $billing = app(SubscriptionBillingService::class);
 
-        // Simulate random success/failure for demonstration
-        return rand(0, 100) > 60; // 40% success rate for demo
+            return $billing->retryPayment($subscription);
+        } catch (\Throwable $e) {
+            Log::error("RetryFailedPaymentsJob: SubscriptionBillingService::retryPayment threw for subscription {$subscription->id}", [
+                'error' => $e->getMessage(),
+                'class' => $e::class,
+            ]);
+            return false;
+        }
     }
 
     /**
-     * Calculate exponential backoff for next retry
-     *
-     * @return int Seconds until next retry
+     * Calculate exponential backoff for next retry.
      */
     protected function calculateNextRetryDelay(int $retryCount): int
     {
         // Exponential backoff: 24 hours, 48 hours, 72 hours
-        return 86400 * $retryCount; // 1 day, 2 days, 3 days
+        return 86400 * $retryCount;
     }
 
     /**
-     * Handle final retry failure - suspend or downgrade
-     *
-     * @param  object  $tenant
-     * @param  object  $subscription
-     * @param  object  $plan
+     * Handle final retry failure — suspend or downgrade.
      */
-    protected function handleFinalRetryFailure($tenant, $subscription, $plan): void
+    protected function handleFinalRetryFailure(Tenant $tenant, Subscription $subscription, Plan $plan): void
     {
-        $gracePeriod = 10; // days from config
+        $gracePeriod = 10; // days
         $gracePeriodEnd = now()->addDays($gracePeriod);
 
-        // Suspend subscription after grace period
-        DB::table('subscriptions')
-            ->where('id', $subscription->id)
-            ->update([
-                'status' => 'suspended',
-                'grace_period_ends_at' => $gracePeriodEnd,
-                'updated_at' => now(),
-            ]);
+        $subscription->forceFill([
+            'status' => 'suspended',
+            'grace_period_ends_at' => $gracePeriodEnd,
+        ])->save();
 
-        // Get admin user
-        $adminUser = DB::table('users')
-            ->where('tenant_id', $tenant->id)
-            ->where('is_owner', true)
-            ->first();
+        $adminUser = $this->resolveAdminUserForTenant($tenant);
 
         if ($adminUser) {
             $variables = [
                 'tenant_name' => $tenant->name,
-                'amount' => '$'.number_format($subscription->amount / 100, 2),
+                'amount' => '$'.number_format(($subscription->amount ?? 0) / 100, 2),
                 'payment_method' => 'Card',
                 'last_four' => $subscription->payment_method_last_four ?? '****',
                 'attempt_date' => now()->format('M d, Y'),
@@ -179,8 +180,7 @@ class RetryFailedPaymentsJob implements ShouldQueue
                 'support_url' => config('app.url').'/support',
             ];
 
-            // Send final failure notification
-            if ($adminUser->email) {
+            if (! empty($adminUser->email)) {
                 MailService::make()
                     ->template('notifications/payment-failed', $variables)
                     ->to($adminUser->email)
@@ -188,11 +188,11 @@ class RetryFailedPaymentsJob implements ShouldQueue
                     ->send();
             }
 
-            if ($adminUser->phone) {
+            if (! empty($adminUser->phone)) {
                 SmsService::make()
                     ->template('payment_failed', [
                         'app_name' => config('app.name'),
-                        'amount' => '$'.number_format($subscription->amount / 100, 2),
+                        'amount' => '$'.number_format(($subscription->amount ?? 0) / 100, 2),
                         'billing_url' => config('app.url').'/billing',
                     ])
                     ->send($adminUser->phone, '');
@@ -203,22 +203,16 @@ class RetryFailedPaymentsJob implements ShouldQueue
     }
 
     /**
-     * Send payment retry notification
-     *
-     * @param  object  $tenant
-     * @param  object  $subscription
+     * Send payment retry notification.
      */
-    protected function sendPaymentRetryNotification($tenant, $subscription, int $retryCount): void
+    protected function sendPaymentRetryNotification(Tenant $tenant, Subscription $subscription, int $retryCount): void
     {
-        $adminUser = DB::table('users')
-            ->where('tenant_id', $tenant->id)
-            ->where('is_owner', true)
-            ->first();
+        $adminUser = $this->resolveAdminUserForTenant($tenant);
 
-        if ($adminUser && $adminUser->email) {
+        if ($adminUser && ! empty($adminUser->email)) {
             $variables = [
                 'tenant_name' => $tenant->name,
-                'amount' => '$'.number_format($subscription->amount / 100, 2),
+                'amount' => '$'.number_format(($subscription->amount ?? 0) / 100, 2),
                 'payment_method' => 'Card',
                 'last_four' => $subscription->payment_method_last_four ?? '****',
                 'attempt_date' => now()->format('M d, Y'),
@@ -238,19 +232,13 @@ class RetryFailedPaymentsJob implements ShouldQueue
     }
 
     /**
-     * Send payment success notification
-     *
-     * @param  object  $tenant
-     * @param  object  $subscription
+     * Send payment success notification.
      */
-    protected function sendPaymentSuccessNotification($tenant, $subscription): void
+    protected function sendPaymentSuccessNotification(Tenant $tenant, Subscription $subscription): void
     {
-        $adminUser = DB::table('users')
-            ->where('tenant_id', $tenant->id)
-            ->where('is_owner', true)
-            ->first();
+        $adminUser = $this->resolveAdminUserForTenant($tenant);
 
-        if ($adminUser && $adminUser->email) {
+        if ($adminUser && ! empty($adminUser->email)) {
             $variables = [
                 'tenant_name' => $tenant->name,
                 'status' => 'Active',
@@ -268,5 +256,22 @@ class RetryFailedPaymentsJob implements ShouldQueue
                 ->queue('notifications')
                 ->send();
         }
+    }
+
+    /**
+     * Resolve the owner / admin user for a tenant. Tenant.owner_* columns are
+     * the canonical pointer; tenant-DB user lookup would require initializing
+     * tenancy which isn't appropriate inside this central-DB cron job.
+     */
+    protected function resolveAdminUserForTenant(Tenant $tenant): ?object
+    {
+        if (! empty($tenant->owner_email)) {
+            return (object) [
+                'email' => $tenant->owner_email,
+                'phone' => $tenant->owner_phone ?? null,
+                'name'  => $tenant->owner_name ?? $tenant->name,
+            ];
+        }
+        return null;
     }
 }

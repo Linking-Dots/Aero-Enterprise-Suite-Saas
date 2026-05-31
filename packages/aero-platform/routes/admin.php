@@ -4,27 +4,6 @@ declare(strict_types=1);
 
 use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Aero\Platform\Http\Controllers\Admin\AccessLogController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\ApiGatewayController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\ComplianceController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\ContractController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\CustomerSuccessController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\DisasterRecoveryController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\EnterpriseScimController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\HelpCenterController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\LicenseController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\ObservabilityController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\RegionController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\ReleaseManagementController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\ResourceProvisioningController;
-use Aero\Platform\Http\Controllers\Admin\Enterprise\SecretsController;
-use Aero\Platform\Models\Enterprise\KbArticle;
-use Aero\Platform\Models\Enterprise\LicenseActivation;
-use Aero\Platform\Models\Enterprise\LicenseKey;
-use Aero\Platform\Models\Enterprise\MasterServiceAgreement;
-use Aero\Platform\Models\Enterprise\OrderForm;
-use Aero\Platform\Models\Enterprise\Region;
-use Aero\Platform\Models\Enterprise\ScimEndpoint;
-use Aero\Platform\Models\Enterprise\SuccessPlaybook;
 use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
 use Aero\Platform\Http\Controllers\Admin\AnalyticsController;
@@ -41,6 +20,19 @@ use Aero\Platform\Http\Controllers\Admin\DashboardController;
 use Aero\Platform\Http\Controllers\Admin\DeveloperToolsController;
 use Aero\Platform\Http\Controllers\Admin\DunningController;
 use Aero\Platform\Http\Controllers\Admin\EmailBlastController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ApiGatewayController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ComplianceController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ContractController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\CustomerSuccessController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\DisasterRecoveryController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\EnterpriseScimController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\HelpCenterController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\LicenseController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ObservabilityController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\RegionController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ReleaseManagementController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\ResourceProvisioningController;
+use Aero\Platform\Http\Controllers\Admin\Enterprise\SecretsController;
 use Aero\Platform\Http\Controllers\Admin\ErrorLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\ExperimentController;
 use Aero\Platform\Http\Controllers\Admin\FeatureFlagController;
@@ -74,6 +66,7 @@ use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantControll
 use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;
 use Aero\Platform\Http\Controllers\Admin\TenantDomainController as AdminTenantDomainController;
 use Aero\Platform\Http\Controllers\Admin\TenantExportController;
+use Aero\Platform\Http\Controllers\Admin\TenantForgetController;
 use Aero\Platform\Http\Controllers\Admin\UsageMeterController;
 use Aero\Platform\Http\Controllers\Admin\WebhookAdminController;
 use Aero\Platform\Http\Controllers\Billing\BillingController;
@@ -85,6 +78,7 @@ use Aero\Platform\Http\Controllers\PlanController;
 use Aero\Platform\Http\Controllers\PlanModuleController;
 use Aero\Platform\Http\Controllers\TenantController;
 use Aero\Platform\Http\Middleware\IdentifyDomainContext;
+use Aero\Platform\Models\Enterprise\Region;
 use Aero\Platform\Models\Module;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
@@ -236,6 +230,12 @@ Route::middleware('admin.domain')->group(function () {
             Route::post('/{tenant}/impersonate', [ImpersonationController::class, 'impersonate'])
                 ->middleware(['hrmac:tenants.tenant-list.tenant-management.impersonate'])
                 ->name('impersonate');
+
+            // GDPR Right-to-be-Forgotten (Audit D7) — permanently purges tenant DB + row.
+            // Separate from soft-delete; bypasses the 30-day retention window.
+            Route::post('/{tenant}/forget', TenantForgetController::class)
+                ->middleware(['hrmac:tenants.tenant-list.forget'])
+                ->name('forget');
         });
 
         // =========================================================================

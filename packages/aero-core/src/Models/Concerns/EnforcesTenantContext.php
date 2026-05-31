@@ -23,19 +23,20 @@ trait EnforcesTenantContext
                 return;
             }
 
-            try {
-                $scope = app(TenantScopeInterface::class);
-                if (! $scope->inTenantContext()) {
-                    throw new \LogicException(
-                        static::class.' queried outside of tenant context. '.
-                        'Ensure this runs after tenancy middleware. '.
-                        'For central-DB models extend CentralModel instead.'
-                    );
-                }
-            } catch (\LogicException $e) {
-                throw $e;
-            } catch (\Throwable) {
-                // TenantScopeInterface not bound during early boot — allow
+            // Fail CLOSED (Axis A A10): only allow during genuine early boot,
+            // before the scope binding exists. Otherwise resolve and let the
+            // out-of-context LogicException propagate — never swallow it.
+            if (! app()->bound(TenantScopeInterface::class)) {
+                return;
+            }
+
+            $scope = app(TenantScopeInterface::class);
+            if (! $scope->inTenantContext()) {
+                throw new \LogicException(
+                    static::class.' queried outside of tenant context. '.
+                    'Ensure this runs after tenancy middleware. '.
+                    'For central-DB models extend CentralModel instead.'
+                );
             }
         });
     }

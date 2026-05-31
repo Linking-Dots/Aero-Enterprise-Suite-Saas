@@ -143,7 +143,7 @@ export default function CommentForm({
                 alt={currentUser?.name}
                 size="md"
               />
-              <VStack gap={2} style={{ flex: 1 }}>
+              <VStack gap={2} className="aeos-flex-1">
                 <TextField
                   label={isEditing ? 'Edit Comment' : parentId ? 'Reply' : 'Add a Comment'}
                   placeholder="Write your comment... Use @ to mention users"

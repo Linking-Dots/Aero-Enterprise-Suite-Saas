@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, description, footer, size = 'md', 
             </div>
             {onClose && (
               <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Close modal">
-                <XMarkIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+                <XMarkIcon className="aeos-icon-sm" />
               </button>
             )}
           </div>
@@ -66,7 +66,7 @@ export function Drawer({ open, onClose, side = 'right', width = 420, title, chil
           <header className="aeos-drawer-header">
             <h3 className="aeos-drawer-title">{title}</h3>
             <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Close drawer">
-              <XMarkIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+              <XMarkIcon className="aeos-icon-sm" />
             </button>
           </header>
         )}
@@ -151,10 +151,10 @@ export function Menu({ trigger, items = [] }) {
 
 /* ── Banner ───────────────────────────────────────────────────── */
 const BANNER_ICON = {
-  info: <SparklesIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
-  success: <CheckCircleIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
-  warning: <ExclamationTriangleIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
-  danger: <ExclamationCircleIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
+  info: <SparklesIcon className="aeos-icon-md" />,
+  success: <CheckCircleIcon className="aeos-icon-md" />,
+  warning: <ExclamationTriangleIcon className="aeos-icon-md" />,
+  danger: <ExclamationCircleIcon className="aeos-icon-md" />,
 };
 
 export function Banner({ intent = 'info', icon, title, children, actions, onClose, className }) {
@@ -179,7 +179,7 @@ export function Banner({ intent = 'info', icon, title, children, actions, onClos
       {actions && <div className="aeos-banner-actions">{actions}</div>}
       {onClose && (
         <button type="button" className="aeos-icon-btn" onClick={onClose} aria-label="Dismiss">
-          <XMarkIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+          <XMarkIcon className="aeos-icon-sm" />
         </button>
       )}
     </div>
@@ -212,7 +212,7 @@ export function ConfirmDialog({
       <div className="aeos-modal aeos-glass-strong aeos-anim-pop-in aeos-modal-confirm">
         <div className="aeos-confirm-dialog">
           <div className="aeos-confirm-icon">
-            {intent === 'danger' ? <ExclamationTriangleIcon style={{ width: 'var(--aeos-icon-xl)', height: 'var(--aeos-icon-xl)' }} /> : <SparklesIcon style={{ width: 'var(--aeos-icon-xl)', height: 'var(--aeos-icon-xl)' }} />}
+            {intent === 'danger' ? <ExclamationTriangleIcon className="aeos-icon-xl" /> : <SparklesIcon className="aeos-icon-xl" />}
           </div>
           <div className="aeos-confirm-body">
             <h3 id="aeos-confirm-title" className="aeos-confirm-title">{title}</h3>

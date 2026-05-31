@@ -88,10 +88,22 @@ return [
                         ['code' => 'view', 'name' => 'View Approvals'],
                         ['code' => 'approve', 'name' => 'Approve'],
                         ['code' => 'reject', 'name' => 'Reject'],
-                        ['code' => 'escalate', 'name' => 'Escalate'],
+                        // Plan 12 — 'escalate' deferred to roadmap until the SLA
+                        // monitor job (WorkflowSlaMonitorJob) ships. Declared-
+                        // but-unimplemented HRMAC actions silently allow access
+                        // when granted (no route exercises them).
                     ],
                 ],
             ],
         ],
+    ],
+
+    /*
+    | Deferred items.
+    */
+    'roadmap' => [
+        'escalate_action' => 'Manual + automatic SLA escalation. Requires WorkflowSlaMonitorJob scheduled every minute to scan in-flight instances and bump escalation_target when sla_due_at passes.',
+        'sla_monitor_job' => 'Scheduled job that escalates breached SLAs. Needs sla_due_at column on workflow_instances + WorkflowEscalationService.',
+        'workflowable_morph' => 'COMPLETED Plan 12 T1 (migration 2026_05_29_000300). WorkflowInstance now has workflowable_id/_type. Legacy leaves.workflow_instance_id remains as transitional bridge until HRM drops it.',
     ],
 ];

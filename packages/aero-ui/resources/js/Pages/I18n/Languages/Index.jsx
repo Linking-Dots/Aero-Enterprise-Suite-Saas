@@ -1,118 +1,94 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import App from '../../App.jsx';
 import {
   IndexPageLayout,
-  Card,
-  CardContent,
-  Button,
-  Icon,
-  Text,
-  VStack,
-  HStack,
-  Badge,
-  EmptyState,
   DataTable,
+  Button,
+  Badge,
+  HStack,
+  Text, Mono,
+  Toggle,
+  useToast,
   useHRMAC,
 } from '@aero/ui';
+import App from '../../App.jsx';
 
-/**
- * Languages Management Page
- *
- * Manage enabled/disabled languages for the application.
- * Props from LanguageController::index():
- *   - languages: array of language objects with code, name, native_name, flag, is_enabled, is_rtl, direction
- */
-export default function LanguagesIndex({ languages }) {
-  const canView = useHRMAC('i18n.translations.languages.view');
+export default function LanguagesIndex({ languages = [] }) {
+  const toast     = useToast();
   const canEnable = useHRMAC('i18n.translations.languages.enable');
-  const canDisable = useHRMAC('i18n.translations.languages.disable');
+  const canDisable= useHRMAC('i18n.translations.languages.disable');
+  const canImport = useHRMAC('i18n.translations.translation_editor.import');
+  const canExport = useHRMAC('i18n.translations.translation_editor.export');
 
   const [toggling, setToggling] = useState(null);
 
-  if (!canView) {
-    return (
-      <IndexPageLayout title="Languages">
-        <EmptyState
-          icon="lockClosed"
-          title="Access Denied"
-          description="You don't have permission to view languages."
-        />
-      </IndexPageLayout>
-    );
-  }
+  const handleToggle = (lang) => {
+    const enabling = !lang.is_enabled;
+    if (enabling  && !canEnable)  return;
+    if (!enabling && !canDisable) return;
 
-  const handleToggle = async (languageCode, currentState) => {
-    if (!canEnable && !canDisable) return;
-    if (currentState && !canDisable) return;
-    if (!currentState && !canEnable) return;
+    setToggling(lang.code);
+    router.put(route('i18n.languages.update', lang.code), { is_enabled: enabling }, {
+      preserveState: true,
+      onSuccess: () => {
+        toast.success(enabling ? `${lang.name} enabled.` : `${lang.name} disabled.`);
+        setToggling(null);
+      },
+      onError: () => {
+        toast.error('Failed to update language.');
+        setToggling(null);
+      },
+    });
+  };
 
-    setToggling(languageCode);
-    try {
-      await router.put(route('i18n.languages.update', languageCode), {
-        is_enabled: !currentState,
-      });
-    } catch (error) {
-      console.error('Failed to toggle language:', error);
-    } finally {
-      setToggling(null);
-    }
+  const handleImport = () => {
+    router.get(route('i18n.translations.import'));
+  };
+
+  const handleExport = () => {
+    window.open(route('i18n.translations.export'), '_blank');
   };
 
   const columns = [
     {
-      key: 'flag',
-      header: '',
-      render: (language) => <Text size="lg">{language.flag}</Text>,
+      key: 'code', label: 'Code', width: '10%',
+      render: (row) => <Mono size="sm">{row.code}</Mono>,
     },
     {
-      key: 'name',
-      header: 'Language',
-      render: (language) => (
-        <VStack gap={0}>
-          <Text>{language.name}</Text>
-          <Text size="sm" tone="secondary">{language.native_name}</Text>
-        </VStack>
+      key: 'name', label: 'Name', width: '22%',
+      render: (row) => (
+        <HStack gap={2} align="center">
+          {row.flag && <Text size="lg">{row.flag}</Text>}
+          <Text size="sm">{row.name}</Text>
+          {row.native_name && row.native_name !== row.name && (
+            <Text tone="secondary" size="sm">({row.native_name})</Text>
+          )}
+        </HStack>
       ),
     },
     {
-      key: 'code',
-      header: 'Code',
-      render: (language) => (
-        <Badge intent="neutral" mono>{language.code}</Badge>
-      ),
-    },
-    {
-      key: 'direction',
-      header: 'Direction',
-      render: (language) => (
-        <Badge intent={language.is_rtl ? 'warning' : 'success'}>
-          {language.direction.toUpperCase()}
+      key: 'direction', label: 'Direction', width: '12%',
+      render: (row) => (
+        <Badge intent={row.is_rtl ? 'warning' : 'neutral'}>
+          {row.is_rtl ? 'RTL' : 'LTR'}
         </Badge>
       ),
     },
     {
-      key: 'status',
-      header: 'Status',
-      render: (language) => (
-        <Badge intent={language.is_enabled ? 'success' : 'neutral'}>
-          {language.is_enabled ? 'Enabled' : 'Disabled'}
-        </Badge>
-      ),
+      key: 'is_default', label: 'Default', width: '12%',
+      render: (row) => row.is_default
+        ? <Badge intent="success">Default</Badge>
+        : null,
     },
     {
-      key: 'actions',
-      header: 'Actions',
-      render: (language) => (
-        <Button
-          intent="ghost"
-          size="sm"
-          leftIcon={language.is_enabled ? 'eyeSlash' : 'eye'}
-          onClick={() => handleToggle(language.code, language.is_enabled)}
-          disabled={toggling === language.code || (!canEnable && !canDisable)}
-        >
-          {language.is_enabled ? 'Disable' : 'Enable'}
-        </Button>
+      key: 'is_enabled', label: 'Enabled', width: '14%',
+      render: (row) => (
+        <Toggle
+          label=""
+          checked={!!row.is_enabled}
+          onChange={() => handleToggle(row)}
+          disabled={toggling === row.code || (!canEnable && !canDisable)}
+        />
       ),
     },
   ];
@@ -120,27 +96,35 @@ export default function LanguagesIndex({ languages }) {
   return (
     <IndexPageLayout
       title="Languages"
-      breadcrumb={[{ label: 'Translations', href: route('i18n.translations.index') }, { label: 'Languages' }]}
-    >
-      {languages.length === 0 ? (
-        <EmptyState
-          icon="language"
-          title="No languages configured"
-          description="Languages will be seeded automatically."
+      breadcrumb={[
+        { label: 'Dashboard',     href: route('core.dashboard') },
+        { label: 'Translations',  href: route('i18n.translations.index') },
+        { label: 'Languages' },
+      ]}
+      description="Enable or disable languages for the platform."
+      actions={
+        <HStack gap={2}>
+          {canImport && (
+            <Button intent="soft" leftIcon="arrowUpTray" onClick={handleImport}>
+              Import
+            </Button>
+          )}
+          {canExport && (
+            <Button intent="ghost" leftIcon="arrowDownTray" onClick={handleExport}>
+              Export
+            </Button>
+          )}
+        </HStack>
+      }
+      table={
+        <DataTable
+          columns={columns}
+          rows={languages}
+          empty="No languages configured."
         />
-      ) : (
-        <Card>
-          <CardContent>
-            <DataTable
-              columns={columns}
-              data={languages}
-              keyField="code"
-            />
-          </CardContent>
-        </Card>
-      )}
-    </IndexPageLayout>
+      }
+    />
   );
 }
 
-LanguagesIndex.layout = (page) => <App title="Languages">{page}</App>;
+LanguagesIndex.layout = page => <App title="Languages">{page}</App>;

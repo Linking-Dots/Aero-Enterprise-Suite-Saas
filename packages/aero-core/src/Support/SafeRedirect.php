@@ -259,4 +259,62 @@ class SafeRedirect
     {
         return Route::has($routeName);
     }
+
+    /**
+     * Determine whether a string is a safe internal redirect path.
+     *
+     * Plan 05 (aero-auth) Task 3 — open-redirect guard. Used by
+     * ImpersonationController and other surfaces that accept a
+     * redirect target from untrusted input.
+     *
+     * A path is considered safe ONLY when:
+     *   - It's a non-empty string
+     *   - It starts with a single forward slash (root-relative)
+     *   - It does NOT start with `//` (protocol-relative — opens redirect to //evil.com)
+     *   - It does NOT start with `/\` (encoded backslash trick on some browsers)
+     *   - It does NOT contain `://` anywhere (defensive — would mean someone smuggled scheme in)
+     *   - It does NOT contain `\` characters (Windows-style backslashes confuse some browsers)
+     *   - It does NOT contain control characters (newline, tab in URL = response splitting)
+     *
+     * Callers should fall back to a safe default ('/dashboard', '/', etc.)
+     * when this returns false.
+     */
+    public static function isSafePath(?string $path): bool
+    {
+        if ($path === null || $path === '') {
+            return false;
+        }
+
+        // Must be root-relative
+        if ($path[0] !== '/') {
+            return false;
+        }
+
+        // Protocol-relative attack: //evil.com → most browsers treat as evil.com
+        if (str_starts_with($path, '//')) {
+            return false;
+        }
+
+        // Encoded backslash trick
+        if (str_starts_with($path, '/\\')) {
+            return false;
+        }
+
+        // Full URL smuggled in
+        if (str_contains($path, '://')) {
+            return false;
+        }
+
+        // Windows backslashes
+        if (str_contains($path, '\\')) {
+            return false;
+        }
+
+        // Response splitting via control characters
+        if (preg_match('/[\x00-\x1f\x7f]/', $path)) {
+            return false;
+        }
+
+        return true;
+    }
 }

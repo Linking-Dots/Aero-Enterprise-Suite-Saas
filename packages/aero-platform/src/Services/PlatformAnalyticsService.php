@@ -57,11 +57,46 @@ class PlatformAnalyticsService
                 'new_tenants' => $r->new_tenants,
                 'churned' => $r->churned_tenants,
             ])->all(),
-            'plan_distribution' => Tenant::query()
-                ->select('plan_id', DB::raw('count(*) as count'))
-                ->groupBy('plan_id')->with('plan:id,name')->get()->toArray(),
+            'plan_distribution' => $this->planDistribution(),
             'retention' => $this->retentionMatrix(),
         ];
+    }
+
+    /**
+     * Build plan distribution by joining tenants → subscriptions (polymorphic)
+     * → plans.
+     *
+     * Plan 03 T1 — closes the broken `tenants.plan_id` query identified in
+     * the Phase 1 audit. The `plan_id` column on `tenants` was removed when
+     * subscriptions became polymorphic via billable_id/billable_type, but
+     * this method still SELECTed it — production threw "Unknown column 'plan_id'"
+     * (MySQL strict) or returned a single NULL row (MySQL relaxed).
+     *
+     * Returns: [['plan_id' => int, 'plan_name' => string, 'count' => int], ...]
+     */
+    private function planDistribution(): array
+    {
+        return DB::connection('central')->table('subscriptions')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->join('tenants', function ($j) {
+                $j->on('tenants.id', '=', 'subscriptions.billable_id')
+                  ->where('subscriptions.billable_type', '=', Tenant::class);
+            })
+            ->where('subscriptions.status', 'active')
+            ->select(
+                'plans.id as plan_id',
+                'plans.name as plan_name',
+                DB::raw('count(DISTINCT tenants.id) as count')
+            )
+            ->groupBy('plans.id', 'plans.name')
+            ->orderBy('plans.id')
+            ->get()
+            ->map(fn ($r) => [
+                'plan_id'   => (int) $r->plan_id,
+                'plan_name' => (string) $r->plan_name,
+                'count'     => (int) $r->count,
+            ])
+            ->all();
     }
 
     public function usageAnalytics(): array

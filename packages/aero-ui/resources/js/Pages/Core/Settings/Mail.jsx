@@ -1,124 +1,106 @@
 /**
- * Email (SMTP) Settings — Tenant mail configuration page.
+ * Mail / SMTP Settings — tenant outgoing email configuration.
  *
- * Uses @aero/ui FormPageLayout with fields for SMTP host, port,
- * encryption, credentials, and from-address. Includes a test-email action.
+ * Props: { mail: { driver, host, port, username, from_name, from_email, encryption } }
+ *
+ * Violations fixed vs. prior stub:
+ *   P0-1: removed all style={} props
+ *   P0-2: replaced raw <select> with Select engine component
+ *   P1-1: errors passed as strings (no ?.[0])
+ *   P1-2: removed manual X-CSRF-TOKEN header — axios handles automatically
+ *   P2-1: variant= → intent= on Button
  */
-import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import axios from 'axios';
 import {
   FormPageLayout,
-  Field, Input, Button, Card, CardHeader, CardBody,
+  Field, Input, Select, Button,
+  Card, CardHeader, CardBody,
   HStack, VStack, Text,
+  Alert,
   useToast,
   useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-function Section({ title, children }) {
-  return (
-    <Card>
-      <CardHeader>
-        <Text weight="semibold">{title}</Text>
-      </CardHeader>
-      <CardBody>
-        <VStack gap={4}>
-          {children}
-        </VStack>
-      </CardBody>
-    </Card>
-  );
-}
+const DRIVER_OPTIONS = [
+  { value: 'smtp',    label: 'SMTP' },
+  { value: 'ses',     label: 'Amazon SES' },
+  { value: 'mailgun', label: 'Mailgun' },
+  { value: 'log',     label: 'Log (debug only)' },
+];
 
-export default function MailSettings({ emailSettings }) {
-  const toast = useToast();
-  const canEdit = useHRMAC('core.settings.mail_settings.update');
-  const [showPassword, setShowPassword] = useState(false);
-  const [testEmail, setTestEmail] = useState('');
-  const [sendingTest, setSendingTest] = useState(false);
+const ENCRYPTION_OPTIONS = [
+  { value: 'tls',  label: 'TLS' },
+  { value: 'ssl',  label: 'SSL' },
+  { value: 'none', label: 'None' },
+];
+
+export default function MailSettings({ mail = {} }) {
+  const toast   = useToast();
+  const canEdit = useHRMAC('core.settings.mail.update');
+
+  const [testEmail,   setTestEmail]   = useState('');
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult,  setTestResult]  = useState(null); // { ok, message }
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    host: emailSettings?.host ?? '',
-    port: emailSettings?.port ?? '',
-    encryption: emailSettings?.encryption ?? 'tls',
-    username: emailSettings?.username ?? '',
-    password: '',
-    from_address: emailSettings?.from_address ?? '',
-    from_name: emailSettings?.from_name ?? '',
+    driver:      mail.driver      ?? 'smtp',
+    host:        mail.host        ?? '',
+    port:        mail.port        ?? '587',
+    username:    mail.username    ?? '',
+    password:    '',
+    encryption:  mail.encryption  ?? 'tls',
+    from_name:   mail.from_name   ?? '',
+    from_email:  mail.from_email  ?? '',
   });
 
-  const handleSubmit = (e) => {
+  function handleSave(e) {
     e.preventDefault();
     post(route('core.settings.mail.update'), {
       preserveScroll: true,
-      onSuccess: () => {
-        toast.success('Mail settings updated successfully.');
-      },
-      onError: () => {
-        toast.error('Failed to update mail settings. Please check the form.');
-      },
+      onSuccess: () => toast.success('Mail settings saved.'),
+      onError:   () => toast.error('Please fix the errors below.'),
     });
-  };
+  }
 
-  const handleSendTest = async (e) => {
-    e.preventDefault();
-    if (!testEmail) {
-      toast.error('Please enter a recipient email address.');
+  async function handleTest() {
+    if (!testEmail.trim()) {
+      toast.error('Enter a recipient address first.');
       return;
     }
-
-    setSendingTest(true);
+    setTestLoading(true);
+    setTestResult(null);
     try {
-      const response = await fetch(route('core.settings.mail.test'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ email: testEmail }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        toast.success(result.message || 'Test email sent successfully.');
-      } else {
-        toast.error(result.message || 'Failed to send test email.');
-      }
-    } catch {
-      toast.error('An error occurred while sending the test email.');
+      const { data: res } = await axios.post(route('core.settings.mail.test'), { email: testEmail });
+      setTestResult({ ok: true, message: res.message ?? 'Test email sent.' });
+      toast.success(res.message ?? 'Test email sent.');
+    } catch (err) {
+      const msg = err.response?.data?.message ?? 'Failed to send test email.';
+      setTestResult({ ok: false, message: msg });
+      toast.error(msg);
     } finally {
-      setSendingTest(false);
+      setTestLoading(false);
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSave}>
       <FormPageLayout
-        title="Email (SMTP) Settings"
+        title="Email / SMTP Settings"
         breadcrumb={[
-          { label: 'Settings', href: route('core.settings.system.index') },
-          { label: 'Email (SMTP) Settings' },
+          { label: 'Settings', href: route('core.settings.system') },
+          { label: 'Email / SMTP' },
         ]}
-        description="Configure your tenant's outgoing email server (SMTP) settings and sender identity."
+        description="Configure the outgoing mail driver, SMTP server, and sender identity."
         actions={
           canEdit && (
             <HStack gap={3}>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => reset()}
-                disabled={processing}
-              >
+              <Button type="button" intent="soft" onClick={() => reset()} disabled={processing}>
                 Reset
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={processing}
-              >
+              <Button type="submit" intent="primary" loading={processing}>
                 Save Changes
               </Button>
             </HStack>
@@ -126,122 +108,138 @@ export default function MailSettings({ emailSettings }) {
         }
       >
         <VStack gap={6}>
-          <Section title="SMTP Server">
-            <Field label="SMTP Host" error={errors.host}>
-              <Input
-                value={data.host}
-                onChange={e => setData('host', e.target.value)}
-                placeholder="e.g. smtp.example.com"
-              />
-            </Field>
 
-            <HStack gap={4}>
-              <Field label="Port" error={errors.port} style={{ flex: 1 }}>
-                <Input
-                  type="number"
-                  value={data.port}
-                  onChange={e => setData('port', e.target.value)}
-                  placeholder="587"
-                  min={1}
-                  max={65535}
+          {/* ── Driver ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Mail Driver</Text></CardHeader>
+            <CardBody>
+              <Field label="Driver" error={errors.driver}>
+                <Select
+                  value={data.driver}
+                  onChange={e => setData('driver', e.target.value)}
+                  options={DRIVER_OPTIONS}
                 />
               </Field>
+            </CardBody>
+          </Card>
 
-              <Field label="Encryption" error={errors.encryption} style={{ flex: 1 }}>
-                <select
-                  value={data.encryption}
-                  onChange={e => setData('encryption', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 4,
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface)',
-                    color: 'var(--text)',
-                  }}
-                >
-                  <option value="tls">TLS</option>
-                  <option value="ssl">SSL</option>
-                  <option value="none">None</option>
-                </select>
-              </Field>
-            </HStack>
-          </Section>
+          {/* ── SMTP Server ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">SMTP Server</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                <Field label="Host" error={errors.host}>
+                  <Input
+                    value={data.host}
+                    onChange={e => setData('host', e.target.value)}
+                    placeholder="smtp.example.com"
+                    leftIcon="server"
+                  />
+                </Field>
+                <HStack gap={4} wrap>
+                  <Field label="Port" error={errors.port}>
+                    <Input
+                      type="number"
+                      value={data.port}
+                      onChange={e => setData('port', e.target.value)}
+                      placeholder="587"
+                    />
+                  </Field>
+                  <Field label="Encryption" error={errors.encryption}>
+                    <Select
+                      value={data.encryption}
+                      onChange={e => setData('encryption', e.target.value)}
+                      options={ENCRYPTION_OPTIONS}
+                    />
+                  </Field>
+                </HStack>
+              </VStack>
+            </CardBody>
+          </Card>
 
-          <Section title="Authentication">
-            <Field label="Username" error={errors.username}>
-              <Input
-                value={data.username}
-                onChange={e => setData('username', e.target.value)}
-                placeholder="SMTP username"
-              />
-            </Field>
+          {/* ── Authentication ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Authentication</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                <Field label="Username" error={errors.username}>
+                  <Input
+                    value={data.username}
+                    onChange={e => setData('username', e.target.value)}
+                    placeholder="SMTP username"
+                    leftIcon="user"
+                  />
+                </Field>
+                <Field label="Password" hint="Leave blank to keep existing password." error={errors.password}>
+                  <Input
+                    type="password"
+                    value={data.password}
+                    onChange={e => setData('password', e.target.value)}
+                    placeholder="Leave blank to keep existing"
+                    leftIcon="lock"
+                  />
+                </Field>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <Field label="Password" error={errors.password}>
-              <HStack gap={2} align="center">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  value={data.password}
-                  onChange={e => setData('password', e.target.value)}
-                  placeholder={emailSettings?.password_set ? 'Password is set (leave blank to keep)' : 'SMTP password'}
-                  style={{ flex: 1 }}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowPassword(v => !v)}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </Button>
-              </HStack>
-              {emailSettings?.password_set && !data.password && (
-                <Text size="sm" color="muted" style={{ marginTop: 4 }}>
-                  A password is already saved. Enter a new one to replace it.
-                </Text>
-              )}
-            </Field>
-          </Section>
+          {/* ── Sender Identity ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Sender Identity</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                <Field label="From Name" error={errors.from_name}>
+                  <Input
+                    value={data.from_name}
+                    onChange={e => setData('from_name', e.target.value)}
+                    placeholder="Your Company Name"
+                  />
+                </Field>
+                <Field label="From Email" error={errors.from_email}>
+                  <Input
+                    type="email"
+                    value={data.from_email}
+                    onChange={e => setData('from_email', e.target.value)}
+                    placeholder="noreply@example.com"
+                    leftIcon="mail"
+                  />
+                </Field>
+              </VStack>
+            </CardBody>
+          </Card>
 
-          <Section title="Sender Identity">
-            <Field label="From Address" error={errors.from_address}>
-              <Input
-                type="email"
-                value={data.from_address}
-                onChange={e => setData('from_address', e.target.value)}
-                placeholder="noreply@example.com"
-              />
-            </Field>
+          {/* ── Test Connection ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Test Connection</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                {testResult && (
+                  <Alert intent={testResult.ok ? 'success' : 'danger'} title={testResult.message} />
+                )}
+                <HStack gap={3} align="end" wrap>
+                  <Field label="Recipient Email">
+                    <Input
+                      type="email"
+                      value={testEmail}
+                      onChange={e => setTestEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      leftIcon="mail"
+                    />
+                  </Field>
+                  <Button
+                    type="button"
+                    intent="soft"
+                    loading={testLoading}
+                    onClick={handleTest}
+                    leftIcon="send"
+                  >
+                    Send Test
+                  </Button>
+                </HStack>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <Field label="From Name" error={errors.from_name}>
-              <Input
-                value={data.from_name}
-                onChange={e => setData('from_name', e.target.value)}
-                placeholder="Your Company Name"
-              />
-            </Field>
-          </Section>
-
-          <Section title="Test Connection">
-            <HStack gap={3} align="end">
-              <Field label="Recipient Email" style={{ flex: 1 }}>
-                <Input
-                  type="email"
-                  value={testEmail}
-                  onChange={e => setTestEmail(e.target.value)}
-                  placeholder="recipient@example.com"
-                />
-              </Field>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleSendTest}
-                loading={sendingTest}
-              >
-                Send Test Email
-              </Button>
-            </HStack>
-          </Section>
         </VStack>
       </FormPageLayout>
     </form>
@@ -249,5 +247,5 @@ export default function MailSettings({ emailSettings }) {
 }
 
 MailSettings.layout = page => (
-  <App title="Email (SMTP) Settings">{page}</App>
+  <App title="Email / SMTP Settings">{page}</App>
 );

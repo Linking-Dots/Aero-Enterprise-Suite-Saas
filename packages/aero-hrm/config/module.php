@@ -2,6 +2,7 @@
 
 return [
     'code' => 'hrm',
+    'product_code' => 'hrm',
     'schema_version' => '2.0',
     'scope' => 'tenant',
     'name' => 'Human Resources',
@@ -13,7 +14,6 @@ return [
     'is_core' => false,
     'is_active' => true,
     'version' => '1.0.0',
-    'min_plan' => 'basic',
     'license_type' => 'standard',
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
@@ -2002,4 +2002,9 @@ return [
             ],
         ],
     ],
+
+    // Per-submodule licensing was removed per Audit D23: entitlement is module
+    // (product) level only. Subscribing to the HRM product grants access to
+    // ALL HRM submodules. The per-tenant module catalog (Audit D15) is the
+    // single source of truth — see Tenant::subscribed_product_modules.
 ];

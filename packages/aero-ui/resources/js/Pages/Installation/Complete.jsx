@@ -3,7 +3,7 @@ import { VStack, HStack, Box, Badge, Text, Eyebrow } from '@aero/ui';
 
 export default function Complete({ mode, appUrl, adminEmail, licensedModules = [], installationKey }) {
   return (
-    <VStack gap={5} align="center" style={{ textAlign: 'center' }}>
+    <VStack gap={5} align="center" className="aeos-text-center">
       {/* Success icon */}
       <Box style={{
         width: 80, height: 80, borderRadius: '50%',
@@ -36,7 +36,7 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
           <div key={key} className="il-review-row">
             <span className="il-review-key">{key}</span>
             {key === 'Application URL'
-              ? <a href={val} className="il-review-val" style={{ color: 'var(--aeos-primary)' }}>{val}</a>
+              ? <a href={val} className="il-review-val aeos-text-primary-color">{val}</a>
               : <span className="il-review-val">{val}</span>
             }
           </div>
@@ -46,7 +46,7 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
       {/* Licensed modules */}
       {licensedModules.length > 0 && !licensedModules.includes('all') && (
         <Box style={{ width: '100%', textAlign: 'left' }}>
-          <Eyebrow tone="primary" style={{ marginBottom: 8 }}>Licensed Modules</Eyebrow>
+          <Eyebrow tone="primary" className="aeos-mb-1">Licensed Modules</Eyebrow>
           <HStack gap={2} wrap="wrap">
             {licensedModules.map(m => <Badge key={m} intent="success">{m}</Badge>)}
           </HStack>
@@ -59,7 +59,7 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
         background: 'rgba(0,163,184,.04)', border: '1px solid rgba(0,163,184,.12)',
         borderRadius: 'var(--aeos-r-lg)', padding: '1rem 1.25rem',
       }}>
-        <Eyebrow tone="primary" style={{ marginBottom: 8 }}>Next steps</Eyebrow>
+        <Eyebrow tone="primary" className="aeos-mb-1">Next steps</Eyebrow>
         <VStack gap={2}>
           {['Sign in with your admin account', 'Configure tenant domains', 'Enable required modules', 'Set up email templates'].map((s, i) => (
             <HStack key={i} gap={2}>

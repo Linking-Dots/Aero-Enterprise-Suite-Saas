@@ -36,7 +36,7 @@ export default function ForgotPassword({ status }) {
           Send reset link
         </Button>
 
-        <Text tone="secondary" size="sm" style={{ textAlign: 'center' }}>
+        <Text tone="secondary" size="sm" className="aeos-text-center">
           <Link href={route('login')} className="al-link">Back to login</Link>
         </Text>
       </form>

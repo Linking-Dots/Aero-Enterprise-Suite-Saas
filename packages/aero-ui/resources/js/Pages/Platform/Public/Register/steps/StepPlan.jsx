@@ -90,7 +90,7 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
           Pick a base plan, then add products. Pricing updates instantly.
         </Text>
 
-        <HStack gap={2} align="center" style={{ marginTop: '1.5rem' }}>
+        <HStack gap={2} align="center" className="aeos-mt-lg">
           <Button type="button" intent={billing === 'monthly' ? 'primary' : 'soft'} size="sm" onClick={() => setBilling('monthly')}>Monthly</Button>
           <Button type="button" intent={billing === 'yearly' ? 'primary' : 'soft'} size="sm" onClick={() => setBilling('yearly')}>Yearly</Button>
           {billing === 'monthly' && (
@@ -100,12 +100,12 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
         </HStack>
 
         {plans.length === 0 && (
-          <Text tone="secondary" style={{ marginTop: '1.5rem' }}>
+          <Text tone="secondary" className="aeos-mt-lg">
             No subscription plans are configured yet. You can still select modules below to get started.
           </Text>
         )}
 
-        <Eyebrow tone="primary" style={{ marginTop: '1.5rem' }}>Subscription Plans</Eyebrow>
+        <Eyebrow tone="primary" className="aeos-mt-lg">Subscription Plans</Eyebrow>
         <div className="rl-plan-grid-b">
           {plans.map(plan => {
             const isSelected = plan.id === selectedPlanId;
@@ -119,7 +119,7 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
                 onClick={() => setSelectedPlanId(plan.id)}
                 aria-pressed={isSelected}
                 className={isSelected ? 'rl-card-selected' : ''}
-                style={{ position: 'relative', textAlign: 'left' }}
+                className="aeos-relative-left"
               >
                 {isSelected && (
                   <div className="rl-plan-badge"><Badge intent="success">Selected</Badge></div>
@@ -152,7 +152,7 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
 
         {displayModules.length > 0 && (
           <>
-            <Eyebrow tone="primary" style={{ marginTop: '1.5rem' }}>Add-on Products</Eyebrow>
+            <Eyebrow tone="primary" className="aeos-mt-lg">Add-on Products</Eyebrow>
             <VStack gap={3} align="stretch">
               {displayModules.map(mod => {
                 const isChecked = selectedModules.includes(mod.code);
@@ -163,7 +163,7 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
                     key={mod.code}
                     interactive
                     className={isChecked ? 'rl-card-selected' : ''}
-                    style={{ position: 'relative', textAlign: 'left' }}
+                    className="aeos-relative-left"
                   >
                     {/* Header row: checkbox, name, price, chevron */}
                     <HStack gap={3} align="center">
@@ -291,11 +291,11 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
               <HStack gap={3} align="center">
                 <Text weight="semibold" as="span">Total</Text>
                 <Flex1 />
-                <Text weight="bold" as="span" size="lg" style={{ color: 'var(--aeos-primary)' }}>{formatPrice(total)}/{suffix}</Text>
+                <Text weight="bold" as="span" size="lg" className="aeos-text-primary-color">{formatPrice(total)}/{suffix}</Text>
               </HStack>
 
               {billing === 'monthly' && yearlySavings > 0 && (
-                <Text tone="success" size="sm" as="p" style={{ textAlign: 'center' }}>
+                <Text tone="success" size="sm" as="p" className="aeos-text-center">
                   Switch to yearly and save {formatPrice(yearlySavings)}
                 </Text>
               )}

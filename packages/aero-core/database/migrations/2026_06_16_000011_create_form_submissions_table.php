@@ -22,9 +22,9 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->index(['form_id', 'status']);
-            $table->index('submitted_at');
+            $table->index('created_at');
         });
     }
 

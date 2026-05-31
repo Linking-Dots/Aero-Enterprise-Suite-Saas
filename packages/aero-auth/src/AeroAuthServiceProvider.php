@@ -102,6 +102,10 @@ class AeroAuthServiceProvider extends ServiceProvider
         Route::middleware(['web'])
             ->group(__DIR__.'/../routes/tenant.php');
 
+        // Identity admin routes (SSO/SAML/OIDC/MFA/Session/SCIM config) — tenant-scoped.
+        Route::middleware(['web'])
+            ->group(__DIR__.'/../routes/identity.php');
+
         // Admin/landlord auth routes — only in standalone mode.
         // In SaaS mode, AeroPlatformServiceProvider loads admin.php with a proper
         // domain constraint (domain: $adminDomain), so we must NOT load it here

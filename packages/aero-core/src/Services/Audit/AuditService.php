@@ -91,18 +91,36 @@ final class AuditService implements AuditServiceInterface
         }
     }
 
+    /**
+     * Is this a platform-context audit (vs tenant-context)? (Axis B B1)
+     *
+     * Previously keyed on app()->bound('currentTenant') — a container binding that
+     * NOTHING sets, so it was effectively always true and every write targeted the
+     * central platform_* tables. In standalone (no 'central' connection) those writes
+     * threw and were swallowed → zero audit logging.
+     *
+     * Now derived from the real tenancy signal:
+     *   - Standalone: never "platform" — there is one DB; write to audit_logs locally.
+     *   - SaaS: platform context == no tenant initialized (admin/landlord requests,
+     *     queue jobs outside a tenant). Tenant requests write to the tenant DB.
+     */
+    private function isPlatformContext(): bool
+    {
+        if (! is_saas_mode()) {
+            return false;
+        }
+
+        return ! (function_exists('tenancy') && tenancy()->initialized);
+    }
+
     private function writeAuditLog(array $data): void
     {
-        // Determine the correct table/connection
-        // Platform context (no tenancy active) → platform_audit_logs on central connection
-        // Tenant context → audit_logs on tenant connection
-        $isPlatform = ! app()->bound('currentTenant') || app('currentTenant') === null;
-
-        if ($isPlatform) {
-            \Illuminate\Support\Facades\DB::connection('central')
+        if ($this->isPlatformContext()) {
+            \Illuminate\Support\Facades\DB::connection(central_connection())
                 ->table('platform_audit_logs')
                 ->insert($data);
         } else {
+            // Tenant DB (SaaS, tenancy active) or the single DB (standalone).
             \Illuminate\Support\Facades\DB::table('audit_logs')
                 ->insert($data);
         }
@@ -110,10 +128,8 @@ final class AuditService implements AuditServiceInterface
 
     private function writeAccessLog(array $data): void
     {
-        $isPlatform = ! app()->bound('currentTenant') || app('currentTenant') === null;
-
-        if ($isPlatform) {
-            \Illuminate\Support\Facades\DB::connection('central')
+        if ($this->isPlatformContext()) {
+            \Illuminate\Support\Facades\DB::connection(central_connection())
                 ->table('platform_access_logs')
                 ->insert($data);
         } else {

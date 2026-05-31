@@ -1,6 +1,6 @@
 # AEOS365 Master Development Plan
 
-**Last updated:** 2026-05-22  
+**Last updated:** 2026-05-23  
 **Status key:** ✅ Done · 🟡 In Progress · ⬜ Pending
 
 ---
@@ -151,9 +151,35 @@ Platform plans apply to the central (landlord) database. All platform admin acti
 
 ---
 
-## Phase 3 — Finance Module
+## Phase 3 — Core Admin (Tenant Shell)
 
-*Execute after Phase 0. Finance immutability: Journal entries locked on `posted`, invoices locked on `sent`.*
+*Execute after Phase 2. Delivers the complete tenant-admin UI layer for `aero-core` and all foundation packages (`aero-notifications`, `aero-workflow`, `aero-forms`, `aero-i18n`, `aero-custom-fields`). Required before any product phase can be demoed end-to-end.*
+
+**Foundation package audit results (2026-05-23):**
+- `aero-notifications` — backend complete (pipeline, channels, templates, logs). Plans build missing admin UI only.
+- `aero-auth` — backend complete (SAML, Social, 2FA, Sessions, Devices). CA-6 adds admin config UI layer only.
+- `aero-workflow`, `aero-i18n` — backends complete. Plans upgrade existing partial pages in aero-ui.
+- `aero-forms` — migrations missing. CA-5 adds them first.
+- EAM (Embedded Audit Module) — fully built. `audit_logs` + `platform_audit_logs` both immutable (MySQL triggers). `AuditService` auto-routes to correct DB. 200+ typed `AuditEventType` events. CA-3 builds the viewer UI only.
+- BYOC — fully built on platform side. `byoc_db_*` columns on tenants table, `TenantProvisioner` reads BYOC payload, `StepBYOC.jsx` in registration wizard. Not a CA plan item.
+- Database isolation — fully operational. `TenantModel` global scope + `CentralModel` pinned connection + `EnsureTenantContext` middleware + `InitializeTenancyIfNotCentral`.
+- `EncryptedField` cast — wired to `EncryptionDriverInterface`. KMS driver interface defined but no AWS/Vault implementation yet (separate security hardening plan).
+
+| Plan | File | Status | Scope |
+|------|------|--------|-------|
+| CA-1 | `phase-3-core-admin/plan-ca1-dashboard-users-roles.md` | ⬜ | Admin dashboard + stats, User CRUD + invitations + bulk ops + impersonation, Roles + permissions matrix, Module access toggle, Tenant announcements |
+| CA-2 | `phase-3-core-admin/plan-ca2-settings-org-auth.md` | ⬜ | All settings pages (General/Security/Localization/Branding/Mail+test/Password/IP/EmailTemplates), Organization profile suite (company, tax identity, addresses, fiscal year, contacts), Self-service profile + 2FA + devices + sessions |
+| CA-3 | `phase-3-core-admin/plan-ca3-notifications-audit-health.md` | ⬜ | Notification channels config + template CRUD (aero-notifications UI), Activity logs + security logs + queue monitor (EAM viewer UI), System health + performance + storage + cache + scheduled tasks |
+| CA-4 | `phase-3-core-admin/plan-ca4-api-webhooks-data-tools.md` | ⬜ | API keys + PATs + outbound webhooks (new backend + UI), Data tools (Export/Import, Tags, Saved Views, Retention, Trash, File Manager, Backup) |
+| CA-5 | `phase-3-core-admin/plan-ca5-workflow-forms-i18n-advanced.md` | ⬜ | Workflow UI (aero-workflow upgrade), Forms + missing migrations (aero-forms), Custom Fields (aero-custom-fields), i18n Languages + Translation Editor (aero-i18n upgrade), Subscription self-service (SaaS), Maintenance mode, Numbering sequences, Print templates, Help & support, License management (standalone), Banners, User preferences, AI Assistant (aero-assistant) |
+| CA-6 | `phase-3-core-admin/plan-ca6-sso-identity.md` | ⬜ | SSO & Identity: SAML 2.0 config, OIDC/OAuth 2.0 config, Social Login (Google/Microsoft/GitHub/Apple), SCIM 2.0 + token rotation, Magic Link, Passkeys/WebAuthn, MFA enforcement policies, Session policies, Login activity viewer — all admin config UI on top of existing `aero-auth` backend |
+| CA-7 | `phase-3-core-admin/plan-ca7-email-engine-comments-mobile.md` | ⬜ | Email Engine: logs viewer + resend, deliverability (SPF/DKIM/DMARC DNS check), suppression list, bounces (all wired to aero-notifications); Comments & Mentions: upgraded Mentions inbox, Activity feed, reusable CommentThread component; Mobile/PWA: PWA config, push notification (VAPID), mobile app deep-link settings |
+
+---
+
+## Phase 4 — Finance Module
+
+*Execute after Phase 3 (Core Admin). Finance immutability: Journal entries locked on `posted`, invoices locked on `sent`.*
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
@@ -165,27 +191,29 @@ Platform plans apply to the central (landlord) database. All platform admin acti
 
 ---
 
-## Phase 4 — CRM Module
+## Phase 5 — CRM Module
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
-| CRM-1 | `phase-4-crm/plan-crm1-contacts.md` | ⬜ | Contacts, leads, lead sources, lead conversion |
-| CRM-2 | `phase-4-crm/plan-crm2-pipeline.md` | ⬜ | Pipelines, stages, deals (kanban + table), deal activities, products, deal attachments |
-| CRM-3 | `phase-4-crm/plan-crm3-analytics.md` | ⬜ | Sales analytics, funnel reports, competitor tracking, team leaderboard |
+| CRM-1 | `phase-5-crm/plan-crm1-contacts.md` | ⬜ | Contacts, leads, lead sources, lead conversion |
+| CRM-2 | `phase-5-crm/plan-crm2-pipeline.md` | ⬜ | Pipelines, stages, deals (kanban + table), deal activities, products, deal attachments |
+| CRM-3 | `phase-5-crm/plan-crm3-analytics.md` | ⬜ | Sales analytics, funnel reports, competitor tracking, team leaderboard |
 
 ---
 
-## Phase 5 — Project Module
+## Phase 6 — Project Module
+
+*Note: `aero-project` backend is already mature (18 controllers, 402-line routes, 5 migrations). Plans build only the missing frontend pages.*
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
-| PRJ-1 | `phase-5-project/plan-prj1-projects.md` | ⬜ | Projects (CRUD), milestones, members, budget, risks, issues, labels, watchers |
-| PRJ-2 | `phase-5-project/plan-prj2-tasks.md` | ⬜ | Tasks (list + kanban), sprints, dependencies, time entries, comments |
-| PRJ-3 | `phase-5-project/plan-prj3-boq.md` | ⬜ | BOQ items, measurements, chainage progress |
+| PRJ-1 | `phase-6-project/plan-prj1-projects.md` | ⬜ | Projects (CRUD), milestones, members, budget, risks, issues, labels, watchers |
+| PRJ-2 | `phase-6-project/plan-prj2-tasks.md` | ⬜ | Tasks (list + kanban), sprints, dependencies, time entries, comments |
+| PRJ-3 | `phase-6-project/plan-prj3-boq.md` | ⬜ | BOQ items, measurements, chainage progress |
 
 ---
 
-## Phase 6 — Documents, Compliance, RFI, GDPR
+## Phase 7 — Documents, Compliance, RFI, GDPR
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
@@ -201,17 +229,15 @@ Platform plans apply to the central (landlord) database. All platform admin acti
 
 ---
 
-## Phase 7 — Operations (IMS, SCM, Workflow, Forms, Notifications)
+## Phase 8 — Operations (IMS, SCM)
+
+*Note: Workflow, Forms, Notifications, and i18n are now delivered in Phase 3 (CA-3/CA-5) as they are foundation packages.*
 
 | Plan | File | Status | Scope |
 |------|------|--------|-------|
-| IMS-1 | `phase-7-ops/plan-ims1-inventory.md` | ⬜ | Items, categories, warehouses, stock movements, purchase orders, suppliers |
-| SCM-1 | `phase-7-ops/plan-scm1-procurement.md` | ⬜ | Procurement requests, suppliers, logistics, customs declarations |
-| SCM-2 | `phase-7-ops/plan-scm2-demand.md` | ⬜ | Demand forecasting, production plans, trade documents, return requests |
-| WF-1 | `phase-7-ops/plan-wf1-workflow.md` | ⬜ | Workflow builder (visual), templates, instances, transitions, approval routing |
-| FORM-1 | `phase-7-ops/plan-form1-forms.md` | ⬜ | Dynamic form builder, field types, submissions, integrations |
-| NOTIF-1 | `phase-7-ops/plan-notif1-notifications.md` | ⬜ | Notification templates, channels (email/SMS/push), delivery preferences, notification center |
-| I18N-1 | `phase-7-ops/plan-i18n1-i18n.md` | ⬜ | Translation editor, language management, locale preferences |
+| IMS-1 | `phase-8-ops/plan-ims1-inventory.md` | ⬜ | Items, categories, warehouses, stock movements, purchase orders, suppliers |
+| SCM-1 | `phase-8-ops/plan-scm1-procurement.md` | ⬜ | Procurement requests, suppliers, logistics, customs declarations |
+| SCM-2 | `phase-8-ops/plan-scm2-demand.md` | ⬜ | Demand forecasting, production plans, trade documents, return requests |
 
 ---
 
@@ -281,16 +307,32 @@ BYOC uses any MySQL 8.0+ or PostgreSQL 14+ endpoint. Credentials stored encrypte
 ✅ Security Foundation (F-0) — DONE
 
 Phase 0 — Execute in order, each blocks the next:
-  F-1 Auth ──→ F-2 Installation ──→ F-3 Tenant Shell
+  ✅ F-1 Auth ──→ F-2 Installation ──→ F-3 Tenant Shell
 
 Phase 1 (HRM) — Execute after Phase 0:
-  H-1 → H-2 → H-3 → H-4 → H-5 → H-6 → H-7 → H-8 → H-9 → H-10 → H-11...H-18
+  ✅ H-1 → H-2 → H-3 → H-4 → H-5 → H-6 → H-7 → H-8 → H-9 → H-10 → H-11...H-18
 
-Phase 2 (Platform) — Can start alongside Phase 1 after F-1+F-3:
-  P-1 → P-2 → P-3 → P-4 → P-5
+Phase 2 (Platform Admin) — Can start alongside Phase 1 after F-1+F-3:
+  ✅ P-1 → P-2 → P-3 → P-4 → P-5 → P-6 → P-7 → P-8 → P-9 → P-10 → P-11
 
-Phase 3–9 — Execute after Phase 1+2, in priority order:
-  FIN → CRM → PRJ → DMS/COMP/RFI/GDPR → IMS/SCM/WF/FORM/NOTIF/I18N → COM/POS → Verticals
+Phase 3 (Core Admin / Tenant Shell) — Execute after Phase 2:
+  CA-1 → CA-2 → CA-3 → CA-4 → CA-5 → CA-6 → CA-7
+
+Phase 4 (Finance) — Execute after Phase 3:
+  FIN-1 → FIN-2 → FIN-3 → FIN-4 → FIN-5
+
+Phase 5–10 — Execute after Phase 4, in priority order:
+  CRM → PRJ → DMS/COMP/RFI/GDPR → OPS(IMS/SCM) → COM/POS → Verticals
+
+Foundation packages delivered in Phase 3 (CA plans):
+  aero-notifications admin UI  (CA-3)
+  aero-workflow UI upgrade     (CA-5)
+  aero-forms + migrations      (CA-5)
+  aero-i18n UI upgrade         (CA-5)
+  aero-custom-fields UI        (CA-5)
+  aero-auth SSO config UI      (CA-6)
+  email engine admin UI        (CA-7)
+  mobile/PWA config            (CA-7)
 ```
 
 ---
@@ -315,14 +357,18 @@ docs/superpowers/plans/<phase>/<plan-id>-<name>.md
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| Phase 0 — Foundation | 3 (+F-0 done) | 1 written, 2 pending |
-| Phase 1 — HRM | 18 | 0 written, 18 pending |
-| Phase 2 — Platform | 5 | 0 written, 5 pending |
-| Phase 3 — Finance | 5 | 0 written, 5 pending |
-| Phase 4 — CRM | 3 | 0 written, 3 pending |
-| Phase 5 — Project | 3 | 0 written, 3 pending |
-| Phase 6 — DMS/Compliance/GDPR | 7 | 0 written, 7 pending |
-| Phase 7 — Ops | 7 | 0 written, 7 pending |
-| Phase 8 — Commerce/POS | 4 | 0 written, 4 pending |
-| Phase 9 — Verticals | 8 | 0 written, 8 pending |
-| **Total** | **63 plans** | **1 written, 62 pending** |
+| Phase 0 — Foundation | 3 (+F-0 done) | ✅ All done |
+| Phase 1 — HRM | 18 | ✅ All done (H-1…H-18) |
+| Phase 2 — Platform Admin | 11 | ✅ All done (P-1…P-11) |
+| Phase 3 — Core Admin (Tenant Shell) | 7 | ✅ All written (CA-1…CA-7), ⬜ execution pending |
+| Phase 4 — Finance | 5 | 0 written, 5 pending |
+| Phase 5 — CRM | 3 | 0 written, 3 pending |
+| Phase 6 — Project | 3 | 0 written, 3 pending |
+| Phase 7 — DMS/Compliance/GDPR | 7 | 0 written, 7 pending |
+| Phase 8 — Ops (IMS/SCM) | 3 | 0 written, 3 pending |
+| Phase 9 — Commerce/POS | 4 | 0 written, 4 pending |
+| Phase 10 — Verticals | 8 | 0 written, 8 pending |
+| **Total** | **72 plans** | **37 done, 7 written/pending-exec, 28 not yet written** |
+
+**Foundation packages delivered in Phase 3 (not separate plans):**
+`aero-notifications` (admin UI, CA-3+CA-7) · `aero-workflow` (UI, CA-5) · `aero-forms` (migrations+UI, CA-5) · `aero-i18n` (UI, CA-5) · `aero-custom-fields` (UI, CA-5) · `aero-auth` SSO config UI (CA-6) · Mobile/PWA (CA-7)

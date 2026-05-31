@@ -39,7 +39,7 @@ function BlogHero() {
             Field notes for teams scaling{' '}
             <span className="aeos-pub-gradient-text">faster than their playbook.</span>
           </h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             Long-form strategy, practical templates, and real stories from operators
             building resilient organizations with aeos365.
           </p>
@@ -62,7 +62,7 @@ function FeaturedPost() {
         <p className="aeos-pub-label">Featured article</p>
         <Card>
           <HStack gap={6} align="start">
-            <VStack gap={4} style={{ flex: '1' }}>
+            <VStack gap={4} className="aeos-flex-1">
               <Badge intent="neutral">{FEATURED.tag}</Badge>
               <h2 className="aeos-pub-h2">{FEATURED.title}</h2>
               <p className="aeos-pub-body">{FEATURED.excerpt}</p>
@@ -101,7 +101,7 @@ function BlogGrid() {
           align="center"
         />
         {/* Category filters */}
-        <HStack gap={2} wrap align="center" style={{ justifyContent: 'center' }}>
+        <HStack gap={2} wrap align="center" className="aeos-justify-center">
           {CATEGORIES.map((cat) => (
             <Button
               key={cat.id}
@@ -115,7 +115,7 @@ function BlogGrid() {
         </HStack>
 
         {/* Post grid */}
-        <div className="aeos-pub-blog-grid" style={{ marginTop: '2rem' }}>
+        <div className="aeos-pub-blog-grid aeos-mt-lg">
           {filtered.map((post) => (
             <Card key={post.id}>
               <VStack gap={3}>
@@ -155,10 +155,10 @@ function Newsletter() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Stay in the loop</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               New articles, straight to your inbox.
             </h2>
-            <p className="aeos-pub-body" style={{ textAlign: 'center' }}>
+            <p className="aeos-pub-body aeos-text-center">
               No noise — only high-signal pieces on ERP, operations, and the platform.
             </p>
             {done ? (

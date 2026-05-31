@@ -8,10 +8,12 @@ use Aero\Contracts\ModuleSummaryProvider;
 use Aero\Core\Models\Announcement;
 use Aero\Core\Models\AuditLog;
 use Aero\Core\Models\CompanySetting;
+use Aero\Core\Models\Module;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserDevice;
 use Aero\Core\Models\UserSession;
 use Aero\Core\Services\ModuleRegistry;
+use Aero\Core\Support\TenantCache;
 use Aero\HRMAC\Facades\HRMAC;
 use Aero\HRMAC\Models\Role;
 use Illuminate\Support\Carbon;
@@ -133,9 +135,35 @@ class AdminDashboardService
         };
     }
 
+    /**
+     * Lightweight tenant stats for the dashboard index page.
+     *
+     * @return array{total_users: int, active_users: int, total_roles: int, modules_enabled: int}
+     */
+    public function getTenantStats(): array
+    {
+        try {
+            return [
+                'total_users' => User::count(),
+                'active_users' => User::where('is_active', true)->count(),
+                'total_roles' => \Spatie\Permission\Models\Role::count(),
+                'modules_enabled' => Module::where('is_active', true)->count(),
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [
+                'total_users' => 0,
+                'active_users' => 0,
+                'total_roles' => 0,
+                'modules_enabled' => 0,
+            ];
+        }
+    }
+
     public function getCoreStats(): array
     {
-        return Cache::remember('admin_dashboard.core_stats', 300, function () {
+        return TenantCache::remember('admin_dashboard.core_stats', 300, function () {
             try {
                 $totalUsers = User::count();
                 $activeUsers = User::where('active', true)->count();
@@ -189,7 +217,7 @@ class AdminDashboardService
     {
         $cacheKey = "admin_dashboard.user_activity.{$period}";
 
-        return Cache::remember($cacheKey, 300, function () use ($period) {
+        return TenantCache::remember($cacheKey, 300, function () use ($period) {
             try {
                 $days = match ($period) {
                     'month' => 30,
@@ -253,7 +281,7 @@ class AdminDashboardService
      */
     public function getSecurityOverview(): array
     {
-        return Cache::remember('admin_dashboard.security_overview', 120, function () {
+        return TenantCache::remember('admin_dashboard.security_overview', 120, function () {
             try {
                 $failedLoginsToday = AuditLog::where('action', 'failed_login')
                     ->whereDate('created_at', today())
@@ -315,7 +343,7 @@ class AdminDashboardService
      */
     public function getStorageAnalytics(): array
     {
-        return Cache::remember('admin_dashboard.storage_analytics', 600, function () {
+        return TenantCache::remember('admin_dashboard.storage_analytics', 600, function () {
             try {
                 $storagePath = storage_path('app');
                 $totalUsed = 0;
@@ -356,7 +384,7 @@ class AdminDashboardService
      */
     public function getSubscriptionInfo(): array
     {
-        return Cache::remember('admin_dashboard.subscription_info', 900, function () {
+        return TenantCache::remember('admin_dashboard.subscription_info', 900, function () {
             try {
                 $tenant = tenant();
                 if (! $tenant) {
@@ -410,7 +438,7 @@ class AdminDashboardService
      */
     public function getModuleSummaries(): array
     {
-        return Cache::remember('admin_dashboard.module_summaries', 300, function () {
+        return TenantCache::remember('admin_dashboard.module_summaries', 300, function () {
             $summaries = [];
             $providers = app()->tagged('module.summary.provider');
 
@@ -438,7 +466,7 @@ class AdminDashboardService
      */
     public function getRecentAuditLog(int $limit = 15): array
     {
-        return Cache::remember('admin_dashboard.recent_audit_log', 120, function () use ($limit) {
+        return TenantCache::remember('admin_dashboard.recent_audit_log', 120, function () use ($limit) {
             try {
                 return AuditLog::with('user:id,name')
                     ->latest()
@@ -471,7 +499,7 @@ class AdminDashboardService
      */
     public function getSystemHealth(): array
     {
-        return Cache::remember('admin_dashboard.system_health', 120, function () {
+        return TenantCache::remember('admin_dashboard.system_health', 120, function () {
             try {
                 $health = [
                     'database' => 'healthy',
@@ -572,7 +600,7 @@ class AdminDashboardService
      */
     public function getAnnouncements(): array
     {
-        return Cache::remember('admin_dashboard.announcements', 300, function () {
+        return TenantCache::remember('admin_dashboard.announcements', 300, function () {
             try {
                 if (! class_exists(Announcement::class)) {
                     return [];
@@ -668,7 +696,7 @@ class AdminDashboardService
      */
     public function getOnboardingProgress(): ?array
     {
-        return Cache::remember('admin_dashboard.onboarding_progress', 600, function () {
+        return TenantCache::remember('admin_dashboard.onboarding_progress', 600, function () {
             try {
                 $tenant = tenant();
                 if (! $tenant) {
@@ -713,7 +741,7 @@ class AdminDashboardService
      */
     public function getRecentNotifications(): array
     {
-        return Cache::remember('admin_dashboard.recent_notifications', 120, function () {
+        return TenantCache::remember('admin_dashboard.recent_notifications', 120, function () {
             try {
                 if (! class_exists('Aero\Notifications\Models\NotificationLog')) {
                     return ['items' => [], 'total' => 0, 'unread' => 0, 'failedToday' => 0];
@@ -762,7 +790,7 @@ class AdminDashboardService
      */
     public function getActiveSessionsData(): array
     {
-        return Cache::remember('admin_dashboard.active_sessions', 60, function () {
+        return TenantCache::remember('admin_dashboard.active_sessions', 60, function () {
             try {
                 $onlineNow = UserSession::where('last_activity', '>=', now()->subMinutes(5))->count();
                 $activeToday = UserSession::whereDate('last_activity', today())->count();

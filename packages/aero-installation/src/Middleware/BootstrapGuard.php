@@ -30,7 +30,16 @@ class BootstrapGuard
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip check if already on install routes
+        // Plan 09 T5 — when the system IS installed, the /install routes
+        // themselves must 404. Otherwise a stale URL or a curious user
+        // hitting /install after deploy can re-enter the wizard, which
+        // (per Plan 09 T3 dirty-schema guard) at worst aborts but at
+        // best is just confusing.
+        if ($request->is('install*') && $this->installed()) {
+            abort(404);
+        }
+
+        // Skip check if already on install routes (not yet installed)
         if ($request->is('install*')) {
             return $next($request);
         }

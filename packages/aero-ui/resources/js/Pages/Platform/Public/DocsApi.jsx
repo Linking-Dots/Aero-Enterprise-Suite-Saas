@@ -64,7 +64,7 @@ function DocsApiHero() {
         <VStack gap={5}>
           <p className="aeos-pub-label">Developer docs</p>
           <h1 className="aeos-pub-h1">REST API Reference</h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             Integrate your systems with the aeos365 platform using our comprehensive REST API.
             Supports JSON, OAuth 2.0, and webhook events.
           </p>
@@ -166,7 +166,7 @@ function ApiContent() {
                 <VStack gap={3}>
                   <h2 className="aeos-pub-h2">Rate Limiting</h2>
                   <Text tone="secondary">API requests are rate-limited per token:</Text>
-                  <div style={{ overflowX: 'auto' }}>
+                  <div className="aeos-overflow-x-auto">
                     <table className="aeos-pub-comparison-table">
                       <thead>
                         <tr><th>Plan</th><th>Requests / minute</th><th>Burst</th></tr>
@@ -195,7 +195,7 @@ function ApiContent() {
                 <VStack gap={3}>
                   <h2 className="aeos-pub-h2">Core Endpoints</h2>
                   <Text tone="secondary">Endpoints follow RESTful conventions:</Text>
-                  <div style={{ overflowX: 'auto' }}>
+                  <div className="aeos-overflow-x-auto">
                     <table className="aeos-pub-comparison-table">
                       <thead>
                         <tr><th>Method</th><th>Path</th><th>Description</th></tr>
@@ -219,11 +219,11 @@ function ApiContent() {
                 <VStack gap={3}>
                   <h2 className="aeos-pub-h2">Pagination & Filtering</h2>
                   <Text tone="secondary">All list endpoints support cursor-based pagination:</Text>
-                  <pre style={{ background: '#0D1117', color: '#E6EDF3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '0.875rem 1.25rem', fontSize: '0.8125rem', fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65 }}>
+                  <pre className="aeos-code-block">
                     {'GET /v2/employees?page=1&per_page=25&sort=created_at&order=desc'}
                   </pre>
                   <Text tone="secondary">Response envelope:</Text>
-                  <pre style={{ background: '#0D1117', color: '#E6EDF3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '0.875rem 1.25rem', fontSize: '0.8125rem', fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65 }}>
+                  <pre className="aeos-code-block">
                     {'{\n  "data": [...],\n  "meta": {\n    "current_page": 1,\n    "per_page": 25,\n    "total": 840,\n    "last_page": 34\n  }\n}'}
                   </pre>
                 </VStack>
@@ -234,7 +234,7 @@ function ApiContent() {
                 <VStack gap={3}>
                   <h2 className="aeos-pub-h2">Error Codes</h2>
                   <Text tone="secondary">The API uses standard HTTP status codes:</Text>
-                  <div style={{ overflowX: 'auto' }}>
+                  <div className="aeos-overflow-x-auto">
                     <table className="aeos-pub-comparison-table">
                       <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
                       <tbody>
@@ -258,7 +258,7 @@ function ApiContent() {
                     aeos365 provides a minimum 12-month deprecation notice before removing any API version.
                     The Sunset header is included in responses from deprecated endpoints:
                   </Text>
-                  <pre style={{ background: '#0D1117', color: '#E6EDF3', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '0.875rem 1.25rem', fontSize: '0.8125rem', fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65 }}>
+                  <pre className="aeos-code-block">
                     {'Sunset: Sat, 01 Nov 2026 00:00:00 GMT'}
                   </pre>
                 </VStack>
@@ -305,10 +305,10 @@ function ApiCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Start integrating</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Ready to build on top of aeos365?
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 480 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow-2">
               Sign up and get your API token in under 2 minutes. Full documentation
               and Postman collection included.
             </p>

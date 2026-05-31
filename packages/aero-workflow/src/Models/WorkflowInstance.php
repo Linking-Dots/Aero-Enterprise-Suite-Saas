@@ -7,11 +7,14 @@ use Aero\Contracts\Models\TenantModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class WorkflowInstance extends TenantModel
 {
     protected $fillable = [
         'workflow_id',
+        'workflowable_id',
+        'workflowable_type',
         'entity_type',
         'entity_id',
         'current_step_id',
@@ -21,6 +24,20 @@ class WorkflowInstance extends TenantModel
         'completed_at',
         'initiated_by',
     ];
+
+    /**
+     * Polymorphic relation to the thing this workflow tracks (Leave, Expense,
+     * TimeOffRequest, custom subject from any feature package).
+     *
+     * Plan 12 T1 — replaces the legacy leaves.workflow_instance_id FK that
+     * violated the package-first rule (workflow shouldn't know HRM exists).
+     * Feature packages add a morphOne(WorkflowInstance::class, 'workflowable')
+     * relation on the subject model.
+     */
+    public function workflowable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
     protected function casts(): array
     {

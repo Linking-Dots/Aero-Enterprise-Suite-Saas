@@ -13,6 +13,7 @@ class NotificationLog extends Model
     use MassPrunable;
 
     protected $fillable = [
+        'idempotency_key',
         'user_id','notifiable_type','notifiable_id','channel','notification_type','event_type',
         'recipient','subject','content','status','error_message','metadata','attempts',
         'max_attempts','last_attempt_at','sent_at','delivered_at','read_at','failed_at',
@@ -51,4 +52,37 @@ class NotificationLog extends Model
     public static function markFailed(int $id, string $reason): void { static::where('id', $id)->update(['status' => self::STATUS_FAILED, 'error_message' => $reason, 'failed_at' => now()]); }
     public static function markRead(int $id): void { static::where('id', $id)->update(['status' => self::STATUS_READ, 'read_at' => now()]); }
     public static function getPending(int $limit = 100): array { return static::pending()->limit($limit)->get()->toArray(); }
+
+    /**
+     * Compute the idempotency key for a notification dispatch attempt.
+     *
+     * Plan 08 T2 — deterministic key so Horizon retries of the same
+     * SendEmailJob/SendSmsJob can be deduplicated. Key composition:
+     *
+     *   sha256(channel + '|' + recipient + '|' + canonical(payload))
+     *
+     * - channel scopes the key (mail and sms with same payload don't collide)
+     * - recipient binds the dedupe to one delivery target
+     * - canonical(payload) = json_encode with sorted keys so order doesn't
+     *   change the hash
+     */
+    public static function makeIdempotencyKey(string $channel, string $recipient, array $payload = []): string
+    {
+        ksort($payload);
+
+        return hash('sha256', $channel.'|'.$recipient.'|'.json_encode($payload, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Check whether a notification with this (channel, idempotency_key) was
+     * already dispatched — used by NotificationPipeline to short-circuit
+     * duplicate sends on retry.
+     */
+    public static function alreadyDispatched(string $channel, string $idempotencyKey): bool
+    {
+        return static::where('channel', $channel)
+            ->where('idempotency_key', $idempotencyKey)
+            ->whereIn('status', [self::STATUS_SENT, self::STATUS_DELIVERED, self::STATUS_READ])
+            ->exists();
+    }
 }

@@ -57,7 +57,7 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
       </div>
 
       <HStack gap={3}>
-        <Box grow style={{ flex: 1 }}>
+        <Box grow className="aeos-flex-1">
           <Field label={nameLabel} htmlFor="name_key" error={errors[nameKey]} required>
             <Input
               id="name_key"
@@ -69,7 +69,7 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
             />
           </Field>
         </Box>
-        <Box grow style={{ flex: 1 }}>
+        <Box grow className="aeos-flex-1">
           <Field label="Support Email" htmlFor="support_email" error={errors.support_email} required>
             <Input
               id="support_email"
@@ -85,7 +85,7 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
       </HStack>
 
       <HStack gap={3}>
-        <Box grow style={{ flex: 1 }}>
+        <Box grow className="aeos-flex-1">
           <Field label="Application URL" htmlFor="app_url" error={errors.app_url} required>
             <Input
               id="app_url"
@@ -97,7 +97,7 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
             />
           </Field>
         </Box>
-        <Box style={{ width: 200 }}>
+        <Box className="aeos-w-200">
           <Field label="Timezone" htmlFor="timezone" required>
             <Select
               id="timezone"
@@ -113,24 +113,24 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
         <VStack gap={3}>
           <Eyebrow tone="primary">Email (SMTP)</Eyebrow>
           <HStack gap={3} align="flex-end">
-            <Box grow style={{ flex: 1 }}>
+            <Box grow className="aeos-flex-1">
               <Field label="SMTP Host" htmlFor="mail_host">
                 <Input id="mail_host" value={form.mail_host} onChange={e => set('mail_host', e.target.value)} leftIcon="mail" placeholder="smtp.mailgun.org" />
               </Field>
             </Box>
-            <Box style={{ width: 100 }}>
+            <Box className="aeos-w-100">
               <Field label="Port" htmlFor="mail_port">
                 <Input id="mail_port" type="number" value={form.mail_port} onChange={e => set('mail_port', e.target.value)} />
               </Field>
             </Box>
           </HStack>
           <HStack gap={3}>
-            <Box grow style={{ flex: 1 }}>
+            <Box grow className="aeos-flex-1">
               <Field label="SMTP Username" htmlFor="mail_user">
                 <Input id="mail_user" value={form.mail_username} onChange={e => set('mail_username', e.target.value)} leftIcon="user" />
               </Field>
             </Box>
-            <Box grow style={{ flex: 1 }}>
+            <Box grow className="aeos-flex-1">
               <Field label="SMTP Password" htmlFor="mail_pass">
                 <Input id="mail_pass" type="password" value={form.mail_password} onChange={e => set('mail_password', e.target.value)} leftIcon="settings" />
               </Field>

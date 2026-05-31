@@ -166,7 +166,7 @@ export const SearchInput = forwardRef(function SearchInput(
   return (
     <div className="aeos-input-group">
       <span className="aeos-input-group-icon" aria-hidden="true">
-        <MagnifyingGlassIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+        <MagnifyingGlassIcon className="aeos-icon-sm" />
       </span>
       <input
         ref={ref}
@@ -202,7 +202,7 @@ export function FileInput({ accept, multiple, onChange, label = 'Choose file', c
         }}
       />
       <span className="aeos-btn aeos-btn-soft aeos-btn-sm">
-        <DocumentIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+        <DocumentIcon className="aeos-icon-sm" />
         {label}
       </span>
       {name && (

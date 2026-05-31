@@ -157,6 +157,11 @@ class HandleInertiaRequests extends Middleware
                 'environment' => config('app.env', 'production'),
             ],
             'context' => 'tenant',
+            // Axis B B8 — always expose the deployment mode so shared aero-ui
+            // components have an explicit 'saas'|'standalone' signal in BOTH modes
+            // (previously aero.mode existed only in SaaS+tenant context, leaving
+            // standalone with undefined → silent mis-renders).
+            'aero' => ['mode' => aero_mode()],
             'systemSettings' => $systemSettingsPayload,
             'branding' => $branding,
             'theme' => [
@@ -543,6 +548,20 @@ class HandleInertiaRequests extends Middleware
      * @return array<string>
      */
     protected function getSubscribedModuleCodes(): array
+    {
+        // Axis C C2 — cache per tenant; this runs on EVERY authenticated page load.
+        // Invalidated on ProductSubscriptionChanged (see ResyncTenantModuleCatalog).
+        $tenantId = (function_exists('tenant') && tenant()) ? tenant()->getTenantKey() : 'none';
+
+        return Cache::remember("tenant_subscribed_modules:{$tenantId}", 600, function (): array {
+            return $this->computeSubscribedModuleCodes();
+        });
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function computeSubscribedModuleCodes(): array
     {
         try {
             // Always include core modules

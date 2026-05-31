@@ -53,8 +53,13 @@ class RegistrationDetailsRequest extends FormRequest
             'subdomain' => [
                 'required',
                 'string',
-                'max:40',
+                // Axis A A7 — single source of truth for length (shared with the
+                // availability probe) so the probe and the register call agree.
+                'min:'.config('tenancy.subdomain.min_length', 3),
+                'max:'.config('tenancy.subdomain.max_length', 63),
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                // Plan 03 T6 — block platform-infrastructure subdomains
+                Rule::notIn(config('tenancy.reserved_subdomains', [])),
                 Rule::unique('tenants', 'subdomain')
                     ->where(function ($query) {
                         // Only block if there's an active/provisioning/suspended tenant
@@ -73,6 +78,8 @@ class RegistrationDetailsRequest extends FormRequest
     {
         return [
             'subdomain.regex' => 'Subdomain may only contain lowercase letters, numbers, and single hyphens.',
+            'subdomain.not_in' => 'That subdomain is reserved by the platform. Please choose a different one.',
+            'subdomain.min' => 'Subdomain must be at least 3 characters.',
             // Fix #23: Use a single generic message for both email and subdomain uniqueness failures
             // to prevent user-enumeration (distinguishing which value is taken).
             'email.unique' => 'This email or subdomain is already in use. Please choose different values.',

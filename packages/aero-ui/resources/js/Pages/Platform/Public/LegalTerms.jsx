@@ -133,7 +133,7 @@ function LegalHero() {
         <VStack gap={4}>
           <p className="aeos-pub-label">Legal</p>
           <h1 className="aeos-pub-h1">Terms of Service</h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 620 }}>
+          <p className="aeos-pub-lead aeos-content-base">
             These terms govern your access to and use of the aeos365 platform.
             Please read them carefully before using our services.
           </p>
@@ -187,7 +187,7 @@ function LegalCTA() {
   return (
     <Section size="md" bg="surface">
       <Container>
-        <HStack gap={4} align="center" style={{ justifyContent: 'space-between' }}>
+        <HStack gap={4} align="center" className="aeos-justify-between">
           <VStack gap={2}>
             <p className="aeos-pub-label">Questions about these terms?</p>
             <Text tone="secondary">Our team is happy to clarify any policy questions before you commit.</Text>

@@ -156,7 +156,7 @@ export default function SearchOverlay() {
           {results.length === 0 && !query.trim() && (
             <Text size="sm" tone="muted" style={{ padding: '16px' }}>
               Type to search across users, roles, and audit logs.
-              Press <kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>Enter</kbd> to view all results.
+              Press <kbd className="aeos-pill-surface">Enter</kbd> to view all results.
             </Text>
           )}
 
@@ -186,12 +186,12 @@ export default function SearchOverlay() {
               onMouseEnter={() => setSelectedIndex(i)}
             >
               {mapResultIcon(result.icon, result.type)}
-              <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="aeos-flex-1">
                 <Text style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {result.title}
                 </Text>
                 {result.subtitle && (
-                  <Text size="sm" tone="muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Text size="sm" tone="muted" className="aeos-truncate">
                     {result.subtitle}
                   </Text>
                 )}
@@ -213,10 +213,10 @@ export default function SearchOverlay() {
             color: 'var(--aeos-text-muted)',
           }}
         >
-          <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>↑↓</kbd> to navigate</span>
-          <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>↵</kbd> to select</span>
-          <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--aeos-surface-raised)' }}>esc</kbd> to close</span>
-          <div style={{ flex: 1 }} />
+          <span><kbd className="aeos-pill-surface">↑↓</kbd> to navigate</span>
+          <span><kbd className="aeos-pill-surface">↵</kbd> to select</span>
+          <span><kbd className="aeos-pill-surface">esc</kbd> to close</span>
+          <div className="aeos-flex-1" />
           <Text size="xs" tone="muted">Global Search</Text>
         </div>
       </Modal.Content>
@@ -233,10 +233,10 @@ function mapResultIcon(icon, type) {
   if (icon && typeof icon !== 'string') return icon;
   
   const fallback = {
-    User: <UserIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
-    'Audit Log': <DocumentIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
-    Role: <LockClosedIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
-    Tag: <TagIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />,
+    User: <UserIcon className="aeos-icon-md" />,
+    'Audit Log': <DocumentIcon className="aeos-icon-md" />,
+    Role: <LockClosedIcon className="aeos-icon-md" />,
+    Tag: <TagIcon className="aeos-icon-md" />,
   };
-  return fallback[type] || <DocumentIcon style={{ width: 'var(--aeos-icon-md)', height: 'var(--aeos-icon-md)' }} />;
+  return fallback[type] || <DocumentIcon className="aeos-icon-md" />;
 }

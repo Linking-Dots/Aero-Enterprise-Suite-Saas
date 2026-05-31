@@ -12,6 +12,7 @@ use Aero\HRMAC\Services\ModuleDiscoveryService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Stancl\Tenancy\Tenancy;
 
 /**
  * Sync Module Hierarchy Command
@@ -57,90 +58,161 @@ class SyncModuleHierarchy extends Command
         $this->moduleDiscovery = $moduleDiscovery;
     }
 
+    /**
+     * Advisory lock key for hrmac:sync-modules.
+     *
+     * Plan 04 T5 — prevents concurrent runs from racing on
+     * updateOrCreate() and producing duplicate (module_id, code) rows.
+     */
+    protected const SYNC_LOCK_KEY = 'aero:hrmac:sync-modules';
+
     public function handle(): int
     {
         $this->info('🚀 HRMAC: Starting Module Hierarchy Sync...');
         $this->newLine();
 
-        // Schema validation
-        if (! $this->validateSchema()) {
+        // Plan 04 T5 — acquire advisory lock to serialize concurrent runs.
+        // On MySQL this uses GET_LOCK; sqlite (tests) gracefully no-ops.
+        if (! $this->acquireSyncLock()) {
+            $this->warn('⚠️  Another hrmac:sync-modules run is in progress. Aborting to avoid duplicate rows.');
+
             return self::FAILURE;
         }
 
-        // Auto-detect scope
-        $scope = $this->option('scope') ?: $this->detectScope();
-        $fresh = $this->option('fresh');
-        $prune = $this->option('prune');
-
-        $this->info("📍 Context: {$scope}");
-        $this->newLine();
-
         try {
-            DB::beginTransaction();
 
-            // Fresh sync
-            if ($fresh) {
-                $this->clearExistingModules($scope);
+            // Schema validation
+            if (! $this->validateSchema()) {
+                return self::FAILURE;
             }
 
-            $modules = $this->moduleDiscovery->getModuleDefinitions();
+            // Auto-detect scope
+            $scope = $this->option('scope') ?: $this->detectScope();
+            $fresh = $this->option('fresh');
+            $prune = $this->option('prune');
 
-            if ($modules->isEmpty()) {
-                $this->warn('⚠️  No module definitions found in packages.');
+            $this->info("📍 Context: {$scope}");
+            $this->newLine();
 
-                if ($prune) {
-                    $this->pruneRemovedModules(collect([]));
-                    DB::commit();
-                    $this->displayStats();
+            try {
+                DB::beginTransaction();
+
+                // Fresh sync
+                if ($fresh) {
+                    $this->clearExistingModules($scope);
+                }
+
+                $modules = $this->moduleDiscovery->getModuleDefinitions();
+
+                // Audit D15 — when running inside a tenant context, filter discovered
+                // modules to only those the tenant has paid for (baseline ∪ subscribed).
+                if ($scope === 'tenant' && function_exists('tenancy') && tenancy()->initialized) {
+                    $tenantModel = tenant();
+                    if ($tenantModel !== null && method_exists($tenantModel, 'getSubscribedProductModulesAttribute')) {
+                        $allowed = $tenantModel->subscribed_product_modules;
+                        $modules = $modules->filter(fn (array $def) => in_array($def['code'] ?? null, $allowed, true))->values();
+                    }
+                }
+
+                if ($modules->isEmpty()) {
+                    $this->warn('⚠️  No module definitions found in packages.');
+
+                    if ($prune) {
+                        $this->pruneRemovedModules(collect([]));
+                        DB::commit();
+                        $this->displayStats();
+
+                        return self::SUCCESS;
+                    }
+
+                    DB::rollBack();
 
                     return self::SUCCESS;
                 }
 
-                DB::rollBack();
+                $this->info("📦 Found {$modules->count()} module(s) to sync");
+                $this->newLine();
 
-                return self::SUCCESS;
-            }
+                $progressBar = $this->output->createProgressBar($modules->count());
+                $progressBar->setFormat('verbose');
 
-            $this->info("📦 Found {$modules->count()} module(s) to sync");
-            $this->newLine();
+                foreach ($modules as $moduleDef) {
+                    // Filter by scope
+                    $moduleScope = $moduleDef['scope'] ?? 'tenant';
+                    if ($scope && $scope !== 'all' && $moduleScope !== $scope) {
+                        $progressBar->advance();
 
-            $progressBar = $this->output->createProgressBar($modules->count());
-            $progressBar->setFormat('verbose');
+                        continue;
+                    }
 
-            foreach ($modules as $moduleDef) {
-                // Filter by scope
-                $moduleScope = $moduleDef['scope'] ?? 'tenant';
-                if ($scope && $scope !== 'all' && $moduleScope !== $scope) {
+                    $this->syncModule($moduleDef);
                     $progressBar->advance();
-
-                    continue;
                 }
 
-                $this->syncModule($moduleDef);
-                $progressBar->advance();
+                $progressBar->finish();
+                $this->newLine(2);
+
+                // Prune removed modules
+                if ($prune) {
+                    $this->pruneRemovedModules($modules);
+                }
+
+                DB::commit();
+
+                $this->displayStats();
+                $this->info('✅ Module hierarchy sync completed!');
+
+                return self::SUCCESS;
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                $this->error('❌ Sync failed: '.$e->getMessage());
+                $this->error('Stack trace: '.$e->getTraceAsString());
+
+                return self::FAILURE;
             }
 
-            $progressBar->finish();
-            $this->newLine(2);
+        } finally {
+            // Plan 04 T5 — release advisory lock no matter what
+            $this->releaseSyncLock();
+        }
+    }
 
-            // Prune removed modules
-            if ($prune) {
-                $this->pruneRemovedModules($modules);
+    /**
+     * Try to acquire the advisory sync lock.
+     * Returns true if acquired or if the driver doesn't support advisory locks
+     * (sqlite, test harness) — those drivers are inherently single-process so
+     * the race we guard against can't happen.
+     */
+    protected function acquireSyncLock(): bool
+    {
+        try {
+            $driver = DB::connection()->getDriverName();
+            if ($driver !== 'mysql' && $driver !== 'mariadb') {
+                return true; // sqlite/pgsql — no advisory lock needed in test/dev
             }
 
-            DB::commit();
+            $result = DB::selectOne('SELECT GET_LOCK(?, 30) AS ok', [self::SYNC_LOCK_KEY]);
 
-            $this->displayStats();
-            $this->info('✅ Module hierarchy sync completed!');
+            return (bool) ($result->ok ?? false);
+        } catch (\Throwable) {
+            return true; // Don't block the sync if lock subsystem is unavailable
+        }
+    }
 
-            return self::SUCCESS;
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            $this->error('❌ Sync failed: '.$e->getMessage());
-            $this->error('Stack trace: '.$e->getTraceAsString());
-
-            return self::FAILURE;
+    /**
+     * Release the advisory sync lock. Safe to call even if not held.
+     */
+    protected function releaseSyncLock(): void
+    {
+        try {
+            $driver = DB::connection()->getDriverName();
+            if ($driver !== 'mysql' && $driver !== 'mariadb') {
+                return;
+            }
+            DB::statement('SELECT RELEASE_LOCK(?)', [self::SYNC_LOCK_KEY]);
+        } catch (\Throwable) {
+            // best-effort release
         }
     }
 
@@ -193,7 +265,7 @@ class SyncModuleHierarchy extends Command
         }
 
         // Standalone mode
-        if (! class_exists(\Stancl\Tenancy\Tenancy::class)) {
+        if (! class_exists(Tenancy::class)) {
             return 'all';
         }
 

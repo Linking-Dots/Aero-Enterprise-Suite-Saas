@@ -1,211 +1,206 @@
-/**
- * Audit & Activity Logs — Inertia-standard list view.
- *
- * All data comes as Inertia props from AuditLogController::index().
- * Filtering, pagination and tab switching use router.get() to reload
- * page props while preserving client state.
- */
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import {
   IndexPageLayout,
-  Tabs,
   DataTable,
-  KPI,
-  SearchInput, Select, DatePicker,
   Button,
   Badge,
   Pagination,
-  HStack, VStack,
-  useToast,
+  HStack,
+  Input,
+  Select,
+  Text,
+  Mono,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-const TAB_BUSINESS = 'business';
-const TAB_MODEL    = 'model';
-const TAB_ACCESS   = 'access';
+const EVENT_TYPE_OPTIONS = [
+  { value: '',                  label: 'All Event Types' },
+  { value: 'login',             label: 'Login' },
+  { value: 'logout',            label: 'Logout' },
+  { value: 'login_failed',      label: 'Login Failed' },
+  { value: 'password_changed',  label: 'Password Changed' },
+  { value: 'created',           label: 'Created' },
+  { value: 'updated',           label: 'Updated' },
+  { value: 'deleted',           label: 'Deleted' },
+  { value: 'exported',          label: 'Exported' },
+  { value: 'impersonated',      label: 'Impersonated' },
+];
 
-export default function AuditLogsIndex({ stats, tab, logs, meta, filters: initialFilters }) {
-  const toast = useToast();
+const EVENT_INTENT = {
+  login:            'success',
+  logout:           'neutral',
+  login_failed:     'danger',
+  password_changed: 'warning',
+  created:          'success',
+  updated:          'neutral',
+  deleted:          'danger',
+  exported:         'warning',
+  impersonated:     'amber',
+};
 
-  const [search, setSearch] = useState(initialFilters?.search ?? '');
-  const [actionType, setActionType] = useState(initialFilters?.action ?? '');
-  const [eventType, setEventType] = useState(initialFilters?.event_type ?? '');
-  const [dateFrom, setDateFrom] = useState(initialFilters?.date_from ?? '');
-  const [dateTo, setDateTo] = useState(initialFilters?.date_to ?? '');
+export default function AuditLogsIndex({ logs, filters }) {
+  const [search,     setSearch]     = useState(filters?.search     ?? '');
+  const [eventType,  setEventType]  = useState(filters?.event_type ?? '');
+  const [dateFrom,   setDateFrom]   = useState(filters?.from       ?? '');
+  const [dateTo,     setDateTo]     = useState(filters?.to         ?? '');
 
-  const applyFilters = (page = 1, newTab = tab) => {
-    const params = { tab: newTab, per_page: 15, page };
-    if (search) params.search = search;
-    if (dateFrom) params.date_from = dateFrom;
-    if (dateTo) params.date_to = dateTo;
+  const applyFilters = (page = 1) => {
+    const params = { page };
+    if (search)    params.search     = search;
+    if (eventType) params.event_type = eventType;
+    if (dateFrom)  params.from       = dateFrom;
+    if (dateTo)    params.to         = dateTo;
 
-    if (newTab === TAB_BUSINESS && actionType) {
-      params.action = actionType;
-    }
-    if (newTab === TAB_ACCESS && eventType) {
-      params.event_type = eventType;
-    }
-
-    router.get(route('core.audit-logs.index'), params, {
+    router.get(route('core.audit-logs.activity'), params, {
       preserveState: true,
       preserveScroll: true,
-      only: ['logs', 'meta', 'filters', 'tab'],
+      only: ['logs', 'filters'],
     });
   };
 
-  const handleTabChange = (newTab) => {
+  const resetFilters = () => {
     setSearch('');
-    setActionType('');
     setEventType('');
     setDateFrom('');
     setDateTo('');
-    applyFilters(1, newTab);
+    router.get(route('core.audit-logs.activity'), {}, {
+      preserveState: true,
+      preserveScroll: true,
+      only: ['logs', 'filters'],
+    });
   };
 
-  const handlePageChange = (page) => {
-    applyFilters(page);
-  };
-
-  const handleExport = () => {
-    toast.info('Export functionality coming soon.');
-  };
-
-  const handleReset = () => {
-    setSearch('');
-    setActionType('');
-    setEventType('');
-    setDateFrom('');
-    setDateTo('');
-    applyFilters(1);
-  };
-
-  const activityColumns = [
-    { key: 'created_at', label: 'Time', width: '15%', render: (row) => row.created_at ? new Date(row.created_at).toLocaleString() : '—' },
-    { key: 'causer_name', label: 'User', width: '15%', render: (row) => row.causer_name || row.causer_email || 'System' },
-    { key: 'log_name', label: 'Action', width: '12%', render: (row) => <Badge>{row.log_name || '—'}</Badge> },
-    { key: 'description', label: 'Description', width: '30%' },
-    { key: 'subject_type', label: 'Subject', width: '15%', render: (row) => `${row.subject_type?.split('\\')?.pop() || ''} #${row.subject_id || ''}` },
-    { key: 'properties', label: 'Details', width: '13%', render: (row) => row.properties ? JSON.stringify(row.properties).slice(0, 40) + (JSON.stringify(row.properties).length > 40 ? '…' : '') : '—' },
+  const columns = [
+    {
+      key: 'actor_name',
+      label: 'Actor',
+      width: '18%',
+      render: row => (
+        <Text size="sm">{row.actor_name || row.actor_email || 'System'}</Text>
+      ),
+    },
+    {
+      key: 'event_type',
+      label: 'Event',
+      width: '14%',
+      render: row => (
+        <Badge intent={EVENT_INTENT[row.event_type] ?? 'neutral'}>
+          {row.event_type || '—'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'action',
+      label: 'Action',
+      width: '20%',
+      render: row => <Text size="sm">{row.action || '—'}</Text>,
+    },
+    {
+      key: 'subject_label',
+      label: 'Subject',
+      width: '18%',
+      render: row => (
+        <Text size="sm" tone="secondary">
+          {row.subject_label ? row.subject_label.slice(0, 40) + (row.subject_label.length > 40 ? '…' : '') : '—'}
+        </Text>
+      ),
+    },
+    {
+      key: 'actor_ip',
+      label: 'IP',
+      width: '14%',
+      render: row => <Mono size="sm">{row.actor_ip || '—'}</Mono>,
+    },
+    {
+      key: 'created_at',
+      label: 'Time',
+      width: '16%',
+      render: row => (
+        <Mono size="sm">
+          {row.created_at ? new Date(row.created_at).toLocaleString() : '—'}
+        </Mono>
+      ),
+    },
   ];
-
-  const securityColumns = [
-    { key: 'created_at', label: 'Time', width: '15%', render: (row) => row.created_at ? new Date(row.created_at).toLocaleString() : '—' },
-    { key: 'user_name', label: 'User', width: '15%', render: (row) => row.user_name || row.user_email || '—' },
-    { key: 'event_type', label: 'Event', width: '12%', render: (row) => <Badge intent="warning">{row.event_type || '—'}</Badge> },
-    { key: 'description', label: 'Description', width: '30%' },
-    { key: 'ip_address', label: 'IP Address', width: '15%', mono: true },
-    { key: 'user_agent', label: 'User Agent', width: '13%', render: (row) => row.user_agent ? row.user_agent.slice(0, 30) + (row.user_agent.length > 30 ? '…' : '') : '—' },
-  ];
-
-  const kpis = [
-    <KPI key="total" label="Total Activities" value={stats?.total_activities ?? 0} />,
-    <KPI key="today" label="Today" value={stats?.today_activities ?? 0} />,
-    <KPI key="security" label="Security Events" value={stats?.security_events ?? 0} />,
-    <KPI key="active" label="Active Users" value={stats?.active_users_today ?? 0} />,
-  ];
-
-  const filterBar = (
-    <HStack gap={3} align="end" wrap>
-      <SearchInput
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        placeholder="Search logs..."
-        onKeyDown={e => e.key === 'Enter' && applyFilters(1)}
-        style={{ minWidth: 200, flex: 1 }}
-      />
-
-      {tab === TAB_BUSINESS && (
-        <Select
-          value={actionType}
-          onChange={e => setActionType(e.target.value)}
-          style={{ minWidth: 140 }}
-          options={[
-            { value: '', label: 'All actions' },
-            { value: 'created', label: 'Created' },
-            { value: 'updated', label: 'Updated' },
-            { value: 'deleted', label: 'Deleted' },
-            { value: 'login', label: 'Login' },
-            { value: 'logout', label: 'Logout' },
-          ]}
-        />
-      )}
-
-      {tab === TAB_ACCESS && (
-        <Select
-          value={eventType}
-          onChange={e => setEventType(e.target.value)}
-          style={{ minWidth: 140 }}
-          options={[
-            { value: '', label: 'All events' },
-            { value: 'login_failed', label: 'Login Failed' },
-            { value: 'login_success', label: 'Login Success' },
-            { value: 'password_changed', label: 'Password Changed' },
-            { value: 'suspicious', label: 'Suspicious' },
-          ]}
-        />
-      )}
-
-      <DatePicker value={dateFrom} onChange={e => setDateFrom(e.target.value)} placeholder="From date" />
-      <DatePicker value={dateTo} onChange={e => setDateTo(e.target.value)} placeholder="To date" />
-
-      <Button variant="primary" onClick={() => applyFilters(1)}>
-        Search
-      </Button>
-      <Button variant="secondary" onClick={handleReset}>
-        Reset
-      </Button>
-    </HStack>
-  );
 
   return (
     <IndexPageLayout
-      title="Audit & Activity Logs"
+      title="Activity Logs"
       breadcrumb={[
         { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Audit & Activity Logs' },
+        { label: 'Audit Logs', href: route('core.audit-logs.activity') },
+        { label: 'Activity' },
       ]}
-      description="Review system activity, user actions, and security events."
-      actions={
-        <Button variant="secondary" onClick={handleExport}>
-          Export
-        </Button>
-      }
-      kpis={kpis}
+      description="Full record of all actor activity across the platform."
       filters={
-        <VStack gap={4}>
-          <Tabs
-            tabs={[
-              { value: TAB_BUSINESS, label: 'Business Events', count: meta?.total ?? 0 },
-              { value: TAB_MODEL, label: 'Model Changes' },
-              { value: TAB_ACCESS, label: 'Sensitive Access' },
-            ]}
-            value={tab ?? TAB_BUSINESS}
-            onChange={handleTabChange}
+        <HStack gap={3} align="end" wrap>
+          <Input
+            placeholder="Search actor name or email…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && applyFilters(1)}
+            leftIcon="magnifyingGlass"
           />
-          {filterBar}
-        </VStack>
+          <Select
+            value={eventType}
+            onChange={e => setEventType(e.target.value)}
+            options={EVENT_TYPE_OPTIONS}
+          />
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={e => setDateFrom(e.target.value)}
+            placeholder="From"
+          />
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={e => setDateTo(e.target.value)}
+            placeholder="To"
+          />
+          <Button intent="primary" onClick={() => applyFilters(1)}>Filter</Button>
+          <Button intent="ghost"   onClick={resetFilters}>Reset</Button>
+        </HStack>
       }
       table={
         <DataTable
-          columns={tab === TAB_ACCESS ? securityColumns : activityColumns}
-          rows={logs ?? []}
-          empty="No logs found. Try adjusting your filters."
+          columns={columns}
+          rows={logs?.data ?? []}
+          empty="No activity logs found. Try adjusting your filters."
         />
       }
       pagination={
-        meta?.last_page > 1 && (
-          <Pagination
-            page={meta?.current_page ?? 1}
-            total={meta?.last_page ?? 1}
-            onChange={handlePageChange}
-          />
-        )
+        logs?.next_page_url || logs?.prev_page_url ? (
+          <HStack gap={2}>
+            <Button
+              intent="ghost"
+              size="sm"
+              disabled={!logs?.prev_page_url}
+              onClick={() => router.get(logs.prev_page_url, {}, { preserveState: true })}
+              leftIcon="chevronLeft"
+            >
+              Previous
+            </Button>
+            <Text size="sm" tone="secondary">
+              {logs?.from ?? 0}–{logs?.to ?? 0} of {logs?.total ?? 0}
+            </Text>
+            <Button
+              intent="ghost"
+              size="sm"
+              disabled={!logs?.next_page_url}
+              onClick={() => router.get(logs.next_page_url, {}, { preserveState: true })}
+              rightIcon="chevronRight"
+            >
+              Next
+            </Button>
+          </HStack>
+        ) : null
       }
     />
   );
 }
 
 AuditLogsIndex.layout = page => (
-  <App title="Audit & Activity Logs">{page}</App>
+  <App title="Activity Logs">{page}</App>
 );

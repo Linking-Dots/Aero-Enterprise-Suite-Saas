@@ -115,12 +115,20 @@ class HRMServiceProvider extends AbstractModuleProvider
     /**
      * Load HRM routes via parent (AbstractModuleProvider).
      *
-     * Routes live in routes/web.php and are loaded with the correct SaaS or
-     * standalone outer middleware wrapper by the base class.
+     * Routes live in routes/web.php (Inertia surface) and routes/api.php
+     * (REST surface — HRM Push H.T2). The base class loads the web routes
+     * with SaaS/standalone outer middleware; we also load the API routes
+     * inside the same registration scope so tokens issued via aero-core's
+     * ApiKey admin can hit /api/hrm/* immediately after install.
      */
     protected function loadRoutes(): void
     {
         parent::loadRoutes();
+
+        $apiRoutes = $this->getModulePath('routes/api.php');
+        if (file_exists($apiRoutes)) {
+            $this->loadRoutesFrom($apiRoutes);
+        }
     }
 
     /**

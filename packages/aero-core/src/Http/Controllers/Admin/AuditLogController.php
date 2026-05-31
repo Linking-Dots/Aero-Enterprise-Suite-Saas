@@ -4,10 +4,14 @@ namespace Aero\Core\Http\Controllers\Admin;
 
 use Aero\Core\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AuditLogController extends Controller
 {
@@ -55,6 +59,211 @@ class AuditLogController extends Controller
     public function stats(): JsonResponse
     {
         return response()->json($this->getStats());
+    }
+
+    /**
+     * CA-3: Security log Inertia view (auth.* / security.* events).
+     */
+    public function security(Request $request): Response
+    {
+        $perPage = (int) $request->get('per_page', 30);
+        $search = (string) $request->get('search', '');
+
+        $logs = [];
+        $meta = $this->emptyMeta($perPage);
+
+        if ($this->tableExists('audit_logs')) {
+            $q = DB::table('audit_logs')
+                ->where(function ($q) {
+                    $q->where('event_type', 'like', 'auth.%')
+                        ->orWhere('event_type', 'like', 'security.%');
+                })
+                ->when($search, fn ($q) => $q->where('actor_name', 'like', "%{$search}%"))
+                ->orderByDesc('created_at')
+                ->paginate($perPage)
+                ->withQueryString();
+
+            $logs = $q->items();
+            $meta = [
+                'current_page' => $q->currentPage(),
+                'last_page' => $q->lastPage(),
+                'per_page' => $q->perPage(),
+                'total' => $q->total(),
+            ];
+        }
+
+        return Inertia::render('Core/AuditLogs/Security', [
+            'title' => 'Security Logs',
+            'logs' => $logs,
+            'meta' => $meta,
+            'filters' => $request->only('search'),
+        ]);
+    }
+
+    /**
+     * CA-3: Failed-jobs / queue monitor.
+     */
+    public function queues(Request $request): Response
+    {
+        $perPage = (int) $request->get('per_page', 30);
+        $jobs = [];
+        $meta = $this->emptyMeta($perPage);
+
+        if ($this->tableExists('failed_jobs')) {
+            $q = DB::table('failed_jobs')
+                ->orderByDesc('failed_at')
+                ->paginate($perPage)
+                ->withQueryString();
+            $jobs = $q->items();
+            $meta = [
+                'current_page' => $q->currentPage(),
+                'last_page' => $q->lastPage(),
+                'per_page' => $q->perPage(),
+                'total' => $q->total(),
+            ];
+        }
+
+        return Inertia::render('Core/AuditLogs/Queues', [
+            'title' => 'Queue Monitor',
+            'failed_jobs' => $jobs,
+            'meta' => $meta,
+        ]);
+    }
+
+    /**
+     * CA-3: Retry an individual failed job.
+     */
+    public function retryJob(string $id, Request $request): RedirectResponse
+    {
+        try {
+            Artisan::call('queue:retry', ['id' => [$id]]);
+        } catch (\Throwable $e) {
+            Log::warning('Queue retry failed', ['id' => $id, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Failed to retry job: '.$e->getMessage());
+        }
+
+        return back()->with('success', "Job {$id} queued for retry.");
+    }
+
+    /**
+     * CA-3: Flush all failed jobs.
+     */
+    public function flushQueue(Request $request): RedirectResponse
+    {
+        try {
+            Artisan::call('queue:flush');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Failed to flush: '.$e->getMessage());
+        }
+
+        return back()->with('success', 'Failed queue flushed.');
+    }
+
+    /**
+     * CA-3: Export audit logs as CSV.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $filename = 'audit-logs-'.date('Y-m-d-His').'.csv';
+
+        return response()->streamDownload(function () use ($request) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['ID', 'Event Type', 'Actor', 'Action', 'Subject', 'IP', 'Created At']);
+
+            if ($this->tableExists('audit_logs')) {
+                DB::table('audit_logs')
+                    ->when($request->event_type, fn ($q, $t) => $q->where('event_type', $t))
+                    ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
+                    ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
+                    ->orderByDesc('created_at')
+                    ->chunk(500, function ($rows) use ($out) {
+                        foreach ($rows as $row) {
+                            fputcsv($out, [
+                                $row->id ?? '',
+                                $row->event_type ?? '',
+                                $row->actor_name ?? '',
+                                $row->action ?? '',
+                                $row->subject_label ?? '',
+                                $row->actor_ip ?? '',
+                                $row->created_at ?? '',
+                            ]);
+                        }
+                    });
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Legacy alias kept for backwards compatibility with prior security log JSON endpoint.
+     */
+    public function securityLogs(Request $request): JsonResponse
+    {
+        if (! $this->tableExists('audit_logs')) {
+            return response()->json(['data' => [], 'meta' => $this->emptyMeta((int) $request->get('per_page', 20))]);
+        }
+
+        $query = DB::table('audit_logs')
+            ->where(function ($q) {
+                $q->where('event_type', 'like', 'auth.%')
+                    ->orWhere('event_type', 'like', 'security.%');
+            })
+            ->orderByDesc('created_at')
+            ->paginate((int) $request->get('per_page', 20));
+
+        return response()->json([
+            'data' => $query->items(),
+            'meta' => [
+                'current_page' => $query->currentPage(),
+                'last_page' => $query->lastPage(),
+                'per_page' => $query->perPage(),
+                'total' => $query->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Legacy stub: export activity logs (CSV) — proxies to {@see export()}.
+     */
+    public function exportActivityLogs(Request $request): StreamedResponse
+    {
+        return $this->export($request);
+    }
+
+    /**
+     * Legacy stub: export security logs (CSV).
+     */
+    public function exportSecurityLogs(Request $request): StreamedResponse
+    {
+        $filename = 'security-logs-'.date('Y-m-d-His').'.csv';
+
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['ID', 'Event Type', 'Actor', 'IP', 'User Agent', 'Created At']);
+
+            if ($this->tableExists('audit_logs')) {
+                DB::table('audit_logs')
+                    ->where(function ($q) {
+                        $q->where('event_type', 'like', 'auth.%')
+                            ->orWhere('event_type', 'like', 'security.%');
+                    })
+                    ->orderByDesc('created_at')
+                    ->chunk(500, function ($rows) use ($out) {
+                        foreach ($rows as $row) {
+                            fputcsv($out, [
+                                $row->id ?? '',
+                                $row->event_type ?? '',
+                                $row->actor_name ?? '',
+                                $row->actor_ip ?? '',
+                                $row->actor_user_agent ?? '',
+                                $row->created_at ?? '',
+                            ]);
+                        }
+                    });
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
     private function getBusinessLogs(int $perPage, string $search, ?string $actorId, ?string $eventType, ?string $dateFrom, ?string $dateTo): array

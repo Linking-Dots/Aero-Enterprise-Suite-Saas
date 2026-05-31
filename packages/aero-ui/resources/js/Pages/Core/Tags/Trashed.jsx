@@ -135,7 +135,7 @@ export default function TrashedTags({ tags, filters }) {
                         flexShrink: 0,
                       }}
                     />
-                    <Heading level={5} style={{ margin: 0 }}>
+                    <Heading level={5} className="aeos-m-0">
                       {tag.name}
                     </Heading>
                   </HStack>

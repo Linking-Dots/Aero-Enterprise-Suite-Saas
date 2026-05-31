@@ -153,9 +153,9 @@ function SearchResultCard({ result }) {
           >
             <Icon name={mapResultIcon(result.icon, result.type)} size={20} />
           </Box>
-          <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
+          <Stack gap={1} className="aeos-flex-1">
             <HStack gap={2} align="center">
-              <Heading level={5} style={{ margin: 0 }}>
+              <Heading level={5} className="aeos-m-0">
                 <Link
                   href={result.url || route('core.search.index')}
                   style={{ color: 'inherit', textDecoration: 'none' }}
@@ -166,7 +166,7 @@ function SearchResultCard({ result }) {
               <Badge intent="neutral" size="sm">{result.type}</Badge>
             </HStack>
             {result.subtitle && (
-              <Text size="sm" tone="muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Text size="sm" tone="muted" className="aeos-truncate">
                 {result.subtitle}
               </Text>
             )}

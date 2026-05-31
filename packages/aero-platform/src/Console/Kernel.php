@@ -2,13 +2,14 @@
 
 namespace Aero\Platform\Console;
 
-use App\Console\Commands\SendAttendanceReminders;
-use App\Models\NotificationLog;
 use Aero\Platform\Console\Commands\ExpireGracePeriods;
 use Aero\Platform\Console\Commands\ExpireTrialSubscriptions;
 use Aero\Platform\Console\Commands\ProcessOverdueInvoices;
 use Aero\Platform\Console\Commands\ProcessPendingSubscriptionChanges;
 use Aero\Platform\Console\Commands\ProcessSubscriptionRenewals;
+use Aero\Platform\Console\Commands\PurgeSuspendedRoleAccess;
+use App\Console\Commands\SendAttendanceReminders;
+use App\Models\NotificationLog;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
         ExpireTrialSubscriptions::class,
         ProcessPendingSubscriptionChanges::class,
         ProcessOverdueInvoices::class,
+        PurgeSuspendedRoleAccess::class, // D17: purge suspended role grants after 30-day grace
     ];
 
     /**
@@ -247,6 +249,24 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/pending-subscription-changes.log'));
+
+        // D17: Purge suspended role grants that have exceeded the 30-day grace period.
+        // Runs after the subscription commands at 02:30 so subscription state is fully settled.
+        $schedule->command('hrmac:purge-suspended-grants')
+            ->dailyAt('02:30')
+            ->timezone(config('app.timezone', 'UTC'))
+            ->before(function () {
+                Log::info('Starting suspended role grant purge (D17)');
+            })
+            ->onSuccess(function () {
+                Log::info('Suspended role grant purge completed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('Suspended role grant purge failed');
+            })
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/purge-suspended-role-access.log'));
     }
 
     /**

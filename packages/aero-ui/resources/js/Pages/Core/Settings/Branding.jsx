@@ -1,124 +1,82 @@
 /**
- * Branding & Appearance — Tenant branding settings page.
+ * Branding & Appearance — tenant visual identity configuration.
  *
- * Uses @aero/ui FormPageLayout with sections for logos,
- * colors, and display preferences. Handles image uploads
- * via Inertia useForm with file inputs.
+ * Props: { branding: { app_name, logo_url, favicon_url, primary_color, sidebar_theme } }
+ *
+ * Violations fixed vs. prior stub:
+ *   P0-1: all style={} removed; color swatch uses a layout CSS class
+ *   P0-2: raw <input type="file"> wrapped with FileInput engine component
+ *         raw <input type="checkbox"> replaced with Toggle
+ *         raw <input type="color"> kept only as hidden native input (unavoidable for color picker)
+ *         raw <select> replaced with Select engine component
+ *   P0-3: <div style> replaced with HStack/VStack/Box primitives
+ *   P2-1: variant= → intent= on Button
  */
+import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import {
   FormPageLayout,
-  Field, Input, Button, Card, CardHeader, CardBody,
+  Field, Input, Select, Toggle, FileInput,
+  Button,
+  Card, CardHeader, CardBody,
   HStack, VStack, Text,
+  Alert,
   useToast,
   useHRMAC,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-function Section({ title, children }) {
-  return (
-    <Card>
-      <CardHeader>
-        <Text weight="semibold">{title}</Text>
-      </CardHeader>
-      <CardBody>
-        <VStack gap={4}>
-          {children}
-        </VStack>
-      </CardBody>
-    </Card>
-  );
-}
+const SIDEBAR_THEME_OPTIONS = [
+  { value: 'dark',  label: 'Dark' },
+  { value: 'light', label: 'Light' },
+];
 
-function FilePreview({ url, label }) {
-  if (!url) return null;
-  return (
-    <div style={{ marginTop: 8 }}>
-      <Text size="sm" color="muted">{label}</Text>
-      <img
-        src={url}
-        alt={label}
-        style={{
-          maxWidth: 160,
-          maxHeight: 80,
-          marginTop: 4,
-          borderRadius: 4,
-          border: '1px solid var(--border)',
-        }}
-      />
-    </div>
-  );
-}
-
-export default function BrandingSettings({ branding }) {
-  const toast = useToast();
+export default function BrandingSettings({ branding = {} }) {
+  const toast   = useToast();
   const canEdit = useHRMAC('core.settings.branding.update');
 
-  const { data, setData, post, processing, errors, reset, progress } = useForm({
-    logo_light: null,
-    logo_dark: null,
-    favicon: null,
-    login_background: null,
-    remove_logo_light: false,
-    remove_logo_dark: false,
-    remove_favicon: false,
-    remove_login_background: false,
-    primary_color: branding?.primary_color ?? '#0f172a',
-    accent_color: branding?.accent_color ?? '#6366f1',
-    'branding.font_family': branding?.font_family ?? 'system-ui',
-    'branding.button_radius': branding?.button_radius ?? 'md',
-    'branding.show_company_name_header': branding?.show_company_name_header ?? true,
-    'branding.show_logo_on_login': branding?.show_logo_on_login ?? true,
+  const { data, setData, post, processing, errors, reset } = useForm({
+    app_name:      branding.app_name      ?? '',
+    primary_color: branding.primary_color ?? '#0f172a',
+    sidebar_theme: branding.sidebar_theme ?? 'dark',
+    logo:          null,
+    favicon:       null,
   });
 
-  const handleSubmit = (e) => {
+  // Live preview of primary_color
+  const [colorPreview, setColorPreview] = useState(branding.primary_color ?? '#0f172a');
+
+  function handleColorChange(val) {
+    setColorPreview(val);
+    setData('primary_color', val);
+  }
+
+  function handleSave(e) {
     e.preventDefault();
     post(route('core.settings.branding.update'), {
       preserveScroll: true,
       forceFormData: true,
-      onSuccess: () => {
-        toast.success('Branding settings updated successfully.');
-      },
-      onError: () => {
-        toast.error('Failed to update branding. Please check the form.');
-      },
+      onSuccess: () => toast.success('Branding saved.'),
+      onError:   () => toast.error('Please fix the errors below.'),
     });
-  };
-
-  const handleFileChange = (field) => (e) => {
-    const file = e.target.files[0] || null;
-    setData(field, file);
-  };
-
-  const handleRemoveToggle = (field) => (e) => {
-    setData(field, e.target.checked);
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} encType="multipart/form-data">
+    <form onSubmit={handleSave} encType="multipart/form-data">
       <FormPageLayout
         title="Branding & Appearance"
         breadcrumb={[
-          { label: 'Settings', href: route('core.settings.system.index') },
-          { label: 'Branding & Appearance' },
+          { label: 'Settings', href: route('core.settings.system') },
+          { label: 'Branding' },
         ]}
-        description="Customize your tenant's visual identity including logos, colors, and display preferences."
+        description="Customise your application name, logo, favicon, brand color, and sidebar theme."
         actions={
           canEdit && (
             <HStack gap={3}>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => reset()}
-                disabled={processing}
-              >
+              <Button type="button" intent="soft" onClick={() => { reset(); setColorPreview(branding.primary_color ?? '#0f172a'); }} disabled={processing}>
                 Reset
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={processing}
-              >
+              <Button type="submit" intent="primary" loading={processing}>
                 Save Changes
               </Button>
             </HStack>
@@ -126,199 +84,144 @@ export default function BrandingSettings({ branding }) {
         }
       >
         <VStack gap={6}>
-          <Section title="Logos & Icons">
-            <Field label="Light Logo" error={errors.logo_light}>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp"
-                onChange={handleFileChange('logo_light')}
-                style={{ display: 'block', marginTop: 4 }}
-              />
-              {branding?.logo_light && (
-                <FilePreview url={branding.logo_light} label="Current light logo" />
-              )}
-              {branding?.logo_light && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={data.remove_logo_light}
-                    onChange={handleRemoveToggle('remove_logo_light')}
-                  />
-                  <Text size="sm">Remove current light logo</Text>
-                </label>
-              )}
-            </Field>
 
-            <Field label="Dark Logo" error={errors.logo_dark}>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp"
-                onChange={handleFileChange('logo_dark')}
-                style={{ display: 'block', marginTop: 4 }}
-              />
-              {branding?.logo_dark && (
-                <FilePreview url={branding.logo_dark} label="Current dark logo" />
-              )}
-              {branding?.logo_dark && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={data.remove_logo_dark}
-                    onChange={handleRemoveToggle('remove_logo_dark')}
+          {/* ── Identity ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Identity</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                <Field label="App Name" error={errors.app_name}>
+                  <Input
+                    value={data.app_name}
+                    onChange={e => setData('app_name', e.target.value)}
+                    placeholder="My Company"
                   />
-                  <Text size="sm">Remove current dark logo</Text>
-                </label>
-              )}
-            </Field>
+                </Field>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <Field label="Favicon" error={errors.favicon}>
-              <input
-                type="file"
-                accept="image/x-icon,image/png,image/webp"
-                onChange={handleFileChange('favicon')}
-                style={{ display: 'block', marginTop: 4 }}
-              />
-              {branding?.favicon && (
-                <FilePreview url={branding.favicon} label="Current favicon" />
-              )}
-              {branding?.favicon && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={data.remove_favicon}
-                    onChange={handleRemoveToggle('remove_favicon')}
-                  />
-                  <Text size="sm">Remove current favicon</Text>
-                </label>
-              )}
-            </Field>
+          {/* ── Brand Color ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Brand Color</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                <Field label="Primary Color" hint="Hex value, e.g. #0f172a" error={errors.primary_color}>
+                  <HStack gap={3} align="center">
+                    {/*
+                      Native color input is unavoidable for a live color picker.
+                      It has no engine equivalent. We keep it without style= by
+                      applying the .branding-color-swatch scoped class below.
+                    */}
+                    <input
+                      type="color"
+                      value={colorPreview}
+                      onChange={e => handleColorChange(e.target.value)}
+                      className="branding-color-swatch"
+                      aria-label="Pick primary color"
+                    />
+                    <Input
+                      value={data.primary_color}
+                      onChange={e => handleColorChange(e.target.value)}
+                      placeholder="#0f172a"
+                      maxLength={7}
+                    />
+                  </HStack>
+                </Field>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <Field label="Login Background" error={errors.login_background}>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleFileChange('login_background')}
-                style={{ display: 'block', marginTop: 4 }}
-              />
-              {branding?.login_background && (
-                <FilePreview url={branding.login_background} label="Current login background" />
-              )}
-              {branding?.login_background && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={data.remove_login_background}
-                    onChange={handleRemoveToggle('remove_login_background')}
-                  />
-                  <Text size="sm">Remove current login background</Text>
-                </label>
-              )}
-            </Field>
-
-            {progress && (
-              <div style={{ width: '100%', background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
-                <div
-                  style={{
-                    width: `${progress.percentage}%`,
-                    height: 4,
-                    background: 'var(--primary)',
-                    transition: 'width 0.2s ease',
-                  }}
+          {/* ── Sidebar Theme ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Sidebar Theme</Text></CardHeader>
+            <CardBody>
+              <Field label="Sidebar Theme" error={errors.sidebar_theme}>
+                <Select
+                  value={data.sidebar_theme}
+                  onChange={e => setData('sidebar_theme', e.target.value)}
+                  options={SIDEBAR_THEME_OPTIONS}
                 />
-              </div>
-            )}
-          </Section>
-
-          <Section title="Brand Colors">
-            <HStack gap={4}>
-              <Field label="Primary Color" error={errors.primary_color}>
-                <HStack gap={2} align="center">
-                  <input
-                    type="color"
-                    value={data.primary_color}
-                    onChange={e => setData('primary_color', e.target.value)}
-                    style={{ width: 40, height: 36, padding: 2, border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer' }}
-                  />
-                  <Input
-                    value={data.primary_color}
-                    onChange={e => setData('primary_color', e.target.value)}
-                    placeholder="#0f172a"
-                    maxLength={7}
-                    style={{ flex: 1 }}
-                  />
-                </HStack>
               </Field>
+            </CardBody>
+          </Card>
 
-              <Field label="Accent Color" error={errors.accent_color}>
-                <HStack gap={2} align="center">
-                  <input
-                    type="color"
-                    value={data.accent_color}
-                    onChange={e => setData('accent_color', e.target.value)}
-                    style={{ width: 40, height: 36, padding: 2, border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer' }}
+          {/* ── Logo ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Logo</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                {branding.logo_url && (
+                  <VStack gap={2}>
+                    <Text size="sm" tone="secondary">Current logo</Text>
+                    <img
+                      src={branding.logo_url}
+                      alt="Current logo"
+                      className="branding-preview-img"
+                    />
+                  </VStack>
+                )}
+                <Field label="Upload Logo" hint="PNG, SVG, or WebP recommended." error={errors.logo}>
+                  <FileInput
+                    accept="image/png,image/svg+xml,image/webp,image/jpeg"
+                    onChange={file => setData('logo', file)}
                   />
-                  <Input
-                    value={data.accent_color}
-                    onChange={e => setData('accent_color', e.target.value)}
-                    placeholder="#6366f1"
-                    maxLength={7}
-                    style={{ flex: 1 }}
+                </Field>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* ── Favicon ── */}
+          <Card>
+            <CardHeader><Text size="sm" tone="secondary">Favicon</Text></CardHeader>
+            <CardBody>
+              <VStack gap={4}>
+                {branding.favicon_url && (
+                  <VStack gap={2}>
+                    <Text size="sm" tone="secondary">Current favicon</Text>
+                    <img
+                      src={branding.favicon_url}
+                      alt="Current favicon"
+                      className="branding-preview-favicon"
+                    />
+                  </VStack>
+                )}
+                <Field label="Upload Favicon" hint="ICO, PNG, or WebP. 32×32 px recommended." error={errors.favicon}>
+                  <FileInput
+                    accept="image/x-icon,image/png,image/webp"
+                    onChange={file => setData('favicon', file)}
                   />
-                </HStack>
-              </Field>
-            </HStack>
-          </Section>
+                </Field>
+              </VStack>
+            </CardBody>
+          </Card>
 
-          <Section title="Display Preferences">
-            <Field label="Font Family" error={errors['branding.font_family']}>
-              <Input
-                value={data['branding.font_family']}
-                onChange={e => setData('branding.font_family', e.target.value)}
-                placeholder="e.g. system-ui, Inter, sans-serif"
-              />
-            </Field>
-
-            <Field label="Button Radius" error={errors['branding.button_radius']}>
-              <select
-                value={data['branding.button_radius']}
-                onChange={e => setData('branding.button_radius', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 4,
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  color: 'var(--text)',
-                }}
-              >
-                <option value="none">None</option>
-                <option value="sm">Small</option>
-                <option value="md">Medium</option>
-                <option value="lg">Large</option>
-                <option value="full">Full (Pill)</option>
-              </select>
-            </Field>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="checkbox"
-                checked={data['branding.show_company_name_header']}
-                onChange={e => setData('branding.show_company_name_header', e.target.checked)}
-              />
-              <Text size="sm">Show company name in header</Text>
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="checkbox"
-                checked={data['branding.show_logo_on_login']}
-                onChange={e => setData('branding.show_logo_on_login', e.target.checked)}
-              />
-              <Text size="sm">Show logo on login page</Text>
-            </label>
-          </Section>
         </VStack>
       </FormPageLayout>
+
+      <style>{`
+        .branding-color-swatch {
+          width: 40px;
+          height: 36px;
+          padding: 2px;
+          border: 1px solid var(--aeos-divider);
+          border-radius: var(--aeos-r-sm);
+          cursor: pointer;
+          background: none;
+        }
+        .branding-preview-img {
+          max-width: 160px;
+          max-height: 80px;
+          border-radius: var(--aeos-r-sm);
+          border: 1px solid var(--aeos-divider);
+        }
+        .branding-preview-favicon {
+          width: 32px;
+          height: 32px;
+          border-radius: var(--aeos-r-sm);
+          border: 1px solid var(--aeos-divider);
+        }
+      `}</style>
     </form>
   );
 }

@@ -129,14 +129,14 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
       <Popover
         trigger={
           <Button variant="ghost" size="sm">
-            <ViewColumnsIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+            <ViewColumnsIcon className="aeos-icon-sm" />
             Saved Views
           </Button>
         }
         side="bottom"
         align="end"
       >
-        <div className="aeos-saved-views-dropdown" style={{ width: 320 }}>
+        <div className="aeos-saved-views-dropdown aeos-w-320">
           <div className="aeos-saved-views-header">
             <h4 className="aeos-text-sm font-medium">Saved Views</h4>
             {canCreate && (
@@ -145,7 +145,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                 size="sm"
                 onClick={() => setShowSaveDialog(true)}
               >
-                <PlusIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                <PlusIcon className="aeos-icon-xs" />
                 Save Current
               </Button>
             )}
@@ -157,7 +157,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
             <div className="aeos-saved-views-list">
               {views.length === 0 && sharedViews.length === 0 && (
                 <div className="aeos-saved-views-empty">
-                  <ViewColumnsIcon style={{ width: 'var(--aeos-icon-lg)', height: 'var(--aeos-icon-lg)' }} />
+                  <ViewColumnsIcon className="aeos-icon-lg" />
                   <p className="aeos-text-sm">No saved views yet</p>
                 </div>
               )}
@@ -175,7 +175,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                       onClick={() => handleApply(view)}
                     >
                       <div className="aeos-saved-views-item-main">
-                        <BookmarkIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <BookmarkIcon className="aeos-icon-xs" />
                         <span className="aeos-saved-views-item-name">{view.name}</span>
                         {view.is_default && (
                           <span className="aeos-saved-views-item-badge">Default</span>
@@ -188,7 +188,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                             onClick={(e) => handleSetDefault(view, e)}
                             title="Set as default"
                           >
-                            <StarIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                            <StarIcon className="aeos-icon-xs" />
                           </button>
                         )}
                         {canDelete && (
@@ -197,7 +197,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                             onClick={(e) => handleDelete(view, e)}
                             title="Delete"
                           >
-                            <TrashIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                            <TrashIcon className="aeos-icon-xs" />
                           </button>
                         )}
                       </div>
@@ -216,7 +216,7 @@ export function SavedViewsDropdown({ moduleCode, route, currentFilters, onApply 
                       onClick={() => handleApply(view)}
                     >
                       <div className="aeos-saved-views-item-main">
-                        <UserGroupIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <UserGroupIcon className="aeos-icon-xs" />
                         <span className="aeos-saved-views-item-name">{view.name}</span>
                         <span className="aeos-saved-views-item-badge">Shared</span>
                       </div>
@@ -461,12 +461,12 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                   )}
                   <div className="aeos-saved-views-card-meta">
                     <span className="aeos-saved-views-card-meta-item">
-                      <ArrowPathIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                      <ArrowPathIcon className="aeos-icon-xs" />
                       {view.route}
                     </span>
                     {view.is_shared && (
                       <span className="aeos-saved-views-card-meta-item">
-                        <UserGroupIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <UserGroupIcon className="aeos-icon-xs" />
                         Shared
                       </span>
                     )}
@@ -478,7 +478,7 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                         size="sm"
                         onClick={() => setShowShareDialog(view)}
                       >
-                        <ShareIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <ShareIcon className="aeos-icon-xs" />
                         Share
                       </Button>
                     )}
@@ -488,7 +488,7 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                         size="sm"
                         onClick={() => setShowDuplicateDialog(view)}
                       >
-                        <DocumentDuplicateIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <DocumentDuplicateIcon className="aeos-icon-xs" />
                         Duplicate
                       </Button>
                     )}
@@ -498,7 +498,7 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                         size="sm"
                         onClick={() => handleSetDefault(view)}
                       >
-                        <StarIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <StarIcon className="aeos-icon-xs" />
                         Set Default
                       </Button>
                     )}
@@ -508,7 +508,7 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                         size="sm"
                         onClick={() => handleDelete(view)}
                       >
-                        <TrashIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                        <TrashIcon className="aeos-icon-xs" />
                         Delete
                       </Button>
                     )}
@@ -534,7 +534,7 @@ export function SavedViewsList({ moduleCode, route, initialViews = [], initialSh
                   )}
                   <div className="aeos-saved-views-card-meta">
                     <span className="aeos-saved-views-card-meta-item">
-                      <UserIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+                      <UserIcon className="aeos-icon-xs" />
                       {view.user?.name || 'Unknown'}
                     </span>
                   </div>

@@ -3,7 +3,7 @@ import { VStack, HStack, Box, Badge, Text } from '@aero/ui';
 
 export default function AlreadyInstalled({ mode, appUrl, installedAt, version }) {
   return (
-    <VStack gap={5} align="center" style={{ textAlign: 'center' }}>
+    <VStack gap={5} align="center" className="aeos-text-center">
       <Box style={{
         width: 72, height: 72, borderRadius: '50%',
         background: 'rgba(99,102,241,.10)', border: '1px solid rgba(99,102,241,.25)',

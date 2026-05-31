@@ -77,7 +77,7 @@ export default function Database({ mode, savedDatabase, connections }) {
       {!isSqlite && (
         <>
           <HStack gap={3} align="flex-end">
-            <Box grow style={{ flex: 1 }}>
+            <Box grow className="aeos-flex-1">
               <Field label="Host" htmlFor="host" error={errors.host} required>
                 <Input
                   id="host"
@@ -89,7 +89,7 @@ export default function Database({ mode, savedDatabase, connections }) {
                 />
               </Field>
             </Box>
-            <Box style={{ width: 100 }}>
+            <Box className="aeos-w-100">
               <Field label="Port" htmlFor="port" required>
                 <Input id="port" type="number" value={form.port} onChange={e => set('port', e.target.value)} />
               </Field>
@@ -108,12 +108,12 @@ export default function Database({ mode, savedDatabase, connections }) {
           </Field>
 
           <HStack gap={3}>
-            <Box grow style={{ flex: 1 }}>
+            <Box grow className="aeos-flex-1">
               <Field label="Username" htmlFor="db_user" error={errors.username} required>
                 <Input id="db_user" value={form.username} onChange={e => set('username', e.target.value)} leftIcon="user" error={!!errors.username} />
               </Field>
             </Box>
-            <Box grow style={{ flex: 1 }}>
+            <Box grow className="aeos-flex-1">
               <Field label="Password" htmlFor="db_pass">
                 <Input id="db_pass" type="password" value={form.password} onChange={e => set('password', e.target.value)} leftIcon="settings" placeholder="Optional" />
               </Field>

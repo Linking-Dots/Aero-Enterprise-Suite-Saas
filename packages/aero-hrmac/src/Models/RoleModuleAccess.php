@@ -6,6 +6,7 @@ namespace Aero\HRMAC\Models;
 
 use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Role Module Access Model
@@ -22,6 +23,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - component_id set → Access to component and all its actions
  * - action_id set → Access to only that specific action
  *
+ * Status lifecycle (Audit D17):
+ * - 'active'    → row grants access at runtime (default)
+ * - 'suspended' → product subscription cancelled; row is kept for 30-day grace period
+ *                  and does NOT grant runtime access. After 30 days PurgeSuspendedRoleAccess
+ *                  hard-deletes it. Re-subscribing within grace window flips it back to 'active'.
+ *
  * @property int $id
  * @property int $role_id
  * @property int|null $module_id
@@ -29,6 +36,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $component_id
  * @property int|null $action_id
  * @property string $access_scope
+ * @property string $status
+ * @property Carbon|null $suspended_at
  */
 class RoleModuleAccess extends TenantModel
 {
@@ -46,6 +55,8 @@ class RoleModuleAccess extends TenantModel
         'component_id',
         'action_id',
         'access_scope',
+        'status',
+        'suspended_at',
     ];
 
     protected $casts = [
@@ -54,7 +65,14 @@ class RoleModuleAccess extends TenantModel
         'sub_module_id' => 'integer',
         'component_id' => 'integer',
         'action_id' => 'integer',
+        'status' => 'string',
+        'suspended_at' => 'datetime',
     ];
+
+    // Status constants (Audit D17)
+    public const STATUS_ACTIVE = 'active';
+
+    public const STATUS_SUSPENDED = 'suspended';
 
     // Access scope constants
     public const SCOPE_ALL = 'all';
@@ -115,6 +133,17 @@ class RoleModuleAccess extends TenantModel
     public function action(): BelongsTo
     {
         return $this->belongsTo(Action::class, 'action_id');
+    }
+
+    /**
+     * Scope: Active rows only (status = 'active').
+     *
+     * Use this on every ACCESS CHECK query so suspended rows do not grant runtime access.
+     * Do NOT apply to inventory/listing queries — admins need to see suspended rows.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
     }
 
     /**

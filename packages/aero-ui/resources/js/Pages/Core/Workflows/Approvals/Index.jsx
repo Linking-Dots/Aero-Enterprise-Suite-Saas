@@ -1,109 +1,116 @@
 import { useState } from 'react';
-import { useForm } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import {
   IndexPageLayout,
   DataTable,
   Button,
   Badge,
+  Pagination,
   HStack, VStack,
-  Text,
+  Text, Mono,
   Input,
   Select,
+  Field,
   Modal,
+  useToast,
+  useHRMAC,
 } from '@aero/ui';
 import App from '../../../App.jsx';
-import { useHRMAC } from '../../../../hooks/useHRMAC';
 
-export default function WorkflowApprovalsIndex({ approvals, filters }) {
-  const canApprove = useHRMAC('workflow.workflows.approvals.approve');
-  const canReject = useHRMAC('workflow.workflows.approvals.reject');
+export default function WorkflowApprovalsIndex({ approvals, filters = {} }) {
+  const toast       = useToast();
+  const canApprove  = useHRMAC('workflow.workflows.approvals.approve');
+  const canReject   = useHRMAC('workflow.workflows.approvals.reject');
   const canEscalate = useHRMAC('workflow.workflows.approvals.escalate');
-  const [showApproveDialog, setShowApproveDialog] = useState(null);
-  const [showRejectDialog, setShowRejectDialog] = useState(null);
+
+  const [search,      setSearch]      = useState(filters.search      || '');
+  const [entityType,  setEntityType]  = useState(filters.entity_type || '');
+  const [approveRow,  setApproveRow]  = useState(null);
+  const [rejectRow,   setRejectRow]   = useState(null);
 
   const approveForm = useForm({ comment: '' });
-  const rejectForm = useForm({ reason: '' });
+  const rejectForm  = useForm({ reason:  '' });
 
-  const handleApprove = (approval) => {
-    approveForm.post(route('workflow-instances.approve', approval.id), {
-      onSuccess: () => {
-        setShowApproveDialog(null);
-        approveForm.reset();
-      },
+  const applyFilters = () => {
+    router.get(route('workflow-instances.approvals'), { search, entity_type: entityType }, {
+      preserveState: true, preserveScroll: true, only: ['approvals', 'filters'],
     });
   };
 
-  const handleReject = (approval) => {
-    rejectForm.post(route('workflow-instances.reject', approval.id), {
-      onSuccess: () => {
-        setShowRejectDialog(null);
-        rejectForm.reset();
-      },
+  const resetFilters = () => {
+    setSearch(''); setEntityType('');
+    router.get(route('workflow-instances.approvals'), {}, {
+      preserveState: true, preserveScroll: true, only: ['approvals', 'filters'],
     });
   };
 
-  const handleEscalate = (approval) => {
-    router.post(route('workflow-instances.escalate', approval.id), {}, {
-      onSuccess: () => router.reload(),
+  const handleApprove = (e) => {
+    e.preventDefault();
+    approveForm.post(route('workflow-instances.approve', approveRow.id), {
+      onSuccess: () => { setApproveRow(null); approveForm.reset(); toast.success('Approved.'); },
+      onError:   () => toast.error('Failed to approve.'),
     });
+  };
+
+  const handleReject = (e) => {
+    e.preventDefault();
+    rejectForm.post(route('workflow-instances.reject', rejectRow.id), {
+      onSuccess: () => { setRejectRow(null); rejectForm.reset(); toast.success('Rejected.'); },
+      onError:   () => toast.error('Failed to reject.'),
+    });
+  };
+
+  const handleEscalate = (row) => {
+    if (!confirm('Escalate this approval?')) return;
+    router.post(route('workflow-instances.escalate', row.id), {}, {
+      preserveState: true,
+      onSuccess: () => toast.success('Escalated.'),
+      onError:   () => toast.error('Failed to escalate.'),
+    });
+  };
+
+  const waitingSince = (dateStr) => {
+    if (!dateStr) return '—';
+    const ms   = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(ms / 86400000);
+    return days === 0 ? 'Today' : `${days}d ago`;
   };
 
   const columns = [
     {
-      key: 'workflow',
-      label: 'Workflow',
+      key: 'workflow', label: 'Workflow', width: '22%',
+      render: (row) => <Text size="sm">{row.workflow?.name || '—'}</Text>,
+    },
+    {
+      key: 'requested_by', label: 'Requested By', width: '18%',
+      render: (row) => <Text size="sm">{row.initiated_by?.name || row.requested_by?.name || '—'}</Text>,
+    },
+    {
+      key: 'current_step', label: 'Current Step', width: '18%',
+      render: (row) => <Text size="sm">{row.current_step?.name || '—'}</Text>,
+    },
+    {
+      key: 'waiting_since', label: 'Waiting Since', width: '14%',
       render: (row) => (
-        <Text weight="semibold">{row.workflow?.name}</Text>
+        <Mono size="sm" tone="secondary">{waitingSince(row.started_at || row.created_at)}</Mono>
       ),
     },
     {
-      key: 'entity',
-      label: 'Entity',
-      render: (row) => (
-        <Badge variant="secondary">{row.entity_type}</Badge>
-      ),
-    },
-    {
-      key: 'current_step',
-      label: 'Current Step',
-      render: (row) => row.current_step?.name || '—',
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (row) => (
-        <Badge variant="warning">Pending</Badge>
-      ),
-    },
-    {
-      key: 'initiated_by',
-      label: 'Initiated By',
-      render: (row) => row.initiated_by?.name || '—',
-    },
-    {
-      key: 'created_at',
-      label: 'Started',
-      render: (row) => new Date(row.started_at).toLocaleDateString(),
-    },
-    {
-      key: 'actions',
-      label: '',
-      align: 'right',
+      key: 'actions', label: '', width: '28%', align: 'right',
       render: (row) => (
         <HStack gap={2} justify="end">
           {canApprove && (
-            <Button variant="success" size="sm" onClick={() => setShowApproveDialog(row)}>
+            <Button intent="soft" size="sm" leftIcon="check" onClick={() => setApproveRow(row)}>
               Approve
             </Button>
           )}
           {canEscalate && (
-            <Button variant="warning" size="sm" onClick={() => handleEscalate(row)}>
+            <Button intent="ghost" size="sm" leftIcon="arrowUp" onClick={() => handleEscalate(row)}>
               Escalate
             </Button>
           )}
           {canReject && (
-            <Button variant="danger" size="sm" onClick={() => setShowRejectDialog(row)}>
+            <Button intent="danger" size="sm" leftIcon="xMark" onClick={() => setRejectRow(row)}>
               Reject
             </Button>
           )}
@@ -113,121 +120,111 @@ export default function WorkflowApprovalsIndex({ approvals, filters }) {
   ];
 
   return (
-    <IndexPageLayout
-      title="My Approvals"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Workflows', href: route('workflows.index') },
-        { label: 'Approvals' },
-      ]}
-      description="Review and manage pending workflow approvals."
-    >
-      <VStack gap={4}>
-        {/* Filters */}
-        <HStack gap={3} align="end">
-          <Input
-            placeholder="Search approvals..."
-            value={filters.search || ''}
-            onChange={(e) => router.get(route('workflow-instances.approvals'), { search: e.target.value }, {
-              preserveState: true,
-              preserveScroll: true,
-            })}
-            className="flex-1"
+    <>
+      <IndexPageLayout
+        title="My Approvals"
+        breadcrumb={[
+          { label: 'Dashboard', href: route('core.dashboard') },
+          { label: 'Workflows', href: route('workflows.index') },
+          { label: 'Approvals' },
+        ]}
+        description="Review and manage pending workflow approvals."
+        filters={
+          <HStack gap={3} align="end" wrap>
+            <Input
+              placeholder="Search approvals…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && applyFilters()}
+              leftIcon="search"
+            />
+            <Select
+              value={entityType}
+              onChange={e => setEntityType(e.target.value)}
+              options={[
+                { value: '',                    label: 'All Entity Types' },
+                { value: 'leave_request',       label: 'Leave Request' },
+                { value: 'expense_claim',       label: 'Expense Claim' },
+                { value: 'purchase_requisition',label: 'Purchase Requisition' },
+              ]}
+            />
+            <Button intent="primary" onClick={applyFilters}>Filter</Button>
+            <Button intent="ghost"   onClick={resetFilters}>Reset</Button>
+          </HStack>
+        }
+        table={
+          <DataTable
+            columns={columns}
+            rows={approvals?.data || []}
+            empty="No pending approvals found."
           />
-          <Select
-            placeholder="All Entity Types"
-            value={filters.entity_type || ''}
-            onChange={(e) => router.get(route('workflow-instances.approvals'), { entity_type: e.target.value }, {
-              preserveState: true,
-              preserveScroll: true,
-            })}
-            options={[
-              { value: '', label: 'All Entity Types' },
-              { value: 'leave_request', label: 'Leave Request' },
-              { value: 'expense_claim', label: 'Expense Claim' },
-              { value: 'purchase_requisition', label: 'Purchase Requisition' },
-            ]}
-          />
-        </HStack>
+        }
+        pagination={
+          approvals?.last_page > 1 && (
+            <Pagination
+              page={approvals.current_page}
+              total={approvals.last_page}
+              onChange={page => router.get(route('workflow-instances.approvals'), { page, search, entity_type: entityType }, {
+                preserveState: true, preserveScroll: true, only: ['approvals'],
+              })}
+            />
+          )
+        }
+      />
 
-        {/* Table */}
-        <DataTable
-          columns={columns}
-          rows={approvals?.data || []}
-          empty="No pending approvals found."
-        />
-
-        {/* Pagination */}
-        {approvals?.last_page > 1 && (
-          <div className="flex justify-center">
-            <Text size="sm">
-              Page {approvals?.current_page} of {approvals?.last_page}
-            </Text>
-          </div>
-        )}
-      </VStack>
-
-      {/* Approve Dialog */}
+      {/* Approve Modal */}
       <Modal
-        open={!!showApproveDialog}
-        onClose={() => setShowApproveDialog(null)}
-        title="Approve Workflow"
+        open={!!approveRow}
+        onClose={() => setApproveRow(null)}
+        title="Approve"
         footer={
-          <>
-            <Button variant="ghost" onClick={() => setShowApproveDialog(null)}>
-              Cancel
+          <HStack gap={2} justify="end">
+            <Button intent="ghost" onClick={() => setApproveRow(null)}>Cancel</Button>
+            <Button intent="primary" loading={approveForm.processing} onClick={handleApprove}>
+              Confirm Approval
             </Button>
-            <Button variant="primary" onClick={() => handleApprove(showApproveDialog)} disabled={approveForm.processing}>
-              {approveForm.processing ? 'Approving...' : 'Approve'}
-            </Button>
-          </>
+          </HStack>
         }
       >
-        <form onSubmit={(e) => { e.preventDefault(); handleApprove(showApproveDialog); }}>
-          <VStack gap={4}>
-            <div>
-              <label className="block text-sm font-medium mb-1">Comment (optional)</label>
-              <Input
-                value={approveForm.data.comment}
-                onChange={(e) => approveForm.setData('comment', e.target.value)}
-                placeholder="Add a comment"
-              />
-            </div>
-          </VStack>
+        <form onSubmit={handleApprove}>
+          <Field label="Comment (optional)" htmlFor="approve-comment" error={approveForm.errors.comment}>
+            <Input
+              id="approve-comment"
+              value={approveForm.data.comment}
+              onChange={e => approveForm.setData('comment', e.target.value)}
+              placeholder="Add a comment"
+            />
+          </Field>
         </form>
       </Modal>
 
-      {/* Reject Dialog */}
+      {/* Reject Modal */}
       <Modal
-        open={!!showRejectDialog}
-        onClose={() => setShowRejectDialog(null)}
-        title="Reject Workflow"
+        open={!!rejectRow}
+        onClose={() => setRejectRow(null)}
+        title="Reject"
         footer={
-          <>
-            <Button variant="ghost" onClick={() => setShowRejectDialog(null)}>
-              Cancel
+          <HStack gap={2} justify="end">
+            <Button intent="ghost" onClick={() => setRejectRow(null)}>Cancel</Button>
+            <Button intent="danger" loading={rejectForm.processing} onClick={handleReject}>
+              Confirm Rejection
             </Button>
-            <Button variant="danger" onClick={() => handleReject(showRejectDialog)} disabled={rejectForm.processing}>
-              {rejectForm.processing ? 'Rejecting...' : 'Reject'}
-            </Button>
-          </>
+          </HStack>
         }
       >
-        <form onSubmit={(e) => { e.preventDefault(); handleReject(showRejectDialog); }}>
-          <VStack gap={4}>
-            <div>
-              <label className="block text-sm font-medium mb-1">Reason *</label>
-              <Input
-                value={rejectForm.data.reason}
-                onChange={(e) => rejectForm.setData('reason', e.target.value)}
-                placeholder="Reason for rejection"
-                required
-              />
-            </div>
-          </VStack>
+        <form onSubmit={handleReject}>
+          <Field label="Reason" htmlFor="reject-reason" error={rejectForm.errors.reason} required>
+            <Input
+              id="reject-reason"
+              value={rejectForm.data.reason}
+              onChange={e => rejectForm.setData('reason', e.target.value)}
+              placeholder="Reason for rejection"
+              error={!!rejectForm.errors.reason}
+            />
+          </Field>
         </form>
       </Modal>
-    </IndexPageLayout>
+    </>
   );
 }
 

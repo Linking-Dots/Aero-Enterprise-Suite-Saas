@@ -22,17 +22,20 @@ use Aero\Notifications\Services\Mail\MailService;
 use Aero\Notifications\Services\Sms\SmsGatewayService;
 use Aero\Platform\Auth\LandlordAuthContext;
 use Aero\Platform\Bootstrappers\CachePrefixTenancyBootstrapper;
+use Aero\Platform\Bootstrappers\FailClosedQueueTenancyBootstrapper;
 use Aero\Platform\Console\Commands\CleanupFailedInstallation;
 use Aero\Platform\Console\Commands\EnsureSuperAdmin;
 use Aero\Platform\Console\Commands\ExpireGracePeriods;
 use Aero\Platform\Console\Commands\ProcessPendingSubscriptionChanges;
 use Aero\Platform\Console\Commands\ProcessSubscriptionRenewals;
 use Aero\Platform\Console\Commands\PurgeExpiredTenants;
+use Aero\Platform\Console\Commands\PurgeSuspendedRoleAccess;
 use Aero\Platform\Console\Commands\SetupApplication;
 use Aero\Platform\Console\Commands\TenantCreate;
 use Aero\Platform\Console\Commands\TenantFlush;
 use Aero\Platform\Console\Commands\TenantHealth;
 use Aero\Platform\Console\Commands\TenantMigrate;
+use Aero\Platform\Events\ProductSubscriptionChanged;
 use Aero\Platform\Http\Middleware\BootstrapGuard;
 use Aero\Platform\Http\Middleware\CheckMaintenanceMode;
 use Aero\Platform\Http\Middleware\CheckModuleAccess;
@@ -58,12 +61,17 @@ use Aero\Platform\Http\Middleware\SetDatabaseConnectionFromDomain;
 use Aero\Platform\Http\Middleware\SmartLandingRedirect;
 use Aero\Platform\Http\Middleware\TenantSuperAdmin;
 use Aero\Platform\Http\Middleware\TrustHosts;
+use Aero\Platform\Listeners\ReactivateRoleAccessOnResubscribe;
+use Aero\Platform\Listeners\ResyncTenantModuleCatalog;
+use Aero\Platform\Listeners\SuspendUnsubscribedRoleAccess;
 use Aero\Platform\Listeners\TenantCreatedListener;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Observers\PlanAuditObserver;
+use Aero\Platform\Observers\ProductSubscriptionObserver;
 use Aero\Platform\Observers\SubscriptionObserver;
 use Aero\Platform\Policies\PlanPolicy;
 use Aero\Platform\Policies\TenantPolicy;
@@ -108,6 +116,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
+use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 
@@ -302,19 +311,41 @@ class AeroPlatformServiceProvider extends ServiceProvider
         Plan::observe(PlanAuditObserver::class);
         Subscription::observe(SubscriptionObserver::class);
 
+        // Audit D15 — product subscription lifecycle drives tenant module catalog.
+        // Observer fires ProductSubscriptionChanged; listener re-syncs the catalog.
+        ProductSubscription::observe(ProductSubscriptionObserver::class);
+        Event::listen(ProductSubscriptionChanged::class, ResyncTenantModuleCatalog::class);
+
+        // Audit D17 — soft-suspend role grants on unsubscribe; restore on re-subscribe.
+        // SuspendUnsubscribedRoleAccess marks rows suspended (30-day grace; no access at runtime).
+        // ReactivateRoleAccessOnResubscribe flips them back to active within the grace window.
+        Event::listen(ProductSubscriptionChanged::class, SuspendUnsubscribedRoleAccess::class);
+        Event::listen(ProductSubscriptionChanged::class, ReactivateRoleAccessOnResubscribe::class);
+
         // Configure Cashier to use our unified Subscription model as the single source of truth
         // This eliminates drift between Cashier-managed Stripe data and lifecycle-managed fields.
         Cashier::useSubscriptionModel(Subscription::class);
         Cashier::useCustomerModel(Tenant::class);
 
-        // Override tenancy bootstrappers after all providers registered
-        // FilesystemTenancyBootstrapper disabled - causes "Undefined array key 'local'" error
-        // Using custom CachePrefixTenancyBootstrapper instead of stancl's CacheTenancyBootstrapper
-        // because file/database cache drivers don't support tagging
+        // Authoritative runtime tenancy bootstrapper list (Axis A A5, 2026-05-30).
+        // This MUST match config/tenancy.php — kept in sync; the runtime test
+        // TenancyRuntimeConfigTest asserts the BOOTED list (not the file) so this
+        // can never silently drift again.
+        //
+        //  - CachePrefixTenancyBootstrapper: driver-agnostic per-tenant cache key
+        //    prefix (works on array/file/database/redis — no tagging requirement),
+        //    chosen over Stancl's CacheTenancyBootstrapper which needs a tagging store.
+        //  - FilesystemTenancyBootstrapper: per-tenant storage roots. Previously
+        //    stripped here with a stale "Undefined array key 'local'" note — that bug
+        //    was fixed by adding the tenancy.filesystem config block (Phase 0 T5);
+        //    WITHOUT this, tenant uploads share one root = cross-tenant file leak.
+        //  - FailClosedQueueTenancyBootstrapper (Audit D5c): refuses jobs for
+        //    suspended/deleted tenants instead of the stock bootstrapper.
         Config::set('tenancy.bootstrappers', [
             DatabaseTenancyBootstrapper::class,
-            CachePrefixTenancyBootstrapper::class, // Works with all cache drivers
-            QueueTenancyBootstrapper::class,
+            CachePrefixTenancyBootstrapper::class,
+            FilesystemTenancyBootstrapper::class,
+            FailClosedQueueTenancyBootstrapper::class,
         ]);
 
         // CRITICAL: Override central_domains to include the platform domain and admin subdomain
@@ -379,6 +410,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 ProcessPendingSubscriptionChanges::class,
                 ProcessSubscriptionRenewals::class,
                 ExpireGracePeriods::class,
+                PurgeSuspendedRoleAccess::class, // D17: daily hard-delete after 30-day grace
             ]);
         }
 
@@ -1051,6 +1083,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     // Platform migrations are self-sufficient for platform feature tests.
                     $platformFiles = collect($files)->filter(function ($path, $name) {
                         $normalizedPath = realpath($path) ?: $path;
+
                         return str_starts_with($normalizedPath, $this->platformMigrationsPath);
                     });
 

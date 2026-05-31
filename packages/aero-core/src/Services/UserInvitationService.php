@@ -5,6 +5,7 @@ namespace Aero\Core\Services;
 use Aero\Core\Mail\UserInvitationMail;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserInvitation;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -148,6 +149,49 @@ class UserInvitationService
             ->pending()
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    /**
+     * List invitations with optional filters (used by CoreUserController).
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    public function list(array $filters = []): Collection
+    {
+        return UserInvitation::with('inviter')
+            ->when($filters['search'] ?? null, fn ($q, $s) => $q->where('email', 'like', "%{$s}%"))
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
+    /**
+     * Invite a user by email with optional roles (used by CoreUserController).
+     *
+     * @param  array<int, string>  $roles
+     */
+    public function invite(string $email, array $roles, User $actor): UserInvitation
+    {
+        return $this->sendInvitation([
+            'email' => $email,
+            'name' => $email,
+            'roles' => $roles,
+        ]);
+    }
+
+    /**
+     * Resend an invitation (used by CoreUserController).
+     */
+    public function resend(int $invitationId, User $actor): UserInvitation
+    {
+        return $this->resendInvitation($invitationId);
+    }
+
+    /**
+     * Cancel an invitation (used by CoreUserController).
+     */
+    public function cancel(int $invitationId, User $actor): bool
+    {
+        return $this->cancelInvitation($invitationId);
     }
 
     /**

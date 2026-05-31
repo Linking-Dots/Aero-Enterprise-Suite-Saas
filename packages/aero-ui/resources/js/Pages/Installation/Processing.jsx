@@ -71,7 +71,7 @@ export default function Processing({ mode }) {
   });
 
   return (
-    <VStack gap={5} align="center" style={{ textAlign: 'center' }}>
+    <VStack gap={5} align="center" className="aeos-text-center">
       <Box style={{ position: 'relative', width: 80, height: 80 }}>
         <Box style={{
           position: 'absolute', inset: 0, borderRadius: '50%',
@@ -164,7 +164,7 @@ export default function Processing({ mode }) {
       {error && (
         <Alert intent="danger" title="Installation error" style={{ textAlign: 'left', width: '100%' }}>
           {error}
-          <Box style={{ marginTop: 12 }}>
+          <Box className="aeos-mt-2">
             <Button intent="ghost" size="sm" onClick={retry}>Retry</Button>
           </Box>
         </Alert>

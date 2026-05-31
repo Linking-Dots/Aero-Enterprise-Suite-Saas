@@ -116,7 +116,7 @@ export default function NotificationPreferences({ preferences }) {
 
           {form.data.preferences.dnd_enabled && (
             <HStack gap={4}>
-              <VStack gap={2} style={{ flex: 1 }}>
+              <VStack gap={2} className="aeos-flex-1">
                 <Label htmlFor="dnd_start_time">Start Time</Label>
                 <TextField
                   id="dnd_start_time"
@@ -125,7 +125,7 @@ export default function NotificationPreferences({ preferences }) {
                   onChange={(e) => form.setData('preferences.dnd_start_time', e.target.value)}
                 />
               </VStack>
-              <VStack gap={2} style={{ flex: 1 }}>
+              <VStack gap={2} className="aeos-flex-1">
                 <Label htmlFor="dnd_end_time">End Time</Label>
                 <TextField
                   id="dnd_end_time"

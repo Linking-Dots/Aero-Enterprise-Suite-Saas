@@ -41,7 +41,7 @@ export function Breadcrumb({ items = [], className }) {
         <span key={i} className="aeos-breadcrumb-item">
           {i > 0 && (
             <span className="aeos-breadcrumb-sep" aria-hidden="true">
-              <ChevronRightIcon style={{ width: 'var(--aeos-icon-xs)', height: 'var(--aeos-icon-xs)' }} />
+              <ChevronRightIcon className="aeos-icon-xs" />
             </span>
           )}
           {it.href
@@ -139,7 +139,7 @@ export function Pagination({ page = 1, total = 1, onChange, className }) {
         disabled={page <= 1}
         aria-label="Previous page"
       >
-        <ChevronLeftIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+        <ChevronLeftIcon className="aeos-icon-sm" />
         Prev
       </button>
       <span className="aeos-pagination-status aeos-text-mono">
@@ -153,7 +153,7 @@ export function Pagination({ page = 1, total = 1, onChange, className }) {
         aria-label="Next page"
       >
         Next
-        <ChevronRightIcon style={{ width: 'var(--aeos-icon-sm)', height: 'var(--aeos-icon-sm)' }} />
+        <ChevronRightIcon className="aeos-icon-sm" />
       </button>
     </nav>
   );

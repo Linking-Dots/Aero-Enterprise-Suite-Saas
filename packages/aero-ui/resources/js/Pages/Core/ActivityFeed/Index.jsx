@@ -88,7 +88,7 @@ export default function ActivityFeedIndex({ title }) {
                     alt={activity.user?.name}
                     size="sm"
                   />
-                  <VStack gap={0} style={{ flex: 1 }}>
+                  <VStack gap={0} className="aeos-flex-1">
                     <HStack gap={2} align="center">
                       <Text weight="medium">{activity.user?.name}</Text>
                       <Text tone="secondary">

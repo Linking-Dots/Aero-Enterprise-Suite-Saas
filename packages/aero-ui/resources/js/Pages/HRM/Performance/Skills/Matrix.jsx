@@ -47,9 +47,9 @@ export default function SkillsMatrix({ employees, skills }) {
             <table className="border-collapse w-full text-sm" style={{ fontFamily: 'var(--aeos-font-body)' }}>
               <thead>
                 <tr>
-                  <th className="border px-3 py-2 whitespace-nowrap font-semibold text-left" style={{ borderColor: 'var(--aeos-divider)', background: 'var(--aeos-bg-surface)', color: 'var(--aeos-text-secondary)' }}>Employee</th>
+                  <th className="border px-3 py-2 whitespace-nowrap font-semibold text-left aeos-surface-chip">Employee</th>
                   {(skills ?? []).map(skill => (
-                    <th key={skill} className="border px-3 py-2 whitespace-nowrap font-semibold text-left" style={{ borderColor: 'var(--aeos-divider)', background: 'var(--aeos-bg-surface)', color: 'var(--aeos-text-secondary)' }}>{skill}</th>
+                    <th key={skill} className="border px-3 py-2 whitespace-nowrap font-semibold text-left aeos-surface-chip">{skill}</th>
                   ))}
                 </tr>
               </thead>
@@ -63,7 +63,7 @@ export default function SkillsMatrix({ employees, skills }) {
                     <tr key={emp.id}>
                       <td className="border px-3 py-2 whitespace-nowrap font-medium" style={{ borderColor: 'var(--aeos-divider)', color: 'var(--aeos-text-primary)' }}>{emp.name}</td>
                       {(skills ?? []).map(skill => (
-                        <td key={skill} className="border px-3 py-2 whitespace-nowrap text-center" style={{ borderColor: 'var(--aeos-divider)' }}>
+                        <td key={skill} className="border px-3 py-2 whitespace-nowrap text-center aeos-border-divider">
                           <LevelChip level={skillMap[skill] ?? 0} />
                         </td>
                       ))}

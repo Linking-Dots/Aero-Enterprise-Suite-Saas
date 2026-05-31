@@ -1,465 +1,298 @@
 import { useState } from 'react';
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import {
   IndexPageLayout,
-  Card, CardHeader, CardBody,
-  Input,
-  HStack, VStack, Stack,
-  Text, Heading,
-  Badge,
+  DataTable,
   Button,
+  Badge,
+  Pagination,
+  HStack, VStack,
+  Text,
+  Field,
+  Input,
+  Select,
   Modal,
+  Alert,
   useToast,
   useHRMAC,
+  Stat,
 } from '@aero/ui';
 import App from '../../App.jsx';
 
-export default function TagsIndex({ tags, counts, filters }) {
-  const toast = useToast();
+export default function TagsIndex({ tags, filters }) {
+  const toast     = useToast();
   const canCreate = useHRMAC('core.tags_labels.tag_management.create');
-  const canEdit = useHRMAC('core.tags_labels.tag_management.update');
+  const canEdit   = useHRMAC('core.tags_labels.tag_management.update');
   const canDelete = useHRMAC('core.tags_labels.tag_management.delete');
 
-  const [search, setSearch] = useState(filters.search || '');
-  const [showCreate, setShowCreate] = useState(false);
-  const [editingTag, setEditingTag] = useState(null);
-  const [deletingTag, setDeletingTag] = useState(null);
-  const [mergingTag, setMergingTag] = useState(null);
-  const [mergeTargetId, setMergeTargetId] = useState('');
+  const [search,       setSearch]       = useState(filters?.search || '');
+  const [showModal,    setShowModal]    = useState(false);
+  const [editingTag,   setEditingTag]   = useState(null);
+  const [deletingTag,  setDeletingTag]  = useState(null);
+  const [mergingTag,   setMergingTag]   = useState(null);
+  const [mergeTarget,  setMergeTarget]  = useState('');
+  const [submitting,   setSubmitting]   = useState(false);
 
-  const form = useForm({
-    name: '',
-    color: '#0ea5e9',
-    description: '',
-  });
+  const [form, setForm] = useState({ name: '', color: '#0ea5e9' });
 
-  const mergeForm = useForm({
-    source_tag_id: '',
-    target_tag_id: '',
-  });
+  const tagList = tags?.data ?? [];
 
-  const handleSearch = (value) => {
-    setSearch(value);
-    router.get(route('core.tags.index'), { search: value }, {
-      preserveState: true,
-      preserveScroll: true,
-      only: ['tags', 'filters'],
+  const applySearch = () => {
+    router.get(route('core.tags.index'), { search }, {
+      preserveState: true, preserveScroll: true, only: ['tags', 'filters'],
     });
   };
 
-  const resetForm = () => {
-    form.reset();
-    setShowCreate(false);
+  const resetSearch = () => {
+    setSearch('');
+    router.get(route('core.tags.index'), {}, {
+      preserveState: true, preserveScroll: true, only: ['tags', 'filters'],
+    });
+  };
+
+  const openCreate = () => {
+    setForm({ name: '', color: '#0ea5e9' });
     setEditingTag(null);
+    setShowModal(true);
   };
 
-  const handleCreate = (e) => {
-    e.preventDefault();
-    form.post(route('core.tags.store'), {
-      onSuccess: () => {
-        toast.success('Tag created successfully');
-        resetForm();
-      },
-      onError: (errors) => {
-        toast.error(errors.name || 'Failed to create tag');
-      },
-    });
+  const openEdit = tag => {
+    setForm({ name: tag.name, color: tag.color || '#0ea5e9' });
+    setEditingTag(tag);
+    setShowModal(true);
   };
 
-  const handleUpdate = (e) => {
-    e.preventDefault();
-    form.put(route('core.tags.update', editingTag.id), {
-      onSuccess: () => {
-        toast.success('Tag updated successfully');
-        resetForm();
-      },
-      onError: (errors) => {
-        toast.error(errors.name || 'Failed to update tag');
-      },
-    });
+  const closeModal = () => { setShowModal(false); setEditingTag(null); };
+
+  const handleSave = () => {
+    setSubmitting(true);
+    if (editingTag) {
+      router.put(route('core.tags.update', editingTag.id), form, {
+        preserveState: true,
+        onSuccess: () => { toast.success('Tag updated.'); closeModal(); },
+        onError:   () => toast.error('Failed to update tag.'),
+        onFinish:  () => setSubmitting(false),
+      });
+    } else {
+      router.post(route('core.tags.store'), form, {
+        preserveState: true,
+        onSuccess: () => { toast.success('Tag created.'); closeModal(); },
+        onError:   () => toast.error('Failed to create tag.'),
+        onFinish:  () => setSubmitting(false),
+      });
+    }
   };
 
   const handleDelete = () => {
     if (!deletingTag) return;
     router.delete(route('core.tags.destroy', deletingTag.id), {
-      onSuccess: () => {
-        toast.success(`Tag "${deletingTag.name}" deleted`);
-        setDeletingTag(null);
-      },
-      onError: () => {
-        toast.error('Failed to delete tag');
-      },
+      preserveState: true,
+      onSuccess: () => { toast.success('Tag deleted.'); setDeletingTag(null); },
+      onError:   () => toast.error('Failed to delete tag.'),
     });
   };
 
-  const handleMerge = (e) => {
-    e.preventDefault();
-    if (!mergingTag || !mergeTargetId) return;
-    mergeForm.setData('source_tag_id', mergingTag.id);
-    mergeForm.setData('target_tag_id', mergeTargetId);
-    mergeForm.post(route('core.tags.merge'), {
-      onSuccess: () => {
-        toast.success(`Tag "${mergingTag.name}" merged successfully`);
-        setMergingTag(null);
-        setMergeTargetId('');
-        mergeForm.reset();
-      },
-      onError: (errors) => {
-        toast.error(errors.message || 'Failed to merge tags');
-      },
+  const handleMerge = () => {
+    if (!mergingTag || !mergeTarget) return;
+    setSubmitting(true);
+    router.post(route('core.tags.merge'), { source_tag_id: mergingTag.id, target_tag_id: mergeTarget }, {
+      preserveState: true,
+      onSuccess: () => { toast.success('Tags merged.'); setMergingTag(null); setMergeTarget(''); },
+      onError:   () => toast.error('Failed to merge tags.'),
+      onFinish:  () => setSubmitting(false),
     });
   };
 
-  const handleExport = () => {
-    window.location.href = route('core.tags.export');
-  };
-
-  const handleImport = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const data = new FormData();
-    data.append('file', file);
-    router.post(route('core.tags.import'), data, {
-      onSuccess: (page) => {
-        toast.success(page.props.flash?.success || 'Import completed');
-        e.target.value = '';
-      },
-      onError: (errors) => {
-        toast.error(errors.message || 'Import failed');
-        e.target.value = '';
-      },
-    });
-  };
-
-  const openCreate = () => {
-    form.reset();
-    setShowCreate(true);
-  };
-
-  const openEdit = (tag) => {
-    setEditingTag(tag);
-    form.setData({
-      name: tag.name,
-      color: tag.color || '#0ea5e9',
-      description: tag.description || '',
-    });
-  };
-
-  const tagList = tags?.data || [];
-  const totalTags = tags?.total || 0;
-
-  return (
-    <IndexPageLayout
-      title="Tags & Labels"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Tags & Labels' },
-      ]}
-      actions={
-        <HStack gap={2}>
-          <Button
-            intent="ghost"
-            size="sm"
-            onClick={() => router.get(route('core.tags.trashed'))}
-          >
-            Deleted Tags
-          </Button>
-          {canCreate && (
-            <>
-              <Button intent="ghost" size="sm" onClick={handleExport}>
-                Export
-              </Button>
-              <Button intent="ghost" size="sm" as="label">
-                Import
-                <input
-                  type="file"
-                  accept=".csv,.txt"
-                  style={{ display: 'none' }}
-                  onChange={handleImport}
-                />
-              </Button>
-            </>
+  const columns = [
+    {
+      key: 'color', label: 'Color', width: '60px',
+      render: row => (
+        <span
+          className="aeos-tag-swatch"
+          title={row.color}
+          data-color={row.color}
+        />
+      ),
+    },
+    {
+      key: 'name', label: 'Name', width: '30%',
+      render: row => <Text size="sm">{row.name}</Text>,
+    },
+    {
+      key: 'usage_count', label: 'Usage', width: '14%',
+      render: row => <Badge intent="neutral">{row.usage_count ?? row.records_count ?? 0}</Badge>,
+    },
+    {
+      key: 'created_at', label: 'Created', width: '16%',
+      render: row => <Text size="sm">{new Date(row.created_at).toLocaleDateString()}</Text>,
+    },
+    {
+      key: 'actions', label: '', width: '30%', align: 'right',
+      render: row => (
+        <HStack gap={2} justify="end">
+          {canEdit && (
+            <Button intent="soft" size="sm" onClick={() => openEdit(row)}>Edit</Button>
           )}
-          {canCreate && (
-            <Button intent="primary" size="sm" onClick={openCreate}>
-              New Tag
+          {canEdit && tagList.length > 1 && (
+            <Button intent="ghost" size="sm" onClick={() => { setMergingTag(row); setMergeTarget(''); }}>
+              Merge
             </Button>
           )}
-        </HStack>
-      }
-      filters={
-        <HStack gap={2} align="center">
-          <Input
-            type="search"
-            placeholder="Search tags..."
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-            leftIcon="search"
-          />
-        </HStack>
-      }
-      table={
-        <VStack gap={3}>
-          {tagList.length === 0 && (
-            <Card>
-              <CardBody>
-                <Text tone="muted" align="center">
-                  {search ? 'No tags match your search.' : 'No tags yet. Create your first tag to get started.'}
-                </Text>
-              </CardBody>
-            </Card>
+          {canDelete && (
+            <Button intent="danger" size="sm" onClick={() => setDeletingTag(row)}>Delete</Button>
           )}
+        </HStack>
+      ),
+    },
+  ];
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '16px',
-            }}
-          >
-            {tagList.map((tag) => (
-              <Card key={tag.id}>
-                <CardHeader
-                  action={
-                    <HStack gap={1}>
-                      {canEdit && (
-                        <Button
-                          intent="ghost"
-                          size="sm"
-                          onClick={() => openEdit(tag)}
-                          aria-label={`Edit ${tag.name}`}
-                        >
-                          Edit
-                        </Button>
-                      )}
-                      {canEdit && tagList.length > 1 && (
-                        <Button
-                          intent="ghost"
-                          size="sm"
-                          onClick={() => { setMergingTag(tag); setMergeTargetId(''); }}
-                          aria-label={`Merge ${tag.name}`}
-                        >
-                          Merge
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          intent="danger"
-                          size="sm"
-                          onClick={() => setDeletingTag(tag)}
-                          aria-label={`Delete ${tag.name}`}
-                        >
-                          Delete
-                        </Button>
-                      )}
-                    </HStack>
-                  }
-                >
-                  <HStack gap={2} align="center">
-                    <span
-                      style={{
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '50%',
-                        background: tag.color || '#0ea5e9',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <Heading level={5} style={{ margin: 0 }}>
-                      {tag.name}
-                    </Heading>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <Stack gap={2}>
-                    {tag.description && (
-                      <Text size="sm" tone="muted">
-                        {tag.description}
-                      </Text>
-                    )}
-                    <HStack gap={2} align="center">
-                      <Badge intent="neutral" size="sm">
-                        {tag.records_count ?? 0} records
-                      </Badge>
-                      <Text size="xs" tone="tertiary">
-                        #{tag.slug}
-                      </Text>
-                    </HStack>
-                  </Stack>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        </VStack>
-      }
-      pagination={
-        tags?.links && (
-          <HStack gap={2} align="center" justify="center">
-            {tags.links.map((link, i) => (
-              <Button
-                key={i}
-                intent={link.active ? 'primary' : 'ghost'}
-                size="sm"
-                disabled={!link.url}
-                onClick={() => {
-                  if (link.url) router.get(link.url, {}, { preserveState: true });
-                }}
-                dangerouslySetInnerHTML={{ __html: link.label }}
-              />
-            ))}
+  return (
+    <>
+      <style>{`.aeos-tag-swatch{display:inline-block;width:14px;height:14px;border-radius:50%;background:attr(data-color color,#0ea5e9);flex-shrink:0}`}</style>
+      <IndexPageLayout
+        title="Tags & Labels"
+        breadcrumb={[
+          { label: 'Dashboard', href: route('core.dashboard') },
+          { label: 'Tags & Labels' },
+        ]}
+        description="Manage tags used across entities."
+        actions={
+          canCreate && (
+            <Button intent="primary" leftIcon="tag" onClick={openCreate}>
+              New Tag
+            </Button>
+          )
+        }
+        kpis={[
+          <Stat key="total" title="Total Tags" value={tags?.total ?? 0} icon="tag" />,
+        ]}
+        filters={
+          <HStack gap={3} align="end" wrap>
+            <Input
+              placeholder="Search tags…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && applySearch()}
+              leftIcon="search"
+            />
+            <Button intent="primary" onClick={applySearch}>Filter</Button>
+            <Button intent="ghost"   onClick={resetSearch}>Reset</Button>
           </HStack>
-        )
-      }
-    >
-      {/* Create / Edit Modal */}
-      <Modal
-        open={showCreate || editingTag !== null}
-        onClose={resetForm}
-        title={editingTag ? 'Edit Tag' : 'Create Tag'}
-        size="sm"
+        }
+        table={
+          <DataTable
+            columns={columns}
+            rows={tagList}
+            empty="No tags found."
+          />
+        }
+        pagination={
+          tags?.last_page > 1 && (
+            <Pagination
+              page={tags.current_page}
+              total={tags.last_page}
+              onChange={page => router.get(route('core.tags.index'), { page, search }, {
+                preserveState: true, preserveScroll: true, only: ['tags'],
+              })}
+            />
+          )
+        }
       >
-        <form onSubmit={editingTag ? handleUpdate : handleCreate}>
-          <VStack gap={3}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.875rem', fontWeight: 500 }}>
-                Name
-              </label>
+        {/* Create / Edit Modal */}
+        <Modal open={showModal} onClose={closeModal} title={editingTag ? 'Edit Tag' : 'New Tag'} size="sm">
+          <VStack gap={4}>
+            <Field label="Name" htmlFor="tag-name" required>
               <Input
-                value={form.data.name}
-                onChange={(e) => form.setData('name', e.target.value)}
-                error={form.errors.name}
-                autoFocus
+                id="tag-name"
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Tag name"
               />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.875rem', fontWeight: 500 }}>
-                Color
-              </label>
+            </Field>
+            <Field label="Color" htmlFor="tag-color">
               <HStack gap={2} align="center">
                 <input
+                  id="tag-color"
                   type="color"
-                  value={form.data.color}
-                  onChange={(e) => form.setData('color', e.target.value)}
-                  style={{
-                    width: '40px',
-                    height: '36px',
-                    border: '1px solid var(--aeos-border)',
-                    borderRadius: 'var(--aeos-radius-sm)',
-                    cursor: 'pointer',
-                    padding: '2px',
-                  }}
+                  value={form.color}
+                  onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                  className="aeos-color-picker"
                 />
                 <Input
-                  value={form.data.color}
-                  onChange={(e) => form.setData('color', e.target.value)}
-                  error={form.errors.color}
-                  style={{ flex: 1 }}
+                  value={form.color}
+                  onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                  placeholder="#0ea5e9"
                 />
               </HStack>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.875rem', fontWeight: 500 }}>
-                Description
-              </label>
-              <Input
-                value={form.data.description}
-                onChange={(e) => form.setData('description', e.target.value)}
-                error={form.errors.description}
-              />
-            </div>
+            </Field>
             <HStack gap={2} justify="end">
-              <Button type="button" intent="ghost" size="sm" onClick={resetForm}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                intent="primary"
-                size="sm"
-                loading={form.processing}
-              >
+              <Button intent="ghost" onClick={closeModal}>Cancel</Button>
+              <Button intent="primary" loading={submitting} disabled={!form.name} onClick={handleSave}>
                 {editingTag ? 'Save Changes' : 'Create Tag'}
               </Button>
             </HStack>
           </VStack>
-        </form>
-      </Modal>
+        </Modal>
 
-      {/* Merge Tag Modal */}
-      <Modal
-        open={mergingTag !== null}
-        onClose={() => { setMergingTag(null); setMergeTargetId(''); }}
-        title="Merge Tag"
-        size="sm"
-      >
-        <form onSubmit={handleMerge}>
-          <VStack gap={3}>
+        {/* Merge Modal */}
+        <Modal
+          open={mergingTag !== null}
+          onClose={() => { setMergingTag(null); setMergeTarget(''); }}
+          title="Merge Tag"
+          size="sm"
+        >
+          <VStack gap={4}>
             <Text>
-              Merge <strong>{mergingTag?.name}</strong> into another tag. All records tagged with this tag will be reassigned.
+              Merge <strong>{mergingTag?.name}</strong> into another tag. All records will be reassigned to the target tag.
             </Text>
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.875rem', fontWeight: 500 }}>
-                Target Tag
-              </label>
-              <select
-                value={mergeTargetId}
-                onChange={(e) => setMergeTargetId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid var(--aeos-border)',
-                  borderRadius: 'var(--aeos-radius-sm)',
-                  fontSize: '0.875rem',
-                  background: 'var(--aeos-surface)',
-                  color: 'var(--aeos-fg)',
-                }}
-                required
-              >
-                <option value="">Select a tag...</option>
-                {tagList
-                  .filter((t) => t.id !== mergingTag?.id)
-                  .map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} (#{t.slug})
-                    </option>
-                  ))}
-              </select>
-            </div>
+            <Field label="Target Tag" htmlFor="merge-target">
+              <Select
+                id="merge-target"
+                value={mergeTarget}
+                onChange={e => setMergeTarget(e.target.value)}
+                options={[
+                  { value: '', label: 'Select target tag…' },
+                  ...tagList
+                    .filter(t => t.id !== mergingTag?.id)
+                    .map(t => ({ value: t.id, label: t.name })),
+                ]}
+              />
+            </Field>
             <HStack gap={2} justify="end">
-              <Button type="button" intent="ghost" size="sm" onClick={() => { setMergingTag(null); setMergeTargetId(''); }}>
-                Cancel
-              </Button>
-              <Button type="submit" intent="primary" size="sm" loading={mergeForm.processing} disabled={!mergeTargetId}>
+              <Button intent="ghost" onClick={() => { setMergingTag(null); setMergeTarget(''); }}>Cancel</Button>
+              <Button intent="primary" loading={submitting} disabled={!mergeTarget} onClick={handleMerge}>
                 Merge
               </Button>
             </HStack>
           </VStack>
-        </form>
-      </Modal>
+        </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        open={deletingTag !== null}
-        onClose={() => setDeletingTag(null)}
-        title="Delete Tag"
-        size="sm"
-      >
-        <VStack gap={3}>
-          <Text>
-            Are you sure you want to delete <strong>{deletingTag?.name}</strong>?
-            This will remove the tag from all associated records.
-          </Text>
-          <HStack gap={2} justify="end">
-            <Button type="button" intent="ghost" size="sm" onClick={() => setDeletingTag(null)}>
-              Cancel
-            </Button>
-            <Button type="button" intent="danger" size="sm" onClick={handleDelete}>
-              Delete
-            </Button>
-          </HStack>
-        </VStack>
-      </Modal>
-    </IndexPageLayout>
+        {/* Delete Confirmation Modal */}
+        <Modal
+          open={deletingTag !== null}
+          onClose={() => setDeletingTag(null)}
+          title="Delete Tag"
+          size="sm"
+        >
+          <VStack gap={4}>
+            {deletingTag && (deletingTag.usage_count ?? deletingTag.records_count ?? 0) > 0 && (
+              <Alert
+                intent="warning"
+                title={`This tag is used by ${deletingTag.usage_count ?? deletingTag.records_count} record(s). Deleting it will remove the tag from all those records.`}
+              />
+            )}
+            <Text>
+              Delete tag <strong>{deletingTag?.name}</strong>?
+            </Text>
+            <HStack gap={2} justify="end">
+              <Button intent="ghost" onClick={() => setDeletingTag(null)}>Cancel</Button>
+              <Button intent="danger" onClick={handleDelete}>Delete</Button>
+            </HStack>
+          </VStack>
+        </Modal>
+      </IndexPageLayout>
+    </>
   );
 }
 
-TagsIndex.layout = (page) => <App title="Tags & Labels">{page}</App>;
+TagsIndex.layout = page => <App title="Tags & Labels">{page}</App>;

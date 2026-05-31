@@ -38,12 +38,12 @@ export default function Admin({ mode, savedAdmin }) {
       </div>
 
       <HStack gap={3}>
-        <Box grow style={{ flex: 1 }}>
+        <Box grow className="aeos-flex-1">
           <Field label="First Name" htmlFor="first_name" error={allErrors.first_name} required>
             <Input id="first_name" value={data.first_name} onChange={e => setData('first_name', e.target.value)} leftIcon="user" autoFocus error={!!allErrors.first_name} />
           </Field>
         </Box>
-        <Box grow style={{ flex: 1 }}>
+        <Box grow className="aeos-flex-1">
           <Field label="Last Name" htmlFor="last_name" error={allErrors.last_name} required>
             <Input id="last_name" value={data.last_name} onChange={e => setData('last_name', e.target.value)} leftIcon="user" error={!!allErrors.last_name} />
           </Field>

@@ -131,7 +131,7 @@ function Governance() {
     <Section size="lg">
       <Container>
         <HStack gap={8} align="start">
-          <VStack gap={4} style={{ flex: '1' }}>
+          <VStack gap={4} className="aeos-flex-1">
             <p className="aeos-pub-label aeos-pub-accent-text--amber">Governance & compliance</p>
             <h2 className="aeos-pub-h2">
               Operate with confidence in regulated environments.
@@ -200,7 +200,7 @@ function Integrations() {
           lead="aeos365 integrates with the tools enterprise teams already rely on. REST API, webhooks, and pre-built connectors make the integration story seamless."
           align="center"
         />
-        <HStack gap={3} wrap align="center" style={{ justifyContent: 'center' }}>
+        <HStack gap={3} wrap align="center" className="aeos-justify-center">
           {INTEGRATIONS.map((i) => (
             <Card key={i.name} className="aeos-pub-trust-chip">
               <VStack gap={1} align="center">
@@ -225,7 +225,7 @@ function EnterpriseFAQSection() {
           title="Common enterprise questions, answered."
           align="center"
         />
-        <VStack gap={0} style={{ maxWidth: 760, margin: '0 auto' }}>
+        <VStack gap={0} className="aeos-content-extra-wide">
           <Accordion items={ENTERPRISE_FAQ} />
         </VStack>
       </Container>
@@ -241,10 +241,10 @@ function EnterpriseCTA() {
         <Card>
           <VStack gap={4} align="center">
             <p className="aeos-pub-label">Get started</p>
-            <h2 className="aeos-pub-h2" style={{ textAlign: 'center' }}>
+            <h2 className="aeos-pub-h2 aeos-text-center">
               Ready to transform your enterprise operations?
             </h2>
-            <p className="aeos-pub-lead" style={{ textAlign: 'center', maxWidth: 520 }}>
+            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
               Our enterprise team is standing by to understand your requirements and
               help you design the right deployment model.
             </p>

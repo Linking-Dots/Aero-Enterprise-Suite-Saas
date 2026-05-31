@@ -1,0 +1,43 @@
+{
+    "root": true,
+    "env": {
+        "browser": true,
+        "es2022": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "ecmaFeatures": { "jsx": true }
+    },
+    "plugins": ["react"],
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "settings": { "react": { "version": "detect" } },
+    "rules": {
+        "react/forbid-component-props": [
+            "error",
+            {
+                "forbid": [
+                    {
+                        "propName": "style",
+                        "allowedFor": [],
+                        "message": "Inline `style` is forbidden in aero-ui (CLAUDE.md / Plan 06 T1). Use Tailwind utility classes or HeroUI theme tokens. For dynamic values use CSS variables: `style={{ '--bar-w': pct + '%' }} className=\"w-[var(--bar-w)]\"`. Exceptions require an eslint-disable line + justification."
+                    }
+                ]
+            }
+        ],
+        "react/forbid-dom-props": [
+            "error",
+            {
+                "forbid": [
+                    {
+                        "propName": "style",
+                        "message": "Use Tailwind classes instead of inline style on DOM elements (Plan 06 T1)."
+                    }
+                ]
+            }
+        ],
+        "react/prop-types": "off",
+        "react/no-unescaped-entities": "off"
+    }
+}
