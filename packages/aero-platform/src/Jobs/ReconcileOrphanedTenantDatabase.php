@@ -31,15 +31,15 @@ class ReconcileOrphanedTenantDatabase implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /** Dedicated maintenance queue (Axis C C3). */
-    public string $queue = 'maintenance';
-
     public int $tries = 5;
 
     /** @var array<int,int> */
     public array $backoff = [60, 300, 900, 3600, 7200];
 
-    public function __construct(public readonly string $databaseName) {}
+    public function __construct(public readonly string $databaseName)
+    {
+        $this->onQueue('maintenance'); // Axis C C3
+    }
 
     public function handle(): void
     {

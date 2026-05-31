@@ -34,13 +34,15 @@ class RetryFailedPaymentsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /** Dedicated billing queue (Axis C C3). */
-    public string $queue = 'billing';
-
     /**
      * Maximum number of retry attempts.
      */
     protected int $maxRetries = 3;
+
+    public function __construct()
+    {
+        $this->onQueue('billing'); // Axis C C3
+    }
 
     public function handle(): void
     {

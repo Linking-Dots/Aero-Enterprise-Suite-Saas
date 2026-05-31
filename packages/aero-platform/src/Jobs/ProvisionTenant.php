@@ -50,13 +50,6 @@ class ProvisionTenant implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * Dedicated queue (Axis C C3): heavy/slow provisioning (timeout 600s) runs on
-     * its own queue so a provisioning surge can't starve fast user-facing jobs.
-     * Requires a Horizon/worker pool for 'provisioning' (see deploy supervisor config).
-     */
-    public string $queue = 'provisioning';
-
-    /**
      * The number of times the job may be attempted.
      */
     public int $tries = 3;
@@ -95,6 +88,8 @@ class ProvisionTenant implements ShouldQueue
     public function __construct(Tenant $tenant)
     {
         $this->tenant = $tenant;
+        // Axis C C3 — dedicated queue so heavy provisioning can't starve fast jobs.
+        $this->onQueue('provisioning');
     }
 
     /**
