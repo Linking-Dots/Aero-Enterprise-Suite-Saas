@@ -8,6 +8,36 @@
 
 ---
 
+## Execution status — 2026-05-30 (live)
+
+Implemented + committed this session (verified via lint + host tinker + host test suite; package tests need testbench → CI):
+
+| Done | Axis tasks | Commits |
+|---|---|---|
+| ✅ Tenancy isolation | A2,A4,A5,A6,A7,A8,A9,A10,A11 (A1 moot) | filesystem leak closed, fail-closed guard, shared drop guard, atomic teardown, subdomain SoT, API suspend gate, isolation+raw-DB tests |
+| ✅ Parity | B1,B2,B3,B5,B6,B8 + B4 ratchet | standalone audit restored, central_connection() resolver, CentralModel resolution, dead NotificationLog removed, aero.mode prop, parity guard |
+| ✅ Scalability | C1,C2,C3,C7 + C4 verified-adequate + C8 doc | SQL aggregation, subscribed-modules cache, queue topology, stats fan-out, cache-strategy doc |
+
+**Found during execution (NEW debt):**
+- **B9** — 5 standalone-package files hard-import `Aero\Platform\` (aero-auth 4 controllers + aero-hrm provider). Was a false-clean in the audit. Ratchet-locked (`StandaloneParityGuardTest` budget 5); decoupling is open.
+- A latent **fatal** was averted: `public string $queue` redeclaration conflicted with `Queueable::$queue` (PHP 8.3) — fixed to constructor `onQueue()`.
+
+**Remaining / deferred (with rationale):**
+| Item | Why not done in this pass |
+|---|---|
+| C5 (Inertia payload trim) | Frontend — needs aero-ui consumer changes + payload measurement |
+| C6 + C8-invalidation (shared user access-tree cache) | Touches `RoleModuleAccessService` (access-control authority); must land WITH HRMAC feature tests (testbench) — blind risks wrong allow/deny |
+| C1 departmentRiskSummary join | 3-table join; not guessed blind |
+| D1 facade ratchet paydown | Migrating Cache::/Storage:: in feature pkgs to TenantCache — verify needs package tests |
+| D1 inline-style → 0 (~155 files) | Large mechanical migration; dedicated subagent run |
+| D2 (HRM API HTTP suite) | Needs testbench to run |
+| D3 (TenantForget HTTP cases) | Needs testbench; also the teardown refactor (A4) changed forget — re-test together |
+| B7 / standalone-boot test / stop test-masking | Need testbench |
+| B9 decoupling | Multi-file refactor, own unit |
+| TD-1..TD-14 (Section 4) | On-trigger / scheduled |
+
+---
+
 ## Priority legend
 
 - **P0** — production-correctness / legal; do next.
