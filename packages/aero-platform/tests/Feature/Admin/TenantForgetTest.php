@@ -134,7 +134,15 @@ class TenantForgetTest extends TestCase
 
     public function test_missing_reason_returns_validation_error(): void
     {
+        // These tests exercise validation + service invocation, not authorization.
+        // TWO gates must be bypassed: the hrmac MIDDLEWARE (CheckRoleModuleAccess — not
+        // Gate-based, so withoutMiddleware on that class only) AND the FormRequest::authorize()
+        // which calls $user->can('platform.tenants.tenant-list.forget') (Gate-based, so
+        // Gate::before). Target the hrmac class specifically — a no-arg withoutMiddleware()
+        // would also drop SubstituteBindings and leave $tenant unresolved. Authz is covered
+        // end-to-end by the anonymous + no-permission tests (full stack).
         Gate::before(fn () => true);
+        $this->withoutMiddleware(\Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess::class);
 
         $tenant = Tenant::factory()->active()->create();
 
@@ -152,7 +160,15 @@ class TenantForgetTest extends TestCase
 
     public function test_short_reason_returns_validation_error(): void
     {
+        // These tests exercise validation + service invocation, not authorization.
+        // TWO gates must be bypassed: the hrmac MIDDLEWARE (CheckRoleModuleAccess — not
+        // Gate-based, so withoutMiddleware on that class only) AND the FormRequest::authorize()
+        // which calls $user->can('platform.tenants.tenant-list.forget') (Gate-based, so
+        // Gate::before). Target the hrmac class specifically — a no-arg withoutMiddleware()
+        // would also drop SubstituteBindings and leave $tenant unresolved. Authz is covered
+        // end-to-end by the anonymous + no-permission tests (full stack).
         Gate::before(fn () => true);
+        $this->withoutMiddleware(\Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess::class);
 
         $tenant = Tenant::factory()->active()->create();
 
@@ -170,7 +186,15 @@ class TenantForgetTest extends TestCase
 
     public function test_missing_confirm_returns_validation_error(): void
     {
+        // These tests exercise validation + service invocation, not authorization.
+        // TWO gates must be bypassed: the hrmac MIDDLEWARE (CheckRoleModuleAccess — not
+        // Gate-based, so withoutMiddleware on that class only) AND the FormRequest::authorize()
+        // which calls $user->can('platform.tenants.tenant-list.forget') (Gate-based, so
+        // Gate::before). Target the hrmac class specifically — a no-arg withoutMiddleware()
+        // would also drop SubstituteBindings and leave $tenant unresolved. Authz is covered
+        // end-to-end by the anonymous + no-permission tests (full stack).
         Gate::before(fn () => true);
+        $this->withoutMiddleware(\Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess::class);
 
         $tenant = Tenant::factory()->active()->create();
 
@@ -188,7 +212,15 @@ class TenantForgetTest extends TestCase
 
     public function test_successful_forget_purges_tenant_and_writes_audit(): void
     {
+        // These tests exercise validation + service invocation, not authorization.
+        // TWO gates must be bypassed: the hrmac MIDDLEWARE (CheckRoleModuleAccess — not
+        // Gate-based, so withoutMiddleware on that class only) AND the FormRequest::authorize()
+        // which calls $user->can('platform.tenants.tenant-list.forget') (Gate-based, so
+        // Gate::before). Target the hrmac class specifically — a no-arg withoutMiddleware()
+        // would also drop SubstituteBindings and leave $tenant unresolved. Authz is covered
+        // end-to-end by the anonymous + no-permission tests (full stack).
         Gate::before(fn () => true);
+        $this->withoutMiddleware(\Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess::class);
 
         $tenant = Tenant::factory()->active()->create();
         $tenantId = (string) $tenant->getTenantKey();
@@ -228,14 +260,25 @@ class TenantForgetTest extends TestCase
 
     public function test_forget_service_writes_audit_and_force_deletes_tenant(): void
     {
+        // These tests exercise validation + service invocation, not authorization.
+        // TWO gates must be bypassed: the hrmac MIDDLEWARE (CheckRoleModuleAccess — not
+        // Gate-based, so withoutMiddleware on that class only) AND the FormRequest::authorize()
+        // which calls $user->can('platform.tenants.tenant-list.forget') (Gate-based, so
+        // Gate::before). Target the hrmac class specifically — a no-arg withoutMiddleware()
+        // would also drop SubstituteBindings and leave $tenant unresolved. Authz is covered
+        // end-to-end by the anonymous + no-permission tests (full stack).
         Gate::before(fn () => true);
+        $this->withoutMiddleware(\Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess::class);
 
         $tenant = Tenant::factory()->active()->create();
         $tenantId = (string) $tenant->getTenantKey();
 
         // Subclass to no-op the actual DROP DATABASE — sqlite doesn't support
         // it. Audit + forceDelete are still exercised by the parent forget().
-        $service = new class($this->app->make(\Aero\Contracts\AuditServiceInterface::class)) extends TenantForgetService {
+        $service = new class(
+            $this->app->make(\Aero\Contracts\AuditServiceInterface::class),
+            $this->app->make(\Aero\Platform\Support\TenantTeardownSequencer::class),
+        ) extends TenantForgetService {
             protected function dropTenantDatabase(string $tenantId, string $subdomain, string $databaseName): void
             {
                 // intentionally no-op in test
