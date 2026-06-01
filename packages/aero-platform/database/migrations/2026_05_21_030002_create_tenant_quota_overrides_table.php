@@ -19,15 +19,19 @@ return new class extends Migration
 
         Schema::connection('central')->create('tenant_quota_overrides', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
+            // tenants.id is a string (UUID) PK; tenant_id must match (was foreignId =
+            // bigint, which made `migrate` fail on MySQL with an incompatible-FK error).
+            $table->string('tenant_id');
             $table->string('resource', 64); // storage_gb, api_calls, users, modules
             $table->bigInteger('limit_value');
             $table->text('reason')->nullable();
             $table->timestamp('expires_at')->nullable();
-            $table->foreignId('set_by')->constrained('landlord_users');
+            // landlord_users.id is a UUID; foreignUuid matches it (foreignId = bigint did not).
+            $table->foreignUuid('set_by')->constrained('landlord_users');
             $table->timestamps();
             $table->unique(['tenant_id', 'resource']);
             $table->index('expires_at');
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
         });
     }
 
