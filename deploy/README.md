@@ -169,3 +169,44 @@ e.g. notifications at 20 jobs/sec × 0.2s avg ≈ 4 workers; provisioning at 0.1
 jobs/sec × 120s avg ≈ 12 concurrent slots at peak. Measure avg durations in
 Horizon (or `failed_jobs`/telemetry) and re-size; never let `provisioning` and
 `notifications` share a pool.
+
+## Queue worker options — pick by hosting tier (incl. shared hosting)
+
+The queue topology (provisioning/maintenance/billing/...) works with ANY driver.
+Choose the worker by what your host supports. Jobs/failed_jobs/job_batches tables
+ship in aero-core migrations, so the **database** driver needs no extra infra.
+
+### A. Shared hosting (cPanel/Namecheap — no Redis, no pcntl, no supervisor)
+`.env`: `QUEUE_CONNECTION=database`
+
+Two cron entries in cPanel → Cron Jobs (every minute):
+```
+* * * * * cd /home/USER/APP && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home/USER/APP && php artisan queue:work database --stop-when-empty --max-time=55 --tries=3 --queue=provisioning,maintenance,billing,security,notifications,emails,default >> /dev/null 2>&1
+```
+`--stop-when-empty` exits when the queue drains (no daemon, no pcntl needed);
+`--max-time=55` guarantees it ends before the next minute's run. Priority order
+in `--queue` keeps fast user-facing jobs ahead of heavy ones.
+
+### B. VPS / dedicated / cloud (no Redis) — supervised worker
+`.env`: `QUEUE_CONNECTION=database`. Run a persistent worker under supervisor
+(`deploy/supervisor/aeos365-standalone-worker.conf`):
+```
+php artisan queue:work database --tries=3 --queue=provisioning,maintenance,billing,security,notifications,emails,default
+```
+
+### C. VPS / cloud WITH Redis — Horizon (dashboard + auto-balancing)
+`.env`: `QUEUE_CONNECTION=redis`. Linux only (needs `ext-pcntl`):
+```
+composer require laravel/horizon && php artisan horizon:install
+# run via deploy/supervisor/aeos365-horizon.conf
+```
+Horizon is an OPTIONAL upgrade — A and B cover every other host.
+
+> Tiny / single-tenant trials can use `QUEUE_CONNECTION=sync` (runs jobs inline,
+> no worker) — but provisioning/email then block the request, so prefer A.
+
+## Error monitoring (any host)
+Sentry is HTTP-only (no daemon/Redis) so it works on shared hosting too:
+set `SENTRY_LARAVEL_DSN=` in `.env`, then `php artisan sentry:test`. The package
+is already required by aero-core. (Self-host: Sentry-on-Docker or Spatie Flare.)
