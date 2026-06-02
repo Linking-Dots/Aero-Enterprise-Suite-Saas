@@ -38,6 +38,23 @@ Implemented + committed this session (verified via lint + host tinker + host tes
 
 ---
 
+## Bugs found during Phase 2 test runs (2026-06-01)
+
+Running the package suites surfaced real defects (not just test-env gaps):
+
+| ID | Bug | Status |
+|----|-----|--------|
+| BUG-1 | `tenant_quota_overrides` + `feature_usage_events` used `foreignId(tenant_id)` (bigint) against the UUID `tenants.id` → `php artisan migrate` **fails on fresh MySQL**. Also `set_by` bigint vs UUID `landlord_users.id`. | ✅ FIXED (`57b02fbd9`) |
+| BUG-2 | `'auth'` log channel referenced by HRMAC denial logging but not defined → threw in prod on every denial. | ✅ FIXED (`d5ec686b7`) |
+| BUG-3 | **24 duplicate route names in aero-hrm** (e.g. `hrm.recruitment.interviews.index`, `hrm.performance.pip.index`, `hrm.training.enrollments.*`) — Laravel resolves `route(name)` to the LAST registration, silently shadowing the other URL. **Referenced in aero-ui Ziggy `route()` calls**, so the fix needs coordinated backend rename + frontend update. | ⚠️ OPEN — pinned by `RouteConflictTest` |
+| BUG-4 | `AddonInstaller` does not throw on a migration-table collision (`AddonInstallerCollisionTest` expects `RuntimeException`). Behavior gap or stale test — needs triage. | ⚠️ OPEN |
+
+## Test-runner infrastructure (Phase 2 finding)
+
+Package tests come in two styles and **had no working runner** before this work:
+- **Testbench** (`PackageTestCase`) — self-contained; now green after shared-base completion (app.key, media-library, landlord guard, inertia page-check off).
+- **Host-based** (`Tests\TestCase`, e.g. `ModuleAccessServiceSubscriptionTest`, `TenantForgetTest`) — boot the host app; need `central`→sqlite remapping + the host `phpunit.xml` env. They fail under the standalone bridge only because `central` stays mysql. **CI must run these two styles with the correct config** (a `_pkgtest_bootstrap.php` bridge exists in the host for testbench-style; host-based need the host env). This is the core Phase 2 / CI deliverable.
+
 ## Priority legend
 
 - **P0** — production-correctness / legal; do next.
