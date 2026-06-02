@@ -4,7 +4,7 @@ import {
   Button, Badge,
   HStack, VStack, Text, Mono, Avatar,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function SecurityLink({ title, description, value, badge, href }) {
   return (

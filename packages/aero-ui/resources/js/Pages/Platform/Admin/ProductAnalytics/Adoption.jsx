@@ -12,7 +12,7 @@ import {
   Badge,
   Progress,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Adoption({ data }) {
   const topFeatures = data?.top_features ?? [];

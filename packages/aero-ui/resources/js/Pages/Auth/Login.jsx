@@ -3,10 +3,31 @@ import { useForm, Link } from '@inertiajs/react';
 import AuthLayout from './AuthLayout.jsx';
 import { Field, Input, Toggle, Button, Alert, Text, HStack } from '@aero/ui';
 
+function uuidv4() {
+  // crypto.randomUUID() only exists in secure contexts (HTTPS or localhost).
+  // Over plain http://*.test it is undefined and throws, crashing the login
+  // page before the form mounts. Fall back to a getRandomValues-based UUID v4,
+  // then to Math.random as a last resort.
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map(x => x.toString(16).padStart(2, '0'));
+    return `${h[0]}${h[1]}${h[2]}${h[3]}-${h[4]}${h[5]}-${h[6]}${h[7]}-${h[8]}${h[9]}-${h[10]}${h[11]}${h[12]}${h[13]}${h[14]}${h[15]}`;
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 function getOrCreateDeviceId() {
   let id = localStorage.getItem('aeos_device_id');
   if (!id) {
-    id = crypto.randomUUID();
+    id = uuidv4();
     localStorage.setItem('aeos_device_id', id);
   }
   return id;

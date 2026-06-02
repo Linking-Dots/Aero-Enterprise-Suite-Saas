@@ -18,7 +18,7 @@ import {
   Alert,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const RULE_OPERATORS = [
   { value: 'eq',       label: 'equals' },

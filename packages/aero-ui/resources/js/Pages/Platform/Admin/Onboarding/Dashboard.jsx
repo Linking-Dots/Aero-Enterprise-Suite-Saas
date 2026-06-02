@@ -10,7 +10,7 @@ import {
   CardBody,
   Text,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function OnboardingDashboard({ stats }) {
   const kpis = [

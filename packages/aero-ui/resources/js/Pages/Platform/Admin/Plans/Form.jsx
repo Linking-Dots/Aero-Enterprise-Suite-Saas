@@ -12,7 +12,7 @@ import {
   CardBody,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function PlansForm({ plan }) {
   const toast   = useToast();

@@ -1,5 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 import { useHRMAC } from '../../../hooks/useHRMAC.js';
 import {
   VStack, HStack, Box, Text, Eyebrow, Field, Input, Select, Button, Alert, Card,
@@ -230,7 +230,6 @@ export default function GeneralSettings({ settings }) {
           </form>
         </VStack>
       </div>
-    </div>
   );
 }
 

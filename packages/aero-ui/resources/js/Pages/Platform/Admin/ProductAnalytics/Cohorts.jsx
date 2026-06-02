@@ -11,7 +11,7 @@ import {
   Badge,
   Select,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const MONTHS_OPTIONS = [
   { value: '3', label: '3 months' },

@@ -9,7 +9,7 @@ import {
   Badge,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function trustIntent(trusted) {
   return trusted ? 'success' : 'neutral';

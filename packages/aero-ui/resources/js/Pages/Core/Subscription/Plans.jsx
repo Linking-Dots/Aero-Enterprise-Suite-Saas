@@ -9,7 +9,7 @@ import {
   Alert,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function PlanCard({ plan, isCurrent, onUpgrade, upgrading }) {
   return (

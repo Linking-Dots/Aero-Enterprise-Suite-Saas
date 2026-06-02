@@ -14,7 +14,7 @@ import {
   Card, CardContent,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function RolesIndex({ roles, users, can_manage_super_admin, error }) {
   const toast      = useToast();

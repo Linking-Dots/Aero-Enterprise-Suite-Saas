@@ -10,7 +10,7 @@ import {
   VStack,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function TenantsCreate({ plans, products }) {
   const toast = useToast();

@@ -5,7 +5,7 @@ import {
   HStack, VStack, Text, Mono, Alert,
   useToast,
 } from '@aero/ui';
-import App from '../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Sessions({ sessions, current_session_id, max_sessions }) {
   const toast = useToast();

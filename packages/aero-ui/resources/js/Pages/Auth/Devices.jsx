@@ -6,7 +6,7 @@ import {
   HStack, VStack, Text, Mono,
   useToast,
 } from '@aero/ui';
-import App from '../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function DeviceTypeLabel({ type }) {
   const labels = { mobile: 'Mobile', tablet: 'Tablet', desktop: 'Desktop', unknown: 'Unknown' };

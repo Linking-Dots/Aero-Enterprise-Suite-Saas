@@ -20,7 +20,7 @@ import {
   useHRMAC,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },

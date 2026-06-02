@@ -15,7 +15,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const DATE_FORMAT_OPTIONS = [
   { value: 'DD/MM/YYYY',  label: 'DD/MM/YYYY'  },

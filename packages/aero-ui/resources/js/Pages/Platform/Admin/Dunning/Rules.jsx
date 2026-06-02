@@ -22,7 +22,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const ACTION_OPTIONS = [
   { value: 'retry',        label: 'Retry Payment' },

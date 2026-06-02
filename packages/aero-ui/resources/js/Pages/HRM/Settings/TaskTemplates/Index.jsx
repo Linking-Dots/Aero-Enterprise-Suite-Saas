@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import {
   VStack, HStack, Box, Text, Mono, Eyebrow, Field, Input, Select, Button,

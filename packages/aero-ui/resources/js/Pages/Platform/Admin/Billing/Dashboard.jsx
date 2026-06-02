@@ -13,7 +13,7 @@ import {
   CardBody,
   KPI,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const SUB_STATUS_INTENT = {
   active:    'success',

@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PROVIDER_META = {
   google:   { label: 'Google',   description: 'Sign in with a Google account via OAuth 2.0.' },

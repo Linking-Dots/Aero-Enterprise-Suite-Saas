@@ -14,7 +14,7 @@ import {
   Eyebrow,
   KPI,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function ErrorLogAnalytics({ analytics }) {
   const openCount     = analytics?.open_count     ?? 0;

@@ -23,7 +23,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Dpa({ templates, signings, subprocessors }) {
   const toast = useToast();

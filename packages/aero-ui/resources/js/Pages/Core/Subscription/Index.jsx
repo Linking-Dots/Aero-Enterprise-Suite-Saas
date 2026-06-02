@@ -7,7 +7,7 @@ import {
   Badge, Progress, Button,
   Stat,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function UsageBar({ label, used, limit, unit = '' }) {
   const pct   = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;

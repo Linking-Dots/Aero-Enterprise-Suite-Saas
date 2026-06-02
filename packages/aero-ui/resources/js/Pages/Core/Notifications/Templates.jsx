@@ -14,7 +14,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const DEFAULT_CATEGORIES = [
   { value: 'transactional', label: 'Transactional' },

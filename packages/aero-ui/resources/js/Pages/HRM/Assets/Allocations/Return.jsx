@@ -1,10 +1,10 @@
 import { router, useForm } from '@inertiajs/react';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import {
   FormPageLayout, VStack, HStack, Field, Select, Textarea, Button,
   Card, CardBody, Eyebrow, Text, Alert,
 } from '@aero/ui';
-import useHRMAC from '../../../../hooks/useHRMAC.js';
+import { useHRMAC } from '@/hooks/useHRMAC';
 
 const CONDITION_OPTIONS = [
   { value: 'good', label: 'Good' },

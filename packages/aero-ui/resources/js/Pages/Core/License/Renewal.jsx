@@ -9,7 +9,7 @@ import {
   Text, Eyebrow, Mono,
   Button, Badge, Alert,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function daysRemaining(expiresAt) {
   if (!expiresAt) return null;

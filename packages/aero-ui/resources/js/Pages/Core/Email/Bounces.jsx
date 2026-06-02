@@ -18,7 +18,7 @@ import {
   Button,
   Input,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Bounces({ bounces, top_bouncing_domains = [], filters }) {
   const [search, setSearch] = useState(filters?.search || '');

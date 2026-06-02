@@ -16,7 +16,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function IntegrationCard({ title, description, icon, integrationKey, fields, initialData, onSave, saving }) {
   const [form, setForm] = useState(initialData ?? {});

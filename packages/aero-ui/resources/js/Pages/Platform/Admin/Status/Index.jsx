@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const COMPONENT_STATUS_OPTIONS = [
   { value: 'operational',    label: 'Operational' },

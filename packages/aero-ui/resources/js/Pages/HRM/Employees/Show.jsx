@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 import {
   DetailPageLayout, Card, CardBody, VStack, HStack,
   Text, Badge, Button, Avatar, Divider, Tabs,

@@ -10,7 +10,7 @@ import {
   Alert,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TYPE_OPTIONS = [
   { value: 'percent', label: 'Percent (%)' },

@@ -15,7 +15,7 @@ import {
   Badge,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const BUCKET_OPTIONS = [
   { value: 'day',   label: 'Daily' },

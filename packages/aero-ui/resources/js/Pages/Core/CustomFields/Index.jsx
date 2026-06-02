@@ -17,7 +17,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const FIELD_TYPES = [
   { value: 'text',      label: 'Text' },

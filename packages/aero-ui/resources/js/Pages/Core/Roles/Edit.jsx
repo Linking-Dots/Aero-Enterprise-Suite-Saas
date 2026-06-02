@@ -10,7 +10,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function RolesEdit({ role, permissions }) {
   const toast   = useToast();

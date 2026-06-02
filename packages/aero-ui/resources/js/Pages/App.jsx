@@ -6,7 +6,7 @@
  * The ThemeDrawer is always visible so users can customise the full theme.
  *
  * Usage on any authenticated page:
- *   import App from '../App.jsx';
+ *   import App from '@/Pages/App.jsx';
  *   MyPage.layout = page => <App title="Page Title">{page}</App>;
  */
 import { usePage } from '@inertiajs/react';

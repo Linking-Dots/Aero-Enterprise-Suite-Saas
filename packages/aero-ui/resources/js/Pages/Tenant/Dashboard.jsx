@@ -9,7 +9,7 @@ import {
   DashboardLayout,
   KPI, Card, VStack, HStack, Box, Text, Mono, Eyebrow, Badge, Button, Icon, Avatar,
 } from '@aero/ui';
-import App from '../App.jsx';
+import App from '@/Pages/App.jsx';
 
 // ─── Accent intent mapping ─────────────────────────────────────────────────
 function accentIntent(accent) {

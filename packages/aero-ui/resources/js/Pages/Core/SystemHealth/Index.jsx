@@ -12,7 +12,7 @@ import {
   Eyebrow,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const CHECK_LABELS = {
   db:      'Database',

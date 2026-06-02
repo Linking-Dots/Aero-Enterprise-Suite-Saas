@@ -8,7 +8,7 @@ import {
   Eyebrow,
   Mono,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const DRIVER_INTENT = {
   redis:    'success',

@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import { useHRMAC } from '../../../../hooks/useHRMAC.js';
 import {
   IndexPageLayout, DataTable, Button, HStack,

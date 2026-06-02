@@ -16,7 +16,7 @@ import {
   SavedViewsDropdown,
   Stat,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function UsersIndex({ users, roles, filters, stats }) {
   const toast = useToast();

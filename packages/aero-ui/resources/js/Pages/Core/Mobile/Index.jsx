@@ -28,7 +28,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const DISPLAY_MODE_OPTIONS = [
   { value: 'standalone',  label: 'Standalone' },

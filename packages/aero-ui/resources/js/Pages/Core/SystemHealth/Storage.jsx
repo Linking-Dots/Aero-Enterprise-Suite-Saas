@@ -12,7 +12,7 @@ import {
   Mono,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function UsageBar({ percent }) {
   const pct   = Math.min(100, Math.max(0, percent ?? 0));

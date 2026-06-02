@@ -10,7 +10,7 @@ import {
   Alert,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function deviceTypeIntent(type) {
   switch ((type ?? '').toLowerCase()) {
