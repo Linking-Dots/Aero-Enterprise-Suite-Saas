@@ -1069,8 +1069,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats', [AssetController::class, 'stats'])->name('stats');
         // CRUD operations
         Route::post('/', [AssetController::class, 'store'])->name('store');
-        Route::put('/{id}', [AssetController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AssetController::class, 'destroy'])->name('destroy');
+        // BUG-3: update/destroy now handled by the canonical HrmAssetController block
+        // (route-model-binding {asset} + granular HRMAC). Legacy {id} routes removed
+        // to de-duplicate the hrm.assets.update/destroy names.
         // Asset allocation workflow
         Route::post('/{id}/allocate', [AssetController::class, 'allocate'])->name('allocate');
         Route::post('/{id}/return', [AssetController::class, 'returnAsset'])->name('return');
