@@ -41,7 +41,11 @@ class TenantModelContractTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessageMatches('/queried outside of tenant context/');
 
-        $model::query();
+        // ->toSql() forces global-scope application (the guard closure runs in
+        // applyScopes(), not at query() construction). Pre-existing test bug: it
+        // called query() alone, which never triggered the scope, so the guard was
+        // never actually exercised.
+        $model::query()->toSql();
     }
 
     public function test_aero_core_shim_is_instance_of_contracts_tenant_model(): void

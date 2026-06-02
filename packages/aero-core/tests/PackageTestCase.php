@@ -56,8 +56,29 @@ abstract class PackageTestCase extends TestCase
         $app['config']->set('cache.default', 'array');
         $app['config']->set('session.driver', 'array');
 
+        // App encryption key — controllers/services that encrypt (EncryptedField,
+        // sessions, signed URLs) need it. Without it the encrypter throws
+        // MissingAppKeyException on boot. Fixed test key (32 bytes) for determinism.
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
+
+        // SystemSetting uses spatie/medialibrary (HasMedia). getMediaModel() reads
+        // config('media-library.media_model'); without it the return-type is null.
+        $app['config']->set('media-library.media_model', \Spatie\MediaLibrary\MediaCollections\Models\Media::class);
+
+        // aero-core controllers/middleware reference the dual-guard system's 'landlord'
+        // guard (auth('landlord'), guard-scoped redirects, etc.). aero-platform registers
+        // it at runtime in SaaS; the package test env doesn't load aero-platform, so define
+        // it here (provider points at the core User model — tests don't authenticate as a
+        // real landlord, they just need the guard to resolve so routes don't error).
+        $app['config']->set('auth.guards.landlord', ['driver' => 'session', 'provider' => 'landlord_users']);
+        $app['config']->set('auth.providers.landlord_users', ['driver' => 'eloquent', 'model' => User::class]);
+
         // Point Inertia at the stub app view so responses don't 500 on blade render
         $app['config']->set('inertia.root_view', 'app');
+        // The actual page JSX lives in aero-ui (not resolvable in a package test env),
+        // so don't assert the page FILE exists — assertInertia still checks component
+        // name + props from the response.
+        $app['config']->set('inertia.testing.ensure_pages_exist', false);
 
         // Spatie Permission needs a non-null permission model class.
         // We don't use Spatie permissions for auth, but RoleService uses Spatie Role.

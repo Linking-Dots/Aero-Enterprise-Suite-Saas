@@ -19,13 +19,16 @@ return new class extends Migration
 
         Schema::connection('central')->create('feature_usage_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
+            // tenants.id is a string (UUID) PK; tenant_id must match (foreignId = bigint
+            // made `migrate` fail on MySQL with an incompatible-FK error).
+            $table->string('tenant_id');
             $table->string('feature_code', 128);
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamp('occurred_at');
             $table->timestamps();
             $table->index(['feature_code', 'occurred_at']);
             $table->index(['tenant_id', 'feature_code']);
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
         });
     }
 

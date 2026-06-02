@@ -30,6 +30,23 @@ class AeroAuthServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // AuthEventSubscriber writes to the 'auth' log channel on EVERY auth event
+        // (login/logout/failed/lockout/...). It was only defined in the publishable
+        // config/logging.php — so an unpublished/stale host had no 'auth' channel and
+        // every auth event threw "Log [auth] is not defined". Merge it at runtime so
+        // the package owns its own dependency and the host stays dumb (no publish needed).
+        if (! config()->has('logging.channels.auth')) {
+            $authLogging = require __DIR__.'/../config/logging.php';
+            config([
+                'logging.channels.auth' => $authLogging['channels']['auth'] ?? [
+                    'driver' => 'daily',
+                    'path' => storage_path('logs/auth.log'),
+                    'level' => env('LOG_LEVEL', 'debug'),
+                    'days' => 14,
+                ],
+            ]);
+        }
+
         // Disable Fortify's auto-routes — aero-core and aero-platform define their own
         // domain-partitioned auth routes that point at Aero\Auth controllers.
         Fortify::ignoreRoutes();

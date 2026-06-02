@@ -43,7 +43,10 @@ class TenantModelGuardTest extends TestCase
             }
         });
 
-        $model::query();
+        // ->toSql() forces global-scope application (scopes run in applyScopes(),
+        // not at query() construction). Pre-existing bug: query() alone never ran
+        // the guard.
+        $model::query()->toSql();
     }
 
     public function test_query_in_standalone_mode_does_not_throw(): void

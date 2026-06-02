@@ -77,21 +77,36 @@ class SuspendUnsubscribedRoleAccess implements ShouldQueue
 
             $subModuleIds = $module->subModules()->pluck('id');
 
-            $affected = RoleModuleAccess::query()
+            $baseQuery = RoleModuleAccess::query()
                 ->where(function ($q) use ($module, $subModuleIds) {
                     $q->where('module_id', $module->id)
                         ->orWhereIn('sub_module_id', $subModuleIds);
                 })
-                ->where('status', RoleModuleAccess::STATUS_ACTIVE)
-                ->update([
-                    'status' => RoleModuleAccess::STATUS_SUSPENDED,
-                    'suspended_at' => now(),
-                ]);
+                ->where('status', RoleModuleAccess::STATUS_ACTIVE);
+
+            // Capture affected roles BEFORE the status flip (after it, they no
+            // longer match status=active).
+            $affectedRoleIds = (clone $baseQuery)->pluck('role_id')->unique()->values();
+
+            $affected = $baseQuery->update([
+                'status' => RoleModuleAccess::STATUS_SUSPENDED,
+                'suspended_at' => now(),
+            ]);
+
+            // Axis C C6/C8 — mass update() bypasses model events, so the HRMAC
+            // access cache isn't invalidated automatically. Clear each affected
+            // role explicitly (in tenant context) so a suspended grant stops
+            // authorizing immediately instead of after CACHE_TTL.
+            $hrmac = app(\Aero\HRMAC\Services\RoleModuleAccessService::class);
+            foreach ($affectedRoleIds as $roleId) {
+                $hrmac->clearRoleCache($roleId);
+            }
 
             Log::info('SuspendUnsubscribedRoleAccess: role grants suspended', [
                 'tenant_id' => $tenant->id,
                 'module_code' => $productCode,
                 'rows_suspended' => $affected,
+                'roles_invalidated' => $affectedRoleIds->count(),
             ]);
         } catch (Throwable $e) {
             Log::error('SuspendUnsubscribedRoleAccess failed', [

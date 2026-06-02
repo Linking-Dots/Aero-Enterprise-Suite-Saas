@@ -39,7 +39,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     public function canAccessModule(mixed $role, int $moduleId): bool
     {
         $roleId = is_object($role) ? $role->id : $role;
-        $cacheKey = $this->getCacheKey("role_access:{$roleId}:module:{$moduleId}");
+        $cacheKey = $this->versionedRoleKey($roleId, "module:{$moduleId}");
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $moduleId) {
             return $this->modelForCurrentContext()::where('role_id', $roleId)
@@ -58,7 +58,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     public function canAccessSubModule(mixed $role, int $subModuleId): bool
     {
         $roleId = is_object($role) ? $role->id : $role;
-        $cacheKey = $this->getCacheKey("role_access:{$roleId}:sub_module:{$subModuleId}");
+        $cacheKey = $this->versionedRoleKey($roleId, "sub_module:{$subModuleId}");
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $subModuleId) {
             // Check direct sub-module access (D17: suspended rows excluded)
@@ -87,7 +87,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     public function canAccessComponent(mixed $role, int $componentId): bool
     {
         $roleId = is_object($role) ? $role->id : $role;
-        $cacheKey = $this->getCacheKey("role_access:{$roleId}:component:{$componentId}");
+        $cacheKey = $this->versionedRoleKey($roleId, "component:{$componentId}");
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $componentId) {
             // Check direct component access (D17: suspended rows excluded)
@@ -115,7 +115,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     public function canAccessAction(mixed $role, int $actionId): bool
     {
         $roleId = is_object($role) ? $role->id : $role;
-        $cacheKey = $this->getCacheKey("role_access:{$roleId}:action:{$actionId}");
+        $cacheKey = $this->versionedRoleKey($roleId, "action:{$actionId}");
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId, $actionId) {
             // Check direct action access (D17: suspended rows excluded)
@@ -324,7 +324,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     public function getAccessibleModuleIds(mixed $role): array
     {
         $roleId = is_object($role) ? $role->id : $role;
-        $cacheKey = $this->getCacheKey("role_accessible_modules:{$roleId}");
+        $cacheKey = $this->versionedRoleKey($roleId, 'accessible_modules');
 
         return $this->cache()->remember($cacheKey, self::CACHE_TTL, function () use ($roleId) {
             // D17: suspended rows must not appear in navigation access
@@ -566,10 +566,12 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     {
         $roleId = is_object($role) ? $role->id : $role;
 
-        $this->cache()->forget($this->getCacheKey("role_accessible_modules:{$roleId}"));
-
-        // Note: Individual module/submodule/component/action caches
-        // will naturally expire. For immediate invalidation, use tagged caching.
+        // Axis C C6/C8 — bump the role's cache version. This invalidates EVERY
+        // versioned per-role access cache (module/sub-module/component/action/
+        // accessible-modules) immediately, instead of waiting out the TTL. Closes
+        // the window where a revoked/suspended grant kept authorizing for up to
+        // CACHE_TTL.
+        $this->bumpRoleCacheVersion($roleId);
     }
 
     /**
@@ -793,6 +795,38 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
     protected function cache()
     {
         return Cache::store();
+    }
+
+    /**
+     * Per-role cache version (Axis C C6/C8 — complete invalidation).
+     *
+     * All per-role access caches embed this version in their key. Bumping it
+     * (clearRoleCache) instantly invalidates EVERY cached access result for the
+     * role — closing the gap where individual module/sub-module/component/action
+     * caches previously "naturally expired" only after TTL, leaving a revoked
+     * grant authorizing for up to CACHE_TTL. A version miss simply re-resolves
+     * from the DB (the correct answer), so this is safe.
+     */
+    protected function roleCacheVersion(mixed $roleId): int
+    {
+        return (int) $this->cache()->get($this->getCacheKey("role_cache_version:{$roleId}"), 1);
+    }
+
+    /**
+     * Build a per-role cache key carrying the role's current cache version.
+     */
+    protected function versionedRoleKey(mixed $roleId, string $suffix): string
+    {
+        return $this->getCacheKey("role:{$roleId}:v{$this->roleCacheVersion($roleId)}:{$suffix}");
+    }
+
+    /**
+     * Bump a role's cache version, invalidating all of its versioned access caches.
+     */
+    protected function bumpRoleCacheVersion(mixed $roleId): void
+    {
+        $key = $this->getCacheKey("role_cache_version:{$roleId}");
+        $this->cache()->forever($key, $this->roleCacheVersion($roleId) + 1);
     }
 
     /**

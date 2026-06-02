@@ -5,90 +5,70 @@ declare(strict_types=1);
 namespace Aero\Platform\Tests\Unit\Provisioning;
 
 use Aero\Platform\Jobs\ProvisionTenant;
-use PHPUnit\Framework\TestCase;
+use Aero\Platform\Support\TenantDatabaseDropGuard;
+use Orchestra\Testbench\TestCase;
 use ReflectionClass;
 
 /**
- * Plan 03 (aero-platform) Task 12 — rollbackDatabase guard regression pin.
+ * Tenant-database DROP guard (Plan 03 T12 → Axis A A9).
  *
- * Phase 1 audit's X-5: the existing regex /^[a-zA-Z0-9_\-]+$/ accepts a
- * very wide range of names. If a malformed subdomain or corrupted tenant
- * record produced a name that happened to match a production database
- * (e.g., the central DB itself, or a shared service DB), the rollback
- * would happily DROP it.
- *
- * The fix adds two defensive checks:
- *   1. The name must START with config('tenancy.database.prefix') —
- *      typically "tenant" or "tenant_". Anything not prefixed is refused.
- *   2. The name must NOT equal config('database.connections.central.database') —
- *      explicit guard against dropping the platform's own DB.
- *
- * Full integration test (forcing the failure path with a malformed Tenant
- * fixture) lives in the host repo's feature suite. This file pins the
- * structural contract.
+ * The regex + tenant-prefix + central-DB refusal checks were extracted from
+ * ProvisionTenant::rollbackDatabase into the shared TenantDatabaseDropGuard
+ * (A9) so all three drop paths (provision rollback, GDPR forget, retention
+ * purge) enforce them identically. This test now verifies the GUARD's behavior
+ * directly (better than grepping source) plus that ProvisionTenant routes
+ * through it.
  */
 class RollbackDatabaseGuardTest extends TestCase
 {
-    private function source(): string
+    protected function getEnvironmentSetUp($app): void
     {
-        return file_get_contents((new ReflectionClass(ProvisionTenant::class))->getFileName());
+        $app['config']->set('tenancy.database.prefix', 'tenant');
+        $app['config']->set('database.connections.central.database', 'central_db');
     }
 
     public function test_rollback_database_method_exists(): void
     {
-        $r = new ReflectionClass(ProvisionTenant::class);
-        $this->assertTrue($r->hasMethod('rollbackDatabase'));
+        $this->assertTrue((new ReflectionClass(ProvisionTenant::class))->hasMethod('rollbackDatabase'));
     }
 
-    public function test_rollback_database_checks_tenant_prefix(): void
+    public function test_provision_tenant_routes_through_shared_drop_guard(): void
     {
-        $source = $this->source();
+        $source = file_get_contents((new ReflectionClass(ProvisionTenant::class))->getFileName());
 
-        $this->assertMatchesRegularExpression(
-            '/str_starts_with\(\s*\$databaseName\s*,/',
+        $this->assertStringContainsString(
+            'TenantDatabaseDropGuard',
             $source,
-            'rollbackDatabase() must verify the DB name starts with the tenant prefix '.
-            'before issuing DROP DATABASE — otherwise a corrupted Tenant record could '.
-            'drop a non-tenant database.'
-        );
-
-        $this->assertMatchesRegularExpression(
-            "/config\(\s*['\"]tenancy\.database\.prefix['\"]/",
-            $source,
-            'rollbackDatabase() must read the prefix from config(tenancy.database.prefix).'
+            'rollbackDatabase() must delegate safety checks to the shared TenantDatabaseDropGuard (A9).'
         );
     }
 
-    public function test_rollback_database_explicitly_refuses_central_db(): void
+    public function test_guard_accepts_valid_tenant_database_name(): void
     {
-        $source = $this->source();
-
-        $this->assertMatchesRegularExpression(
-            "/config\(\s*['\"]database\.connections\.central\.database['\"]/",
-            $source,
-            'rollbackDatabase() must compare the target DB name against the central '.
-            'DB name and refuse if they match.'
-        );
-
-        $this->assertMatchesRegularExpression(
-            '/REFUSED/',
-            $source,
-            "The guard must produce a 'REFUSED' log message so the operator sees the ".
-            'attempted-but-blocked drop in audit trail.'
-        );
+        TenantDatabaseDropGuard::assertSafe('tenant_abc123');
+        $this->assertTrue(TenantDatabaseDropGuard::isSafe('tenant_abc123'));
     }
 
-    public function test_existing_regex_validation_still_in_place(): void
+    public function test_guard_refuses_unsafe_characters(): void
     {
-        $source = $this->source();
+        $this->assertFalse(TenantDatabaseDropGuard::isSafe('tenant; DROP DATABASE x'));
 
-        // The existing regex was a first line of defense — make sure the new
-        // guard adds to it (defense-in-depth) rather than replacing it.
-        $this->assertMatchesRegularExpression(
-            "/preg_match\(\s*['\"]\\/\\^\\[a-zA-Z0-9_\\\\\\-\\]\\+\\\$\\/['\"]\\s*,\\s*\\\$databaseName\\s*\\)/",
-            $source,
-            'The original SQL-injection regex check must remain — the new prefix '.
-            'guard is defense-in-depth, not a replacement.'
-        );
+        $this->expectException(\RuntimeException::class);
+        TenantDatabaseDropGuard::assertSafe('tenant`; DROP');
+    }
+
+    public function test_guard_refuses_name_without_tenant_prefix(): void
+    {
+        $this->assertFalse(TenantDatabaseDropGuard::isSafe('some_other_db'));
+
+        $this->expectException(\RuntimeException::class);
+        TenantDatabaseDropGuard::assertSafe('some_other_db');
+    }
+
+    public function test_guard_refuses_central_database(): void
+    {
+        // central DB name does not start with the tenant prefix, so it is refused
+        // both by the prefix guard and the explicit central-DB guard.
+        $this->assertFalse(TenantDatabaseDropGuard::isSafe('central_db'));
     }
 }

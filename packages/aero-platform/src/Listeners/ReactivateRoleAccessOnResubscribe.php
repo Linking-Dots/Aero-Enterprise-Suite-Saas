@@ -78,22 +78,34 @@ class ReactivateRoleAccessOnResubscribe implements ShouldQueue
 
             // Only rows within the 30-day grace window can be restored.
             // Rows older than 30 days were hard-deleted by PurgeSuspendedRoleAccess.
-            $affected = RoleModuleAccess::query()
+            $baseQuery = RoleModuleAccess::query()
                 ->where(function ($q) use ($module, $subModuleIds) {
                     $q->where('module_id', $module->id)
                         ->orWhereIn('sub_module_id', $subModuleIds);
                 })
                 ->where('status', RoleModuleAccess::STATUS_SUSPENDED)
-                ->where('suspended_at', '>=', now()->subDays(30))
-                ->update([
-                    'status' => RoleModuleAccess::STATUS_ACTIVE,
-                    'suspended_at' => null,
-                ]);
+                ->where('suspended_at', '>=', now()->subDays(30));
+
+            // Capture affected roles BEFORE the status flip.
+            $affectedRoleIds = (clone $baseQuery)->pluck('role_id')->unique()->values();
+
+            $affected = $baseQuery->update([
+                'status' => RoleModuleAccess::STATUS_ACTIVE,
+                'suspended_at' => null,
+            ]);
+
+            // Axis C C6/C8 — mass update() bypasses model events; clear each affected
+            // role's HRMAC access cache so the restored grant authorizes immediately.
+            $hrmac = app(\Aero\HRMAC\Services\RoleModuleAccessService::class);
+            foreach ($affectedRoleIds as $roleId) {
+                $hrmac->clearRoleCache($roleId);
+            }
 
             Log::info('ReactivateRoleAccessOnResubscribe: role grants reactivated', [
                 'tenant_id' => $tenant->id,
                 'module_code' => $productCode,
                 'rows_reactivated' => $affected,
+                'roles_invalidated' => $affectedRoleIds->count(),
             ]);
         } catch (Throwable $e) {
             Log::error('ReactivateRoleAccessOnResubscribe failed', [

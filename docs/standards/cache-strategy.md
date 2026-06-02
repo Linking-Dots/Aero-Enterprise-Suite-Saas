@@ -18,8 +18,9 @@ uses `Aero\Core\Support\TenantCache`, which prefixes `tenant:{id}:` itself.
 | Key | TTL | Owner | Invalidation |
 |---|---|---|---|
 | `tenant_subscribed_modules:{tenantId}` | 600s | `HandleInertiaRequests::getSubscribedModuleCodes` | **event** — busted on `ProductSubscriptionChanged` (C2) |
-| `user_permissions_map:{userId}` | 600s | `HandleInertiaRequests::getUserPermissionsMap` | ⚠️ TTL-only — see C6/C8 follow-up |
-| `standalone_user_module_access:{userId}` | 600s | `HandleInertiaRequests::getUserModuleAccess` | ⚠️ TTL-only |
+| `role:{roleId}:v{N}:*` (access checks) | 600s | `RoleModuleAccessService` | ✅ **event** — `clearRoleCache` bumps version N (instant, complete) on grant/revoke + suspend/reactivate listeners (C6/C8) |
+| `user_permissions_map:{userId}` | 600s | `HandleInertiaRequests::getUserPermissionsMap` | ⚠️ TTL-only (Inertia-side mirror; lower-risk display data) |
+| `standalone_user_module_access:{userId}` | 600s | `HandleInertiaRequests::getUserModuleAccess` | ⚠️ TTL-only (Inertia-side) |
 | `standalone_modules_lookup` | 3600s | `HandleInertiaRequests::getModulesLookup` | TTL-only (module catalog changes are rare) |
 | `standalone_sub_modules_lookup` | 3600s | `HandleInertiaRequests::getSubModulesLookup` | TTL-only |
 | license status (`LicenseCache`) | 86400s (`license.check_ttl_seconds`) | `LicenseService` | re-checked online after TTL; 72h offline grace |
@@ -37,10 +38,20 @@ uses `Aero\Core\Support\TenantCache`, which prefixes `tenant:{id}:` itself.
   TTL-only is fine.
 - **External/license**: long TTL with an offline grace fallback.
 
-## Open follow-up (C6 + C8 invalidation)
+## C6/C8 — DONE (authz service-layer invalidation)
 
-The per-user `user_permissions_map` / `standalone_user_module_access` caches are
-currently TTL-only (≤10 min staleness after a grant/revoke). The intended design:
+The authoritative HRMAC access caches (`RoleModuleAccessService`, used by the
+`CheckRoleModuleAccess` middleware) now invalidate immediately on any grant
+change via per-role cache versioning: `clearRoleCache(roleId)` bumps a version
+embedded in every per-role key, so a revoke/suspend stops authorizing at once
+instead of after CACHE_TTL. The suspend/reactivate listeners (mass `update()`,
+no model events) call `clearRoleCache` explicitly. Pinned by
+`RoleAccessCacheInvalidationTest`.
+
+The Inertia-side mirror caches (`user_permissions_map`,
+`standalone_user_module_access`) remain TTL-only — they are display/UX data, and
+the authoritative server-side gate (above) is already fresh. Unifying them onto
+the same key is an optional further dedupe:
 
 1. **C6** — resolve the per-user access tree ONCE behind a single cache key
    (`user_access_tree:{userId}`) and have BOTH `CheckRoleModuleAccess` (middleware)
