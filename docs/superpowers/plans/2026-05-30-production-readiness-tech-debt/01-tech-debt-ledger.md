@@ -172,3 +172,17 @@ Consolidated from EXECUTION_SUMMARY "Honest gaps", per-package READMEs, and the 
 - ✅ Every deferred item carries a trigger + priority; PayrollFinanceBridge explicitly stays P3-deferred per D33.
 - ✅ Quantified: facade budgets (4/1/0), inline-style (165/~155), 1 skipped test, 10 structural tests, 73+ TODOs.
 - ✅ Living-document intent stated so future deferrals land here, not in scattered READMEs.
+
+---
+
+## 2026-06-02 — UAT fresh-install findings (surfaced while building the E2E suite)
+
+Running `migrate:fresh --seed` against the dedicated UAT databases (the first time the **fresh** standalone install + demo-seed path has been exercised end-to-end) revealed that this path was broken in multiple places. The migration bugs are **FIXED** (commit on `feature/core-admin-ca1-ca7`); the seeder rot is **logged below** and the UAT suite was decoupled from it (self-contained `UatSeeder` seeding directly against current schemas).
+
+**FIXED — migration bugs (broke `migrate:fresh` in any host loading aero-core + aero-notifications, incl. fresh SaaS tenant provisioning):**
+- aero-core `2026_01_11_*` notification_logs / user_notification_preferences / notification_settings — duplicate `Schema::create` of canonical aero-notifications tables; now `Schema::hasTable()`-guarded (dead schema; only `Aero\Notifications\Models\NotificationLog` exists and uses the aero-notifications shape).
+- aero-notifications `notification_templates` — `tenant_id` used `constrained()` → FK to `tenants` (absent in standalone, cross-DB in SaaS). Now plain column; FK added only when a `tenants` table exists on the connection.
+- aero-hrm `training_h8` — dropped `training_enrollments` while legacy `training_feedback` still FK-referenced it; drops now run in `disableForeignKeyConstraints()` + drop the legacy feedback table.
+- aero-hrm benefits — unique index name exceeded MySQL's 64-char limit; named explicitly.
+
+**TD-15 (NEW, P2) — HRM demo-seeder schema drift.** `HrmDemoSeeder` chains 13 lookup seeders written against **older** schemas. Confirmed broken: `HrmLeaveTypeSeeder` writes via the `LeaveSetting` model (table `leave_global_settings`, no `code` column) using fields (`annual_quota`, `carry_forward_allowed`, `type`, `min_days_notice`, `max_consecutive_days`, `allow_half_day`, `description`) that match neither `leave_global_settings` nor the current `leave_types` table. The remaining 11 (Holiday, Expense/Asset/Training/Grievance categories, DisciplinaryActionType, Shift, Skill, Grade, SalaryComponent) are **untriaged** — likely similar drift. `HrmDepartmentSeeder` + `HrmDesignationSeeder` verified working. **Decision (operator):** UAT does NOT depend on `HrmDemoSeeder`; `UatSeeder` seeds the lookups it needs directly against current schemas. Repairing/retiring the demo seeders is tracked here as its own work item. Trigger: demo-data needs, or before shipping `HrmDemoSeeder` as a supported install option.
