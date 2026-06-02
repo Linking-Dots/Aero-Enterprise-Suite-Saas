@@ -12,9 +12,14 @@ return new class extends Migration
     {
         // Drop legacy training tables that were created by the 2025-12-02 migration
         // with an incompatible schema. H8 supersedes them with the correct structure.
+        // The legacy `training_feedback` table FK-references training_enrollments,
+        // so drop it first and disable FK checks to make the drops order-independent.
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('training_feedback');
         Schema::dropIfExists('training_enrollments');
         Schema::dropIfExists('training_sessions');
         Schema::dropIfExists('training_categories');
+        Schema::enableForeignKeyConstraints();
 
         // 1. training_categories
         if (! Schema::hasTable('training_categories')) {

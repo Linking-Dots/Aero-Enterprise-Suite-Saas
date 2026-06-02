@@ -14,6 +14,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Canonical table is created by aero-notifications (2024_01_01_000001).
+        // This duplicate must defer when it already exists, else migrate:fresh
+        // collides in hosts loading both aero-core and aero-notifications.
+        if (Schema::hasTable('notification_settings')) {
+            return;
+        }
+
         Schema::create('notification_settings', function (Blueprint $table) {
             $table->id();
             $table->string('key')->unique(); // e.g., 'channels.email.enabled'

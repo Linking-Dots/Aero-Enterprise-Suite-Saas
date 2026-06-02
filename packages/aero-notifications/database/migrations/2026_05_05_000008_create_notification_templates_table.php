@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('notification_templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            // tenant_id is a plain column here. A FK to `tenants` is invalid in
+            // this tenancy model: in standalone there is no `tenants` table, and
+            // in SaaS `tenants` lives in the central DB (cross-DB FK). The FK is
+            // added below only when a `tenants` table exists on this connection.
+            $table->foreignId('tenant_id')->nullable();
             $table->string('name');
             $table->string('subject');
             $table->text('html_content');
@@ -31,6 +35,14 @@ return new class extends Migration
             $table->index('is_active');
             $table->index('is_system');
         });
+
+        // SaaS single-DB / central deployments that carry a `tenants` table get
+        // the referential constraint; standalone and per-tenant DBs skip it.
+        if (Schema::hasTable('tenants')) {
+            Schema::table('notification_templates', function (Blueprint $table) {
+                $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            });
+        }
     }
 
     /**

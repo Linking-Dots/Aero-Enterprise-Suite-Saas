@@ -50,7 +50,8 @@ return new class extends Migration
             $t->foreignId('period_id')->constrained('hrm_benefit_enrollment_periods')->cascadeOnDelete();
             $t->foreignId('benefit_id')->constrained('hrm_benefits')->cascadeOnDelete();
             $t->boolean('required')->default(false);
-            $t->unique(['period_id', 'benefit_id']);
+            // Explicit short name — the auto-generated name exceeds MySQL's 64-char limit.
+            $t->unique(['period_id', 'benefit_id'], 'hrm_benefit_period_benefit_unique');
         });
 
         Schema::create('hrm_benefit_enrollments', function (Blueprint $t) {
