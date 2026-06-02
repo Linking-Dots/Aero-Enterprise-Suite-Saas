@@ -28,5 +28,8 @@ export const ENV = {
   stripeSecret: process.env.STRIPE_SECRET ?? '',
   runDestructive: process.env.RUN_DESTRUCTIVE === '1',
   skipGlobalSetup: process.env.SKIP_GLOBAL_SETUP === '1',
+  // SaaS bring-up is gated until its aero-platform fresh-install path is repaired
+  // (FK collation, PlatformHrmacSeeder context, provisioning chain). Default: skip.
+  skipSaas: process.env.UAT_SKIP_SAAS !== '0',
   hasStripe(): boolean { return !!this.stripeSecret && !!this.stripeKey; },
 };

@@ -1,0 +1,115 @@
+# AEOS365 UAT Tracker — Scenarios, Bugs & Findings
+
+> **Living document.** Updated as the UAT E2E suite (plan: `../2026-06-02-uat-e2e-suite.md`,
+> spec: `../../specs/2026-06-01-uat-e2e-design.md`) is built and run. Every scenario, every
+> bug found + fixed, and every cross-package duplication/finding lands here.
+>
+> **Legend:** ✅ pass · ❌ fail (bug open) · 🔧 fixed (re-verify) · ⛔ blocked · ⬜ pending · ➖ n/a
+> **Modes:** S = SaaS · A = Standalone · B = both
+
+Last updated: 2026-06-02
+
+---
+
+## A. Scenario checklist
+
+### P0 — Foundation
+| ID | Scenario | Mode | Status | Notes |
+|----|----------|------|--------|-------|
+| P0.1 | `e2e/` project scaffold + deps + Chromium | B | ✅ | committed |
+| P0.2 | Env loader + `.env.uat` per host + UAT DBs created | B | ✅ | `aeos365_uat`, `aeos365_standalone_uat` |
+| P0.3 | `UatSeeder` (self-contained) seeds clean | A | ✅ | 13 users, 10 employees, role grants 72/72/72/3 |
+| P0.4 | `UatPlatformSeeder` (central) seeds clean | S | ⛔ | blocked by platform FK collation + HRMAC-on-central (see B-12/B-13) |
+| P0.5 | global-setup migrate+seed+storageState | A | ✅ | all 3 roles mint OK |
+| P0.6 | global-setup provision SaaS tenant | S | ⬜ | gated `UAT_SKIP_SAAS=1` until platform fixed |
+| P0.7 | Smoke: authenticated dashboard loads | A | ✅ | `1 passed` (single-env, production config, https) |
+| P0.7s | Smoke: authenticated tenant dashboard loads | S | ⬜ | after SaaS bring-up |
+
+### P1 — Lifecycle & Auth + HRMAC
+| ID | Scenario | Mode | Status | Notes |
+|----|----------|------|--------|-------|
+| P1.1 | Standalone installer wizard (fresh→complete, dirty-guard, post-install 404) | A | ⬜ | |
+| P1.2 | SaaS tenant lifecycle (register, provision, suspend 403, GDPR-forget) | S | ⬜ | |
+| P1.3 | Auth & sessions (login/logout, reset, MFA, device binding, impersonation, expiry) | B | ⬜ | login+device_id path fixed (B-10) |
+| P1.4 | HRMAC allow/deny (HR can, Employee can't, denials logged, disabled module denies) | B | ⬜ | |
+
+### P2 — HRM core
+| ID | Scenario | Mode | Status | Notes |
+|----|----------|------|--------|-------|
+| P2.1 | Employees CRUD + docs + encrypted PII masked + per-tenant avatar + self-service | B | ⬜ | |
+| P2.2 | Departments / Designations CRUD + dropdowns | B | ⬜ | |
+| P2.3 | Attendance clock-in/out (idempotent), timesheet, overtime, shifts | B | ⬜ | |
+| P2.4 | Leave: types CRUD, apply→approve/reject, balance, accrual, calendar, bulk | B | ⬜ | |
+| P2.5 | Payroll: components/structure CRUD, run→payslip, immutable, bank last-4 | B | ⬜ | |
+
+### P3 — HRM remainder
+| ID | Scenario | Mode | Status | Notes |
+|----|----------|------|--------|-------|
+| P3.1 | Recruitment (jobs, applications, interviews, offers, onboarding) | B | ⬜ | |
+| P3.2 | Training (courses, sessions, enrollments, feedback) | B | ⬜ | |
+| P3.3 | Performance (reviews, cycles, goals, PIP, 360, skill matrix) | B | ⬜ | |
+| P3.4 | Disciplinary (cases, action-types, warnings, grievances) | B | ⬜ | |
+| P3.5 | Safety (incidents, inspections, training) | B | ⬜ | |
+| P3.6 | Assets (inventory, categories, allocations) | B | ⬜ | |
+| P3.7 | Expenses (claims submit→approve, categories) | B | ⬜ | |
+| P3.8 | Benefits (catalog, enrollment, open-enrollment) | B | ⬜ | |
+| P3.9 | Succession (talent pools, candidates, career-paths, mobility) | B | ⬜ | |
+| P3.10 | Misc (events, announcements, wellbeing, workforce/comp planning, exit interviews) | B | ⬜ | announcements widget fixed (B-14) |
+| P3.11 | Self-service portal (dashboard, leaves, payslips, profile, training) | B | ⬜ | |
+
+### P4 — Platform admin + billing (SaaS)
+| ID | Scenario | Mode | Status | Notes |
+|----|----------|------|--------|-------|
+| P4.1 | Tenant management (list/create/show/suspend/archive/forget/bulk) | S | ⬜ | |
+| P4.2 | Catalog (plans/products/subscriptions/modules/pricing) | S | ⬜ | |
+| P4.3 | Billing `@billing` (invoices/PDF, payment methods, renewal, dunning, refund, credit) | S | ⬜ | Stripe-gated |
+| P4.4 | Observability (dashboards, audit-log, access-log, settings, flags, maintenance) | S | ⬜ | |
+| P4.5 | Landlord (users & roles CRUD) | S | ⬜ | |
+
+---
+
+## B. Bugs found & fixed
+
+| ID | Area / file | Bug | Root cause | Fix | Status |
+|----|-------------|-----|-----------|-----|--------|
+| B-1 | aero-core `2026_01_11_000001_create_notification_logs_table` | `migrate:fresh` collision | duplicate `Schema::create` of canonical aero-notifications table | `Schema::hasTable()` guard | ✅ committed |
+| B-2 | aero-core `..._000002_create_user_notification_preferences_table` | same | duplicate of aero-notifications table | `hasTable()` guard | ✅ committed |
+| B-3 | aero-core `..._000003_create_notification_settings_table` | same | duplicate of aero-notifications table | `hasTable()` guard | ✅ committed |
+| B-4 | aero-notifications `notification_templates` | FK to `tenants` fails (standalone & cross-DB SaaS) | `constrained()` inferred FK to absent/cross-DB `tenants` | plain column; conditional FK when `tenants` exists | ✅ committed |
+| B-5 | aero-hrm `training_h8_tables` | drop `training_enrollments` blocked by FK | legacy `training_feedback` still referenced it | `disableForeignKeyConstraints()` + drop legacy feedback | ✅ committed |
+| B-6 | aero-hrm `create_hrm_benefits_tables` | unique index name > 64 chars | auto-generated name too long | explicit short index name | ✅ committed |
+| B-7 | `UatSeeder` (users) | `user_name` NOT NULL no default | seeder omitted `user_name` | set `user_name` from email local-part | ✅ (host) |
+| B-8 | aero-auth `AeroAuthServiceProvider` | standalone `/login` 500 `admin.domain` / `landlord` guard | admin.php (SaaS landlord routes) loaded in standalone | do NOT load admin.php in standalone | ✅ verified |
+| B-9 | standalone host `app/Http/Controllers/Controller.php` | `Class App\Http\Controllers\Controller not found` | base controller missing in standalone skeleton | add base `Controller` (parity with SaaS) | ✅ (host) |
+| B-10 | aero-ui `Pages/Auth/Login.jsx` | `crypto.randomUUID is not a function` → form never mounts | `crypto.randomUUID` undefined on non-HTTPS/non-localhost (`http://*.test`) | UUID v4 fallback (getRandomValues/Math.random) | ✅ verified |
+| B-11 | aero-hrmac `CheckRoleModuleAccess::resolveActiveGuard()` | post-login 500 `Auth guard [landlord] not defined` | probed `landlord` guard unconditionally; absent in standalone | skip guards not in `config('auth.guards')` | ✅ verified |
+| B-14 | aero-core `Models/Announcement` | dashboard 500 `Unknown column 'status'` then `deleted_at` | model expects `status` + SoftDeletes; live table (aero-hrm) has neither | scope→`published_at`, removed SoftDeletes | ✅ verified |
+| B-15 | aero-ui `HRM/Settings/General.jsx` | vite build fail: unbalanced JSX (`</div>`) | extra closing tag | removed stray `</div>` | ✅ build-green |
+| B-16 | aero-ui `Pages/**` (50 files) | vite build fail: `useHRMAC` default import | `useHRMAC` is a named export | bulk → `import { useHRMAC } from '@/hooks/useHRMAC'` | ✅ build-green |
+| B-17 | aero-ui `Pages/**` (≈342 files) | vite build fail: wrong-depth `App.jsx` relative imports | inconsistent `../` depth resolves to wrong path | normalize all → `@/Pages/App.jsx` | ✅ build-green |
+| B-18 | standalone host `.env` | POST /login 419 + https asset CORS block | production forces https assets but `APP_URL=http` (scheme mismatch breaks CSRF/cookies + asset origin) | `APP_URL=https`, suite runs over https | ✅ verified |
+| B-19 | aero-hrmac `RoleModuleAccessService::isSuperAdmin` | 500 `Nested arrays may not be passed to whereIn` (non-super-admin) | guard-scoped `super_admin_roles` config passed nested to `hasRole`→`whereIn` | flatten config via `array_walk_recursive` | ✅ verified |
+| B-20 | aero-core `create_role_module_access` migration | HR 500 `Unknown column 'status'` | `RoleModuleAccessService` filters `status='active'` but column ships only in aero-hrmac's per-tenant migration (never runs standalone) | add `status`/`suspended_at` to core's base table; guard aero-hrmac add_status with `hasColumn` | ✅ verified |
+| B-21 | aero-core `User` / AuditService | `AuditService::log failed: undefined method User::getAuditLabel` | User missing `getAuditLabel` | swallowed (non-fatal) — **OPEN** | ❌ open |
+| B-22 | aero-core `HandleInertiaRequests` navigation | `Navigation error: Nested arrays...whereIn` (caught → empty menu) | nav builder passes nested arrays to whereIn (same class as B-19, different path) | **OPEN** — empty nav for non-super-admin | ❌ open |
+
+---
+
+## C. Cross-package feature / schema duplication
+
+| ID | Table / feature | Packages defining it | Canonical (live) | Resolution |
+|----|-----------------|----------------------|------------------|------------|
+| C-1 | `notification_logs` | aero-core, aero-notifications, aero-platform | aero-notifications (only `NotificationLog` model uses it) | core/platform guard with `hasTable`; core's is dead schema |
+| C-2 | `user_notification_preferences` | aero-core, aero-notifications | aero-notifications | core guarded |
+| C-3 | `notification_settings` | aero-core, aero-notifications | aero-notifications | core guarded |
+| C-4 | `announcements` | aero-core (`status`-based), aero-hrm (`published_at`-based) | aero-hrm (created earlier, wins; core create is guarded/skips) | core `Announcement` model realigned to `published_at` (B-14). **Open:** two `Announcement` models + two Dashboard/Announcement controllers — consolidation candidate |
+| C-5 | `/login` route | aero-auth tenant.php (web guard) + admin.php (landlord guard) | tenant.php in standalone; admin.php only SaaS | admin.php SaaS-gated (B-8) |
+
+---
+
+## D. Open findings / deferred (tracked in tech-debt ledger)
+
+- **TD-15** — HRM `HrmDemoSeeder` chain (13 seeders) schema drift; UAT decoupled (self-contained `UatSeeder`). `HrmLeaveTypeSeeder` confirmed broken (writes `LeaveSetting`/`leave_global_settings` with leave-type fields); other 11 untriaged.
+- **SaaS platform bring-up (P0.4/P0.6)** — central `migrate:fresh` fails on `tenant_quota_overrides`/`feature_usage_events` `set_by` FK **collation** mismatch (uuid `landlord_users.id` `utf8mb4_unicode_ci` vs MySQL 8.4 default); `PlatformHrmacSeeder` queries HRMAC `Role` (TenantModel) on central → tenant-context guard. Then module→`tenant_module`→`ProvisionTenant` HRM-activation chain unverified.
+- **B9 decouple (memory)** — aero-auth / aero-hrm hard SaaS imports; this UAT effort confirms broad standalone-boot coupling (admin.php, landlord guard, base Controller, App\Models\User refs).
+- **Standalone host skeleton** — was missing base `Controller`; frontend had never been built (multiple latent JSX/import bugs). Standalone fresh-install path had never run end-to-end before this effort.
