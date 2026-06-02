@@ -23,6 +23,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // The base aero-core create_role_module_access migration now ships these
+        // columns so standalone has them. Guard here so this (per-tenant) migration
+        // is a no-op when they already exist.
+        if (Schema::hasColumn('role_module_access', 'status')) {
+            return;
+        }
         Schema::table('role_module_access', function (Blueprint $t) {
             $t->enum('status', ['active', 'suspended'])->default('active')->after('access_scope');
             $t->timestamp('suspended_at')->nullable()->after('status');

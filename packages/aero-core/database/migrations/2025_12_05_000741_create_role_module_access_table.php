@@ -60,6 +60,12 @@ return new class extends Migration
                 ->default('all')
                 ->comment('Scope of access: all records, own records, team records, or department records');
 
+            // Subscription suspension state. RoleModuleAccessService always filters
+            // status='active'; this column ships with the base table so it exists in
+            // standalone (aero-hrmac's add_status migration only runs per-tenant in SaaS).
+            $table->enum('status', ['active', 'suspended'])->default('active');
+            $table->timestamp('suspended_at')->nullable();
+
             $table->timestamps();
 
             // Indexes for fast lookups

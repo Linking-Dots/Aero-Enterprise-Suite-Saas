@@ -123,14 +123,14 @@ class AeroAuthServiceProvider extends ServiceProvider
         Route::middleware(['web'])
             ->group(__DIR__.'/../routes/identity.php');
 
-        // Admin/landlord auth routes — only in standalone mode.
-        // In SaaS mode, AeroPlatformServiceProvider loads admin.php with a proper
-        // domain constraint (domain: $adminDomain), so we must NOT load it here
-        // again without a constraint — doing so creates an unconstrained duplicate
-        // /login route that EnsureAdminDomain blocks on all tenant subdomains.
-        if (! class_exists('Aero\\Platform\\AeroPlatformServiceProvider')) {
-            Route::middleware(['web'])
-                ->group(__DIR__.'/../routes/admin.php');
-        }
+        // Admin/landlord auth routes are SaaS-only: admin.php is wrapped in the
+        // `admin.domain` middleware (an admin-subdomain guard registered by the
+        // platform provider) and uses the `landlord` auth guard — neither of
+        // which exists in standalone. In SaaS, AeroPlatformServiceProvider loads
+        // admin.php with the proper domain constraint. Standalone auth is fully
+        // served by tenant.php (/login, /logout, password reset, MFA on the web
+        // guard with device binding), so admin.php must NOT be loaded here —
+        // doing so 500s ("Target class [admin.domain] does not exist" /
+        // "Auth guard [landlord] is not defined") and shadows the tenant /login.
     }
 }

@@ -594,11 +594,21 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             return false;
         }
 
-        $superAdminRoles = config('hrmac.super_admin_roles', [
+        $config = config('hrmac.super_admin_roles', [
             'Super Administrator',
             'super-admin',
             'tenant_super_administrator',
         ]);
+
+        // The config may be a flat list OR guard-scoped (['web' => [...],
+        // 'landlord' => [...]]). Flatten to a flat list of role names so
+        // hasRole()'s whereIn() never receives nested arrays.
+        $superAdminRoles = [];
+        array_walk_recursive($config, function ($role) use (&$superAdminRoles) {
+            if (is_string($role)) {
+                $superAdminRoles[] = $role;
+            }
+        });
 
         return $user->hasRole($superAdminRoles);
     }

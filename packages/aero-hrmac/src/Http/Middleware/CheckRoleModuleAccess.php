@@ -224,7 +224,15 @@ class CheckRoleModuleAccess
      */
     protected function resolveActiveGuard(): string
     {
+        // Only consider guards that are actually configured. The `landlord`
+        // guard exists only in SaaS (registered by the platform package); in
+        // standalone, Auth::guard('landlord') throws "guard not defined", so we
+        // must skip unconfigured guards rather than probe them blindly.
+        $configured = config('auth.guards', []);
         foreach (['landlord', 'web', 'api'] as $guard) {
+            if (! isset($configured[$guard])) {
+                continue;
+            }
             if (Auth::guard($guard)->check()) {
                 return $guard;
             }
