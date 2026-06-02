@@ -15,7 +15,7 @@ class AddonInstallerCollisionTest extends TestCase
         mkdir($tmpDir);
         file_put_contents(
             $tmpDir.'/2026_01_01_create_colliding_table.php',
-            "<?php\n\$schema->create('users', function(\$t) {});"
+            "<?php\nSchema::create('users', function(\$t) {});"
         );
 
         // Mock Schema::hasTable to return true for 'users'
@@ -44,7 +44,7 @@ class AddonInstallerCollisionTest extends TestCase
         mkdir($tmpDir);
         file_put_contents(
             $tmpDir.'/2026_01_01_create_new_table.php',
-            "<?php\$schema->create('brand_new_table_xyz', function(\$t) {});"
+            "<?phpSchema::create('brand_new_table_xyz', function(\$t) {});"
         );
 
         Schema::shouldReceive('hasTable')
