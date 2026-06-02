@@ -288,8 +288,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/training/{id}/materials/{materialId}', [TrainingController::class, 'destroyMaterial'])->name('training.materials.destroy');
 
         // Training Enrollment
-        Route::get('/training/{id}/enrollments', [TrainingController::class, 'enrollments'])->name('training.enrollments.index');
-        Route::post('/training/{id}/enrollments', [TrainingController::class, 'storeEnrollment'])->name('training.enrollments.store');
+        // BUG-3: per-course nested enrollment list/create — renamed to a distinct
+        // name so the canonical flat hrm.training.enrollments.index/store (used by
+        // the frontend) are unambiguous.
+        Route::get('/training/{id}/enrollments', [TrainingController::class, 'enrollments'])->name('training.courses.enrollments.index');
+        Route::post('/training/{id}/enrollments', [TrainingController::class, 'storeEnrollment'])->name('training.courses.enrollments.store');
         Route::put('/training/{id}/enrollments/{enrollmentId}', [TrainingController::class, 'updateEnrollment'])->name('training.enrollments.update');
         Route::delete('/training/{id}/enrollments/{enrollmentId}', [TrainingController::class, 'destroyEnrollment'])->name('training.enrollments.destroy');
     });
@@ -413,7 +416,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/recruitment/{id}/applications', [RecruitmentController::class, 'applications'])->name('recruitment.applications.index');
         Route::get('/recruitment/{id}/applications/create', [RecruitmentController::class, 'createApplication'])->name('recruitment.applications.create');
         Route::post('/recruitment/{id}/applications', [RecruitmentController::class, 'storeApplication'])->name('recruitment.applications.store');
-        Route::get('/recruitment/{id}/applications/{applicationId}', [RecruitmentController::class, 'showApplication'])->name('recruitment.applications.show');
+        Route::get('/recruitment/{id}/applications/{applicationId}', [RecruitmentController::class, 'showApplication'])->name('recruitment.applications.detail'); // BUG-3: renamed from applications.show (canonical = flat ApplicationController applications/{application})
         Route::put('/recruitment/{id}/applications/{applicationId}', [RecruitmentController::class, 'updateApplication'])->name('recruitment.applications.update');
         Route::delete('/recruitment/{id}/applications/{applicationId}', [RecruitmentController::class, 'destroyApplication'])->name('recruitment.applications.destroy');
 
@@ -421,9 +424,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/recruitment/{id}/applications/{applicationId}/stage', [RecruitmentController::class, 'updateStage'])->name('recruitment.applications.update-stage');
 
         // Interviews
-        Route::get('/recruitment/{id}/applications/{applicationId}/interviews', [RecruitmentController::class, 'interviews'])->name('recruitment.interviews.index');
-        Route::post('/recruitment/{id}/applications/{applicationId}/interviews', [RecruitmentController::class, 'storeInterview'])->name('recruitment.interviews.store');
-        Route::put('/recruitment/{id}/applications/{applicationId}/interviews/{interviewId}', [RecruitmentController::class, 'updateInterview'])->name('recruitment.interviews.update');
+        // BUG-3: per-application nested interview routes renamed (canonical = the flat
+        // InterviewController hrm.recruitment.interviews.* used by the frontend).
+        Route::get('/recruitment/{id}/applications/{applicationId}/interviews', [RecruitmentController::class, 'interviews'])->name('recruitment.applications.interviews.index');
+        Route::post('/recruitment/{id}/applications/{applicationId}/interviews', [RecruitmentController::class, 'storeInterview'])->name('recruitment.applications.interviews.store');
+        Route::put('/recruitment/{id}/applications/{applicationId}/interviews/{interviewId}', [RecruitmentController::class, 'updateInterview'])->name('recruitment.applications.interviews.update');
         Route::delete('/recruitment/{id}/applications/{applicationId}/interviews/{interviewId}', [RecruitmentController::class, 'destroyInterview'])->name('recruitment.interviews.destroy');
 
         // Job Offers
@@ -1390,14 +1395,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('performance/improvement-plans')->name('performance.pip.')
         ->middleware('hrmac:hrm.performance.improvement-plans.view')
         ->group(function () {
-            Route::get('/', [PerformanceImprovementPlanController::class, 'index'])->name('index');
+            // BUG-3: index/store names collided with the /performance/pip block (used
+            // by the frontend for the list+create). Renamed here to de-dup; show/goals/
+            // update keep performance.pip.* (the frontend's detail uses this controller).
+            // TODO: consolidate the two PIP implementations (PerformanceImprovementPlanController
+            // vs the /performance/pip controller) — tracked as a follow-up.
+            Route::get('/', [PerformanceImprovementPlanController::class, 'index'])->name('improvement-plans.index');
             Route::get('/{pipPlan}', [PerformanceImprovementPlanController::class, 'show'])->name('show');
             Route::get('/{pipPlan}/goals', [PerformanceImprovementPlanController::class, 'goals'])->name('goals');
 
             Route::post('/', [PerformanceImprovementPlanController::class, 'store'])
                 ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
                 ->middleware('hrmac:hrm.performance.improvement-plans.create')
-                ->name('store');
+                ->name('improvement-plans.store'); // BUG-3: de-dup from /performance/pip store
 
             Route::put('/{pipPlan}', [PerformanceImprovementPlanController::class, 'update'])
                 ->withoutMiddleware('hrmac:hrm.performance.improvement-plans.view')
