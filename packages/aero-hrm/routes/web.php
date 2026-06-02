@@ -278,8 +278,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Training Categories
         Route::get('/training/categories', [TrainingController::class, 'categories'])->name('training.categories.index');
         Route::post('/training/categories', [TrainingController::class, 'storeCategory'])->name('training.categories.store');
-        Route::put('/training/categories/{id}', [TrainingController::class, 'updateCategory'])->name('training.categories.update');
-        Route::delete('/training/categories/{id}', [TrainingController::class, 'destroyCategory'])->name('training.categories.destroy');
+        // BUG-3: training.categories.update/destroy are owned by the canonical
+        // TrainingCategoryController ({category}) block; legacy {id} routes removed.
 
         // Training Materials
         Route::get('/training/{id}/materials', [TrainingController::class, 'materials'])->name('training.materials.index');
@@ -578,7 +578,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/safety/incidents', [WorkplaceSafetyController::class, 'incidents'])->name('safety.incidents.index');
         Route::get('/safety/incidents/create', [WorkplaceSafetyController::class, 'createIncident'])->name('safety.incidents.create');
         Route::post('/safety/incidents', [WorkplaceSafetyController::class, 'storeIncident'])->name('safety.incidents.store');
-        Route::get('/safety/incidents/{id}', [WorkplaceSafetyController::class, 'showIncident'])->name('safety.incidents.show');
+        // BUG-3: safety.incidents.show owned by canonical HrmSafetyIncidentController ({incident}).
         Route::put('/safety/incidents/{id}', [WorkplaceSafetyController::class, 'updateIncident'])->name('safety.incidents.update');
         Route::delete('/safety/incidents/{id}', [WorkplaceSafetyController::class, 'destroyIncident'])->name('safety.incidents.destroy');
         Route::post('/safety/incidents/{id}/resolve', [WorkplaceSafetyController::class, 'resolveIncident'])->name('safety.incidents.resolve');
@@ -587,7 +587,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/safety/inspections', [WorkplaceSafetyController::class, 'inspections'])->name('safety.inspections.index');
         Route::get('/safety/inspections/create', [WorkplaceSafetyController::class, 'createInspection'])->name('safety.inspections.create');
         Route::post('/safety/inspections', [WorkplaceSafetyController::class, 'storeInspection'])->name('safety.inspections.store');
-        Route::get('/safety/inspections/{id}', [WorkplaceSafetyController::class, 'showInspection'])->name('safety.inspections.show');
+        // BUG-3: safety.inspections.show owned by canonical HrmSafetyInspectionController ({inspection}).
         Route::put('/safety/inspections/{id}', [WorkplaceSafetyController::class, 'updateInspection'])->name('safety.inspections.update');
         Route::delete('/safety/inspections/{id}', [WorkplaceSafetyController::class, 'destroyInspection'])->name('safety.inspections.destroy');
 
@@ -1042,8 +1042,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/categories/paginate', [ExpenseCategoryController::class, 'paginate'])->name('categories.paginate');
         Route::get('/categories/stats', [ExpenseCategoryController::class, 'stats'])->name('categories.stats');
         Route::post('/categories', [ExpenseCategoryController::class, 'store'])->name('categories.store');
-        Route::put('/categories/{id}', [ExpenseCategoryController::class, 'update'])->name('categories.update');
-        Route::delete('/categories/{id}', [ExpenseCategoryController::class, 'destroy'])->name('categories.destroy');
+        // BUG-3: expenses.categories.update/destroy owned by canonical
+        // HrmExpenseCategoryController ({category}); legacy {id} routes removed.
         // API endpoints for data fetching
         Route::get('/paginate', [ExpenseClaimController::class, 'paginate'])->name('paginate');
         Route::get('/stats', [ExpenseClaimController::class, 'stats'])->name('stats');
@@ -1093,7 +1093,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Workflow actions
         Route::post('/cases/{id}/start-investigation', [DisciplinaryCaseController::class, 'startInvestigation'])->name('cases.start-investigation');
         Route::post('/cases/{id}/take-action', [DisciplinaryCaseController::class, 'takeAction'])->name('cases.take-action');
-        Route::post('/cases/{id}/close', [DisciplinaryCaseController::class, 'close'])->name('cases.close');
+        // BUG-3: cases.close owned by canonical HrmDisciplinaryCaseController ({case}).
         Route::post('/cases/{id}/appeal', [DisciplinaryCaseController::class, 'appeal'])->name('cases.appeal');
 
         // Warnings
@@ -1107,8 +1107,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/action-types', [ActionTypeController::class, 'index'])->name('action-types.index');
         Route::get('/action-types/data', [ActionTypeController::class, 'getData'])->name('action-types.data');
         Route::post('/action-types', [ActionTypeController::class, 'store'])->name('action-types.store');
-        Route::put('/action-types/{id}', [ActionTypeController::class, 'update'])->name('action-types.update');
-        Route::delete('/action-types/{id}', [ActionTypeController::class, 'destroy'])->name('action-types.destroy');
+        // BUG-3: action-types.update/destroy owned by canonical HrmActionTypeController ({type}).
     });
 
     Route::get('/api/designations/list', function () {
@@ -1212,12 +1211,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/categories', [GrievanceController::class, 'categories'])->name('categories');
         Route::post('/categories', [GrievanceController::class, 'storeCategory'])->name('categories.store');
         Route::post('/', [GrievanceController::class, 'store'])->name('store');
-        Route::get('/{id}', [GrievanceController::class, 'show'])->name('show');
+        // BUG-3: show/investigate/resolve are the canonical HrmGrievanceController
+        // ({grievance}) routes; legacy {id} versions removed to de-dup the names.
         Route::put('/{id}', [GrievanceController::class, 'update'])->name('update');
         Route::delete('/{id}', [GrievanceController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/assign', [GrievanceController::class, 'assign'])->name('assign');
-        Route::post('/{id}/investigate', [GrievanceController::class, 'startInvestigation'])->name('investigate');
-        Route::post('/{id}/resolve', [GrievanceController::class, 'resolve'])->name('resolve');
         Route::post('/{id}/close', [GrievanceController::class, 'close'])->name('close');
         Route::post('/{id}/notes', [GrievanceController::class, 'addNote'])->name('notes.store');
     });
@@ -1231,7 +1229,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats', [ExitInterviewController::class, 'stats'])->name('stats');
         Route::get('/analytics', [ExitInterviewController::class, 'analytics'])->name('analytics');
         Route::post('/', [ExitInterviewController::class, 'store'])->name('store');
-        Route::get('/{id}', [ExitInterviewController::class, 'show'])->name('show');
+        // BUG-3: exit-interviews.show owned by canonical HrmExitInterviewController ({interview}).
         Route::put('/{id}', [ExitInterviewController::class, 'update'])->name('update');
         Route::delete('/{id}', [ExitInterviewController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/complete', [ExitInterviewController::class, 'complete'])->name('complete');
@@ -1287,7 +1285,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats', [CareerPathController::class, 'stats'])->name('stats');
         Route::post('/', [CareerPathController::class, 'store'])->name('store');
         Route::get('/progressions', [CareerPathController::class, 'employeeProgressions'])->name('progressions');
-        Route::get('/{id}', [CareerPathController::class, 'show'])->name('show');
+        // BUG-3: career-paths.show owned by canonical HrmCareerPathController ({careerPath:slug}).
         Route::put('/{id}', [CareerPathController::class, 'update'])->name('update');
         Route::delete('/{id}', [CareerPathController::class, 'destroy'])->name('destroy');
 
