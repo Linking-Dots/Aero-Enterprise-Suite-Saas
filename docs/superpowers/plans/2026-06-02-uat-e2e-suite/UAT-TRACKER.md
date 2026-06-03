@@ -91,7 +91,7 @@ Last updated: 2026-06-02
 | B-19 | aero-hrmac `RoleModuleAccessService::isSuperAdmin` | 500 `Nested arrays may not be passed to whereIn` (non-super-admin) | guard-scoped `super_admin_roles` config passed nested to `hasRole`→`whereIn` | flatten config via `array_walk_recursive` | ✅ verified |
 | B-20 | aero-core `create_role_module_access` migration | HR 500 `Unknown column 'status'` | `RoleModuleAccessService` filters `status='active'` but column ships only in aero-hrmac's per-tenant migration (never runs standalone) | add `status`/`suspended_at` to core's base table; guard aero-hrmac add_status with `hasColumn` | ✅ verified |
 | B-21 | aero-core `User` / AuditService | `AuditService::log failed: undefined method User::getAuditLabel` | User extends Authenticatable (no `getAuditLabel`) | added `getAuditLabel()` to User | ✅ verified (no more audit errors) |
-| B-22 | aero-core nav (DashboardRegistry/NavigationRegistry) | `Navigation error: Nested arrays...whereIn` (caught → empty menu) | nested `super_admin_roles` config → `hasRole`; mitigated defensively in `User::hasRole` (flatten). A residual nav-path whereIn still logs (vendor-deep/lazy, non-fatal) | 🔧 mitigated; residual **OPEN** (revisit with a menu-dependent P2 test) |
+| B-22 | aero-core nav (DashboardRegistry/NavigationRegistry) | `Navigation error: Nested arrays...whereIn` (caught → empty menu) | nested `super_admin_roles` config → `hasRole`; mitigated defensively in `User::hasRole` (flatten). A residual nav-path whereIn still logs (vendor-deep/lazy, non-fatal) | ✅ verified (0 nav errors in fresh log across all roles × pages; the residual was accumulated pre-fix log lines) |
 
 ### SaaS bring-up (P0.4/P0.6) — central never-run path
 
