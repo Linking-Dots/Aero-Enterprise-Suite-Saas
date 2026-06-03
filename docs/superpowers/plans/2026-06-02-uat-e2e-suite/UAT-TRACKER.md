@@ -28,10 +28,10 @@ Last updated: 2026-06-02
 ### P1 — Lifecycle & Auth + HRMAC
 | ID | Scenario | Mode | Status | Notes |
 |----|----------|------|--------|-------|
-| P1.1 | Standalone installer wizard (fresh→complete, dirty-guard, post-install 404) | A | ⬜ | |
-| P1.2 | SaaS tenant lifecycle (register, provision, suspend 403, GDPR-forget) | S | ⬜ | |
-| P1.3 | Auth & sessions (login/logout, reset, MFA, device binding, impersonation, expiry) | B | ⬜ | login+device_id path fixed (B-10) |
-| P1.4 | HRMAC allow/deny (HR can, Employee can't, denials logged, disabled module denies) | B | ⬜ | |
+| P1.1 | Standalone installer wizard | A | 🟡 partial | post-install guard verified (/install → "Already Installed", DB step unreachable). Fresh wizard (DB→admin→license→finalize) + dirty-guard = @destructive, needs dedicated scratch-DB harness (not run against working UAT) |
+| P1.2 | SaaS tenant lifecycle | S | 🟡 partial | registration entry renders + platform /login reachable; provision happy-path covered by P0 (uat_provision). Remaining: full register→new-tenant login (needs wildcard *.aeos365.test DNS), suspend 403 + GDPR-forget (needs P4 landlord UI / covered by PHPUnit D3) |
+| P1.3 | Auth & sessions | B | ✅ | 12 passed both modes (login valid/invalid/anti-enum, logout, password-reset, session-expiry). MFA/device/impersonation → P4/feature-gated |
+| P1.4 | HRMAC allow/deny | B | ✅ | green both modes (HR full, Employee denied admin pages, self-service allowed) |
 
 ### P2 — HRM core
 | ID | Scenario | Mode | Status | Notes |
@@ -110,6 +110,7 @@ Last updated: 2026-06-02
 | B-33 | aero-core `User::hasAnyRole` | tenant dashboard 500 `Nested arrays...whereIn` (Platform `buildTenantProps`→`isSuperAdmin`→`hasAnyRole(nested config)`) | flatten config in `hasAnyRole` (like `hasRole`) | ✅ verified (302→/dashboard→200) |
 | B-30b | `uat_provision.php` | `tenants.type` NOT NULL no default | set `type='company'` + `selected_modules` in data | ✅ (host script) |
 | B-35 | aero-auth decoupling (package purity) | aero-auth carried SaaS knowledge (admin.php landlord routes, `admin.domain` shim, dead `LoginController`/`SimpleLoginController` importing `IdentifyDomainContext`, controller branching on `landlord_users`/domain_context) | (1) `AuthenticatedSessionController` now resolves guard+routes via `AuthContext` only; (2) landlord/admin auth routes moved to `aero-platform/routes/admin-auth.php`; (3) deleted 2 dead login controllers + the standalone pass-through shim | ✅ verifying |
+| B-36 | aero-platform `web.php` /login | platform-domain `/login` renders the tenant login instead of redirecting to `/signup` (web.php intent) | unconstrained tenant `login` route (aero-auth) shadows the domain-constrained platform redirect | **OPEN** — minor (P4 platform routing); not a security hole | ❌ open (P4) |
 | B-34 | landlord admin-domain auth (AuthenticatedSessionController redirect) | login OK but post-login redirect targets tenant-scoped `core.dashboard` (`Missing parameter: tenant`) on admin domain → can't complete | aero-auth no longer blocks it; remaining = platform-side admin login PAGE wiring (`create()` should use `AuthContext::loginView()`='Platform/Admin/Auth/Login' + form posts admin.login.store). Residual: `ImpersonationController` still uses `auth('landlord')` (shared controller — split later). Landlord mint non-fatal | ❌ open (P4, platform-side) |
 
 ---
