@@ -886,6 +886,10 @@ class AeroPlatformServiceProvider extends ServiceProvider
             'middleware' => ['web'],
             'domain' => $adminDomain,
         ], function () {
+            // Landlord/admin AUTH routes (login/logout/root/session-check/impersonation).
+            // Moved out of aero-auth to keep that package mode-agnostic; loaded first
+            // so the guest login routes are available, then the protected admin routes.
+            $this->loadRoutesFrom(__DIR__.'/../routes/admin-auth.php');
             $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
         });
 

@@ -123,6 +123,11 @@ class AeroAuthServiceProvider extends ServiceProvider
         Route::middleware(['web'])
             ->group(__DIR__.'/../routes/identity.php');
 
+        // NOTE: landlord/admin auth routes now live in aero-platform
+        // (routes/admin-auth.php), keeping aero-auth mode-agnostic. They used to
+        // be here behind a `! class_exists(Platform)` gate + an `admin.domain`
+        // pass-through shim; both are gone. Historical context retained below.
+        //
         // Admin/landlord auth routes are SaaS-only: admin.php is wrapped in the
         // `admin.domain` middleware (an admin-subdomain guard registered by the
         // platform provider) and uses the `landlord` auth guard — neither of
