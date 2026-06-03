@@ -193,10 +193,15 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             return false;
         }
 
-        // Check each of user's roles
+        // Nested cascade: a grant on the sub-module OR any ancestor sub-module
+        // (via parent_id) grants access to this (descendant) sub-module.
+        $subModuleIds = array_merge([$subModule->id], $subModule->ancestorIds());
+
         foreach ($user->roles as $role) {
-            if ($this->canAccessSubModule($role, $subModule->id)) {
-                return true;
+            foreach ($subModuleIds as $smId) {
+                if ($this->canAccessSubModule($role, $smId)) {
+                    return true;
+                }
             }
         }
 

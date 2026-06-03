@@ -365,7 +365,7 @@ class SyncModuleHierarchy extends Command
     /**
      * Sync submodules for a module.
      */
-    protected function syncSubModules(Module $module, array $subModules): void
+    protected function syncSubModules(Module $module, array $subModules, ?int $parentId = null): void
     {
         foreach ($subModules as $subModuleDef) {
             $subModule = SubModule::updateOrCreate(
@@ -374,6 +374,7 @@ class SyncModuleHierarchy extends Command
                     'code' => $subModuleDef['code'],
                 ],
                 [
+                    'parent_id' => $parentId,
                     'name' => $subModuleDef['name'],
                     'description' => $subModuleDef['description'] ?? null,
                     'icon' => $subModuleDef['icon'] ?? null,
@@ -392,6 +393,11 @@ class SyncModuleHierarchy extends Command
             // Sync components
             if (isset($subModuleDef['components']) && is_array($subModuleDef['components'])) {
                 $this->syncComponents($module, $subModule, $subModuleDef['components']);
+            }
+
+            // Nested sub-modules: recurse, linking children to this sub-module.
+            if (isset($subModuleDef['submodules']) && is_array($subModuleDef['submodules'])) {
+                $this->syncSubModules($module, $subModuleDef['submodules'], $subModule->id);
             }
         }
     }

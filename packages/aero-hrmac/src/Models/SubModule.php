@@ -23,6 +23,7 @@ class SubModule extends TenantModel
 
     protected $fillable = [
         'module_id',
+        'parent_id',
         'code',
         'name',
         'description',
@@ -67,6 +68,40 @@ class SubModule extends TenantModel
     public function components(): HasMany
     {
         return $this->hasMany(Component::class)->orderBy('priority');
+    }
+
+    /**
+     * Parent sub-module (nested sub-modules). Null for top-level.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    /**
+     * Child sub-modules (nested tree).
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id')->orderBy('priority');
+    }
+
+    /**
+     * Ancestor IDs up the parent chain (nearest first), for access cascade.
+     *
+     * @return array<int>
+     */
+    public function ancestorIds(): array
+    {
+        $ids = [];
+        $node = $this->parent;
+        $guard = 0;
+        while ($node && $guard++ < 20) {
+            $ids[] = $node->id;
+            $node = $node->parent;
+        }
+
+        return $ids;
     }
 
     /**
