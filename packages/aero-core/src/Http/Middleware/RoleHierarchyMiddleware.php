@@ -5,7 +5,7 @@ namespace Aero\Core\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
+use AeroHRMACModelsRole;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

@@ -7,8 +7,8 @@ namespace Aero\Core\Services;
 use Aero\Core\Models\User;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\Audit\AuditService;
+use Aero\HRMAC\Models\Role;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
 
 class RoleService
 {
@@ -17,11 +17,15 @@ class RoleService
     public function create(array $data, User $actor): Role
     {
         return DB::transaction(function () use ($data) {
-            $role = Role::create(['name' => $data['name'], 'guard_name' => 'web']);
-
-            if (! empty($data['permissions'])) {
-                $role->syncPermissions($data['permissions']);
-            }
+            // HRMAC role: name + guard only. Authorization is granted via
+            // module-access (role_module_access) through the module-access editor
+            // (RoleModuleAccessService), not Spatie permissions.
+            $role = Role::create([
+                'name' => $data['name'],
+                'guard_name' => $data['guard_name'] ?? 'web',
+                'display_name' => $data['display_name'] ?? null,
+                'description' => $data['description'] ?? null,
+            ]);
 
             $this->audit->log(
                 AuditEventType::RECORD_CREATED->value,
@@ -40,11 +44,11 @@ class RoleService
     public function update(Role $role, array $data, User $actor): Role
     {
         return DB::transaction(function () use ($role, $data) {
-            $role->update(['name' => $data['name']]);
-
-            if (array_key_exists('permissions', $data)) {
-                $role->syncPermissions($data['permissions']);
-            }
+            $role->update(array_filter([
+                'name' => $data['name'] ?? null,
+                'display_name' => $data['display_name'] ?? null,
+                'description' => $data['description'] ?? null,
+            ], fn ($v) => $v !== null));
 
             $this->audit->log(
                 AuditEventType::RECORD_UPDATED->value,
@@ -56,7 +60,7 @@ class RoleService
                 ['role' => $role->name]
             );
 
-            return $role->fresh(['permissions']);
+            return $role->fresh();
         });
     }
 
@@ -76,24 +80,33 @@ class RoleService
         });
     }
 
-    public function syncModulePermissions(Role $role, array $modulePermissions, User $actor): void
+    /**
+     * Sync a role's module-access grants (HRMAC). `$grants` is the desired set of
+     * sub-module / component / action IDs the role should have, delegated to the
+     * HRMAC RoleModuleAccessService (replaces Spatie syncPermissions). The detailed
+     * grant editor UI is wired in the consolidation phase (P-D); this keeps the
+     * endpoint Spatie-free and functional.
+     */
+    public function syncModulePermissions(Role $role, array $grants, User $actor): void
     {
-        DB::transaction(function () use ($role, $modulePermissions) {
-            $current = $role->permissions->pluck('name')->toArray();
-            $role->syncPermissions($modulePermissions);
+        DB::transaction(function () use ($role, $grants) {
+            /** @var \Aero\Contracts\RoleModuleAccessInterface $hrmac */
+            $hrmac = app(\Aero\Contracts\RoleModuleAccessInterface::class);
+            $hrmac->syncRoleAccess($role, [
+                'modules' => $grants['modules'] ?? [],
+                'sub_modules' => $grants['sub_modules'] ?? [],
+                'components' => $grants['components'] ?? [],
+                'actions' => $grants['actions'] ?? [],
+            ]);
 
             $this->audit->log(
                 AuditEventType::RECORD_UPDATED->value,
-                'permissions_synced',
+                'module_access_synced',
                 null,
-                'Role permissions synced',
+                'Role module access synced',
                 null,
                 null,
-                [
-                    'role' => $role->name,
-                    'granted' => array_values(array_diff($modulePermissions, $current)),
-                    'revoked' => array_values(array_diff($current, $modulePermissions)),
-                ]
+                ['role' => $role->name]
             );
         });
     }

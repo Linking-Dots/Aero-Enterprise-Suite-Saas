@@ -41,8 +41,6 @@ use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Spatie\Permission\Middleware\RoleMiddleware;
-use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 class Kernel extends HttpKernel
 {
@@ -100,10 +98,7 @@ class Kernel extends HttpKernel
         'signed' => ValidateSignature::class,
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
-        // Spatie Permission Middleware
-        'role' => RoleMiddleware::class,
-        'permission' => Spatie\Permission\Middleware\PermissionMiddleware::class,
-        'role_or_permission' => RoleOrPermissionMiddleware::class,
+        // Access control is HRMAC ('hrmac:' middleware) — Spatie removed.
         // Custom Security Middleware
         'api_security' => ApiSecurityMiddleware::class,
         'custom_permission' => PermissionMiddleware::class,

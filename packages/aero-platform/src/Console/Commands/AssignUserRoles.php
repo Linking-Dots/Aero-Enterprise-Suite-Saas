@@ -5,7 +5,6 @@ namespace Aero\Platform\Console\Commands;
 use Aero\Core\Models\User;
 use Aero\HRMAC\Models\Role;
 use Illuminate\Console\Command;
-use Spatie\Permission\PermissionRegistrar;
 
 class AssignUserRoles extends Command
 {
@@ -46,7 +45,7 @@ class AssignUserRoles extends Command
             \DB::table('model_has_roles')->truncate();
             $this->info('Cleared all role assignments from model_has_roles table.');
             // Reset permissions cache
-            app()[PermissionRegistrar::class]->forgetCachedPermissions();
+            // HRMAC role-access cache self-invalidates (versioned); no Spatie cache.
         }
 
         // Get all users
@@ -94,7 +93,7 @@ class AssignUserRoles extends Command
         }
 
         // Reset permissions cache again
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        // HRMAC role-access cache self-invalidates (versioned); no Spatie cache.
 
         $this->info('Done! Please clear all application caches for changes to take effect:');
         $this->info('php artisan cache:clear');

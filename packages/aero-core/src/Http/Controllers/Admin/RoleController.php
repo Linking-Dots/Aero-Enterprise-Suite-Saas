@@ -8,10 +8,9 @@ use Aero\Core\Http\Requests\UpdateRoleRequest;
 use Aero\Core\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Aero\HRMAC\Models\Role;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
@@ -19,8 +18,10 @@ class RoleController extends Controller
 
     public function index(): Response
     {
+        // HRMAC: role "permissions" are module-access grants (role_module_access),
+        // not Spatie permissions. Count those via the moduleAccess relation.
         return Inertia::render('Core/Roles/Index', [
-            'roles' => Role::withCount('users', 'permissions')
+            'roles' => Role::withCount('users', 'moduleAccess')
                 ->orderBy('name')
                 ->get(),
         ]);
@@ -28,8 +29,10 @@ class RoleController extends Controller
 
     public function create(): Response
     {
+        // Module-access grants are edited via the HRMAC module-access tree
+        // (RoleModuleAccessService), not a Spatie permission picker.
         return Inertia::render('Core/Roles/Create', [
-            'permissions' => Permission::orderBy('name')->get(['id', 'name']),
+            'permissions' => [],
         ]);
     }
 
@@ -43,8 +46,8 @@ class RoleController extends Controller
     public function edit(Role $role): Response
     {
         return Inertia::render('Core/Roles/Edit', [
-            'role' => $role->load('permissions'),
-            'permissions' => Permission::orderBy('name')->get(['id', 'name']),
+            'role' => $role->loadCount('moduleAccess'),
+            'permissions' => [],
         ]);
     }
 
