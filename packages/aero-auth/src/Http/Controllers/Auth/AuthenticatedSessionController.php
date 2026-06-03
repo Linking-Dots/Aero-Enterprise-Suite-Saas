@@ -42,7 +42,26 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return SafeRedirect::intended('core.dashboard', true);
+        // Context-aware landing: landlord login (admin/platform domain) must NOT
+        // go to the tenant-scoped core.dashboard (needs a {tenant} param it can't
+        // resolve here). Detect landlords by their table / domain context and send
+        // them to the platform dashboard instead.
+        $user = Auth::user();
+        $isLandlord = $user
+            && method_exists($user, 'getTable')
+            && $user->getTable() === 'landlord_users';
+
+        $context = $request->attributes->get('domain_context');
+        $isAdminContext = in_array($context, [
+            \Aero\Contracts\DomainContextContract::CONTEXT_ADMIN,
+            \Aero\Contracts\DomainContextContract::CONTEXT_PLATFORM,
+        ], true);
+
+        $target = (($isLandlord || $isAdminContext) && \Illuminate\Support\Facades\Route::has('admin.dashboard'))
+            ? 'admin.dashboard'
+            : 'core.dashboard';
+
+        return SafeRedirect::intended($target, true);
     }
 
     /**
