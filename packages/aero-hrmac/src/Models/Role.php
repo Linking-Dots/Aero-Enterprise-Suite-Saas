@@ -18,12 +18,12 @@ use Illuminate\Support\Collection;
  * @property int $id
  * @property string $name
  * @property string $guard_name
- * @property string|null $display_name
  * @property string|null $description
  * @property bool $is_protected
  * @property bool $is_active
  * @property string|null $scope
- * @property string|null $dashboard_route
+ * @property string|null $default_dashboard
+ * @property int $priority
  */
 class Role extends TenantModel
 {
@@ -32,17 +32,18 @@ class Role extends TenantModel
     protected $fillable = [
         'name',
         'guard_name',
-        'display_name',
         'description',
         'is_protected',
         'is_active',
         'scope',
-        'dashboard_route',
+        'default_dashboard',
+        'priority',
     ];
 
     protected $casts = [
         'is_protected' => 'boolean',
         'is_active' => 'boolean',
+        'priority' => 'integer',
     ];
 
     protected $attributes = [

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Http\Requests;
+namespace Aero\HRMAC\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,8 +21,10 @@ class UpdateRoleRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('roles', 'name')->ignore($this->route('role'))],
-            'permissions' => ['array'],
-            'permissions.*' => ['string'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'default_dashboard' => ['nullable', 'string', 'max:255'],
+            'priority' => ['nullable', 'integer', 'min:0'],
+            'scope' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

@@ -110,9 +110,9 @@ export default function RolesIndex({ roles, users, can_manage_super_admin, error
       ),
     },
     { key: 'description', label: 'Description', width: '22%', render: row => row.description || '—' },
-    { key: 'users_count',       label: 'Users',       width: '9%', render: row => row.users_count ?? 0 },
-    { key: 'permissions_count', label: 'Permissions', width: '9%', render: row => (
-      <Badge intent="neutral" size="sm">{row.permissions_count ?? 0}</Badge>
+    { key: 'users_count',         label: 'Users',         width: '9%', render: row => row.users_count ?? 0 },
+    { key: 'module_access_count', label: 'Module Access', width: '11%', render: row => (
+      <Badge intent="neutral" size="sm">{row.module_access_count ?? 0} grant{(row.module_access_count ?? 0) === 1 ? '' : 's'}</Badge>
     )},
     { key: 'priority',          label: 'Priority',    width: '9%', render: row => row.priority ?? 0 },
     {

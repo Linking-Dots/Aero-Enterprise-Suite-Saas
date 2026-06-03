@@ -2,14 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Services;
+namespace Aero\HRMAC\Services;
 
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Models\User;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\Audit\AuditService;
 use Aero\HRMAC\Models\Role;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Role lifecycle service (HRMAC). Roles carry no Spatie permissions — authorization
+ * is granted via module-access (role_module_access) through the module-access editor
+ * (RoleModuleAccessService). Every mutation is wrapped in a transaction and audited.
+ */
 class RoleService
 {
     public function __construct(private readonly AuditService $audit) {}
@@ -17,14 +23,13 @@ class RoleService
     public function create(array $data, User $actor): Role
     {
         return DB::transaction(function () use ($data) {
-            // HRMAC role: name + guard only. Authorization is granted via
-            // module-access (role_module_access) through the module-access editor
-            // (RoleModuleAccessService), not Spatie permissions.
             $role = Role::create([
                 'name' => $data['name'],
                 'guard_name' => $data['guard_name'] ?? 'web',
-                'display_name' => $data['display_name'] ?? null,
                 'description' => $data['description'] ?? null,
+                'default_dashboard' => $data['default_dashboard'] ?? null,
+                'priority' => $data['priority'] ?? 0,
+                'scope' => $data['scope'] ?? null,
             ]);
 
             $this->audit->log(
@@ -46,8 +51,10 @@ class RoleService
         return DB::transaction(function () use ($role, $data) {
             $role->update(array_filter([
                 'name' => $data['name'] ?? null,
-                'display_name' => $data['display_name'] ?? null,
                 'description' => $data['description'] ?? null,
+                'default_dashboard' => $data['default_dashboard'] ?? null,
+                'priority' => $data['priority'] ?? null,
+                'scope' => $data['scope'] ?? null,
             ], fn ($v) => $v !== null));
 
             $this->audit->log(
@@ -76,23 +83,53 @@ class RoleService
                 null,
                 ['role' => $role->name]
             );
+            // Role::deleting hook cleans module_access + model_has_roles.
             $role->delete();
         });
     }
 
     /**
-     * Sync a role's module-access grants (HRMAC). `$grants` is the desired set of
-     * sub-module / component / action IDs the role should have, delegated to the
-     * HRMAC RoleModuleAccessService (replaces Spatie syncPermissions). The detailed
-     * grant editor UI is wired in the consolidation phase (P-D); this keeps the
-     * endpoint Spatie-free and functional.
+     * Assign a set of roles to a user (replaces the user's current role set).
      */
-    public function syncModulePermissions(Role $role, array $grants, User $actor): void
+    public function assignToUser(User $user, array $roleIds, User $actor): void
+    {
+        DB::transaction(function () use ($user, $roleIds) {
+            $userModel = $user->getMorphClass();
+
+            DB::table('model_has_roles')
+                ->where('model_type', $userModel)
+                ->where('model_id', $user->getKey())
+                ->delete();
+
+            foreach (array_unique($roleIds) as $roleId) {
+                DB::table('model_has_roles')->insert([
+                    'role_id' => $roleId,
+                    'model_type' => $userModel,
+                    'model_id' => $user->getKey(),
+                ]);
+            }
+
+            $this->audit->log(
+                AuditEventType::RECORD_UPDATED->value,
+                'roles_assigned',
+                null,
+                'Roles assigned to user',
+                null,
+                null,
+                ['user_id' => $user->getKey(), 'roles' => array_values(array_unique($roleIds))]
+            );
+        });
+    }
+
+    /**
+     * Sync a role's module-access grants (HRMAC) — replaces Spatie syncPermissions.
+     * Delegates to the RoleModuleAccessService; the detailed grant editor lives in
+     * the module-access surface (ModuleController).
+     */
+    public function syncModuleAccess(Role $role, array $grants, User $actor): void
     {
         DB::transaction(function () use ($role, $grants) {
-            /** @var \Aero\Contracts\RoleModuleAccessInterface $hrmac */
-            $hrmac = app(\Aero\Contracts\RoleModuleAccessInterface::class);
-            $hrmac->syncRoleAccess($role, [
+            app(RoleModuleAccessInterface::class)->syncRoleAccess($role, [
                 'modules' => $grants['modules'] ?? [],
                 'sub_modules' => $grants['sub_modules'] ?? [],
                 'components' => $grants['components'] ?? [],
