@@ -25,7 +25,7 @@ Last updated: 2026-06-03
 | A-05 | Logout | login → logout | session cleared; `/dashboard` → `/login` | B | 🔁 P1.3 |
 | A-06 | Session expiry | clear cookies → `/dashboard` | → `/login` | B | 🔁 P1.3 |
 | A-07 | Password-reset request | `/forgot-password` submit | uniform response, no error | B | 🔁 P1.3 |
-| A-08 | HR reaches employees | HR → `/hrm/employees` | 200, list renders | B | 🔁 P1.4 |
+| A-08 | HR reaches employees | HR → `/hrm/employees` | 200, list renders | B | ✅ live (P1.4 was false-pass; B-38 fixed) |
 | A-09 | HR reaches payroll | HR → `/hrm/payroll` | 200 | B | 🔁 P1.4 |
 | A-10 | EMP denied employees | EMP → `/hrm/employees` | redirected to `/dashboard` | B | 🔁 P1.4 |
 | A-11 | EMP denied payroll | EMP → `/hrm/payroll` | redirected away | B | 🔁 P1.4 |
@@ -39,8 +39,8 @@ Last updated: 2026-06-03
 
 | ID | Scenario | Steps | Expected | Mode | Status |
 |----|----------|-------|----------|------|--------|
-| D-01 | HR dashboard renders | HR → `/hrm/dashboard` | widgets/cards render, no error | B | ⬜ |
-| D-02 | Nav menu populated (HR) | inspect sidebar | HRM modules listed (no empty menu) | B | ⬜ |
+| D-01 | HR dashboard renders | HR → `/dashboard` | renders, no error | B | ✅ live |
+| D-02 | Nav menu populated (HR) | inspect sidebar | full HRM menu listed (B-22 confirmed) | B | ✅ live |
 | D-03 | Nav menu scoped (EMP) | EMP sidebar | only self-service/dashboard items | B | ⬜ |
 | D-04 | Announcements widget | dashboard | announcements list renders (no SQL error) | B | ⬜ |
 | D-05 | Wellbeing/SQL-agg widget | dashboard | aggregated numbers render | B | ⬜ |
@@ -49,7 +49,7 @@ Last updated: 2026-06-03
 
 | ID | Scenario | Steps | Expected | Mode | Status |
 |----|----------|-------|----------|------|--------|
-| E-01 | List renders | goto index | table of ~10 seeded employees, pagination | B | ⬜ |
+| E-01 | List renders | goto index | employees table renders (after B-38 fix) | B | ✅ live |
 | E-02 | Search/filter | type in search | list filters | B | ⬜ |
 | E-03 | Create form opens | click Create | form with dept/designation dropdowns populated | B | ⬜ |
 | E-04 | Create valid | fill + submit | success toast; appears in list | B | ⬜ |
