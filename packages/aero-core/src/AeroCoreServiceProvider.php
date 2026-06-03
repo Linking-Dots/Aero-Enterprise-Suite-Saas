@@ -116,7 +116,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             $this->mergeConfigFrom(__DIR__.'/../config/security.php', 'security');
             // Module definitions are in config/module.php and loaded by ModuleDiscoveryService
             $this->mergeConfigFrom(__DIR__.'/../config/core.php', 'aero.core');
-            $this->mergeConfigFrom(__DIR__.'/../config/permission.php', 'permission');
+            // Spatie permission config removed — access control is HRMAC.
             $this->mergeConfigFrom(__DIR__.'/../config/license.php', 'license');
 
             $this->app->singleton(LicenseServiceInterface::class, function ($app) {
