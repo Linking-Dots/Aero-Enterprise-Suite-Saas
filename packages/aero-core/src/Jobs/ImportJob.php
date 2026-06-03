@@ -124,7 +124,7 @@ class ImportJob implements ShouldQueue
     {
         $models = [
             'users' => \App\Models\User::class,
-            'roles' => \AeroHRMACModelsRole::class,
+            'roles' => \Aero\HRMAC\Models\Role::class,
             'tags' => \Aero\Core\Models\Tag::class,
         ];
 
