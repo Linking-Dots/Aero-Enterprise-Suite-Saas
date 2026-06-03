@@ -117,10 +117,11 @@ Move into aero-hrmac (new `src/Http/Controllers`, `routes/`, and UI namespace):
 - **Module-access management**: the `/modules` access editor (currently core) → aero-hrmac.
 - **Routes**: `/roles`, `/modules`, `/api/roles*` move to `aero-hrmac/routes/*.php`, loaded
   by `HRMACServiceProvider` (tenant routes always; landlord/admin routes when platform present).
-- **UI**: `Pages/Core/Roles/*` + `Pages/Platform/Admin/Roles/*` → a single
-  `Pages/Hrmac/Roles/*` (+ module-access tree component) in aero-ui, mode-aware. Route names
-  kept as aliases where referenced (`core.roles.*`, `admin.roles.*`) to avoid breaking links,
-  or updated repo-wide.
+- **UI**: stays in **aero-ui** (all UI for every package lives in aero-ui — UI is NOT moved
+  into aero-hrmac). Optionally unify `Pages/Core/Roles/*` + `Pages/Platform/Admin/Roles/*`
+  into one `Pages/Hrmac/Roles/*` namespace **within aero-ui**, mode-aware, rendered by the
+  aero-hrmac controllers. Route names kept as aliases (`core.roles.*`, `admin.roles.*`) to
+  avoid breaking links, or updated repo-wide.
 - aero-core/aero-platform `RoleController`/`RoleService` deleted after the move.
 
 Net: one canonical role + module-access surface in aero-hrmac, used by both modes via the
