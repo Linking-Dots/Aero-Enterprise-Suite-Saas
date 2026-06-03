@@ -23,23 +23,17 @@ export class LoginPage extends BasePage {
   }
 
   async logout(baseUrl = this.baseUrl) {
-    // Logout is a POST; submit via a tiny in-page form to carry the session cookie.
-    await this.page.evaluate((url) => {
-      const f = document.createElement('form');
-      f.method = 'POST';
-      f.action = `${url}/logout`;
-      const t = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      if (t) {
-        const i = document.createElement('input');
-        i.type = 'hidden';
-        i.name = '_token';
-        i.value = t;
-        f.appendChild(i);
-      }
-      document.body.appendChild(f);
-      f.submit();
-    }, baseUrl);
-    await this.page.waitForLoadState('networkidle');
+    // POST /logout with Laravel's Inertia CSRF (X-XSRF-TOKEN = urldecoded
+    // XSRF-TOKEN cookie). page.request shares the context's session cookie.
+    const cookies = await this.page.context().cookies();
+    const xsrf = cookies.find((c) => c.name === 'XSRF-TOKEN')?.value ?? '';
+    await this.page.request.post(`${baseUrl}/logout`, {
+      headers: {
+        'X-XSRF-TOKEN': decodeURIComponent(xsrf),
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      failOnStatusCode: false,
+    });
   }
 
   async expectLoginError() {

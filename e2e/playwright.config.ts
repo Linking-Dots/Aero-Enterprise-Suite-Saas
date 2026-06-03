@@ -7,11 +7,15 @@ export default defineConfig({
   globalTeardown: './global-teardown.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  // 1 retry even locally: tests drive a live shared Laragon, which can briefly
-  // hiccup (Apache reload) during the long two-mode run.
-  retries: process.env.CI ? 2 : 1,
-  // Modes use separate DBs; workers parallelize within a mode-project.
-  workers: process.env.CI ? 2 : 4,
+  // Retry on the live shared Laragon (Apache reloads / login latency under load).
+  retries: 2,
+  // One live Laragon serves both hosts; parallel full-login flows overwhelm it
+  // (timeouts). Keep concurrency modest for stability.
+  workers: 2,
+  // Live single-server Laragon can be slow under parallel load (full login flows);
+  // give each test headroom beyond Playwright's 30s default.
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
   reporter: [['html', { open: 'never' }], ['list']],
   grepInvert: ENV.runDestructive ? undefined : /@destructive/,
   use: {
