@@ -311,7 +311,7 @@ class CoreModuleProvider extends AbstractModuleProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                SyncModuleHierarchy::class,
+                // aero:sync-module provided solely by aero-hrmac now.
                 SyncModuleMigrations::class,
                 SeedCommand::class,
                 InstallCommand::class,

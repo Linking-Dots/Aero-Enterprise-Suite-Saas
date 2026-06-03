@@ -791,7 +791,8 @@ class AeroCoreServiceProvider extends ServiceProvider
     {
         $this->commands([
             Console\Commands\InstallCommand::class,
-            Console\Commands\SyncModuleHierarchy::class,
+            // aero:sync-module is provided solely by aero-hrmac (one sync for both
+            // modes, HRMAC models, nested parent_id support).
             Console\Commands\SyncModuleMigrations::class,
             Console\Commands\SeedCommand::class,
             Console\Commands\CleanupExpiredSessions::class,

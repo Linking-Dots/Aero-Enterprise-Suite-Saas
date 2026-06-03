@@ -19,6 +19,7 @@ class SubModule extends TenantModel
 
     protected $fillable = [
         'module_id',
+        'parent_id',
         'code',
         'name',
         'description',
