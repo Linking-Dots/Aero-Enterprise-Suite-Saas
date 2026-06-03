@@ -2,6 +2,7 @@
 
 namespace Aero\Auth\Http\Controllers\Auth;
 
+use Aero\Auth\Contracts\AuthContext;
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Core\Support\SafeRedirect;
 use Illuminate\Http\RedirectResponse;
@@ -27,14 +28,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AuthContext $context): RedirectResponse
     {
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        // Resolve guard + post-login target from the active AuthContext. aero-auth
+        // stays mode-agnostic: standalone/tenant binds TenantAuthContext (web ->
+        // core.dashboard); the SaaS host rebinds LandlordAuthContext on the admin
+        // domain (landlord -> admin.dashboard). No mode/guard branching here.
+        if (! Auth::guard($context->guard())->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
@@ -42,39 +47,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Context-aware landing: landlord login (admin/platform domain) must NOT
-        // go to the tenant-scoped core.dashboard (needs a {tenant} param it can't
-        // resolve here). Detect landlords by their table / domain context and send
-        // them to the platform dashboard instead.
-        $user = Auth::user();
-        $isLandlord = $user
-            && method_exists($user, 'getTable')
-            && $user->getTable() === 'landlord_users';
-
-        $context = $request->attributes->get('domain_context');
-        $isAdminContext = in_array($context, [
-            \Aero\Contracts\DomainContextContract::CONTEXT_ADMIN,
-            \Aero\Contracts\DomainContextContract::CONTEXT_PLATFORM,
-        ], true);
-
-        $target = (($isLandlord || $isAdminContext) && \Illuminate\Support\Facades\Route::has('admin.dashboard'))
-            ? 'admin.dashboard'
-            : 'core.dashboard';
-
-        return SafeRedirect::intended($target, true);
+        return SafeRedirect::intended($context->dashboardRoute(), true);
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, AuthContext $context): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::guard($context->guard())->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return SafeRedirect::toRoute('login', [], 'login');
+        return SafeRedirect::toRoute($context->loginRoute(), [], 'login');
     }
 }
