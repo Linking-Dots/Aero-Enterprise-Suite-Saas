@@ -104,7 +104,46 @@ module-access via `RoleModuleAccessService`). Specifics:
   HR allowed its grants, Employee denied; B-39 closed.
 - P1.3 + P1.4 automated specs still green.
 
-## 8. Non-goals
+## 7b. Consolidate ALL access control into aero-hrmac (added 2026-06-03)
+
+Access control is currently scattered — it must all live in **aero-hrmac**, the access
+package. aero-core and aero-platform retain none of it.
+
+Move into aero-hrmac (new `src/Http/Controllers`, `routes/`, and UI namespace):
+- **Role management**: aero-core `RoleController` (Inertia index/create/edit + the
+  `api/roles` API methods: store/update/toggle/assign/export/getRolesAndPermissions) and
+  `RoleService` → `aero-hrmac` (tenant/`web` guard). aero-platform `RoleController`
+  (landlord/`landlord` guard) → aero-hrmac, guard selected via the active context.
+- **Module-access management**: the `/modules` access editor (currently core) → aero-hrmac.
+- **Routes**: `/roles`, `/modules`, `/api/roles*` move to `aero-hrmac/routes/*.php`, loaded
+  by `HRMACServiceProvider` (tenant routes always; landlord/admin routes when platform present).
+- **UI**: `Pages/Core/Roles/*` + `Pages/Platform/Admin/Roles/*` → a single
+  `Pages/Hrmac/Roles/*` (+ module-access tree component) in aero-ui, mode-aware. Route names
+  kept as aliases where referenced (`core.roles.*`, `admin.roles.*`) to avoid breaking links,
+  or updated repo-wide.
+- aero-core/aero-platform `RoleController`/`RoleService` deleted after the move.
+
+Net: one canonical role + module-access surface in aero-hrmac, used by both modes via the
+existing `AuthContext`/guard seam.
+
+## 8. Phasing (execute phase-by-phase, checkpoint each)
+
+- **P-A — Stop the bleeding (Spatie-free backend, app working):** swap all 19 files'
+  `Spatie\...\Role`→`HRMAC\Role`, replace `permissions` counts/lists with module-access,
+  fix RoleController/RoleService in place, remove Spatie middleware aliases. Verify /roles
+  renders. (Smallest safe step; closes B-39.)
+- **P-B — Schema + nested:** strip permission-table creation, add drop migration, add
+  `sub_modules.parent_id` + SubModule parent/children + service nested cascade + sync parser.
+  Verify migrate:fresh both modes.
+- **P-C — Remove the dependency:** drop `spatie/laravel-permission` from 3 packages + 2 hosts;
+  `composer update`; delete `config/permission.php`; repoint `config('permission.*')`.
+  Verify grep Spatie = 0, app boots both modes.
+- **P-D — Consolidate into aero-hrmac:** move Role/Module controllers + services + routes +
+  UI into aero-hrmac; delete from core/platform; keep route-name aliases. Verify /roles,
+  /modules, landlord roles render in both modes.
+- **P-E — Verify:** HRMAC suite + nested-cascade test; MCP core-admin re-sweep; P1.3/P1.4.
+
+## 9. Non-goals (was 8)
 - Not re-authoring `config/module.php` to use nesting everywhere (support added; adoption later).
 - Not changing the HRMAC cache strategy or the Gate hook (B-38) beyond nested cascade.
 - Not migrating role table names (`roles`/`model_has_roles` stay).
