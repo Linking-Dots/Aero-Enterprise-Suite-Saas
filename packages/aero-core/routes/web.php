@@ -13,7 +13,7 @@ use Aero\Core\Http\Controllers\Admin\CoreUserController;
 use Aero\Core\Http\Controllers\Admin\ExportImportController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
 use Aero\Core\Http\Controllers\Admin\MentionsController;
-use Aero\Core\Http\Controllers\Admin\ModuleController;
+use Aero\HRMAC\Http\Controllers\ModuleController;
 use Aero\Core\Http\Controllers\Admin\RestoreController;
 use Aero\Core\Http\Controllers\Admin\RetentionPolicyController;
 use Aero\HRMAC\Http\Controllers\RoleController;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Http\Controllers\Admin;
+namespace Aero\HRMAC\Http\Controllers;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Contracts\PlanCatalogInterface;
