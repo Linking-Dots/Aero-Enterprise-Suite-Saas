@@ -65,6 +65,8 @@ return new class extends Migration
             $table->string('name')->comment('Display name');
             $table->string('type')->default('page')->comment('page, action, widget, report');
             $table->string('route')->nullable()->comment('Route name or path');
+            // The HRMAC module-hierarchy sync writes priority; central table omitted it.
+            $table->integer('priority')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 

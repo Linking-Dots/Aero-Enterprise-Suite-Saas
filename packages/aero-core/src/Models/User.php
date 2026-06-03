@@ -525,7 +525,18 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
      */
     public function hasAnyRole($roles, $guard = null): bool
     {
-        return $this->roles()->whereIn('name', (array) $roles)->exists();
+        // Flatten: callers (e.g. isSuperAdmin) pass the guard-scoped
+        // super_admin_roles config (['web' => [...], 'landlord' => [...]]); a
+        // nested array makes whereIn throw "Nested arrays may not be passed".
+        $rolesArray = (array) $roles;
+        $names = [];
+        array_walk_recursive($rolesArray, function ($r) use (&$names) {
+            if (is_string($r)) {
+                $names[] = $r;
+            }
+        });
+
+        return ! empty($names) && $this->roles()->whereIn('name', $names)->exists();
     }
 
     /**

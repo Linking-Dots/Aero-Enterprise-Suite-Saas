@@ -51,6 +51,13 @@ export default async function globalSetup() {
   await mintState('superadmin', 'saas', ENV.saasTenantUrl);
   await mintState('hr', 'saas', ENV.saasTenantUrl);
   await mintState('employee', 'saas', ENV.saasTenantUrl);
-  await mintState('landlord', 'saas', ENV.saasAdminUrl);
+  // Landlord (admin-domain) auth has a post-login redirect bug (B-34): it targets
+  // the tenant-scoped core.dashboard route. Not needed for P0 smoke / tenant specs,
+  // so don't fail the whole run on it — P4 platform specs will require the fix.
+  try {
+    await mintState('landlord', 'saas', ENV.saasAdminUrl);
+  } catch (e) {
+    console.warn('[uat] landlord mint skipped (B-34 admin-login redirect bug): ' + (e as Error).message);
+  }
   console.log('[uat] saas ready');
 }

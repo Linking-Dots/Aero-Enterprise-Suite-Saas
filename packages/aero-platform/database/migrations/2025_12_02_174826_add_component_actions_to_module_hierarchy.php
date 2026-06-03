@@ -29,6 +29,8 @@ return new class extends Migration
             $table->string('code')->comment('Action code: view, create, update, delete, etc.');
             $table->string('name')->comment('Display name for the action');
             $table->text('description')->nullable();
+            // The HRMAC module-hierarchy sync writes is_active; central table omitted it.
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->unique(['module_component_id', 'code']);

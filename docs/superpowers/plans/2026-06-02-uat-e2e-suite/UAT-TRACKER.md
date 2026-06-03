@@ -93,6 +93,24 @@ Last updated: 2026-06-02
 | B-21 | aero-core `User` / AuditService | `AuditService::log failed: undefined method User::getAuditLabel` | User extends Authenticatable (no `getAuditLabel`) | added `getAuditLabel()` to User | ✅ verified (no more audit errors) |
 | B-22 | aero-core nav (DashboardRegistry/NavigationRegistry) | `Navigation error: Nested arrays...whereIn` (caught → empty menu) | nested `super_admin_roles` config → `hasRole`; mitigated defensively in `User::hasRole` (flatten). A residual nav-path whereIn still logs (vendor-deep/lazy, non-fatal) | 🔧 mitigated; residual **OPEN** (revisit with a menu-dependent P2 test) |
 
+### SaaS bring-up (P0.4/P0.6) — central never-run path
+
+| ID | Area / file | Bug | Fix | Status |
+|----|-------------|-----|-----|--------|
+| B-23 | aero-platform `tenant_quota_overrides` migration | central `migrate:fresh` FK fail: `set_by` foreignUuid vs bigint `landlord_users.id` (`update_landlord_users...` migrated id UUID→bigint) | `foreignId('set_by')` | ✅ verified |
+| B-24 | aero-platform `create_advanced_billing_tables` | central FK to `users` (absent; central has `landlord_users`) | 7× `constrained('users')`→`constrained('landlord_users')` | ✅ verified |
+| B-25 | aero-contracts `AeroMode` + `PlatformHrmacSeeder` | landlord HRMAC roles seeded on central via tenant-scoped Role → A10 guard throws | added `AeroMode::withoutTenantContextGuard()`; wrapped PlatformHrmacSeeder + UatPlatformSeeder landlord step | ✅ verified |
+| B-26 | aero-platform `add_scope_and_protection_to_rbac_tables` | central `roles` lacks `is_active` (HRMAC Role writes it) | add `is_active` | ✅ verified |
+| B-27 | aero-platform `add_scope_to_modules_table` | `modules.scope` enum('platform','tenant') truncates config scope `infrastructure` → `aero:sync-module` aborts | `enum`→`string` | ✅ verified |
+| B-28 | aero-platform `create_modules_table` | central `module_components` lacks `priority` (sync writes it) | add `priority` | ✅ verified |
+| B-29 | aero-platform `add_component_actions_to_module_hierarchy` | central `module_component_actions` lacks `is_active` | add `is_active` | ✅ verified |
+| B-30 | central module registry empty | `tenant_module` maps codes→central `modules` (TenantCreatedListener) but registry never synced | `UatPlatformSeeder` runs guard-disabled `aero:sync-module --scope=all` after PlatformHrmacSeeder | ✅ verified (modules=6, hrm/core present) |
+| B-31 | aero-core/aero-hrm `announcements` migrations | tenant provisioning collision + schema divergence (core status-shape ran before hrm published_at-shape) | core defers to aero-hrm canonical (mirror shape); both `hasTable`-guarded | ✅ verified (provision OK) |
+| B-32 | aero-platform `config/tenancy.php` | tenant subdomain assets 404: `asset_helper_tenancy=true` rewrites `@vite`/`asset()` to `/tenancy/assets` | set `asset_helper_tenancy => false` (shared central build) | ✅ verified (login renders) |
+| B-33 | aero-core `User::hasAnyRole` | tenant dashboard 500 `Nested arrays...whereIn` (Platform `buildTenantProps`→`isSuperAdmin`→`hasAnyRole(nested config)`) | flatten config in `hasAnyRole` (like `hasRole`) | ✅ verified (302→/dashboard→200) |
+| B-30b | `uat_provision.php` | `tenants.type` NOT NULL no default | set `type='company'` + `selected_modules` in data | ✅ (host script) |
+| B-34 | landlord admin-domain auth (AuthenticatedSessionController redirect) | login OK but post-login redirect targets tenant-scoped `core.dashboard` (`Missing parameter: tenant`) on admin domain → can't complete | **OPEN** — landlord mint made non-fatal; needed for P4 platform specs | ❌ open (P4) |
+
 ---
 
 ## C. Cross-package feature / schema duplication

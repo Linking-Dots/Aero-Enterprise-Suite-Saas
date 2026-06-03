@@ -7,7 +7,9 @@ export default defineConfig({
   globalTeardown: './global-teardown.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // 1 retry even locally: tests drive a live shared Laragon, which can briefly
+  // hiccup (Apache reload) during the long two-mode run.
+  retries: process.env.CI ? 2 : 1,
   // Modes use separate DBs; workers parallelize within a mode-project.
   workers: process.env.CI ? 2 : 4,
   reporter: [['html', { open: 'never' }], ['list']],

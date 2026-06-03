@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Canonical announcements table. aero-core's create_announcements_table
+        // defers to this one, but guard anyway so migration order can't collide.
+        if (! Schema::hasTable('announcements')) {
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
             $table->string('title');
@@ -23,6 +26,7 @@ return new class extends Migration
 
             $table->index(['published_at', 'expires_at']);
         });
+        }
 
         Schema::create('recognitions', function (Blueprint $table) {
             $table->id();

@@ -43,6 +43,13 @@ return new class extends Migration
                         ->comment('Protected roles cannot be deleted or modified');
                 }
 
+                // The HRMAC Role model (shared tenant/landlord) writes is_active;
+                // the central roles table otherwise lacks it (tenant DBs get it
+                // from HRMAC migrations), breaking landlord role seeding.
+                if (! Schema::hasColumn('roles', 'is_active')) {
+                    $table->boolean('is_active')->default(true)->after('is_protected');
+                }
+
                 // Add index for scope queries
                 if (! Schema::hasColumn('roles', 'scope')) {
                     $table->index('scope');

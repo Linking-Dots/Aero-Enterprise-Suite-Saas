@@ -56,6 +56,28 @@ final class AeroMode
         }
     }
 
+    /**
+     * Run a callback with the tenant-context guard temporarily disabled.
+     *
+     * For LEGITIMATE central/landlord operations that touch shared tenant-scoped
+     * models on the central connection (e.g. seeding landlord HRMAC roles), where
+     * there is no tenant to leak between. Always restores the previous checker.
+     *
+     * @template T
+     * @param  \Closure(): T  $fn
+     * @return T
+     */
+    public static function withoutTenantContextGuard(\Closure $fn)
+    {
+        $previous = self::$tenantContextChecker;
+        self::$tenantContextChecker = null;
+        try {
+            return $fn();
+        } finally {
+            self::$tenantContextChecker = $previous;
+        }
+    }
+
     /** For testing only: reset all resolvers. */
     public static function reset(): void
     {
