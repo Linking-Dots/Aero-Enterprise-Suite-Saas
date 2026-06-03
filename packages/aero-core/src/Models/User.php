@@ -372,6 +372,19 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
     }
 
     /**
+     * Role names for this user (Spatie-compatible).
+     *
+     * Callers (UserProfileController, UserImpersonationService) expect a
+     * Collection of role-name strings. User uses custom roles (not Spatie), so
+     * this must be defined explicitly — otherwise /profile 500s with
+     * "Call to undefined method getRoleNames()".
+     */
+    public function getRoleNames(): \Illuminate\Support\Collection
+    {
+        return $this->roles()->pluck('name');
+    }
+
+    /**
      * Human-readable label for audit trails.
      *
      * AuditService::log() calls $subject->getAuditLabel(). User extends
