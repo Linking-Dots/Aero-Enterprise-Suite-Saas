@@ -19,11 +19,11 @@ Last updated: 2026-06-02
 | P0.1 | `e2e/` project scaffold + deps + Chromium | B | ✅ | committed |
 | P0.2 | Env loader + `.env.uat` per host + UAT DBs created | B | ✅ | `aeos365_uat`, `aeos365_standalone_uat` |
 | P0.3 | `UatSeeder` (self-contained) seeds clean | A | ✅ | 13 users, 10 employees, role grants 72/72/72/3 |
-| P0.4 | `UatPlatformSeeder` (central) seeds clean | S | ⛔ | blocked by platform FK collation + HRMAC-on-central (see B-12/B-13) |
+| P0.4 | `UatPlatformSeeder` (central) seeds clean | S | ✅ | plans/products/modules + landlord roles+user; registry synced |
 | P0.5 | global-setup migrate+seed+storageState | A | ✅ | all 3 roles mint OK |
-| P0.6 | global-setup provision SaaS tenant | S | ⬜ | gated `UAT_SKIP_SAAS=1` until platform fixed |
+| P0.6 | global-setup provision SaaS tenant | S | ✅ | uatco provisioned (DB, migrate, modules, roles, seed) |
 | P0.7 | Smoke: authenticated dashboard loads | A | ✅ | `1 passed` (single-env, production config, https) |
-| P0.7s | Smoke: authenticated tenant dashboard loads | S | ⬜ | after SaaS bring-up |
+| P0.7s | Smoke: authenticated tenant dashboard loads | S | ✅ | `2 passed` both modes |
 
 ### P1 — Lifecycle & Auth + HRMAC
 | ID | Scenario | Mode | Status | Notes |
