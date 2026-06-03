@@ -372,15 +372,38 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
     }
 
     /**
+     * Human-readable label for audit trails.
+     *
+     * AuditService::log() calls $subject->getAuditLabel(). User extends
+     * Authenticatable (not TenantModel/CentralModel, which provide this), so it
+     * must define its own — otherwise every audited auth event throws
+     * "undefined method getAuditLabel" (swallowed, but spams the log).
+     */
+    public function getAuditLabel(): ?string
+    {
+        return $this->name ?? $this->email ?? "User #{$this->getKey()}";
+    }
+
+    /**
      * Check if user has a specific role.
      *
      * @param  string|array|object  $role  Role name, Role object, or array of role names
      */
     public function hasRole($role): bool
     {
-        // Handle array of role names - return true if user has ANY of them
+        // Handle array of role names - return true if user has ANY of them.
+        // Flatten first: callers sometimes pass the guard-scoped super_admin_roles
+        // config (['web' => [...], 'landlord' => [...]]) — a nested array would
+        // make whereIn throw "Nested arrays may not be passed to whereIn".
         if (is_array($role)) {
-            return $this->roles()->whereIn('name', $role)->exists();
+            $names = [];
+            array_walk_recursive($role, function ($r) use (&$names) {
+                if (is_string($r)) {
+                    $names[] = $r;
+                }
+            });
+
+            return ! empty($names) && $this->roles()->whereIn('name', $names)->exists();
         }
 
         if (is_string($role)) {
