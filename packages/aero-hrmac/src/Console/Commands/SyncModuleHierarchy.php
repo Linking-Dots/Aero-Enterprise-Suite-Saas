@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Schema;
  * - module_components (third level)
  * - module_component_actions (fourth level - leaf)
  *
- * Usage: php artisan hrmac:sync-modules
+ * Usage: php artisan aero:sync-module --scope=tenant|platform|all
  */
 class SyncModuleHierarchy extends Command
 {
@@ -74,7 +74,7 @@ class SyncModuleHierarchy extends Command
         // Plan 04 T5 — acquire advisory lock to serialize concurrent runs.
         // On MySQL this uses GET_LOCK; sqlite (tests) gracefully no-ops.
         if (! $this->acquireSyncLock()) {
-            $this->warn('⚠️  Another hrmac:sync-modules run is in progress. Aborting to avoid duplicate rows.');
+            $this->warn('⚠️  Another aero:sync-module run is in progress. Aborting to avoid duplicate rows.');
 
             return self::FAILURE;
         }

@@ -379,7 +379,7 @@ class InstallCommand extends Command
 
                 $this->line("   Using HRMAC sync (scope: {$scope})...");
 
-                Artisan::call('hrmac:sync-modules', [
+                Artisan::call('aero:sync-module', [
                     '--scope' => $scope,
                     '--prune' => true,
                 ]);

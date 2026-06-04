@@ -151,16 +151,16 @@ Sync modules from all packages to the database:
 
 ```bash
 # Sync tenant modules (in tenant context)
-php artisan hrmac:sync-modules --scope=tenant
+php artisan aero:sync-module --scope=tenant
 
 # Sync platform modules (in central context)
-php artisan hrmac:sync-modules --scope=platform
+php artisan aero:sync-module --scope=platform
 
 # Fresh sync (clear existing, then sync)
-php artisan hrmac:sync-modules --fresh
+php artisan aero:sync-module --fresh
 
 # Prune removed modules
-php artisan hrmac:sync-modules --prune
+php artisan aero:sync-module --prune
 ```
 
 ## Usage

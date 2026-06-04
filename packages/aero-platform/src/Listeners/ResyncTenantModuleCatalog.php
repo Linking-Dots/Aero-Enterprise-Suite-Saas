@@ -52,10 +52,10 @@ class ResyncTenantModuleCatalog implements ShouldQueue
         try {
             tenancy()->initialize($tenant);
 
-            $exitCode = Artisan::call('hrmac:sync-modules', ['--scope' => 'tenant']);
+            $exitCode = Artisan::call('aero:sync-module', ['--scope' => 'tenant']);
 
             if ($exitCode !== 0) {
-                Log::warning('hrmac:sync-modules returned non-zero exit code', [
+                Log::warning('aero:sync-module returned non-zero exit code', [
                     'tenant_id' => $tenant->id,
                     'subscription_id' => $event->subscription->id,
                     'action' => $event->action,
@@ -63,7 +63,7 @@ class ResyncTenantModuleCatalog implements ShouldQueue
                 ]);
 
                 throw new \RuntimeException(
-                    "hrmac:sync-modules failed with exit code {$exitCode} for tenant {$tenant->id}"
+                    "aero:sync-module failed with exit code {$exitCode} for tenant {$tenant->id}"
                 );
             }
         } catch (Throwable $e) {
