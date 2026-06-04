@@ -550,7 +550,11 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         $moduleIds = array_values(array_unique(array_merge($explicitModuleIds, $derivedModuleIds)));
 
         return [
+            // 'modules' is the merged set (explicit + derived-from-sub-grants) used by
+            // navigation/menus. The editor must use 'explicit_modules' so a no-op save
+            // doesn't convert a derived parent into an explicit full-module grant.
             'modules' => $moduleIds,
+            'explicit_modules' => array_values($explicitModuleIds),
             'sub_modules' => $subModuleIds,
             'components' => $access->whereNotNull('component_id')
                 ->whereNull('action_id')

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { XMarkIcon, SparklesIcon, CheckCircleIcon, ExclamationTriangleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
@@ -7,11 +7,31 @@ import { cx } from './Primitives.jsx';
 const listeners = new Set();
 let toastId = 0;
 
-/** useToast — returns a push function that displays a toast notification. */
+/**
+ * useToast — returns a callable that displays a toast, with intent shortcut methods.
+ *
+ * Usage (both supported):
+ *   toast({ intent: 'success', title: 'Saved' })   // object form
+ *   toast.success('Saved')                          // shortcut (most call sites)
+ *   toast.error('Failed')  // maps to the 'danger' intent
+ */
 export function useToast() {
-  return useCallback((options) => {
-    listeners.forEach(fn => fn({ id: ++toastId, ...options }));
+  const push = useCallback((options) => {
+    const opts = typeof options === 'string' ? { title: options } : (options || {});
+    listeners.forEach(fn => fn({ id: ++toastId, ...opts }));
   }, []);
+
+  return useMemo(() => {
+    const toast = (options) => push(options);
+    const make = (intent) => (title, opts = {}) =>
+      push(typeof title === 'string' ? { intent, title, ...opts } : { intent, ...title });
+    toast.success = make('success');
+    toast.error = make('danger');   // TOAST_ICON intent is 'danger'
+    toast.danger = make('danger');
+    toast.warning = make('warning');
+    toast.info = make('info');
+    return toast;
+  }, [push]);
 }
 
 /* ── Toast component ──────────────────────────────────────────── */
