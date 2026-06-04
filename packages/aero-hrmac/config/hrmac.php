@@ -48,6 +48,7 @@ return [
 
     'super_admin_roles' => [
         // Platform / landlord (central DB)
+        'Super Platform Admin',
         'Platform Super Administrator',
         'platform-super-admin',
         // Tenant / standalone (tenant or single DB)

@@ -6,6 +6,7 @@ namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\HRMAC\Services\RoleService;
 use Aero\Platform\Models\LandlordUser;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -13,12 +14,15 @@ use Illuminate\Support\Facades\Hash;
 
 class LandlordUserService
 {
-    public function __construct(private AuditServiceInterface $audit) {}
+    public function __construct(
+        private AuditServiceInterface $audit,
+        private RoleService $roles,
+    ) {}
 
     public function list(array $filters = []): LengthAwarePaginator
     {
         return LandlordUser::query()
-            ->with('landlordRoles:id,name')
+            ->with('roles:id,name')
             ->when($filters['q'] ?? null, fn ($q, $v) => $q->where(function ($w) use ($v) {
                 $w->where('name', 'like', "%{$v}%")->orWhere('email', 'like', "%{$v}%");
             }))
@@ -41,7 +45,7 @@ class LandlordUserService
             ]);
 
             if (! empty($data['role_ids'])) {
-                $user->landlordRoles()->sync($data['role_ids']);
+                $this->roles->assignToUser($user, $data['role_ids']);
             }
 
             $this->audit->log(
@@ -67,7 +71,7 @@ class LandlordUserService
             $user->update($payload);
 
             if (array_key_exists('role_ids', $data)) {
-                $user->landlordRoles()->sync($data['role_ids'] ?? []);
+                $this->roles->assignToUser($user, $data['role_ids'] ?? []);
             }
 
             $this->audit->log(

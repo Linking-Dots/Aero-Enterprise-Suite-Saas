@@ -151,20 +151,7 @@ class LandlordUser extends Authenticatable
     // =========================================================================
 
     /**
-     * Get the P-4 landlord roles assigned to this user.
-     */
-    public function landlordRoles(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            LandlordRole::class,
-            'landlord_user_role',
-            'landlord_user_id',
-            'landlord_role_id'
-        )->withTimestamps();
-    }
-
-    /**
-     * Get the roles that belong to the user.
+     * Get the roles that belong to the user (HRMAC roles on the central DB).
      */
     public function roles(): BelongsToMany
     {

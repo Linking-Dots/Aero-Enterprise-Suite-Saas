@@ -12,6 +12,7 @@ use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,16 +32,47 @@ class RoleController extends Controller
     public function index(Request $request): Response
     {
         $roles = Role::query()
-            ->withCount(['users', 'moduleAccess'])
+            ->withCount('moduleAccess')
             ->orderBy('priority')
             ->orderBy('name')
             ->get();
 
-        return Inertia::render('Core/Roles/Index', [
+        // users_count from the model_has_roles pivot directly — context-free (counts
+        // assignments on the default connection regardless of the user model, so it
+        // works for tenant User and central LandlordUser alike, and never triggers a
+        // tenant-scoped User query on the platform).
+        $assignmentCounts = DB::table('model_has_roles')
+            ->selectRaw('role_id, COUNT(*) as c')
+            ->groupBy('role_id')
+            ->pluck('c', 'role_id');
+        $roles->each(fn (Role $r) => $r->users_count = (int) ($assignmentCounts[$r->id] ?? 0));
+
+        // The consuming route decides which page renders this role list (tenant vs
+        // platform shell) via a route default — HRMAC names no specific view.
+        $view = $request->route()?->defaults['hrmac_role_view'] ?? 'Core/Roles/Index';
+
+        return Inertia::render($view, [
             'roles' => $roles,
-            'users' => User::query()->orderBy('name')->get(['id', 'name', 'email']),
+            // Assignable users for the (tenant) inline-assign modal. Best-effort: the
+            // configured user model may be unqueryable in some host contexts (e.g. the
+            // tenant-scoped User model on the platform), where this surface isn't used.
+            'users' => $this->assignableUsers(),
             'can_manage_super_admin' => $this->isSuperAdmin($request->user()),
         ]);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, mixed>
+     */
+    private function assignableUsers(): \Illuminate\Support\Collection
+    {
+        $userModel = config('hrmac.models.user', User::class);
+
+        try {
+            return $userModel::query()->orderBy('name')->get(['id', 'name', 'email']);
+        } catch (\Throwable) {
+            return collect();
+        }
     }
 
     public function store(StoreRoleRequest $request): RedirectResponse
@@ -85,8 +117,12 @@ class RoleController extends Controller
         return in_array($name, self::SUPER_ADMIN_ROLES, true);
     }
 
-    private function isSuperAdmin(?User $user): bool
+    private function isSuperAdmin($user): bool
     {
-        return $user !== null && $user->roles()->whereIn('name', self::SUPER_ADMIN_ROLES)->exists();
+        // Any authenticated user model with a roles() relation (tenant User or central
+        // LandlordUser) — HRMAC does not assume a specific user class.
+        return $user !== null
+            && method_exists($user, 'roles')
+            && $user->roles()->whereIn('name', self::SUPER_ADMIN_ROLES)->exists();
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
 
-use Aero\Platform\Models\LandlordRole;
+use Aero\HRMAC\Models\Role;
 use Aero\Platform\Models\LandlordUser;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -137,10 +137,9 @@ class LandlordUserControllerTest extends TestCase
 
     public function test_store_assigns_roles_to_user(): void
     {
-        $role = LandlordRole::create([
+        $role = Role::create([
             'name' => 'Editor',
-            'permissions' => [],
-            'is_system' => false,
+            'guard_name' => 'web',
         ]);
 
         $this->actingAs($this->admin, 'landlord')
@@ -154,6 +153,6 @@ class LandlordUserControllerTest extends TestCase
 
         $user = LandlordUser::where('email', 'roleuser@example.com')->first();
         $this->assertNotNull($user);
-        $this->assertTrue($user->landlordRoles()->where('id', $role->id)->exists());
+        $this->assertTrue($user->roles()->where('id', $role->id)->exists());
     }
 }

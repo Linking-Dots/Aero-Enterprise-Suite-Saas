@@ -9,6 +9,7 @@ use Aero\Core\Models\User;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\Audit\AuditService;
 use Aero\HRMAC\Models\Role;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -90,8 +91,12 @@ class RoleService
 
     /**
      * Assign a set of roles to a user (replaces the user's current role set).
+     *
+     * Accepts any user model (tenant User or central LandlordUser) — the morph class
+     * + key come from the model, and model_has_roles is written on the default
+     * connection (tenant or central, as the host context dictates).
      */
-    public function assignToUser(User $user, array $roleIds, User $actor): void
+    public function assignToUser(Model $user, array $roleIds, ?Model $actor = null): void
     {
         DB::transaction(function () use ($user, $roleIds) {
             $userModel = $user->getMorphClass();

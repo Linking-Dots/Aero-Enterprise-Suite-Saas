@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Http\Controllers\Admin;
 
+use Aero\HRMAC\Models\Role;
 use Aero\Platform\Http\Controllers\Controller;
-use Aero\Platform\Models\LandlordRole;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Services\LandlordUserService;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +31,7 @@ class LandlordUserController extends Controller
     {
         return Inertia::render('Platform/Admin/Users/Index', [
             'users' => $this->svc->list($request->only(['q', 'active'])),
-            'roles' => LandlordRole::orderBy('name')->get(['id', 'name']),
+            'roles' => Role::orderBy('name')->get(['id', 'name']),
             'filters' => $request->only(['q', 'active']),
         ]);
     }
@@ -44,7 +44,7 @@ class LandlordUserController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'active' => ['boolean'],
             'role_ids' => ['array'],
-            'role_ids.*' => ['integer', 'exists:central.landlord_roles,id'],
+            'role_ids.*' => ['integer', 'exists:central.roles,id'],
         ]);
 
         $this->svc->create($data);
@@ -55,7 +55,7 @@ class LandlordUserController extends Controller
     public function show(LandlordUser $user): Response
     {
         return Inertia::render('Platform/Admin/Users/Show', [
-            'user' => $user->load('landlordRoles:id,name'),
+            'user' => $user->load('roles:id,name'),
         ]);
     }
 
@@ -67,7 +67,7 @@ class LandlordUserController extends Controller
             'password' => ['nullable', 'string', 'min:8'],
             'active' => ['boolean'],
             'role_ids' => ['array'],
-            'role_ids.*' => ['integer', 'exists:central.landlord_roles,id'],
+            'role_ids.*' => ['integer', 'exists:central.roles,id'],
         ]);
 
         $this->svc->update($user, $data);
