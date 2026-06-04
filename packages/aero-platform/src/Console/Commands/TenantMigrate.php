@@ -114,8 +114,15 @@ class TenantMigrate extends Command
                 '--force' => true,
             ];
 
+            // Use the CURATED tenant migration paths (baseline framework packages +
+            // subscribed product modules) — the SAME set ProvisionTenant uses. Without
+            // this the command ran the FULL migration set against the tenant DB, creating
+            // central-only tables (tenants/plans/subscriptions/landlord_users) and hitting
+            // cross-DB FK clashes. An explicit --path on the CLI overrides this.
             if ($this->option('path')) {
                 $options['--path'] = $this->option('path');
+            } else {
+                $options['--path'] = app(\Aero\Platform\Services\TenantMigrationPaths::class)->forTenant($tenant);
             }
 
             // Determine which migration command to run
