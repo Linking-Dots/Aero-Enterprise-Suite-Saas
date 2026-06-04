@@ -36,7 +36,10 @@ class LandlordAuthContext implements AuthContext
 
     public function dashboardRoute(): string
     {
-        return 'admin.dashboard';
+        // B-36: the platform admin dashboard route is named platform.admin.dashboard.
+        // The old 'admin.dashboard' is undefined, so post-login redirect fell back to
+        // core.dashboard (a {tenant} route) and 500'd.
+        return 'platform.admin.dashboard';
     }
 
     public function loginRoute(): string

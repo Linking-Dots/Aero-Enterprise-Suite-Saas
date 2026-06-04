@@ -12,6 +12,7 @@ use Aero\Contracts\TenantScopeInterface;
 use Aero\Contracts\TranslationDriverInterface;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
+use Aero\Core\ValueObjects\RequestContext;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
 use Aero\I18n\Http\Middleware\SetLocale;
@@ -147,6 +148,20 @@ class AeroPlatformServiceProvider extends ServiceProvider
             return str_starts_with($host, 'admin.') || $host === $adminHost
                 ? new LandlordAuthContext
                 : new TenantAuthContext;
+        });
+
+        // Host-aware DEFAULT RequestContext so the whole admin domain — including
+        // GUEST pages (login, forgot-password) that render shared HRMAC-backed nav —
+        // resolves as platform context. The ResolvePlatformContext/ResolveTenantContext
+        // route middleware still override this where present (authenticated routes).
+        // Without this, HRMAC's context guard fail-closes on admin guest pages.
+        $this->app->bind(RequestContext::class, function ($app) {
+            $host = $app->make('request')->getHost();
+            $adminHost = config('aero.admin_domain', 'admin.'.config('app.domain', parse_url(config('app.url', ''), PHP_URL_HOST)));
+
+            return str_starts_with($host, 'admin.') || $host === $adminHost
+                ? new RequestContext('platform', 'landlord')
+                : new RequestContext('tenant', 'web');
         });
 
         // Register global BootstrapGuard middleware FIRST
