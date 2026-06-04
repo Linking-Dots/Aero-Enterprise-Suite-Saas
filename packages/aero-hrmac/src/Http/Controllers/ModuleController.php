@@ -982,12 +982,23 @@ class ModuleController extends Controller
                 'actions_count' => count($accessData['actions']),
             ]);
 
-            // AUDIT: Log role access change with before/after state
-            try {
-                app(AuditServiceInterface::class)->logRoleAccessChanged($role, $oldAccessData, $accessData);
-            } catch (\Exception $e) {
-                Log::warning('Failed to create audit log for role access change: '.$e->getMessage());
-            }
+            // AUDIT: role access change with before/after state. AuditService::log()
+            // is self-protecting (never throws), so no try/catch needed — the previous
+            // code called a non-existent logRoleAccessChanged() and only caught
+            // \Exception, so the resulting \Error 500'd the (already-persisted) save.
+            // Pass before/after via metadata (json) rather than the before/after params:
+            // those feed array_diff_assoc() for changed_fields, which chokes on the
+            // nested-array access tree (Array-to-string warning -> ErrorException under
+            // the web error handler) and would silently drop the audit row.
+            app(AuditServiceInterface::class)->log(
+                'role.module_access.updated',
+                'module_access_synced',
+                $role,
+                "Role module access updated: {$role->name}",
+                null,
+                null,
+                ['role' => $role->name, 'role_id' => $role->id, 'before' => $oldAccessData, 'after' => $accessData],
+            );
 
             return response()->json([
                 'message' => 'Role access updated successfully',

@@ -53,6 +53,14 @@ class Role extends HrmacModel
     ];
 
     /**
+     * Human-readable label for audit log subject lines (AuditService::log).
+     */
+    public function getAuditLabel(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * Boot the model.
      */
     protected static function booted(): void
