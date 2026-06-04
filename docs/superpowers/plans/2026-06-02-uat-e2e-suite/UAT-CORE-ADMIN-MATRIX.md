@@ -2,7 +2,9 @@
 
 > 100% of the foundation + platform module hierarchy, sorted by sub-module priority.
 > Each row = one component (page/feature) + its actions to verify. Run live via MCP.
-> Status: ⬜ not run · ✅ pass · ❌ fail (log B-) · ⏭ skip. Generated 2026-06-03.
+> Status: ⬜ not run · ✅ pass · 🟡 partial (some actions verified) · ❌ fail (log B-) · ⏭ skip. Generated 2026-06-03.
+> Verification flow: run a row live via MCP → mark status here (matrix is the driver);
+> only failure DETAIL goes to UAT-TRACKER.md as a B-xx. (2026-06-04)
 
 ## CA-CORE (tenant-side foundation) — 105 components (from `packages/aero-core/config/module.php`)
 
@@ -10,21 +12,21 @@
 |----|----|------------------------------|-------|------|---------|--------|
 | CAT-01 | 0 | `core.self_service.my-notifications` | `/notifications` | page | view, mark_read | ⬜ |
 | CAT-02 | 0 | `core.self_service.my-profile` | `/profile` | page | view, edit | ⬜ |
-| CAT-03 | 1 | `core.dashboard.admin-dashboard` | `/dashboard` | page | view | ⬜ |
+| CAT-03 | 1 | `core.dashboard.admin-dashboard` | `/dashboard` | page | view | ✅ view (live, standalone+tenant) |
 | CAT-04 | 1 | `core.dashboard.announcements` | `/dashboard` | feature | view, create, delete | ⬜ |
 | CAT-05 | 2 | `core.subscription.invoices` | `/subscription/invoices` | page | view, download | ⬜ |
 | CAT-06 | 2 | `core.subscription.plans` | `/subscription/plans` | page | view, upgrade, downgrade, cancel | ⬜ |
 | CAT-07 | 2 | `core.subscription.usage` | `/subscription/usage` | page | view | ⬜ |
 | CAT-08 | 3 | `core.user_management.user_invitations` | `/users/invitations` | page | view, invite, resend, cancel | ⬜ |
 | CAT-09 | 3 | `core.user_management.user_profile` | `/profile` | page | view, edit, change_password, upload_avatar | ⬜ |
-| CAT-10 | 3 | `core.user_management.users` | `/users` | page | view, create, edit, delete, bulk_delete, activate, deactivate, bulk_toggle_status, bulk_assign_roles, reset_password, lock_account, unlock_account, impersonate, export, import | ⬜ |
+| CAT-10 | 3 | `core.user_management.users` | `/users` | page | view, create, edit, delete, bulk_delete, activate, deactivate, bulk_toggle_status, bulk_assign_roles, reset_password, lock_account, unlock_account, impersonate, export, import | 🟡 view (live; fixed B-41) — CRUD/bulk not yet exercised |
 | CAT-11 | 4 | `core.authentication.devices` | `/security/devices` | page | view, toggle, reset, deactivate | ⬜ |
 | CAT-12 | 4 | `core.authentication.email_verification` | `/security/verify-email` | page | send, verify, resend | ⬜ |
 | CAT-13 | 4 | `core.authentication.password_reset` | `/security/password-reset` | page | request, verify_token, reset | ⬜ |
 | CAT-14 | 4 | `core.authentication.sessions` | `/security/sessions` | page | view, terminate, terminate_all | ⬜ |
 | CAT-15 | 4 | `core.authentication.two_factor` | `/security/2fa` | feature | view, enable, disable, reset, enroll_totp, enroll_sms, enroll_email, generate_recovery_codes, verify_recovery_code | ⬜ |
-| CAT-16 | 5 | `core.roles_permissions.module_access` | `/modules` | page | view, configure, toggle | ⬜ |
-| CAT-17 | 5 | `core.roles_permissions.roles` | `/roles` | page | view, create, edit, delete, assign, permissions | ⬜ |
+| CAT-16 | 5 | `core.roles_permissions.module_access` | `/modules` | page | view, configure, toggle | ✅ view/configure/toggle (live; fixed B-47) |
+| CAT-17 | 5 | `core.roles_permissions.roles` | `/roles` | page | view, create, edit, delete, assign, permissions | ✅ view/create/edit/delete (live; fixed B-39/B-40/B-44); permissions=via CAT-16 |
 | CAT-18 | 6 | `core.audit_logs.activity_logs` | `/audit-logs/activity` | page | view, export, filter | ⬜ |
 | CAT-19 | 6 | `core.audit_logs.queue_monitor` | `/audit-logs/queues` | page | view, retry, flush | ⬜ |
 | CAT-20 | 6 | `core.audit_logs.security_logs` | `/audit-logs/security` | page | view, export, investigate | ⬜ |
@@ -142,7 +144,7 @@
 | CAP-22 | 7 | `platform.module-management.module-pricing` | `/modules/pricing` | page | view, edit | ⬜ |
 | CAP-23 | 8 | `platform.error-monitoring.error-analytics` | `/error-logs/analytics` | page | view | ⬜ |
 | CAP-24 | 8 | `platform.error-monitoring.error-log-list` | `/error-logs` | page | view, resolve, delete | ⬜ |
-| CAP-25 | 9 | `platform.platform-users.landlord-roles` | `/roles` | page | view, manage | ⬜ |
+| CAP-25 | 9 | `platform.platform-users.landlord-roles` | `/roles` | page | view, manage | ✅ view/manage (live; now HRMAC roles on central; fixed B-34/B-43/B-45/B-46) |
 | CAP-26 | 9 | `platform.platform-users.landlord-user-list` | `/users` | page | view, create, edit, delete | ⬜ |
 | CAP-27 | 9 | `platform.platform-users.module-access` | `/module-access` | page | view, manage | ⬜ |
 | CAP-28 | 10 | `platform.platform-integrations.api-keys` | `/integrations/api` | page | view, create, revoke | ⬜ |
