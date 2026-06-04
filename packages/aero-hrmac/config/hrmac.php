@@ -30,36 +30,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Super Admin Roles (Plan 04 Task 2 — guard-scoped)
+    | Super Admin Roles
     |--------------------------------------------------------------------------
     |
-    | Users with these roles bypass all module access checks.
-    | Phase 1 audit flagged the previous flat string array as brittle:
-    | a tenant role literally named "Super Administrator" could in principle
-    | satisfy the same config list as a landlord role. Guard scoping makes
-    | the bypass surface explicit per authentication context.
+    | Users holding any of these roles bypass all module access checks.
     |
-    | Keys MUST match auth guards configured in config/auth.php.
+    | Context-free: HRMAC does not detect the active guard. Roles are resolved
+    | from the current (host-decided) connection, so a tenant user only carries
+    | tenant role rows and a platform user only carries central role rows — a
+    | single flat union list is safe (names absent from the current DB never
+    | match). A consuming package may add its own super-admin role names here.
+    |
+    | The legacy guard-scoped assoc format is still accepted (values flattened),
+    | but the flat list below is the standard.
     |
     */
 
     'super_admin_roles' => [
-        // Landlord/Platform guard — central DB users only
-        'landlord' => [
-            'Platform Super Administrator',
-            'platform-super-admin',
-        ],
-        // Tenant/web guard — per-tenant DB users only
-        'web' => [
-            'Tenant Super Administrator',
-            'tenant_super_administrator',
-            'Super Administrator',  // legacy — kept for backwards compat during rollout
-            'super-admin',          // legacy
-        ],
-        // API guard (token auth, if applicable)
-        'api' => [
-            // none by default — API tokens should be scoped to specific permissions
-        ],
+        // Platform / landlord (central DB)
+        'Platform Super Administrator',
+        'platform-super-admin',
+        // Tenant / standalone (tenant or single DB)
+        'Tenant Super Administrator',
+        'tenant_super_administrator',
+        'Super Administrator',
+        'super-admin',
     ],
 
     /*
