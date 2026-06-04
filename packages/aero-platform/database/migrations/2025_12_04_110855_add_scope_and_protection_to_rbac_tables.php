@@ -28,8 +28,13 @@ return new class extends Migration
     {
         // Add scope and is_protected to roles table
         if (Schema::hasTable('roles')) {
-            Schema::table('roles', function (Blueprint $table) {
-                if (! Schema::hasColumn('roles', 'scope')) {
+            // If 'scope' already exists, the roles table came from create_permission_tables
+            // which ALSO defines the (scope, tenant_id) index — so we must NOT re-add it
+            // (duplicate key) or re-add the column. Only add the index when we add scope.
+            $addedScope = ! Schema::hasColumn('roles', 'scope');
+
+            Schema::table('roles', function (Blueprint $table) use ($addedScope) {
+                if ($addedScope) {
                     $table->enum('scope', ['platform', 'tenant'])
                         ->default('tenant')
                         ->after('guard_name')
@@ -50,11 +55,10 @@ return new class extends Migration
                     $table->boolean('is_active')->default(true)->after('is_protected');
                 }
 
-                // Add index for scope queries
-                if (! Schema::hasColumn('roles', 'scope')) {
+                if ($addedScope) {
                     $table->index('scope');
+                    $table->index(['scope', 'tenant_id']);
                 }
-                $table->index(['scope', 'tenant_id']);
             });
         }
 

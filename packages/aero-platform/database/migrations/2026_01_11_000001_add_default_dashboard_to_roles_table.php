@@ -23,16 +23,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('roles', function (Blueprint $table) {
-            $table->string('default_dashboard', 100)
-                ->nullable()
-                ->after('description')
-                ->comment('Route name for the default dashboard (e.g., hrm.dashboard)');
+        // Idempotent: create_permission_tables (canonical) absorbed these columns. On a
+        // fresh DB they already exist; only add them for legacy thin-roles databases.
+        if (! Schema::hasTable('roles')) {
+            return;
+        }
 
-            $table->unsignedSmallInteger('priority')
-                ->default(0)
-                ->after('default_dashboard')
-                ->comment('Role priority for determining primary role (higher = more important)');
+        Schema::table('roles', function (Blueprint $table) {
+            if (! Schema::hasColumn('roles', 'default_dashboard')) {
+                $table->string('default_dashboard', 100)
+                    ->nullable()
+                    ->after('description')
+                    ->comment('Route name for the default dashboard (e.g., hrm.dashboard)');
+            }
+
+            if (! Schema::hasColumn('roles', 'priority')) {
+                $table->unsignedSmallInteger('priority')
+                    ->default(0)
+                    ->comment('Role priority for determining primary role (higher = more important)');
+            }
         });
 
         // Set default dashboards for common roles
