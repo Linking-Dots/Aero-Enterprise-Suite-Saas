@@ -171,6 +171,11 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $kernel = $this->app->make(Kernel::class);
         $kernel->pushMiddleware(BootstrapGuard::class);
 
+        // B-36: on the bare platform domain, redirect /login -> /signup before routing
+        // (the mode-agnostic aero-auth tenant login route is registered without a domain
+        // and would otherwise render a dead login form on the marketing domain).
+        $kernel->pushMiddleware(\Aero\Platform\Http\Middleware\RedirectCentralLoginToSignup::class);
+
         // CRITICAL: Only register tenancy if installed AND in SaaS mode
         // This prevents tenancy from being enabled during installation
         // or in standalone mode
