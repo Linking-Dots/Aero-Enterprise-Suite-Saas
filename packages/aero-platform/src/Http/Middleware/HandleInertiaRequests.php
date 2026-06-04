@@ -102,7 +102,7 @@ class HandleInertiaRequests extends Middleware
             'isSuperAdmin' => $user?->isSuperAdmin() ?? false,
             'isAdmin' => $user?->isAdmin() ?? false,
             // Compliance Flags
-            'isPlatformSuperAdmin' => $user?->hasRole('Super Administrator') ?? false,
+            'isPlatformSuperAdmin' => $user?->hasAnyRole(config('hrmac.super_admin_roles', ['Super Administrator'])) ?? false,
             'isTenantSuperAdmin' => false,
         ];
 
@@ -190,7 +190,7 @@ class HandleInertiaRequests extends Middleware
             'isAuthenticated' => (bool) $user,
             'roles' => $user ? $user->roles->pluck('name')->toArray() : [],
             // Compliance Flags
-            'isPlatformSuperAdmin' => $user?->hasRole('Super Administrator') ?? false,
+            'isPlatformSuperAdmin' => $user?->hasAnyRole(config('hrmac.super_admin_roles', ['Super Administrator'])) ?? false,
             'isTenantSuperAdmin' => $isTenantSuperAdmin,
             'isSuperAdmin' => $isTenantSuperAdmin,
         ];
@@ -308,6 +308,11 @@ class HandleInertiaRequests extends Middleware
             'accessible_modules' => ! $user->isSuperAdmin() ? $this->getUserAccessibleModules($user) : null,
             'modules_lookup' => ! $user->isSuperAdmin() ? $this->getModulesLookup() : null,
             'sub_modules_lookup' => ! $user->isSuperAdmin() ? $this->getSubModulesLookup() : null,
+            // Flat HRMAC access map consumed by the frontend useHRMAC() hook (derived
+            // from role_module_access, NOT Spatie). Super admins get the '*' wildcard;
+            // others currently rely on backend HRMAC enforcement (granular platform-user
+            // map is a follow-up).
+            'hrmac_access' => $user->isSuperAdmin() ? ['*' => true] : [],
         ];
     }
 

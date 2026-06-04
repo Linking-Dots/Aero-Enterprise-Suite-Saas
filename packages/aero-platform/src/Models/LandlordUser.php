@@ -279,11 +279,13 @@ class LandlordUser extends Authenticatable
     // =========================================================================
 
     /**
-     * Check if the user is a super admin (has Platform Super Admin role).
+     * Check if the user is a super admin. Recognizes any configured HRMAC
+     * super-admin role (e.g. "Super Platform Admin") rather than a single
+     * hardcoded name, so the super-admin wildcard reaches the frontend HRMAC map.
      */
     public function isSuperAdmin(): bool
     {
-        return $this->hasRole('Super Administrator');
+        return $this->hasAnyRole(config('hrmac.super_admin_roles', ['Super Administrator']));
     }
 
     /**

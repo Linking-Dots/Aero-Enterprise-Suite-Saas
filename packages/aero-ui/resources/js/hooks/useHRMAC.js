@@ -3,7 +3,8 @@ import { usePage } from '@inertiajs/react';
 /**
  * Check if the current user has a specific HRMAC permission.
  *
- * Reads the flat dot-notation permissions map from Inertia shared auth props.
+ * Reads the flat dot-notation HRMAC access map (auth.user.hrmac_access) from
+ * Inertia shared props — derived from role_module_access, NOT Spatie permissions.
  * Super admins have `*` => true and bypass all checks.
  *
  * @param {string} dotPath - Permission in `module.submodule.component.action` format
@@ -11,7 +12,7 @@ import { usePage } from '@inertiajs/react';
  */
 export function useHRMAC(dotPath) {
   const { auth } = usePage().props;
-  const map = auth?.user?.permissions_map ?? {};
+  const map = auth?.user?.hrmac_access ?? {};
 
   // Super admin wildcard
   if (map['*'] === true) {
@@ -29,7 +30,7 @@ export function useHRMAC(dotPath) {
  */
 export function useHRMACMany(paths) {
   const { auth } = usePage().props;
-  const map = auth?.user?.permissions_map ?? {};
+  const map = auth?.user?.hrmac_access ?? {};
   const isSuper = map['*'] === true;
 
   const result = {};

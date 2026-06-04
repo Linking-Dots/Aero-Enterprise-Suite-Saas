@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Aero\HRMAC\Services;
 
 use Aero\Contracts\RoleModuleAccessInterface;
-use Aero\Core\Models\User;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Core\Services\Audit\AuditService;
 use Aero\HRMAC\Models\Role;
@@ -21,7 +20,7 @@ class RoleService
 {
     public function __construct(private readonly AuditService $audit) {}
 
-    public function create(array $data, User $actor): Role
+    public function create(array $data, Model $actor): Role
     {
         return DB::transaction(function () use ($data) {
             $role = Role::create([
@@ -49,7 +48,7 @@ class RoleService
         });
     }
 
-    public function update(Role $role, array $data, User $actor): Role
+    public function update(Role $role, array $data, Model $actor): Role
     {
         return DB::transaction(function () use ($role, $data) {
             $role->update(array_filter([
@@ -74,7 +73,7 @@ class RoleService
         });
     }
 
-    public function delete(Role $role, User $actor): void
+    public function delete(Role $role, Model $actor): void
     {
         DB::transaction(function () use ($role) {
             $this->audit->log(
@@ -133,7 +132,7 @@ class RoleService
      * Delegates to the RoleModuleAccessService; the detailed grant editor lives in
      * the module-access surface (ModuleController).
      */
-    public function syncModuleAccess(Role $role, array $grants, User $actor): void
+    public function syncModuleAccess(Role $role, array $grants, Model $actor): void
     {
         DB::transaction(function () use ($role, $grants) {
             app(RoleModuleAccessInterface::class)->syncRoleAccess($role, [

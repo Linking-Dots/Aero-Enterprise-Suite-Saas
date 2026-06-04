@@ -40,7 +40,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 // Root redirect based on landlord auth state
 Route::get('/', function () {
     if (Auth::guard('landlord')->check()) {
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('platform.admin.dashboard');
     }
 
     return redirect()->route('admin.login');

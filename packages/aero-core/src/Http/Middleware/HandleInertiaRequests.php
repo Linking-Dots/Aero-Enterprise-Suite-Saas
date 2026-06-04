@@ -264,7 +264,7 @@ class HandleInertiaRequests extends Middleware
                 'accessible_modules' => $accessibleModules,
                 'modules_lookup' => $modulesLookup,
                 'sub_modules_lookup' => $subModulesLookup,
-                'permissions_map' => $permissionsMap,
+                'hrmac_access' => $permissionsMap,
             ],
             'isAuthenticated' => true,
             'sessionValid' => true,
@@ -493,7 +493,7 @@ class HandleInertiaRequests extends Middleware
             return [];
         }
 
-        $cacheKey = "user_permissions_map:{$user->id}";
+        $cacheKey = "user_hrmac_access:{$user->id}";
 
         return Cache::remember($cacheKey, 600, function () use ($user) {
             try {
