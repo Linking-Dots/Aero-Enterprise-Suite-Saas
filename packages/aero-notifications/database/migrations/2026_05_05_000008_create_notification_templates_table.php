@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('notification_templates')) {
+            return;
+        }
+
         Schema::create('notification_templates', function (Blueprint $table) {
             $table->id();
             // tenant_id is a plain column here. A FK to `tenants` is invalid in
