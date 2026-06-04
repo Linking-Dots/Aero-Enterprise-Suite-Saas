@@ -23,9 +23,11 @@ return new class extends Migration
             $table->string('code')->comment('Unique action key within component, e.g., create, edit, delete, approve');
             $table->string('name')->comment('Display name for the action');
             $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->unique(['module_component_id', 'code']);
+            $table->index('is_active');
         });
     }
 
