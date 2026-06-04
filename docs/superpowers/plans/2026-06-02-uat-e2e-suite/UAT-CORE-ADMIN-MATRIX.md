@@ -17,7 +17,7 @@
 | CAT-05 | 2 | `core.subscription.invoices` | `/subscription/invoices` | page | view, download | ⬜ |
 | CAT-06 | 2 | `core.subscription.plans` | `/subscription/plans` | page | view, upgrade, downgrade, cancel | ⬜ |
 | CAT-07 | 2 | `core.subscription.usage` | `/subscription/usage` | page | view | ⬜ |
-| CAT-08 | 3 | `core.user_management.user_invitations` | `/users/invitations` | page | view, invite, resend, cancel | ⬜ |
+| CAT-08 | 3 | `core.user_management.user_invitations` | `/users/invitations` | page | view, invite, resend, cancel | ✅ view (live) |
 | CAT-09 | 3 | `core.user_management.user_profile` | `/profile` | page | view, edit, change_password, upload_avatar | ⬜ |
 | CAT-10 | 3 | `core.user_management.users` | `/users` | page | view, create, edit, delete, bulk_delete, activate, deactivate, bulk_toggle_status, bulk_assign_roles, reset_password, lock_account, unlock_account, impersonate, export, import | 🟡 view (live; fixed B-41) — CRUD/bulk not yet exercised |
 | CAT-11 | 4 | `core.authentication.devices` | `/security/devices` | page | view, toggle, reset, deactivate | ⬜ |
@@ -27,19 +27,19 @@
 | CAT-15 | 4 | `core.authentication.two_factor` | `/security/2fa` | feature | view, enable, disable, reset, enroll_totp, enroll_sms, enroll_email, generate_recovery_codes, verify_recovery_code | ⬜ |
 | CAT-16 | 5 | `core.roles_permissions.module_access` | `/modules` | page | view, configure, toggle | ✅ view/configure/toggle (live; fixed B-47) |
 | CAT-17 | 5 | `core.roles_permissions.roles` | `/roles` | page | view, create, edit, delete, assign, permissions | ✅ view/create/edit/delete (live; fixed B-39/B-40/B-44); permissions=via CAT-16 |
-| CAT-18 | 6 | `core.audit_logs.activity_logs` | `/audit-logs/activity` | page | view, export, filter | ⬜ |
-| CAT-19 | 6 | `core.audit_logs.queue_monitor` | `/audit-logs/queues` | page | view, retry, flush | ⬜ |
-| CAT-20 | 6 | `core.audit_logs.security_logs` | `/audit-logs/security` | page | view, export, investigate | ⬜ |
-| CAT-21 | 7 | `core.notifications.channels` | `/notifications/channels` | page | view, configure, test | ⬜ |
-| CAT-22 | 7 | `core.notifications.templates` | `/notifications/templates` | page | view, create, edit, delete, preview | ⬜ |
-| CAT-23 | 8 | `core.file_manager.media_library` | `/files/media` | page | view, upload, delete, organize | ⬜ |
-| CAT-24 | 8 | `core.file_manager.storage` | `/files/storage` | page | view, configure, cleanup | ⬜ |
+| CAT-18 | 6 | `core.audit_logs.activity_logs` | `/audit-logs` (page; `/activity`=data) | page | view, export, filter | ✅ view (live) |
+| CAT-19 | 6 | `core.audit_logs.queue_monitor` | `/audit-logs/queues` | page | view, retry, flush | ✅ view (live) |
+| CAT-20 | 6 | `core.audit_logs.security_logs` | `/audit-logs/security` | page | view, export, investigate | ✅ view (live) |
+| CAT-21 | 7 | `core.notifications.channels` | `/notifications/admin/channels` (matrix route was wrong) | page | view, configure, test | ✅ view (live) |
+| CAT-22 | 7 | `core.notifications.templates` | `/notifications/admin/templates` | page | view, create, edit, delete, preview | ❌ 500 (B-49: tenant() fixed; email_templates model↔table drift open) |
+| CAT-23 | 8 | `core.file_manager.media_library` | `/file-manager` (matrix route was wrong) | page | view, upload, delete, organize | ✅ view (live) |
+| CAT-24 | 8 | `core.file_manager.storage` | `/file-manager` (browse/stats) | page | view, configure, cleanup | ✅ view (live) |
 | CAT-25 | 9 | `core.organization.fiscal_year` | `/organization/fiscal-year` | page | view, manage | ⬜ |
 | CAT-26 | 9 | `core.organization.org_addresses` | `/organization/addresses` | page | view, manage | ⬜ |
 | CAT-27 | 9 | `core.organization.org_contacts` | `/organization/contacts` | page | view, manage | ⬜ |
-| CAT-28 | 9 | `core.organization.org_identity` | `/organization/identity` | page | view, update, verify | ⬜ |
-| CAT-29 | 9 | `core.organization.org_profile` | `/organization/profile` | page | view, update | ⬜ |
-| CAT-30 | 10 | `core.translations_i18n.languages` | `/i18n/languages` | page | view, enable, disable | ⬜ |
+| CAT-28 | 9 | `core.organization.org_identity` | `/organization/identity` | page | view, update, verify | ✅ view (live) |
+| CAT-29 | 9 | `core.organization.org_profile` | `/organization/profile` | page | view, update | ✅ view (live) |
+| CAT-30 | 10 | `core.translations_i18n.languages` | `/i18n/languages` | page | view, enable, disable | ✅ view (live; fixed B-48) |
 | CAT-31 | 10 | `core.translations_i18n.translation_editor` | `/i18n/translations` | page | view, update, auto_translate, import, export | ⬜ |
 | CAT-32 | 12 | `core.custom_fields.field_definitions` | `/custom-fields` | page | view, create, update, delete | ⬜ |
 | CAT-33 | 13 | `core.tags_labels.tag_management` | `/tags` | page | view, create, update, delete, merge | ⬜ |
