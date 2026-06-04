@@ -18,7 +18,9 @@ return new class extends Migration {
             $table->string('email')->unique()->index();
             $table->string('reason')->default('manual'); // manual|bounce|complaint|unsubscribe
             $table->text('note')->nullable();
-            $table->foreignId('added_by')->nullable()->constrained('users')->nullOnDelete();
+            // Plain column (no hard FK) — foundational shared package runs across central/
+            // tenant/standalone whose user table differs (landlord_users vs users).
+            $table->unsignedBigInteger('added_by')->nullable()->index();
             $table->timestamps();
         });
     }
