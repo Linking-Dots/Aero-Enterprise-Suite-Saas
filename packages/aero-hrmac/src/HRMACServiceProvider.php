@@ -57,6 +57,13 @@ class HRMACServiceProvider extends ServiceProvider
         // non-super-admins, even though the service grants the cascading access.
         $this->registerHrmacGate();
 
+        // HRMAC owns the canonical RBAC + module-hierarchy schema (roles, model_has_roles,
+        // modules, sub_modules, module_components, module_component_actions,
+        // role_module_access). As a foundational shared package it runs in BOTH central and
+        // tenant DBs — ONE schema, no per-context column differences. (Migrations were
+        // previously duplicated across aero-core + aero-platform; consolidated here.)
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
         // Register commands
         if ($this->app->runningInConsole()) {
             $this->commands([

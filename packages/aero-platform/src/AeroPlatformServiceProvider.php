@@ -1073,20 +1073,37 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function overrideMigratorForLandlord(): void
     {
-        $platformMigrationsPath = realpath(__DIR__.'/../database/migrations');
+        // The central/landlord DB runs: aero-platform + the FOUNDATIONAL SHARED packages
+        // (auth, ui, i18n, notifications, hrmac — everything in baseline_modules EXCEPT
+        // core, which is tenant-only). These shared packages are pure, single-schema
+        // packages used identically by central and tenants — no per-context columns.
+        $allowedMigrationPaths = [realpath(__DIR__.'/../database/migrations')];
+        $sharedPackages = array_diff(
+            (array) config('hrmac.baseline_modules', ['core', 'auth', 'ui', 'i18n', 'notifications', 'hrmac']),
+            ['core']
+        );
+        foreach ($sharedPackages as $pkg) {
+            foreach ([base_path("vendor/aero/{$pkg}/database/migrations"), base_path("packages/aero-{$pkg}/database/migrations")] as $candidate) {
+                if (is_dir($candidate)) {
+                    $allowedMigrationPaths[] = realpath($candidate);
+                }
+            }
+        }
+        $allowedMigrationPaths = array_values(array_filter(array_unique($allowedMigrationPaths)));
         $centralDatabase = config('tenancy.database.central_connection', config('database.default'));
 
-        $this->app->extend('migrator', function ($migrator, $app) use ($platformMigrationsPath, $centralDatabase) {
-            return new class($app['migration.repository'], $app['db'], $app['files'], $app['events'], $platformMigrationsPath, $centralDatabase) extends Migrator
+        $this->app->extend('migrator', function ($migrator, $app) use ($allowedMigrationPaths, $centralDatabase) {
+            return new class($app['migration.repository'], $app['db'], $app['files'], $app['events'], $allowedMigrationPaths, $centralDatabase) extends Migrator
             {
-                protected string $platformMigrationsPath;
+                /** @var array<int, string> */
+                protected array $allowedMigrationPaths;
 
                 protected string $centralDatabase;
 
-                public function __construct($repository, $resolver, $files, $dispatcher, string $platformMigrationsPath, string $centralDatabase)
+                public function __construct($repository, $resolver, $files, $dispatcher, array $allowedMigrationPaths, string $centralDatabase)
                 {
                     parent::__construct($repository, $resolver, $files, $dispatcher);
-                    $this->platformMigrationsPath = $platformMigrationsPath;
+                    $this->allowedMigrationPaths = $allowedMigrationPaths;
                     $this->centralDatabase = $centralDatabase;
                 }
 
@@ -1110,17 +1127,23 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     }
 
                     // On central/landlord database (production + testing):
-                    // ONLY run aero-platform migrations. Other packages (core, hrm, etc.)
-                    // are for tenant databases and cause SQLite-incompatibility in testing.
-                    // Platform migrations are self-sufficient for platform feature tests.
+                    // run aero-platform + the foundational shared packages (auth, ui,
+                    // i18n, notifications, hrmac). NOT core or product modules — those are
+                    // tenant-only. The shared packages carry the canonical roles/modules/
+                    // RBAC schema central needs.
                     $platformFiles = collect($files)->filter(function ($path, $name) {
                         $normalizedPath = realpath($path) ?: $path;
+                        foreach ($this->allowedMigrationPaths as $allowed) {
+                            if (str_starts_with($normalizedPath, $allowed)) {
+                                return true;
+                            }
+                        }
 
-                        return str_starts_with($normalizedPath, $this->platformMigrationsPath);
+                        return false;
                     });
 
-                    // Deduplicate within the platform-filtered set by operation name.
-                    // This removes any platform-internal duplicates (e.g. create_notification_logs_table
+                    // Deduplicate within the filtered set by operation name.
+                    // This removes any internal duplicates (e.g. create_notification_logs_table
                     // exists in both aero-platform and as a copy from another path).
                     return $platformFiles->unique(function ($path) {
                         return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
