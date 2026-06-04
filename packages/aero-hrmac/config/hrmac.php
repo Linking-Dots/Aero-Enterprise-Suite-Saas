@@ -5,6 +5,7 @@ use Aero\Core\Models\User;
 use Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess;
 use Aero\HRMAC\Http\Middleware\SmartLandingRedirect;
 use Aero\HRMAC\Models\Role;
+use Aero\HRMAC\Models\RoleModuleAccess;
 
 return [
     /*
@@ -13,13 +14,18 @@ return [
     |--------------------------------------------------------------------------
     |
     | Configure the models used by HRMAC. You can override these with your own
-    | implementations if needed.
+    | implementations if needed. A consuming package/host may override any of
+    | these (e.g. to point the access model at a different table/connection) —
+    | HRMAC stays context-free.
     |
     */
 
     'models' => [
         'role' => Role::class,
         'user' => User::class,
+        // RoleModuleAccess model. Uses the DEFAULT connection so the host's runtime
+        // context (tenancy / central / standalone) decides which DB is read/written.
+        'role_module_access' => RoleModuleAccess::class,
     ],
 
     /*
