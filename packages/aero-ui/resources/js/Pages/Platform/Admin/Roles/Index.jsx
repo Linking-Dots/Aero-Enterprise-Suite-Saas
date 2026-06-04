@@ -90,7 +90,7 @@ export default function RolesIndex({ roles, can_manage_super_admin }) {
     <IndexPageLayout
       title="Roles"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.dashboard') },
         { label: 'Roles' },
       ]}
       description="Manage platform roles. Module access is granted via the module-access editor."

@@ -538,7 +538,20 @@ class AeroCoreServiceProvider extends ServiceProvider
             // so route:list and cached routes cannot leak onto the platform domain.
             $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
 
+            // B-43: constrain {tenant} so reserved subdomains (admin, www, api, …) are
+            // NOT treated as tenants. Without this, admin.<domain> matches {tenant}=admin
+            // and the tenant routes (auth:web) shadow the platform admin routes — the
+            // intent the InitializeTenancyIfNotCentral docblock assumed but never enforced.
+            // Uses stancl/tenancy's canonical reserved list (config tenancy.reserved_subdomains).
+            // Anchor the exclusion on the domain separator (\.) — within the compiled
+            // host regex the {tenant} segment is followed by ".<domain>", so a `$`
+            // anchor would never apply. This makes e.g. "admin.<domain>" fail to match
+            // the tenant group while "administrator.<domain>" still matches.
+            $reserved = config('tenancy.reserved_subdomains', ['admin', 'www', 'api']);
+            $tenantConstraint = '(?!(?:'.implode('|', $reserved).')\.)[A-Za-z0-9-]+';
+
             Route::domain('{tenant}.'.$platformDomain)
+                ->where(['tenant' => $tenantConstraint])
                 ->middleware([
                     'web',
                     InitializeTenancyIfNotCentral::class,
