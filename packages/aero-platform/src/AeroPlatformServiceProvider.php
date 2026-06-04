@@ -183,6 +183,14 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Platform provides the SaaS implementation using stancl/tenancy
         $this->app->singleton(TenantScopeInterface::class, SaaSTenantScope::class);
 
+        // SaaS data-decision (Audit D15): tenant module syncs are gated to subscribed
+        // products. HRMAC's context-free sync command applies this filter only because
+        // the platform (the consumer) binds it here. Standalone never binds it.
+        $this->app->singleton(
+            \Aero\Contracts\ModuleSyncFilterInterface::class,
+            \Aero\Platform\Services\TenantSubscriptionModuleFilter::class
+        );
+
         // Register Module Access Services with fallback stubs for pre-install
         // These services are lazy-loaded to avoid DB queries before installation
         $this->app->singleton(HRMACRoleModuleAccessService::class, function ($app) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Console\Commands;
 
+use Aero\Contracts\ModuleSyncFilterInterface;
 use Aero\HRMAC\Models\Action;
 use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;
@@ -12,7 +13,6 @@ use Aero\HRMAC\Services\ModuleDiscoveryService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Stancl\Tenancy\Tenancy;
 
 /**
  * Sync Module Hierarchy Command
@@ -33,7 +33,7 @@ class SyncModuleHierarchy extends Command
                           {--force : Force sync even if tables do not exist}
                           {--prune : Remove modules that are no longer installed}';
 
-    protected $description = 'Sync module hierarchy from package configs to database. Auto-detects context.';
+    protected $description = 'Sync module hierarchy from package configs to database. Scope is supplied via --scope (no context auto-detection).';
 
     protected ModuleDiscoveryService $moduleDiscovery;
 
@@ -86,8 +86,8 @@ class SyncModuleHierarchy extends Command
                 return self::FAILURE;
             }
 
-            // Auto-detect scope
-            $scope = $this->option('scope') ?: $this->detectScope();
+            // Scope is supplied by the consumer (no context auto-detection in HRMAC).
+            $scope = $this->option('scope') ?: 'all';
             $fresh = $this->option('fresh');
             $prune = $this->option('prune');
 
@@ -104,14 +104,12 @@ class SyncModuleHierarchy extends Command
 
                 $modules = $this->moduleDiscovery->getModuleDefinitions();
 
-                // Audit D15 — when running inside a tenant context, filter discovered
-                // modules to only those the tenant has paid for (baseline ∪ subscribed).
-                if ($scope === 'tenant' && function_exists('tenancy') && tenancy()->initialized) {
-                    $tenantModel = tenant();
-                    if ($tenantModel !== null && method_exists($tenantModel, 'getSubscribedProductModulesAttribute')) {
-                        $allowed = $tenantModel->subscribed_product_modules;
-                        $modules = $modules->filter(fn (array $def) => in_array($def['code'] ?? null, $allowed, true))->values();
-                    }
+                // The consuming package decides which modules a given scope receives
+                // (e.g. the SaaS platform filters a tenant to its subscribed products —
+                // Audit D15). HRMAC stays context-free: if no filter is bound, every
+                // discovered module is synced.
+                if (app()->bound(ModuleSyncFilterInterface::class)) {
+                    $modules = app(ModuleSyncFilterInterface::class)->filter($modules, $scope);
                 }
 
                 if ($modules->isEmpty()) {
@@ -252,26 +250,6 @@ class SyncModuleHierarchy extends Command
     /**
      * Auto-detect scope based on context.
      */
-    protected function detectScope(): string
-    {
-        // Tenant context
-        if (function_exists('tenancy') && tenancy()->initialized) {
-            return 'tenant';
-        }
-
-        // Central database (has tenants table)
-        if (Schema::hasTable('tenants')) {
-            return 'platform';
-        }
-
-        // Standalone mode
-        if (! class_exists(Tenancy::class)) {
-            return 'all';
-        }
-
-        return 'tenant';
-    }
-
     /**
      * Sync a module and its hierarchy.
      */
