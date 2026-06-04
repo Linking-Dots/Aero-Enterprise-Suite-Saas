@@ -30,7 +30,9 @@ class RoleService
                 'description' => $data['description'] ?? null,
                 'default_dashboard' => $data['default_dashboard'] ?? null,
                 'priority' => $data['priority'] ?? 0,
-                'scope' => $data['scope'] ?? null,
+                // roles.scope is NOT NULL; default to 'tenant' (the common case) when
+                // the caller doesn't specify. Consumers may pass 'platform' explicitly.
+                'scope' => $data['scope'] ?? 'tenant',
             ]);
 
             $this->audit->log(
