@@ -39,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property string $status
  * @property Carbon|null $suspended_at
  */
-class RoleModuleAccess extends TenantModel
+class RoleModuleAccess extends HrmacModel
 {
     protected $table = 'role_module_access';
 

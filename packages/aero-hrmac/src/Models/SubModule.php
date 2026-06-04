@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Represents a functional area within a module (e.g., Employees within HRM)
  * Connection-agnostic: uses current database context.
  */
-class SubModule extends TenantModel
+class SubModule extends HrmacModel
 {
     use HasFactory;
 

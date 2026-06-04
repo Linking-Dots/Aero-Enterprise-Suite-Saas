@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * that requires permission control (pages, sections, widgets, actions, APIs).
  * Connection-agnostic: uses current database context.
  */
-class Component extends TenantModel
+class Component extends HrmacModel
 {
     use HasFactory;
 

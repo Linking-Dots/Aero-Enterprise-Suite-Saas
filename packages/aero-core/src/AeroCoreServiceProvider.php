@@ -310,6 +310,15 @@ class AeroCoreServiceProvider extends ServiceProvider
                 }
             });
 
+            // HRMAC is a context-free shared package: its models carry no guard. As the
+            // tenant host, we supply the isolation guard — enforcing tenant context for
+            // tenant requests while allowing the platform/central context. (Standalone
+            // and early boot are no-ops.) See Aero\Core\Hrmac\HrmacContextGuard.
+            $this->app->singleton(
+                \Aero\Contracts\HrmacModelGuardInterface::class,
+                \Aero\Core\Hrmac\HrmacContextGuard::class
+            );
+
             // Register cross-package contracts for modular architecture
             $this->registerCrossPackageContracts();
 

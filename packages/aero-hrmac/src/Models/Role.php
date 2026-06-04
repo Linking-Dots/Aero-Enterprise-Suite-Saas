@@ -25,7 +25,7 @@ use Illuminate\Support\Collection;
  * @property string|null $default_dashboard
  * @property int $priority
  */
-class Role extends TenantModel
+class Role extends HrmacModel
 {
     protected $table = 'roles';
 

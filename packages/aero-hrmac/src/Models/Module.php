@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Represents a top-level application module (Core, HRM, CRM, etc.)
  * Connection-agnostic: uses current database context (tenant or landlord).
  */
-class Module extends TenantModel
+class Module extends HrmacModel
 {
     use HasFactory;
 

@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Examples: view, create, update, delete, export, import, approve, etc.
  * Connection-agnostic: uses current database context.
  */
-class Action extends TenantModel
+class Action extends HrmacModel
 {
     use HasFactory;
 

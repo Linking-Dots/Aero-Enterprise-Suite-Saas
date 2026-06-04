@@ -6,7 +6,7 @@ namespace Aero\HRMAC\Models;
 
 use Aero\Core\Models\TenantModel;
 
-class HrmacAuditLog extends TenantModel
+class HrmacAuditLog extends HrmacModel
 {
     protected $table = 'hrmac_audit_log';
 
