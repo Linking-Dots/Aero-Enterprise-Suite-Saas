@@ -39,7 +39,7 @@ class TenantSubscriptionController extends Controller
 
         $usage = $this->resolveUsage($tenant->id, $subscription);
 
-        return Inertia::render('Subscription/Index', [
+        return Inertia::render('Core/Subscription/Index', [
             'subscription' => $subscription,
             'plan' => $plan,
             'usage' => $usage,
@@ -62,7 +62,7 @@ class TenantSubscriptionController extends Controller
             ->orderBy('monthly_price')
             ->get();
 
-        return Inertia::render('Subscription/Plans', [
+        return Inertia::render('Core/Subscription/Plans', [
             'plans' => $plans,
             'currentPlan' => $subscription?->plan,
             'subscription' => $subscription,
@@ -114,7 +114,7 @@ class TenantSubscriptionController extends Controller
 
         $usage = $this->resolveUsage($tenant->id, $subscription);
 
-        return Inertia::render('Subscription/Usage', [
+        return Inertia::render('Core/Subscription/Usage', [
             'subscription' => $subscription,
             'plan' => $subscription?->plan,
             'usage' => $usage,
@@ -145,7 +145,7 @@ class TenantSubscriptionController extends Controller
                 'created_at' => $sub->created_at?->toDateString(),
             ]);
 
-        return Inertia::render('Subscription/Invoices', [
+        return Inertia::render('Core/Subscription/Invoices', [
             'invoices' => $invoices,
         ]);
     }

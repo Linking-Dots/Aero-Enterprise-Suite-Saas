@@ -2,6 +2,7 @@
 
 namespace Aero\Platform\Models;
 
+use Aero\Contracts\Models\CentralModel;
 use Aero\Platform\Contracts\BillableSubscription as BillableSubscriptionContract;
 use Aero\Platform\Observers\SubscriptionImmutableObserver;
 use Carbon\Carbon;
@@ -59,6 +60,21 @@ class Subscription extends CashierSubscription implements BillableSubscriptionCo
     {
         parent::booted();
         static::observe(SubscriptionImmutableObserver::class);
+
+        // Subscriptions are central-owned. Cashier's base model uses the default
+        // connection, which in tenant context is the tenant DB (no subscriptions
+        // table). Pin writes to the central connection like CentralModel does.
+        static::creating(fn (self $m) => $m->setConnection(CentralModel::centralConnectionName()));
+        static::saving(fn (self $m) => $m->setConnection(CentralModel::centralConnectionName()));
+    }
+
+    /**
+     * Resolve the central connection so tenant-context reads/writes hit the
+     * central DB (mirrors CentralModel; Cashier's base class can't extend it).
+     */
+    public function getConnectionName(): ?string
+    {
+        return CentralModel::centralConnectionName();
     }
 
     /**

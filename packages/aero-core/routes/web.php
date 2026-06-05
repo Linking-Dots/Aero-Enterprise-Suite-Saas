@@ -235,7 +235,7 @@ if (class_exists('Aero\Platform\Http\Controllers\TenantOnboardingController')) {
 // ============================================================================
 if (class_exists('Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionController')) {
     $subscriptionController = 'Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionController';
-    Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('subscription')->name('tenant.subscription.')->group(function () use ($subscriptionController) {
+    Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('subscription')->name('core.subscription.')->group(function () use ($subscriptionController) {
         Route::get('/', [$subscriptionController, 'index'])->name('index')->middleware('hrmac:core.subscription.plans.view');
         Route::get('/plans', [$subscriptionController, 'plans'])->name('plans')->middleware('hrmac:core.subscription.plans.view');
         Route::post('/change-plan', [$subscriptionController, 'changePlan'])->name('change-plan')->middleware('hrmac:core.subscription.plans.upgrade');
