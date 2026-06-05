@@ -519,6 +519,13 @@ class AeroPlatformServiceProvider extends ServiceProvider
         foreach ($config['submodules'] ?? [] as $submodule) {
             $submoduleCode = $submodule['code'] ?? '';
 
+            // Respect explicit nav suppression — used to hide features whose
+            // backend exists but whose admin UI is not built yet (no page),
+            // so the sidebar never links to a blank screen.
+            if (($submodule['show_in_nav'] ?? true) === false) {
+                continue;
+            }
+
             // Get submodule icon for fallback
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
             $components = $submodule['components'] ?? [];
