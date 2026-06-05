@@ -466,7 +466,7 @@ return [
             'name' => 'File Manager',
             'description' => 'Manage file storage and media library',
             'icon' => 'FolderOpenIcon',
-            'route' => '/files',
+            'route' => '/file-manager',
             'priority' => 8,
 
             'components' => [
@@ -631,7 +631,7 @@ return [
             'name' => 'Organization',
             'description' => 'Organization profile, identity, fiscal year, addresses, contacts',
             'icon' => 'BuildingOffice2Icon',
-            'route' => '/organization',
+            'route' => '/organization/profile',
             'priority' => 9,
             'components' => [
                 [
@@ -733,7 +733,7 @@ return [
             'name' => 'API & Webhooks',
             'description' => 'API keys, personal access tokens, OAuth apps, outbound webhooks, rate limits',
             'icon' => 'CommandLineIcon',
-            'route' => '/api',
+            'route' => '/api/keys',
             'priority' => 17,
             'components' => [
                 [
@@ -977,7 +977,7 @@ return [
             'name' => 'Data Export/Import',
             'description' => 'Export and import data across entities with support for multiple formats, export history, and scheduling',
             'icon' => 'ArrowPathIcon',
-            'route' => '/export-import',
+            'route' => '/export-import/exports',
             'priority' => 19,
             'components' => [
                 [
