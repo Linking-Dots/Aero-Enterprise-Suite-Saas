@@ -45,7 +45,7 @@ class PlatformDashboardService
     public function recentTenants(int $limit = 10): array
     {
         return Tenant::query()
-            ->select(['id', 'name', 'subdomain', 'status', 'plan_id', 'created_at'])
+            ->select(['id', 'name', 'subdomain', 'status', 'created_at'])
             ->latest('created_at')
             ->limit($limit)
             ->get()
