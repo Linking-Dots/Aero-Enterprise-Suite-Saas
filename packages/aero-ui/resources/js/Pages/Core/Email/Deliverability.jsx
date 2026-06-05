@@ -130,7 +130,7 @@ export default function Deliverability({ domain, checks = {}, score }) {
         title="Deliverability"
         breadcrumb={[
           { label: 'Dashboard', href: route('core.dashboard') },
-          { label: 'Email Engine', href: route('core.email.index') },
+          { label: 'Email Engine', href: route('core.email.logs.index') },
           { label: 'Deliverability' },
         ]}
         description="DNS health checks for your sending domain."

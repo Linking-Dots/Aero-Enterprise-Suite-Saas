@@ -978,6 +978,13 @@ class AeroCoreServiceProvider extends ServiceProvider
                 continue;
             }
 
+            // Respect explicit nav suppression (e.g. embedded cross-cutting
+            // features like comments_mentions that are surfaced inline, not as
+            // a standalone menu page).
+            if (($submodule['show_in_nav'] ?? true) === false) {
+                continue;
+            }
+
             // Get submodule icon for fallback
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
             $components = $submodule['components'] ?? [];

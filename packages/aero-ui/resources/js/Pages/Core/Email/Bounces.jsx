@@ -79,7 +79,7 @@ export default function Bounces({ bounces, top_bouncing_domains = [], filters })
       title="Bounces"
       breadcrumb={[
         { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Email Engine', href: route('core.email.index') },
+        { label: 'Email Engine', href: route('core.email.logs.index') },
         { label: 'Bounces' },
       ]}
       description="Permanently failed delivery attempts and bouncing domain analysis."

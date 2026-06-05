@@ -140,7 +140,7 @@ return [
             'icon' => 'CreditCardIcon',
             'route' => '/subscription',
             'priority' => 2,
-            'show_in_nav' => false,
+            'show_in_nav' => true, // Real tenant self-service page; no other nav home
             'plan' => 'saas',
 
             'components' => [
@@ -1063,6 +1063,9 @@ return [
             'icon' => 'AdjustmentsVerticalIcon',
             'route' => '/preferences',
             'priority' => 18,
+            // Hidden until rebuilt: the page set (Core/UserPreferences/*) targets a
+            // Radix-style API (Select.Trigger/.Content/.Item, Switch onCheckedChange,
+            // Tabs.*) that @aero/ui does not implement, so it renders blank (React #130).
             'show_in_nav' => false,
             'components' => [
                 [
