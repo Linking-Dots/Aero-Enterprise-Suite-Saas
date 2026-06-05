@@ -80,7 +80,7 @@ export default function PlansShow({ plan, metrics }) {
     <DetailPageLayout
       title={plan.name}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Plans', href: route('platform.admin.plans.index') },
         { label: plan.name },
       ]}

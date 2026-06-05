@@ -57,7 +57,7 @@ export default function OnboardingTrials({ tenants }) {
     if (!extendTenant) return;
     setSubmitting(true);
     router.post(
-      route('platform.admin.onboarding.p1.extend', extendTenant.id),
+      route('platform.admin.onboarding.extend', extendTenant.id),
       { days: Number(extendDays) },
       {
         preserveState: true,
@@ -74,7 +74,7 @@ export default function OnboardingTrials({ tenants }) {
 
   function convertTenant(id) {
     router.post(
-      route('platform.admin.onboarding.p1.convert', id),
+      route('platform.admin.onboarding.convert', id),
       {},
       {
         preserveState: true,
@@ -161,7 +161,7 @@ export default function OnboardingTrials({ tenants }) {
     <IndexPageLayout
       title="Trial Management"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Onboarding' },
         { label: 'Trials' },
       ]}
@@ -180,7 +180,7 @@ export default function OnboardingTrials({ tenants }) {
             total={tenants.last_page}
             onChange={page =>
               router.get(
-                route('platform.admin.onboarding.p1.trials'),
+                route('platform.admin.onboarding.trials'),
                 { page },
                 { preserveState: true, preserveScroll: true, only: ['tenants'] }
               )

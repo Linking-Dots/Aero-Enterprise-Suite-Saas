@@ -192,7 +192,7 @@ export default function Gateways({ gateways }) {
     <IndexPageLayout
       title="Payment Gateways"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Billing', href: route('platform.admin.billing.subscriptions.index') },
         { label: 'Gateways' },
       ]}

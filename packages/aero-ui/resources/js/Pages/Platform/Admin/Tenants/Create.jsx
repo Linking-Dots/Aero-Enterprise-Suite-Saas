@@ -57,7 +57,7 @@ export default function TenantsCreate({ plans, products }) {
     <FormPageLayout
       title="Create Tenant"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tenants', href: route('platform.admin.tenants.index') },
         { label: 'Create' },
       ]}

@@ -208,7 +208,7 @@ export default function Subscriptions({ subscriptions, filters, plans }) {
     <IndexPageLayout
       title="Subscriptions"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Billing', href: route('platform.admin.billing.subscriptions.index') },
         { label: 'Subscriptions' },
       ]}

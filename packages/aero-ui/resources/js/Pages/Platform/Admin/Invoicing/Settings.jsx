@@ -167,7 +167,7 @@ export default function InvoicingSettings({ settings, templates }) {
     <IndexPageLayout
       title="Invoice Settings"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Invoicing', href: route('platform.admin.invoicing.index') },
         { label: 'Settings' },
       ]}

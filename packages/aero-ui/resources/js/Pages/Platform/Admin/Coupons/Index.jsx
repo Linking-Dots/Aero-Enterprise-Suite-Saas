@@ -230,7 +230,7 @@ export default function CouponsIndex({ coupons, filters }) {
     <IndexPageLayout
       title="Coupons"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Coupons' },
       ]}
       description="Manage discount coupons and promotional codes."

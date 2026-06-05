@@ -103,7 +103,7 @@ export default function DeveloperDashboard({ cache_stats, queue_stats, recent_lo
     <IndexPageLayout
       title="Developer Dashboard"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Developer Tools' },
       ]}
       description="Cache management, queue health, and recent application logs."

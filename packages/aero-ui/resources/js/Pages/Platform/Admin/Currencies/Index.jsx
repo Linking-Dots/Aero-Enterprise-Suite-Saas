@@ -295,7 +295,7 @@ export default function CurrenciesIndex({ currencies, regionalPrices, plans, pro
     <IndexPageLayout
       title="Currencies"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Currencies' },
       ]}
       description="Manage active currencies, exchange rates, and regional pricing overrides."

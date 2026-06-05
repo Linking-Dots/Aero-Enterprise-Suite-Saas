@@ -260,7 +260,7 @@ export default function FeatureFlagsIndex({ flags, tenants, filters }) {
     <IndexPageLayout
       title="Feature Flags"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Feature Flags' },
       ]}
       description="Control feature rollouts and per-tenant overrides."

@@ -109,7 +109,7 @@ export default function BillingDashboard({ stats, recent_subscriptions, recent_i
     <DashboardLayout
       title="Billing Dashboard"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Billing' },
       ]}
       description="Revenue metrics and billing activity at a glance."

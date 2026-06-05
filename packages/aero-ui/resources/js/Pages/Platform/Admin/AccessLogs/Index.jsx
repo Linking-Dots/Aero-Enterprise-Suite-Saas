@@ -119,7 +119,7 @@ export default function AccessLogsIndex({ logs, filters, pii }) {
     <IndexPageLayout
       title={pii ? 'PII Access Logs' : 'Access Logs'}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Access Logs' },
       ]}
       description={pii

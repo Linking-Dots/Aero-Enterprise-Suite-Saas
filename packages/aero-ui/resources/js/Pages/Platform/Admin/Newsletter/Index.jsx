@@ -185,7 +185,7 @@ export default function NewsletterIndex({ subscribers, filters }) {
     <IndexPageLayout
       title="Newsletter Subscribers"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Newsletter' },
       ]}
       description="Manage marketing newsletter subscribers, import, export, and settings."

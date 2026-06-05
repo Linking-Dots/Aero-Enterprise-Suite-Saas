@@ -42,7 +42,7 @@ export default function OnboardingPending({ tenants }) {
 
   function approveTenant(id) {
     router.post(
-      route('platform.admin.onboarding.p1.approve', id),
+      route('platform.admin.onboarding.approve', id),
       {},
       {
         preserveState: true,
@@ -57,7 +57,7 @@ export default function OnboardingPending({ tenants }) {
     if (!rejectTenant) return;
     setSubmitting(true);
     router.post(
-      route('platform.admin.onboarding.p1.reject', rejectTenant.id),
+      route('platform.admin.onboarding.reject', rejectTenant.id),
       { reason: rejectReason },
       {
         preserveState: true,
@@ -138,7 +138,7 @@ export default function OnboardingPending({ tenants }) {
     <IndexPageLayout
       title="Pending Approvals"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Onboarding' },
         { label: 'Pending Approvals' },
       ]}
@@ -157,7 +157,7 @@ export default function OnboardingPending({ tenants }) {
             total={tenants.last_page}
             onChange={page =>
               router.get(
-                route('platform.admin.onboarding.p1.pending'),
+                route('platform.admin.onboarding.pending'),
                 { page },
                 { preserveState: true, preserveScroll: true, only: ['tenants'] }
               )

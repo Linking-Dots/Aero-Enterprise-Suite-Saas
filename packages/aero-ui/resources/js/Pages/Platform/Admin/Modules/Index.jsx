@@ -46,7 +46,7 @@ export default function ModulesIndex({ modules }) {
     <IndexPageLayout
       title="Module Management"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Modules' },
       ]}
       description="Manage the platform module catalog — active modules appear on the storefront."

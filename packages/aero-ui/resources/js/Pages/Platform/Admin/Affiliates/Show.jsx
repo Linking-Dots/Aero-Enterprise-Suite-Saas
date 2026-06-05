@@ -224,7 +224,7 @@ export default function AffiliatesShow({ affiliate, referrals, payouts }) {
     <DetailPageLayout
       title={affiliate.name}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Affiliates', href: route('platform.admin.affiliates.index') },
         { label: affiliate.name },
       ]}

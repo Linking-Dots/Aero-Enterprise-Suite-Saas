@@ -198,7 +198,7 @@ export default function Playbooks({ playbooks, runHistory }) {
     <IndexPageLayout
       title="Success Playbooks"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Customer Success' },
         { label: 'Playbooks' },
       ]}

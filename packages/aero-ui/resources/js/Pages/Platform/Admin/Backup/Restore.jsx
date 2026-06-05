@@ -149,7 +149,7 @@ export default function Restore({ restorePoints, tenants }) {
     <IndexPageLayout
       title="Restore"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Backup & Restore', href: route('platform.admin.backup.index') },
         { label: 'Restore' },
       ]}

@@ -194,7 +194,7 @@ export default function PartnersIndex({ partners }) {
     <IndexPageLayout
       title="Reseller Partners"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Partners' },
       ]}
       description="Manage reseller and channel partners, commission rates, and approval status."

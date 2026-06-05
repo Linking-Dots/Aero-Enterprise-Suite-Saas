@@ -167,7 +167,7 @@ export default function TaxProviders({ providers }) {
     <IndexPageLayout
       title="Tax Providers"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tax Rates', href: route('platform.admin.tax.rates.index') },
         { label: 'Providers' },
       ]}

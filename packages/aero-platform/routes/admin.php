@@ -61,6 +61,7 @@ use Aero\Platform\Http\Controllers\Admin\RefundController;
 use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\SeoController;
 use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
+use Aero\Platform\Http\Controllers\Admin\QuotaController as P3QuotaController;
 use Aero\Platform\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantController;
 use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;

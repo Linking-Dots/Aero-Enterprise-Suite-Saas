@@ -174,7 +174,7 @@ export default function Meters({ meters, filters }) {
     <IndexPageLayout
       title="Usage Meters"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Add-ons', href: route('platform.admin.addons.index') },
         { label: 'Usage Meters' },
       ]}

@@ -17,19 +17,19 @@ export default function OnboardingDashboard({ stats }) {
     {
       label:       'Pending Approvals',
       value:       stats?.pending_approvals ?? 0,
-      routeName:   'platform.admin.onboarding.p1.pending',
+      routeName:   'platform.admin.onboarding.pending',
       deltaTrend:  'neutral',
     },
     {
       label:      'Provisioning Running',
       value:      stats?.provisioning ?? 0,
-      routeName:  'platform.admin.onboarding.p1.provisioning',
+      routeName:  'platform.admin.onboarding.provisioning',
       deltaTrend: 'neutral',
     },
     {
       label:      'Active Trials',
       value:      stats?.trials ?? 0,
-      routeName:  'platform.admin.onboarding.p1.trials',
+      routeName:  'platform.admin.onboarding.trials',
       deltaTrend: 'up',
     },
     {
@@ -86,19 +86,19 @@ export default function OnboardingDashboard({ stats }) {
           </Button>
           <Button
             intent="soft"
-            onClick={() => router.get(route('platform.admin.onboarding.p1.pending'))}
+            onClick={() => router.get(route('platform.admin.onboarding.pending'))}
           >
             Pending Approvals
           </Button>
           <Button
             intent="soft"
-            onClick={() => router.get(route('platform.admin.onboarding.p1.provisioning'))}
+            onClick={() => router.get(route('platform.admin.onboarding.provisioning'))}
           >
             Provisioning Queue
           </Button>
           <Button
             intent="soft"
-            onClick={() => router.get(route('platform.admin.onboarding.p1.trials'))}
+            onClick={() => router.get(route('platform.admin.onboarding.trials'))}
           >
             Trial Management
           </Button>

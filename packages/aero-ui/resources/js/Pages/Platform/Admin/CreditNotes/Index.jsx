@@ -174,7 +174,7 @@ export default function CreditNotesIndex({ creditNotes, filters }) {
     <IndexPageLayout
       title="Credit Notes"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Credit Notes' },
       ]}
       description="Issue and apply credit notes to tenant accounts."

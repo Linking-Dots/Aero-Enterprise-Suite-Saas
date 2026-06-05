@@ -298,7 +298,7 @@ export default function SubscriptionLifecycleIndex({
     <IndexPageLayout
       title="Subscription Lifecycle"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Subscription Lifecycle' },
       ]}
       description="Manage trials, plan changes, paused subscriptions, and cancellation save flows. Covers both plan and product subscriptions."

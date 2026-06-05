@@ -88,7 +88,7 @@ export default function ModuleConfigure({ module }) {
     <FormPageLayout
       title={`Configure: ${module?.name}`}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Modules', href: route('platform.admin.modules.index') },
         { label: module?.name ?? 'Configure' },
       ]}

@@ -81,7 +81,7 @@ export default function SeoIndex({ settings, analytics, sitemap }) {
       <FormPageLayout
         title="SEO Settings"
         breadcrumb={[
-          { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+          { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
           { label: 'SEO' },
         ]}
         description="Global meta tags, Open Graph defaults, and sitemap configuration."

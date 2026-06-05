@@ -97,6 +97,35 @@ class NewsletterSubscriber extends CentralModel
     }
 
     /**
+     * Selectable status options (value => label) for filters and forms.
+     *
+     * @return array<string, string>
+     */
+    public static function getStatusOptions(): array
+    {
+        return [
+            self::STATUS_PENDING => 'Pending',
+            self::STATUS_CONFIRMED => 'Confirmed',
+            self::STATUS_UNSUBSCRIBED => 'Unsubscribed',
+        ];
+    }
+
+    /**
+     * Selectable source options (value => label) for filters and forms.
+     *
+     * @return array<string, string>
+     */
+    public static function getSourceOptions(): array
+    {
+        return [
+            self::SOURCE_WEBSITE => 'Website',
+            self::SOURCE_REGISTRATION => 'Registration',
+            self::SOURCE_IMPORT => 'Import',
+            self::SOURCE_API => 'API',
+        ];
+    }
+
+    /**
      * Scope for active subscribers (not unsubscribed).
      */
     public function scopeActive($query)

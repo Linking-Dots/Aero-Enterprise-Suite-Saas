@@ -91,7 +91,7 @@ export default function Localization({ localization }) {
     <FormPageLayout
       title="Localization"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'Localization' },
       ]}

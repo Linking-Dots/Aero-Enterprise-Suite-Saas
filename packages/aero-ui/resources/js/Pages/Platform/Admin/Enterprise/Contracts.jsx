@@ -204,7 +204,7 @@ export default function Contracts({ orderForms, plans }) {
     <IndexPageLayout
       title="Contracts"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Enterprise' },
         { label: 'Contracts' },
       ]}

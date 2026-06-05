@@ -201,7 +201,7 @@ export default function EmailBlasts({ blasts, plans, products, filters }) {
     <IndexPageLayout
       title="Email Blasts"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tenant Comms' },
         { label: 'Email Blasts' },
       ]}

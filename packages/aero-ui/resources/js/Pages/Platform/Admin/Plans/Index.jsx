@@ -152,7 +152,7 @@ export default function PlansIndex({ plans, filters }) {
     <IndexPageLayout
       title="Plans"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Plans' },
       ]}
       description="Manage subscription plans available to tenants."

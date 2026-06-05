@@ -29,11 +29,19 @@ class PlatformAnalyticsService
             ->select('plans.name', DB::raw('count(*) as tenants'), DB::raw('sum(plans.price_monthly) as mrr'))
             ->groupBy('plans.name')->get()->toArray();
 
-        // ARCH NOTE: Product MRR is independent — sum product_subscriptions.price_monthly per product.
+        // ARCH NOTE: Product MRR is independent. product_subscriptions stores a
+        // single `amount` per `billing_cycle`; normalise to a monthly figure so it
+        // is comparable to plan MRR (plans.price_monthly).
         $byProduct = DB::connection('central')->table('product_subscriptions')
             ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
             ->where('product_subscriptions.status', 'active')
-            ->select('products.name', DB::raw('count(*) as tenants'), DB::raw('sum(product_subscriptions.price_monthly) as mrr'))
+            ->select('products.name', DB::raw('count(*) as tenants'), DB::raw(
+                "sum(case product_subscriptions.billing_cycle "
+                ."when 'annual' then product_subscriptions.amount / 12 "
+                ."when 'yearly' then product_subscriptions.amount / 12 "
+                ."when 'quarterly' then product_subscriptions.amount / 3 "
+                ."else product_subscriptions.amount end) as mrr"
+            ))
             ->groupBy('products.name')->get()->toArray();
 
         return [

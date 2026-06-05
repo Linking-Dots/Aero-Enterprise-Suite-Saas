@@ -49,7 +49,7 @@ export default function Infrastructure({ hosting }) {
     <FormPageLayout
       title="Infrastructure"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'Infrastructure' },
       ]}

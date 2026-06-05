@@ -258,7 +258,7 @@ export default function DunningRules({ rules, recoveryEmails }) {
     <IndexPageLayout
       title="Dunning Rules"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Dunning', href: route('platform.admin.dunning.index') },
         { label: 'Rules' },
       ]}

@@ -28,7 +28,7 @@ export default function OnboardingProvisioning({ logs }) {
 
   function retryLog(id) {
     router.post(
-      route('platform.admin.onboarding.p1.retry', id),
+      route('platform.admin.onboarding.retry', id),
       {},
       {
         preserveState: true,
@@ -102,7 +102,7 @@ export default function OnboardingProvisioning({ logs }) {
     <IndexPageLayout
       title="Provisioning Queue"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Onboarding' },
         { label: 'Provisioning' },
       ]}
@@ -121,7 +121,7 @@ export default function OnboardingProvisioning({ logs }) {
             total={logs.last_page}
             onChange={page =>
               router.get(
-                route('platform.admin.onboarding.p1.provisioning'),
+                route('platform.admin.onboarding.provisioning'),
                 { page },
                 { preserveState: true, preserveScroll: true, only: ['logs'] }
               )

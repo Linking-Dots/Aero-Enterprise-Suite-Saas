@@ -233,7 +233,7 @@ export default function Licenses({ licenses, plans }) {
     <IndexPageLayout
       title="License Keys"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Enterprise' },
         { label: 'Licenses' },
       ]}

@@ -126,7 +126,7 @@ export default function FeatureFlagForm({ flag }) {
     <FormPageLayout
       title={isEdit ? `Edit Flag: ${flag.name}` : 'New Feature Flag'}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Feature Flags', href: route('platform.admin.feature-flags.index') },
         { label: isEdit ? flag.name : 'New' },
       ]}

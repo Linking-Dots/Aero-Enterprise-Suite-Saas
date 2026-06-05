@@ -190,7 +190,7 @@ export default function PartnersShow({ partner, commissions, tenants, payoutSumm
     <DetailPageLayout
       title={partner.name}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Partners', href: route('platform.admin.partners.index') },
         { label: partner.name },
       ]}

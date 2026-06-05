@@ -184,7 +184,7 @@ export default function AddonsIndex({ addons, filters }) {
     <IndexPageLayout
       title="Add-ons"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Add-ons' },
       ]}
       description="Manage billable add-ons that tenants can purchase on top of their subscription."
