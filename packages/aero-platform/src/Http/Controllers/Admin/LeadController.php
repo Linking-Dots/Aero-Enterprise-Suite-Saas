@@ -37,7 +37,7 @@ class LeadController extends Controller
         $leads = $this->leadService->getPaginatedLeads($filters, $perPage);
         $stats = $this->leadService->getLeadStats($request->input('period', 'month'));
 
-        return Inertia::render('Admin/Pages/Marketing/Leads/Index', [
+        return Inertia::render('Platform/Admin/Leads/Index', [
             'title' => 'Lead Management',
             'leads' => $leads,
             'stats' => $stats,
@@ -70,7 +70,7 @@ class LeadController extends Controller
     {
         $lead->load('assignee', 'tenant');
 
-        return Inertia::render('Admin/Pages/Marketing/Leads/Show', [
+        return Inertia::render('Platform/Admin/Leads/Show', [
             'title' => 'Lead Details',
             'lead' => $lead,
         ]);

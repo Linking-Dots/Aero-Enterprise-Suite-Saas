@@ -31,7 +31,7 @@ class SeoController extends Controller
     {
         $settings = PlatformSetting::current();
 
-        return Inertia::render('Admin/Pages/Marketing/Seo/Index', [
+        return Inertia::render('Platform/Admin/Seo/Index', [
             'title' => 'SEO Settings',
             'seoSettings' => $settings->getSeoSettings(),
             'analyticsIntegrations' => $settings->getAnalyticsIntegrations(),
@@ -106,7 +106,7 @@ class SeoController extends Controller
     {
         $pages = PlatformPage::orderBy('priority')->paginate(20);
 
-        return Inertia::render('Admin/Pages/Marketing/Seo/Pages', [
+        return Inertia::render('Platform/Admin/Seo/Pages', [
             'title' => 'Platform Pages',
             'pages' => $pages,
             'pageTypes' => PlatformPage::getPageTypes(),

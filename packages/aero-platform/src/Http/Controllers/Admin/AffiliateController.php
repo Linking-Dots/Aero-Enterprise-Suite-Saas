@@ -38,7 +38,7 @@ class AffiliateController extends Controller
         $stats = $this->affiliateService->getAffiliateStats($request->input('period', 'month'));
         $settings = PlatformSetting::current()->getAffiliateSettings();
 
-        return Inertia::render('Admin/Pages/Marketing/Affiliates/Index', [
+        return Inertia::render('Platform/Admin/Affiliates/Index', [
             'title' => 'Affiliate Program',
             'affiliates' => $affiliates,
             'stats' => $stats,
@@ -72,7 +72,7 @@ class AffiliateController extends Controller
             $query->latest()->limit(10);
         }]);
 
-        return Inertia::render('Admin/Pages/Marketing/Affiliates/Show', [
+        return Inertia::render('Platform/Admin/Affiliates/Show', [
             'title' => 'Affiliate Details',
             'affiliate' => $affiliate,
             'referralStats' => [
@@ -235,7 +235,7 @@ class AffiliateController extends Controller
     {
         $pendingPayouts = $this->affiliateService->getPendingPayouts();
 
-        return Inertia::render('Admin/Pages/Marketing/Affiliates/Payouts', [
+        return Inertia::render('Platform/Admin/Affiliates/Payouts', [
             'title' => 'Pending Payouts',
             'affiliates' => $pendingPayouts,
         ]);
