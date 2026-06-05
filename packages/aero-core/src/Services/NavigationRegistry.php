@@ -240,8 +240,10 @@ class NavigationRegistry implements NavigationRegistryInterface
             }
         }
 
-        // 2. Add self-service navigation (priority 2) - "My Workspace" menu
-        $selfServiceNav = $this->getSelfServiceNavigation();
+        // 2. Add self-service navigation (priority 2) - "My Workspace" menu.
+        // Self-service ("My *") pages are an employee/tenant concept; they must
+        // never appear in the platform (landlord) admin nav.
+        $selfServiceNav = $scope === 'platform' ? null : $this->getSelfServiceNavigation();
         if ($selfServiceNav) {
             // Filter self-service children by subscription
             if ($subscribedModules !== null && ! empty($selfServiceNav['children'])) {
