@@ -136,7 +136,7 @@ class PlanControllerTest extends TestCase
             ->assertOk()
             ->assertInertia(
                 fn ($page) => $page
-                    ->component('Platform/Admin/Plans/P2/Index')
+                    ->component('Platform/Admin/Plans/Index')
                     ->has('plans')
                     ->has('filters')
             );

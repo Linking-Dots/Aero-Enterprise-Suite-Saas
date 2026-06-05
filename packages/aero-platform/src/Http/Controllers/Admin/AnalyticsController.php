@@ -18,7 +18,7 @@ class AnalyticsController extends Controller
     {
         [$from, $to] = $this->range($request);
 
-        return Inertia::render('Platform/Admin/Analytics/Index', [
+        return Inertia::render('Platform/Admin/Analytics/Revenue', [
             'revenue' => $this->svc->revenue($from, $to),
             'tenants' => $this->svc->tenantAnalytics($from, $to),
             'range' => compact('from', 'to'),

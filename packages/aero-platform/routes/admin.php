@@ -389,7 +389,7 @@ Route::middleware('admin.domain')->group(function () {
         // Billing & Invoices
         Route::middleware(['hrmac:subscriptions'])->prefix('billing')->name('admin.billing.')->group(function () {
             Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Billing/Index');
+                return Inertia::render('Platform/Admin/Billing/Dashboard');
             })->middleware(['hrmac:subscriptions.tenant-subscriptions'])->name('index');
 
             Route::get('/subscriptions', function () {
@@ -509,7 +509,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         Route::middleware(['hrmac:platform-analytics'])->prefix('analytics')->name('admin.analytics.')->group(function () {
             Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Analytics/Index');
+                return Inertia::render('Platform/Admin/Analytics/Revenue');
             })->middleware(['hrmac:platform-analytics.platform-overview'])->name('index');
 
             Route::get('/revenue', function () {
@@ -595,7 +595,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         Route::middleware(['hrmac:platform-integrations'])->prefix('integrations')->name('admin.integrations.')->group(function () {
             Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Integrations/Index');
+                return Inertia::render('Platform/Admin/Integrations/Connectors');
             })->middleware(['hrmac:platform-integrations.global-connectors'])->name('index');
 
             Route::get('/connectors', function () {

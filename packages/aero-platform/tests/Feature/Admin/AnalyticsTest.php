@@ -88,7 +88,7 @@ class AnalyticsTest extends TestCase
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.analytics.index'))
             ->assertOk()
-            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/Index'));
+            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/Revenue'));
     }
 
     public function test_feature_usage_renders_correct_component(): void
