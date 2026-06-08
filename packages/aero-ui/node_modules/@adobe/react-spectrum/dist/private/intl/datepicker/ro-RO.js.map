@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,uBAAc,CAAC;IAC7C,aAAa,CAAC,iBAAc,CAAC;IAC7B,QAAQ,CAAC,GAAG,CAAC;AACf","sources":["packages/@adobe/react-spectrum/intl/datepicker/ro-RO.json"],"sourcesContent":["{\n  \"endTime\": \"Ora de sfârșit\",\n  \"startTime\": \"Ora de început\",\n  \"time\": \"Ora\"\n}\n"],"names":[],"version":3,"file":"ro-RO.js.map"}

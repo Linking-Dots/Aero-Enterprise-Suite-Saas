@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,WAAW,CAAC;IAC7C,cAAc,CAAC,SAAS,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/label/nl-NL.json"],"sourcesContent":["{\n  \"(optional)\": \"(optioneel)\",\n  \"(required)\": \"(vereist)\"\n}\n"],"names":[],"version":3,"file":"nl-NL.js.map"}

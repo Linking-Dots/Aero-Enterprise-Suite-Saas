@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,4FAAc,CAAC;IAC3C,WAAW,CAAC,+DAAS,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/dialog/uk-UA.json"],"sourcesContent":["{\n  \"alert\": \"Сигнал тривоги\",\n  \"dismiss\": \"Скасувати\"\n}\n"],"names":[],"version":3,"file":"uk-UA.mjs.map"}

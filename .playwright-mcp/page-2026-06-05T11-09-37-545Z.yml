@@ -1,0 +1,227 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "HRM Dashboard" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employee Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /dashboard
+      - link "My Profile" [ref=e14] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e15] [cursor=pointer]:
+        - /url: /notifications
+      - link "My Dashboard" [ref=e16] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Attendance" [ref=e17] [cursor=pointer]:
+        - /url: /hrm/attendance-employee
+      - link "My Leaves" [ref=e18] [cursor=pointer]:
+        - /url: /hrm/leaves-employee
+      - link "My Time-Off" [ref=e19] [cursor=pointer]:
+        - /url: /hrm/self-service/time-off
+      - link "My Payslips" [ref=e20] [cursor=pointer]:
+        - /url: /hrm/self-service/payslips
+      - link "My Expenses" [ref=e21] [cursor=pointer]:
+        - /url: /hrm/my-expenses
+      - link "My Documents" [ref=e22] [cursor=pointer]:
+        - /url: /hrm/self-service/documents
+      - link "My Benefits" [ref=e23] [cursor=pointer]:
+        - /url: /hrm/self-service/benefits
+      - link "My Trainings" [ref=e24] [cursor=pointer]:
+        - /url: /hrm/self-service/trainings
+      - link "My Performance" [ref=e25] [cursor=pointer]:
+        - /url: /hrm/self-service/performance
+      - link "My Goals" [ref=e26] [cursor=pointer]:
+        - /url: /hrm/goals
+      - link "My Career Path" [ref=e27] [cursor=pointer]:
+        - /url: /hrm/self-service/career-path
+      - link "My 360° Feedback" [ref=e28] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Tenants" [ref=e30] [cursor=pointer]:
+        - /url: /tenants
+      - link "Onboarding" [ref=e31] [cursor=pointer]:
+        - /url: /onboarding
+      - link "Plans" [ref=e32] [cursor=pointer]:
+        - /url: /plans
+      - link "Quota Management" [ref=e33] [cursor=pointer]:
+        - /url: /quotas
+      - link "Billing" [ref=e34] [cursor=pointer]:
+        - /url: /billing
+      - link "Modules" [ref=e35] [cursor=pointer]:
+        - /url: /modules
+      - link "Error Logs" [ref=e36] [cursor=pointer]:
+        - /url: /error-logs
+      - link "Platform Users" [ref=e37] [cursor=pointer]:
+        - /url: /users
+      - link "Integrations" [ref=e38] [cursor=pointer]:
+        - /url: /integrations
+      - link "Settings" [ref=e39] [cursor=pointer]:
+        - /url: /settings
+      - link "Developer" [ref=e40] [cursor=pointer]:
+        - /url: /developer
+      - link "Audit Logs" [ref=e41] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Access Logs" [ref=e42] [cursor=pointer]:
+        - /url: /access-logs
+      - link "Analytics" [ref=e43] [cursor=pointer]:
+        - /url: /analytics
+      - link "SEO" [ref=e44] [cursor=pointer]:
+        - /url: /seo
+      - link "Leads" [ref=e45] [cursor=pointer]:
+        - /url: /leads
+      - link "Newsletter" [ref=e46] [cursor=pointer]:
+        - /url: /newsletter
+      - link "Affiliates" [ref=e47] [cursor=pointer]:
+        - /url: /affiliates
+      - link "Social Login" [ref=e48] [cursor=pointer]:
+        - /url: /social-auth
+      - link "Reseller / Channel Partners" [ref=e49] [cursor=pointer]:
+        - /url: /partners
+      - link "White-Label per Tenant" [ref=e50] [cursor=pointer]:
+        - /url: /white-label/domains
+      - link "Feature Flags" [ref=e51] [cursor=pointer]:
+        - /url: /feature-flags
+      - link "White-Label" [ref=e52] [cursor=pointer]:
+        - /url: /white-label/domains
+      - link "Backup & Restore" [ref=e53] [cursor=pointer]:
+        - /url: /backup
+      - link "Status Page & Incidents" [ref=e54] [cursor=pointer]:
+        - /url: /status
+      - link "Status & Incidents" [ref=e55] [cursor=pointer]:
+        - /url: /status
+      - link "Customer Success" [ref=e56] [cursor=pointer]:
+        - /url: /customer-success/health
+      - link "Platform Security" [ref=e57] [cursor=pointer]:
+        - /url: /security/sessions
+      - link "Help Center" [ref=e58] [cursor=pointer]:
+        - /url: /help-center/articles
+      - link "Security Center" [ref=e59] [cursor=pointer]:
+        - /url: /security-center
+      - link "Security Center" [ref=e60] [cursor=pointer]:
+        - /url: /security-center
+      - link "API Gateway" [ref=e61] [cursor=pointer]:
+        - /url: /api-gateway/rate-limits
+      - link "Resource Provisioning" [ref=e62] [cursor=pointer]:
+        - /url: /provisioning
+      - link "Secrets Management" [ref=e63] [cursor=pointer]:
+        - /url: /secrets/kms
+      - link "Observability" [ref=e64] [cursor=pointer]:
+        - /url: /observability/apm
+      - link "Disaster Recovery" [ref=e65] [cursor=pointer]:
+        - /url: /disaster-recovery/runbooks
+      - link "Enterprise SCIM Provisioning" [ref=e66] [cursor=pointer]:
+        - /url: /enterprise-scim/endpoints
+      - link "Contract Management" [ref=e67] [cursor=pointer]:
+        - /url: /contracts
+      - link "Release Management" [ref=e68] [cursor=pointer]:
+        - /url: /releases
+      - link "License Management" [ref=e69] [cursor=pointer]:
+        - /url: /licenses
+      - link "Access Logs" [ref=e70] [cursor=pointer]:
+        - /url: /access-logs
+      - link "Product Analytics" [ref=e71] [cursor=pointer]:
+        - /url: /product-analytics/features
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - button "Expand sidebar" [ref=e74] [cursor=pointer]:
+          - img [ref=e75]
+        - generic [ref=e77]: Platform Dashboard
+        - generic [ref=e78]:
+          - button "Notifications" [ref=e79] [cursor=pointer]:
+            - img [ref=e81]
+          - generic [ref=e83]:
+            - generic [ref=e85]: "?"
+            - generic [ref=e87]: UAT Landlord
+            - button "Sign out" [ref=e88] [cursor=pointer]:
+              - img [ref=e90]
+      - main [ref=e92]:
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - navigation "Breadcrumb" [ref=e96]:
+              - generic [ref=e98]: Platform Admin
+              - generic [ref=e99]:
+                - img [ref=e101]
+                - generic [ref=e103]: Dashboard
+            - heading "Platform Dashboard" [level=1] [ref=e107]
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e112]: MRR
+                - generic [ref=e113]: $0.00
+              - generic [ref=e114]:
+                - generic [ref=e115]: ARR
+                - generic [ref=e116]: $0.00
+              - generic [ref=e117]:
+                - generic [ref=e118]: Active Tenants
+                - generic [ref=e119]: "1"
+              - generic [ref=e120]:
+                - generic [ref=e121]: Churn Rate (30d)
+                - generic [ref=e122]: 0%
+              - generic [ref=e123]:
+                - generic [ref=e124]: New Tenants (7d)
+                - generic [ref=e125]: "1"
+              - generic [ref=e126]:
+                - generic [ref=e127]: Trial Tenants
+                - generic [ref=e128]: "0"
+            - generic [ref=e131]:
+              - generic [ref=e132]: MRR Breakdown
+              - generic [ref=e133]:
+                - generic [ref=e134]:
+                  - generic [ref=e135]: Plan MRR
+                  - generic [ref=e136]: $0.00
+                - generic [ref=e137]:
+                  - generic [ref=e138]: Product MRR
+                  - generic [ref=e139]: $0.00
+                - generic [ref=e140]:
+                  - generic [ref=e141]: Plan ARR
+                  - generic [ref=e142]: $0.00
+                - generic [ref=e143]:
+                  - generic [ref=e144]: Product ARR
+                  - generic [ref=e145]: $0.00
+                - generic [ref=e146]:
+                  - generic [ref=e147]: MRR Growth
+                  - generic [ref=e148]: +0%
+            - generic [ref=e151]:
+              - generic [ref=e152]: System Health
+              - generic [ref=e153]:
+                - generic [ref=e154]:
+                  - paragraph [ref=e155]: Database
+                  - generic [ref=e156]: ok
+                  - generic [ref=e157]: 0.77ms
+                - generic [ref=e158]:
+                  - paragraph [ref=e159]: Cache
+                  - generic [ref=e160]: ok
+                - generic [ref=e161]:
+                  - paragraph [ref=e162]: Queue
+                  - generic [ref=e163]: ok
+                  - paragraph [ref=e164]: "pending: 11 / failed: 0"
+                - generic [ref=e165]:
+                  - paragraph [ref=e166]: Storage
+                  - generic [ref=e167]: ok
+                  - paragraph [ref=e168]: 64% used — 171.51GB free
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]: Recent Tenants
+                - button "View All" [ref=e174] [cursor=pointer]:
+                  - generic [ref=e175]: View All
+              - table [ref=e177]:
+                - rowgroup [ref=e178]:
+                  - row "Tenant Subdomain Status Joined" [ref=e179]:
+                    - columnheader "Tenant" [ref=e180]
+                    - columnheader "Subdomain" [ref=e181]
+                    - columnheader "Status" [ref=e182]
+                    - columnheader "Joined" [ref=e183]
+                - rowgroup [ref=e184]:
+                  - row "UAT Co uatco active 6/3/2026" [ref=e185]:
+                    - cell "UAT Co" [ref=e186]:
+                      - button "UAT Co" [ref=e187] [cursor=pointer]:
+                        - generic [ref=e188]: UAT Co
+                    - cell "uatco" [ref=e189]
+                    - cell "active" [ref=e190]:
+                      - generic [ref=e191]: active
+                    - cell "6/3/2026" [ref=e192]
+  - button "Open Theme Studio" [ref=e193] [cursor=pointer]:
+    - img [ref=e194]

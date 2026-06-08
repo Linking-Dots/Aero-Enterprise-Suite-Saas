@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/icon/UIIcon.ts"],"sourcesContent":["export {type UIIconPropsWithoutChildren, UIIcon, type UIIconProps} from '../../../src/icon/UIIcon';\n"],"names":[],"version":3,"file":"UIIcon.mjs.map"}

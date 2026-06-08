@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,4FAAc,CAAC;IAC7C,aAAa,CAAC,uEAAW,CAAC;IAC1B,QAAQ,CAAC,qBAAG,CAAC;AACf","sources":["packages/@adobe/react-spectrum/intl/datepicker/uk-UA.json"],"sourcesContent":["{\n  \"endTime\": \"Час завершення\",\n  \"startTime\": \"Час початку\",\n  \"time\": \"Час\"\n}\n"],"names":[],"version":3,"file":"uk-UA.cjs.map"}

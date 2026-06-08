@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,WAAW,CAAC;IAC7C,cAAc,CAAC,cAAc,CAAC;AAChC","sources":["packages/@adobe/react-spectrum/intl/label/nb-NO.json"],"sourcesContent":["{\n  \"(optional)\": \"(valgfritt)\",\n  \"(required)\": \"(obligatorisk)\"\n}\n"],"names":[],"version":3,"file":"nb-NO.cjs.map"}

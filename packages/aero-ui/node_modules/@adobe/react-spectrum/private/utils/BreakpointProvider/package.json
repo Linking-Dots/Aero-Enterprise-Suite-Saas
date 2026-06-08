@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/BreakpointProvider.cjs",
+  "module": "../../../dist/exports/private/utils/BreakpointProvider.js",
+  "types": "../../../dist/types/exports/private/utils/BreakpointProvider.d.ts"
+}

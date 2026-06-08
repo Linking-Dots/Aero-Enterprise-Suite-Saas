@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,eAAe,CAAC;IAC9C,eAAe,CAAC,yBAAyB,CAAC;AAC5C","sources":["packages/@adobe/react-spectrum/intl/card/de-DE.json"],"sourcesContent":["{\n  \"loading\": \"Wird geladen...\",\n  \"loadingMore\": \"Noch mehr wird geladen...\"\n}\n"],"names":[],"version":3,"file":"de-DE.js.map"}

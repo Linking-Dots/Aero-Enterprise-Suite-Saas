@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,oGAAgB,CAAC;IAClD,cAAc,CAAC,sFAAc,CAAC;AAChC","sources":["packages/@adobe/react-spectrum/intl/label/bg-BG.json"],"sourcesContent":["{\n  \"(optional)\": \"(незадължително)\",\n  \"(required)\": \"(задължително)\"\n}\n"],"names":[],"version":3,"file":"bg-BG.mjs.map"}

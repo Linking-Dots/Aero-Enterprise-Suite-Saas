@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,gBAAE,CAAC;IAC9B,QAAQ,CAAC,gBAAE,CAAC;AACd","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/zh-TW.json"],"sourcesContent":["{\n  \"help\": \"說明\",\n  \"info\": \"資訊\"\n}\n"],"names":[],"version":3,"file":"zh-TW.mjs.map"}

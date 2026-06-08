@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,gCAAI,CAAC;IACnC,eAAe,CAAC,wBAAG,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/picker/zh-TW.json"],"sourcesContent":["{\n  \"loading\": \"載入中…\",\n  \"placeholder\": \"選取…\"\n}\n"],"names":[],"version":3,"file":"zh-TW.mjs.map"}

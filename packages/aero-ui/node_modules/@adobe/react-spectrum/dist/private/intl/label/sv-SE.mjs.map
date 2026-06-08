@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,UAAU,CAAC;IAC5C,cAAc,CAAC,UAAO,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/label/sv-SE.json"],"sourcesContent":["{\n  \"(optional)\": \"(valfritt)\",\n  \"(required)\": \"(krävs)\"\n}\n"],"names":[],"version":3,"file":"sv-SE.mjs.map"}

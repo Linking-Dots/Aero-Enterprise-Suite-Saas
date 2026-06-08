@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,+EAAa,CAAC;IAC/C,cAAc,CAAC,wEAAY,CAAC;AAC9B","sources":["packages/@adobe/react-spectrum/intl/label/el-GR.json"],"sourcesContent":["{\n  \"(optional)\": \"(προαιρετικό)\",\n  \"(required)\": \"(απαιτείται)\"\n}\n"],"names":[],"version":3,"file":"el-GR.mjs.map"}

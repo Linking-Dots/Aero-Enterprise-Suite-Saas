@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,QAAQ,CAAC,gBAAE,CAAC;IAC9B,YAAY,CAAC,gBAAE,CAAC;IAChB,UAAU,CAAC,gBAAE,CAAC;IACd,YAAY,CAAC,gBAAE,CAAC;AAClB","sources":["packages/@adobe/react-spectrum/intl/inlinealert/ko-KR.json"],"sourcesContent":["{\n  \"info\": \"정보\",\n  \"negative\": \"오류\",\n  \"notice\": \"경고\",\n  \"positive\": \"성공\"\n}\n"],"names":[],"version":3,"file":"ko-KR.cjs.map"}

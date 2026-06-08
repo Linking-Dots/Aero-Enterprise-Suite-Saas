@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,WAAW,CAAC;IAC1C,aAAa,CAAC,kBAAY,CAAC;IAC3B,QAAQ,CAAC,KAAK,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/datepicker/lv-LV.json"],"sourcesContent":["{\n  \"endTime\": \"Beigu laiks\",\n  \"startTime\": \"Sākuma laiks\",\n  \"time\": \"Laiks\"\n}\n"],"names":[],"version":3,"file":"lv-LV.js.map"}

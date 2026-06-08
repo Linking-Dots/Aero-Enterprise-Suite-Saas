@@ -1,0 +1,130 @@
+import {dom as $b7b7a92703138c9b$export$df3a06d6289f983e, useRenderProps as $b7b7a92703138c9b$export$4d86445c2cf5e3} from "./utils.js";
+import {flushSync as $3qGVM$flushSync} from "react-dom";
+import $3qGVM$react, {createContext as $3qGVM$createContext, useRef as $3qGVM$useRef, forwardRef as $3qGVM$forwardRef, useState as $3qGVM$useState, useContext as $3qGVM$useContext} from "react";
+import {useLayoutEffect as $3qGVM$useLayoutEffect} from "react-aria/private/utils/useLayoutEffect";
+import {useObjectRef as $3qGVM$useObjectRef} from "react-aria/useObjectRef";
+
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */ 
+
+
+
+
+const $347bc273c4058e94$var$SharedElementContext = /*#__PURE__*/ (0, $3qGVM$createContext)(null);
+function $347bc273c4058e94$export$758399f318e6385a(props) {
+    let ref = (0, $3qGVM$useRef)({});
+    return /*#__PURE__*/ (0, $3qGVM$react).createElement($347bc273c4058e94$var$SharedElementContext.Provider, {
+        value: ref
+    }, props.children);
+}
+const $347bc273c4058e94$export$c34620ff8881d89f = /*#__PURE__*/ (0, $3qGVM$forwardRef)(function SharedElement(props, ref) {
+    let { name: name, isVisible: isVisible = true, children: children, className: className, style: style, render: render, ...divProps } = props;
+    let [state, setState] = (0, $3qGVM$useState)(isVisible ? 'visible' : 'hidden');
+    let scopeRef = (0, $3qGVM$useContext)($347bc273c4058e94$var$SharedElementContext);
+    if (!scopeRef) throw new Error('<SharedElement> must be rendered inside a <SharedElementTransition>');
+    if (isVisible && state === 'hidden') setState('visible');
+    ref = (0, $3qGVM$useObjectRef)(ref);
+    (0, $3qGVM$useLayoutEffect)(()=>{
+        let element = ref.current;
+        let scope = scopeRef.current;
+        let prevSnapshot = scope[name];
+        let frame = null;
+        if (element && isVisible && prevSnapshot) {
+            // Element is transitioning from a previous instance.
+            setState('visible');
+            let animations = element.getAnimations();
+            // Set properties to animate from.
+            let values = prevSnapshot.style.map(([property, prevValue])=>{
+                let value = element.style[property];
+                if (property === 'translate') {
+                    let prevRect = prevSnapshot.rect;
+                    let currentItem = element.getBoundingClientRect();
+                    let deltaX = prevRect.left - (currentItem === null || currentItem === void 0 ? void 0 : currentItem.left);
+                    let deltaY = prevRect.top - (currentItem === null || currentItem === void 0 ? void 0 : currentItem.top);
+                    element.style.translate = `${deltaX}px ${deltaY}px`;
+                } else element.style[property] = prevValue;
+                return [
+                    property,
+                    value
+                ];
+            });
+            // Cancel any new animations triggered by these properties.
+            for (let a of element.getAnimations())if (!animations.includes(a)) a.cancel();
+            // Remove overrides after one frame to animate to the current values.
+            frame = requestAnimationFrame(()=>{
+                frame = null;
+                for (let [property, value] of values)element.style[property] = value;
+            });
+            delete scope[name];
+        } else if (element && isVisible && !prevSnapshot) {
+            // No previous instance exists, apply the entering state.
+            queueMicrotask(()=>(0, $3qGVM$flushSync)(()=>setState('entering')));
+            frame = requestAnimationFrame(()=>{
+                frame = null;
+                setState('visible');
+            });
+        } else if (element && !isVisible) // Wait until layout effects finish, and check if a snapshot still exists.
+        // If so, no new SharedElement consumed it, so enter the exiting state.
+        queueMicrotask(()=>{
+            if (scope[name]) {
+                delete scope[name];
+                (0, $3qGVM$flushSync)(()=>setState('exiting'));
+                Promise.all(element.getAnimations().map((a)=>a.finished)).then(()=>setState('hidden')).catch(()=>{});
+            } else // Snapshot was consumed by another instance, unmount.
+            setState('hidden');
+        });
+        return ()=>{
+            if (frame != null) cancelAnimationFrame(frame);
+            if (element && element.isConnected && !element.hasAttribute('data-exiting')) {
+                // On unmount, store a snapshot of the rectangle and computed style for transitioning properties.
+                let style = window.getComputedStyle(element);
+                if (style.transitionProperty !== 'none') {
+                    let transitionProperty = style.transitionProperty.split(/\s*,\s*/);
+                    scope[name] = {
+                        rect: element.getBoundingClientRect(),
+                        style: transitionProperty.map((p)=>[
+                                p,
+                                style[p]
+                            ])
+                    };
+                }
+            }
+        };
+    }, [
+        ref,
+        scopeRef,
+        name,
+        isVisible
+    ]);
+    let renderProps = (0, $b7b7a92703138c9b$export$4d86445c2cf5e3)({
+        children: children,
+        className: className,
+        style: style,
+        render: render,
+        values: {
+            isEntering: state === 'entering',
+            isExiting: state === 'exiting'
+        }
+    });
+    if (state === 'hidden') return null;
+    return /*#__PURE__*/ (0, $3qGVM$react).createElement((0, $b7b7a92703138c9b$export$df3a06d6289f983e).div, {
+        ...divProps,
+        ...renderProps,
+        ref: ref,
+        "data-entering": state === 'entering' || undefined,
+        "data-exiting": state === 'exiting' || undefined
+    });
+});
+
+
+export {$347bc273c4058e94$export$758399f318e6385a as SharedElementTransition, $347bc273c4058e94$export$c34620ff8881d89f as SharedElement};
+//# sourceMappingURL=SharedElementTransition.js.map

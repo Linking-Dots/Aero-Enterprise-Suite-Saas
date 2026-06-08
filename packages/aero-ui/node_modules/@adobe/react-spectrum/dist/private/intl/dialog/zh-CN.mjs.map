@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,gBAAE,CAAC;IAC/B,WAAW,CAAC,gBAAE,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/dialog/zh-CN.json"],"sourcesContent":["{\n  \"alert\": \"警报\",\n  \"dismiss\": \"取消\"\n}\n"],"names":[],"version":3,"file":"zh-CN.mjs.map"}

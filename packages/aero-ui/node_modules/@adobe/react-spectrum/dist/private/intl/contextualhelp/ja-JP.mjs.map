@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,wBAAG,CAAC;IAC/B,QAAQ,CAAC,gBAAE,CAAC;AACd","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/ja-JP.json"],"sourcesContent":["{\n  \"help\": \"ヘルプ\",\n  \"info\": \"情報\"\n}\n"],"names":[],"version":3,"file":"ja-JP.mjs.map"}

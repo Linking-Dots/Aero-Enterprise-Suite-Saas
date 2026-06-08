@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,QAAQ,CAAC;IACrC,WAAW,CAAC,GAAG,CAAC;AAClB","sources":["packages/@adobe/react-spectrum/intl/dialog/da-DK.json"],"sourcesContent":["{\n  \"alert\": \"Advarsel\",\n  \"dismiss\": \"Luk\"\n}\n"],"names":[],"version":3,"file":"da-DK.js.map"}

@@ -40,8 +40,8 @@
 
 /* ── Indigo (analytics, depth, chart series 2) ───────────────── */
 .aeos-badge-indigo {
-  background: rgba(99, 102, 241, 0.10); /* tertiary — no semantic token yet */
-  border-color: rgba(99, 102, 241, 0.25); /* tertiary — no semantic token yet */
+  background: var(--aeos-tertiary-tint);
+  border-color: var(--aeos-tertiary-border);
   color: var(--aeos-tertiary);
 }
 
@@ -92,8 +92,8 @@
 }
 
 .aeos-badge-indigo.aeos-badge-mono {
-  background: rgba(99, 102, 241, 0.10); /* tertiary — no semantic token yet */
-  border-color: rgba(99, 102, 241, 0.25); /* tertiary — no semantic token yet */
+  background: var(--aeos-tertiary-tint);
+  border-color: var(--aeos-tertiary-border);
   color: var(--aeos-tertiary);
 }
 

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,QAAQ,CAAC,IAAI,CAAC;IAChC,YAAY,CAAC,IAAI,CAAC;IAClB,YAAY,CAAC,SAAS,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/toast/nb-NO.json"],"sourcesContent":["{\n  \"info\": \"Info\",\n  \"negative\": \"Feil\",\n  \"positive\": \"Vellykket\"\n}\n"],"names":[],"version":3,"file":"nb-NO.cjs.map"}

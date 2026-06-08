@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/TreeView.cjs",
+  "module": "../dist/exports/TreeView.js",
+  "types": "../dist/types/exports/TreeView.d.ts"
+}

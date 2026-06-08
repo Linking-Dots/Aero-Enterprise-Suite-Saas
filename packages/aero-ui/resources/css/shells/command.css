@@ -14,7 +14,7 @@
 
 [data-aeos-shell="command"] {
   display: grid;
-  grid-template-columns: 160px 1fr 240px;
+  grid-template-columns: max-content 1fr var(--aeos-shell-rail-w, 240px);
   min-height: 100vh;
   background: var(--aeos-shell-bg);
   font-family: var(--aeos-font-body);

@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/classNames.cjs",
+  "module": "../../../dist/exports/private/utils/classNames.js",
+  "types": "../../../dist/types/exports/private/utils/classNames.d.ts"
+}

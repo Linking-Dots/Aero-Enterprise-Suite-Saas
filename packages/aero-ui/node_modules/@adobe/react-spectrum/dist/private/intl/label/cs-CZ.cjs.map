@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,iBAAW,CAAC;IAC7C,cAAc,CAAC,qBAAY,CAAC;AAC9B","sources":["packages/@adobe/react-spectrum/intl/label/cs-CZ.json"],"sourcesContent":["{\n  \"(optional)\": \"(volitelně)\",\n  \"(required)\": \"(požadováno)\"\n}\n"],"names":[],"version":3,"file":"cs-CZ.cjs.map"}

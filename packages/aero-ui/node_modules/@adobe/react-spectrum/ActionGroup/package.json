@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ActionGroup.cjs",
+  "module": "../dist/exports/ActionGroup.js",
+  "types": "../dist/types/exports/ActionGroup.d.ts"
+}

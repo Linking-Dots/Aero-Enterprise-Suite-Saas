@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,gBAAE,CAAC;IACjC,WAAW,CAAC,gBAAE,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/slider/ja-JP.json"],"sourcesContent":["{\n  \"maximum\": \"最大\",\n  \"minimum\": \"最小\"\n}\n"],"names":[],"version":3,"file":"ja-JP.mjs.map"}

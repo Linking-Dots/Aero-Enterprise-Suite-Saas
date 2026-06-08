@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/useDOMRef.cjs",
+  "module": "../../../dist/exports/private/utils/useDOMRef.js",
+  "types": "../../../dist/types/exports/private/utils/useDOMRef.d.ts"
+}

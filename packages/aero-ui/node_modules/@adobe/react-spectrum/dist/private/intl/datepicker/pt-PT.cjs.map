@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,cAAc,CAAC;IAC7C,aAAa,CAAC,aAAa,CAAC;IAC5B,QAAQ,CAAC,KAAK,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/datepicker/pt-PT.json"],"sourcesContent":["{\n  \"endTime\": \"Terminar tempo\",\n  \"startTime\": \"Iniciar tempo\",\n  \"time\": \"Tempo\"\n}\n"],"names":[],"version":3,"file":"pt-PT.cjs.map"}

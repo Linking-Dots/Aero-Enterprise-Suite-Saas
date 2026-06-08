@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/useDragAndDrop.cjs",
+  "module": "../dist/exports/useDragAndDrop.js",
+  "types": "../dist/types/exports/useDragAndDrop.d.ts"
+}

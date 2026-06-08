@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,uBAAoB,CAAC;IACnD,aAAa,CAAC,cAAc,CAAC;IAC7B,QAAQ,CAAC,IAAI,CAAC;AAChB","sources":["packages/@adobe/react-spectrum/intl/datepicker/es-ES.json"],"sourcesContent":["{\n  \"endTime\": \"Hora de finalización\",\n  \"startTime\": \"Hora de inicio\",\n  \"time\": \"Hora\"\n}\n"],"names":[],"version":3,"file":"es-ES.mjs.map"}

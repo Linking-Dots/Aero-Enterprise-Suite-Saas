@@ -1,0 +1,14 @@
+module.exports = {
+    "collapse": `Samenvouwen`,
+    "columnResizer": `Groottewijziging van kolom`,
+    "drag": `Slepen`,
+    "expand": `Uitvouwen`,
+    "loading": `Laden...`,
+    "loadingMore": `Meer laden...`,
+    "resizeColumn": `Kolomgrootte wijzigen`,
+    "sortAscending": `Oplopend sorteren`,
+    "sortDescending": `Aflopend sorteren`
+};
+
+
+//# sourceMappingURL=nl-NL.cjs.map

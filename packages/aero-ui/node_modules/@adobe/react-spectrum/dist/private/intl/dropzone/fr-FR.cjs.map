@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,kBAAkB,CAAC,oCAA8B,CAAC;AACtE","sources":["packages/@adobe/react-spectrum/intl/dropzone/fr-FR.json"],"sourcesContent":["{\n  \"replaceMessage\": \"Déposer le fichier à remplacer\"\n}\n"],"names":[],"version":3,"file":"fr-FR.cjs.map"}

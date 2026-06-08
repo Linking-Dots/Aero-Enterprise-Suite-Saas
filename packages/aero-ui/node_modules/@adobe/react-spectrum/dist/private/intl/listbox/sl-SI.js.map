@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,YAAY,CAAC;IAC3C,eAAe,CAAC,8BAAwB,CAAC;AAC3C","sources":["packages/@adobe/react-spectrum/intl/listbox/sl-SI.json"],"sourcesContent":["{\n  \"loading\": \"Nalaganje...\",\n  \"loadingMore\": \"Nalaganje več vsebine...\"\n}\n"],"names":[],"version":3,"file":"sl-SI.js.map"}

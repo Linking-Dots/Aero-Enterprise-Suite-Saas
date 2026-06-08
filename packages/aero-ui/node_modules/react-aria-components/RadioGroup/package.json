@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/RadioGroup.cjs",
+  "module": "../dist/exports/RadioGroup.js",
+  "types": "../dist/types/exports/RadioGroup.d.ts"
+}

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,cAAW,CAAC;IAC7C,cAAc,CAAC,YAAS,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/label/sk-SK.json"],"sourcesContent":["{\n  \"(optional)\": \"(nepovinné)\",\n  \"(required)\": \"(povinné)\"\n}\n"],"names":[],"version":3,"file":"sk-SK.mjs.map"}

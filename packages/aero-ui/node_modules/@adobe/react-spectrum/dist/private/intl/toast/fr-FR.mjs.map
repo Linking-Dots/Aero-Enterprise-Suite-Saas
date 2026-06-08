@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,KAAK,CAAC;IACjC,YAAY,CAAC,MAAM,CAAC;IACpB,YAAY,CAAC,SAAM,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/toast/fr-FR.json"],"sourcesContent":["{\n  \"info\": \"Infos\",\n  \"negative\": \"Erreur\",\n  \"positive\": \"Succès\"\n}\n"],"names":[],"version":3,"file":"fr-FR.mjs.map"}

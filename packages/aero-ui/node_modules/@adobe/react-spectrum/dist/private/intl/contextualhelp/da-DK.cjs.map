@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,QAAQ,CAAC,QAAK,CAAC;IACjC,QAAQ,CAAC,WAAW,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/da-DK.json"],"sourcesContent":["{\n  \"help\": \"Hjælp\",\n  \"info\": \"Oplysninger\"\n}\n"],"names":[],"version":3,"file":"da-DK.cjs.map"}

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,kCAAqB,CAAC;IACpD,eAAe,CAAC,yBAAY,CAAC;AAC/B","sources":["packages/@adobe/react-spectrum/intl/picker/hu-HU.json"],"sourcesContent":["{\n  \"loading\": \"Betöltés folyamatban…\",\n  \"placeholder\": \"Kiválasztás…\"\n}\n"],"names":[],"version":3,"file":"hu-HU.cjs.map"}

@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Switch.cjs",
+  "module": "../dist/exports/Switch.js",
+  "types": "../dist/types/exports/Switch.d.ts"
+}

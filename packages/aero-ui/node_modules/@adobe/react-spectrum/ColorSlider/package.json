@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ColorSlider.cjs",
+  "module": "../dist/exports/ColorSlider.js",
+  "types": "../dist/types/exports/ColorSlider.d.ts"
+}

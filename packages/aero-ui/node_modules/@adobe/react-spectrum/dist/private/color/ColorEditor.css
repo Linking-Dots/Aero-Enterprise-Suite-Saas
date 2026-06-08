@@ -1,0 +1,20 @@
+@layer s1-a, s1-b;
+
+@layer a {
+  .s1-_0s1-b {
+    flex-direction: column;
+  }
+
+  .s1-_Ts1-d {
+    display: flex;
+  }
+
+  .s1-ls1-e {
+    row-gap: 1rem;
+  }
+
+  .s1-ms1-e {
+    column-gap: 1rem;
+  }
+}
+/*# sourceMappingURL=ColorEditor.css.map */

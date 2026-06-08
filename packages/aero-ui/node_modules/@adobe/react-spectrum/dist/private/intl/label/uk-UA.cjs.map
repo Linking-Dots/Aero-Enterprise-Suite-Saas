@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,8FAAe,CAAC;IACjD,cAAc,CAAC,gFAAa,CAAC;AAC/B","sources":["packages/@adobe/react-spectrum/intl/label/uk-UA.json"],"sourcesContent":["{\n  \"(optional)\": \"(необов’язково)\",\n  \"(required)\": \"(обов’язково)\"\n}\n"],"names":[],"version":3,"file":"uk-UA.cjs.map"}

@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Menu.cjs",
+  "module": "../dist/exports/Menu.js",
+  "types": "../dist/types/exports/Menu.d.ts"
+}

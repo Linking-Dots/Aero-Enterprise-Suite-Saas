@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,sBAAgB,CAAC;IAC/C,eAAe,CAAC,8BAAW,CAAC;AAC9B","sources":["packages/@adobe/react-spectrum/intl/picker/lv-LV.json"],"sourcesContent":["{\n  \"loading\": \"Notiek ielāde...\",\n  \"placeholder\": \"Izvēlēties…\"\n}\n"],"names":[],"version":3,"file":"lv-LV.cjs.map"}

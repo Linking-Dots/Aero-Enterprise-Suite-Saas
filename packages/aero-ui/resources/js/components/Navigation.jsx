@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react';
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 import { Badge } from './Display.jsx';
+import { Icon } from '../icons/icons.jsx';
 
 /** Tabs — horizontal tab strip (controlled or uncontrolled). */
 export function Tabs({ tabs = [], value, defaultValue, onChange, className, children }) {
@@ -21,8 +22,7 @@ export function Tabs({ tabs = [], value, defaultValue, onChange, className, chil
             className={cx('aeos-tab', active === t.value && 'is-active')}
             onClick={() => setActive(t.value)}
           >
-            {/* TODO: Update tabs to pass React icon components instead of icon names */}
-            {/* {t.icon && <Icon name={t.icon} size={14} />} */}
+            {t.icon && <Icon name={t.icon} size={14} />}
             {t.label}
             {t.count != null && <span className="aeos-tab-count">{t.count}</span>}
           </button>
@@ -70,8 +70,7 @@ export const NavItem = forwardRef(function NavItem(
       aria-current={active ? 'page' : undefined}
       {...rest}
     >
-      {/* TODO: Update nav items to pass React icon components instead of icon names */}
-      {/* {icon && <Icon name={icon} size={16} />} */}
+      {icon && <Icon name={icon} size={16} />}
       <span className="aeos-nav-item-label">{label}</span>
       {count != null && <span className="aeos-nav-item-count">{count}</span>}
       {badge && <Badge intent={badge.intent ?? 'cyan'} size="sm" mono>{badge.label}</Badge>}

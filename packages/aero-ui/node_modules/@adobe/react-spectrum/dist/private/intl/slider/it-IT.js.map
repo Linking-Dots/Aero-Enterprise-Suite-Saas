@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,OAAO,CAAC;IACtC,WAAW,CAAC,MAAM,CAAC;AACrB","sources":["packages/@adobe/react-spectrum/intl/slider/it-IT.json"],"sourcesContent":["{\n  \"maximum\": \"Massimo\",\n  \"minimum\": \"Minimo\"\n}\n"],"names":[],"version":3,"file":"it-IT.js.map"}

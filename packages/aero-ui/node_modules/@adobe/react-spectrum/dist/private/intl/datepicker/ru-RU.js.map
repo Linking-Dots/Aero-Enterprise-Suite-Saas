@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,mGAAe,CAAC;IAC9C,aAAa,CAAC,8EAAY,CAAC;IAC3B,QAAQ,CAAC,mCAAK,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/datepicker/ru-RU.json"],"sourcesContent":["{\n  \"endTime\": \"Время окончания\",\n  \"startTime\": \"Время начала\",\n  \"time\": \"Время\"\n}\n"],"names":[],"version":3,"file":"ru-RU.js.map"}

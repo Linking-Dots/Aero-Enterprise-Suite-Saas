@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/DialogTrigger.cjs",
+  "module": "../dist/exports/DialogTrigger.js",
+  "types": "../dist/types/exports/DialogTrigger.d.ts"
+}

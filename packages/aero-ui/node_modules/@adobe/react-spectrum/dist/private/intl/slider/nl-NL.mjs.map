@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,OAAO,CAAC;IACtC,WAAW,CAAC,OAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/slider/nl-NL.json"],"sourcesContent":["{\n  \"maximum\": \"Maximum\",\n  \"minimum\": \"Minimum\"\n}\n"],"names":[],"version":3,"file":"nl-NL.mjs.map"}

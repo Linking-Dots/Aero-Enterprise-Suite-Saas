@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,gBAAS,CAAC;IACxC,eAAe,CAAC,4BAAe,CAAC;AAClC","sources":["packages/@adobe/react-spectrum/intl/listbox/fi-FI.json"],"sourcesContent":["{\n  \"loading\": \"Ladataan…\",\n  \"loadingMore\": \"Ladataan lisää…\"\n}\n"],"names":[],"version":3,"file":"fi-FI.cjs.map"}

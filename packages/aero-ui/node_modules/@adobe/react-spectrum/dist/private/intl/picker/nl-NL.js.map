@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,QAAQ,CAAC;IACvC,eAAe,CAAC,kBAAW,CAAC;AAC9B","sources":["packages/@adobe/react-spectrum/intl/picker/nl-NL.json"],"sourcesContent":["{\n  \"loading\": \"Laden...\",\n  \"placeholder\": \"Selecteren…\"\n}\n"],"names":[],"version":3,"file":"nl-NL.js.map"}

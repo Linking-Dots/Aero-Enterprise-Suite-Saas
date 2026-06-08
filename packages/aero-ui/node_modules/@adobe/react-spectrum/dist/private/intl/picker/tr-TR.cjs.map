@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,gBAAa,CAAC;IAC5C,eAAe,CAAC,gBAAM,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/picker/tr-TR.json"],"sourcesContent":["{\n  \"loading\": \"Yükleniyor...\",\n  \"placeholder\": \"Seçin…\"\n}\n"],"names":[],"version":3,"file":"tr-TR.cjs.map"}

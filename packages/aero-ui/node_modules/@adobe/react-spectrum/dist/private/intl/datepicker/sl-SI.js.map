@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,sBAAU,CAAC;IACzC,aAAa,CAAC,uBAAW,CAAC;IAC1B,QAAQ,CAAC,SAAG,CAAC;AACf","sources":["packages/@adobe/react-spectrum/intl/datepicker/sl-SI.json"],"sourcesContent":["{\n  \"endTime\": \"Končni čas\",\n  \"startTime\": \"Začetni čas\",\n  \"time\": \"Čas\"\n}\n"],"names":[],"version":3,"file":"sl-SI.js.map"}

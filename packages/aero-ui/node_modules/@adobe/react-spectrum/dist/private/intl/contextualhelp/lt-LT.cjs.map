@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,QAAQ,CAAC,aAAO,CAAC;IACnC,QAAQ,CAAC,WAAW,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/lt-LT.json"],"sourcesContent":["{\n  \"help\": \"Žinynas\",\n  \"info\": \"Informacija\"\n}\n"],"names":[],"version":3,"file":"lt-LT.cjs.map"}

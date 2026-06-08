@@ -119,7 +119,7 @@
    Expanded Mode — JS adds .sidebar-expanded to the host element
    ══════════════════════════════════════════════════════════════ */
 [data-aeos-shell="sidebar"].sidebar-expanded {
-  grid-template-columns: var(--aeos-shell-sidebar-w-exp, 240px) 1fr;
+  grid-template-columns: var(--aeos-shell-sidebar-w-exp, max-content) 1fr;
 }
 
 [data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar {
@@ -176,7 +176,7 @@
     position: fixed;
     inset: 0;
     z-index: var(--aeos-z-sidebar);
-    width: var(--aeos-shell-sidebar-w-exp, 240px);
+    width: var(--aeos-shell-sidebar-w-exp, max-content);
     align-items: flex-start;
     padding: var(--aeos-space-4) var(--aeos-space-3);
   }

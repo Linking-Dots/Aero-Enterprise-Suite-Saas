@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,4FAAa,CAAC;IAC5C,eAAe,CAAC,yDAAQ,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/picker/uk-UA.json"],"sourcesContent":["{\n  \"loading\": \"Завантаження…\",\n  \"placeholder\": \"Вибрати…\"\n}\n"],"names":[],"version":3,"file":"uk-UA.js.map"}

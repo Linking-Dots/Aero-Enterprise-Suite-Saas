@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,WAAW,CAAC;IACxC,WAAW,CAAC,kBAAM,CAAC;AACrB","sources":["packages/@adobe/react-spectrum/intl/dialog/sk-SK.json"],"sourcesContent":["{\n  \"alert\": \"Upozornenie\",\n  \"dismiss\": \"Zrušiť\"\n}\n"],"names":[],"version":3,"file":"sk-SK.mjs.map"}

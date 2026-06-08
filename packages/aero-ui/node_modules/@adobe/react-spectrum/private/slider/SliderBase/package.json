@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/slider/SliderBase.cjs",
+  "module": "../../../dist/exports/private/slider/SliderBase.js",
+  "types": "../../../dist/types/exports/private/slider/SliderBase.d.ts"
+}

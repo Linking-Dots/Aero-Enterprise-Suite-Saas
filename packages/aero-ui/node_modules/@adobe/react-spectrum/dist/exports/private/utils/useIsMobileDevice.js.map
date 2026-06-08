@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/utils/useIsMobileDevice.ts"],"sourcesContent":["export {useIsMobileDevice} from '../../../src/utils/useIsMobileDevice';\n"],"names":[],"version":3,"file":"useIsMobileDevice.js.map"}

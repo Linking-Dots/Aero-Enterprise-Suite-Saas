@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,MAAM,CAAC;IACnC,WAAW,CAAC,MAAM,CAAC;AACrB","sources":["packages/@adobe/react-spectrum/intl/dialog/it-IT.json"],"sourcesContent":["{\n  \"alert\": \"Avviso\",\n  \"dismiss\": \"Ignora\"\n}\n"],"names":[],"version":3,"file":"it-IT.js.map"}

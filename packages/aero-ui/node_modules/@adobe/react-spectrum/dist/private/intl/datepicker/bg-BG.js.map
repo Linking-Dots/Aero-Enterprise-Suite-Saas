@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,yDAAS,CAAC;IACxC,aAAa,CAAC,uEAAW,CAAC;IAC1B,QAAQ,CAAC,mCAAK,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/datepicker/bg-BG.json"],"sourcesContent":["{\n  \"endTime\": \"Краен час\",\n  \"startTime\": \"Начален час\",\n  \"time\": \"Време\"\n}\n"],"names":[],"version":3,"file":"bg-BG.js.map"}

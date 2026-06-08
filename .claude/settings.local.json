@@ -8,7 +8,7 @@
       "Write(**)",
       "Write(//**)",
       "WebFetch(*)",
-      "mcp__*"
+      "mcp__filesystem__*"
     ],
     "additionalDirectories": [
       "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils"

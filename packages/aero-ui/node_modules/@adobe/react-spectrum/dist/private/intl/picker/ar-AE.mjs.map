@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iFAAe,CAAC;IAC9C,eAAe,CAAC,2CAAM,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/picker/ar-AE.json"],"sourcesContent":["{\n  \"loading\": \"جارٍ التحميل...\",\n  \"placeholder\": \"تحديد…\"\n}\n"],"names":[],"version":3,"file":"ar-AE.mjs.map"}

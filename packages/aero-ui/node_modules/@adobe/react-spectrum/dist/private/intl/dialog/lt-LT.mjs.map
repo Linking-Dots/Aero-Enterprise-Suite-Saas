@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,qBAAS,CAAC;IACtC,WAAW,CAAC,OAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/dialog/lt-LT.json"],"sourcesContent":["{\n  \"alert\": \"Įspėjimas\",\n  \"dismiss\": \"Atmesti\"\n}\n"],"names":[],"version":3,"file":"lt-LT.mjs.map"}

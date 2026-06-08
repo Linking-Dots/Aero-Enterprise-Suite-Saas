@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,mCAAO,CAAC;IACzC,cAAc,CAAC,mCAAO,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/label/ko-KR.json"],"sourcesContent":["{\n  \"(optional)\": \"(선택 사항)\",\n  \"(required)\": \"(필수 사항)\"\n}\n"],"names":[],"version":3,"file":"ko-KR.js.map"}

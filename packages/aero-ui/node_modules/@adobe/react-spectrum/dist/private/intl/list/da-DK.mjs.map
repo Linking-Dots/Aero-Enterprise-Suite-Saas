@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,cAAW,CAAC;IAC1C,eAAe,CAAC,oBAAiB,CAAC;AACpC","sources":["packages/@adobe/react-spectrum/intl/list/da-DK.json"],"sourcesContent":["{\n  \"loading\": \"Indlæser...\",\n  \"loadingMore\": \"Indlæser flere...\"\n}\n"],"names":[],"version":3,"file":"da-DK.mjs.map"}

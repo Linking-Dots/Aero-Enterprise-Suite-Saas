@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/icon/Illustration.ts"],"sourcesContent":["export {\n  type IllustrationPropsWithoutChildren,\n  Illustration,\n  type IllustrationProps\n} from '../../../src/icon/Illustration';\n"],"names":[],"version":3,"file":"Illustration.js.map"}

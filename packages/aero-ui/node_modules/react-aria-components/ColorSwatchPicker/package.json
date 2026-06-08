@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ColorSwatchPicker.cjs",
+  "module": "../dist/exports/ColorSwatchPicker.js",
+  "types": "../dist/types/exports/ColorSwatchPicker.d.ts"
+}

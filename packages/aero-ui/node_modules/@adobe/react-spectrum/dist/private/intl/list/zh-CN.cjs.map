@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,mCAAO,CAAC;IACtC,eAAe,CAAC,mDAAS,CAAC;AAC5B","sources":["packages/@adobe/react-spectrum/intl/list/zh-CN.json"],"sourcesContent":["{\n  \"loading\": \"正在加载...\",\n  \"loadingMore\": \"正在加载更多...\"\n}\n"],"names":[],"version":3,"file":"zh-CN.cjs.map"}

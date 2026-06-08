@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/DateRangePicker.cjs",
+  "module": "../dist/exports/DateRangePicker.js",
+  "types": "../dist/types/exports/DateRangePicker.d.ts"
+}

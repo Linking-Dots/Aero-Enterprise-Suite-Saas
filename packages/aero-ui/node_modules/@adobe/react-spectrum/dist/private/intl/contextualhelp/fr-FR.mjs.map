@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,IAAI,CAAC;IAChC,QAAQ,CAAC,YAAY,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/fr-FR.json"],"sourcesContent":["{\n  \"help\": \"Aide\",\n  \"info\": \"Informations\"\n}\n"],"names":[],"version":3,"file":"fr-FR.mjs.map"}

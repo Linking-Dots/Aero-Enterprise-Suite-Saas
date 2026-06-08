@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,wDAAQ,CAAC;IACvC,WAAW,CAAC,iDAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/slider/uk-UA.json"],"sourcesContent":["{\n  \"maximum\": \"Максимум\",\n  \"minimum\": \"Мінімум\"\n}\n"],"names":[],"version":3,"file":"uk-UA.mjs.map"}

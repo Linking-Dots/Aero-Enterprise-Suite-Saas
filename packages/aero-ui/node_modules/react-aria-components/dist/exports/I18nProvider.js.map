@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/react-aria-components/exports/I18nProvider.ts"],"sourcesContent":["export {I18nProvider, useLocale, isRTL} from 'react-aria/I18nProvider';\nexport type {I18nProviderProps, Locale} from 'react-aria/I18nProvider';\n"],"names":[],"version":3,"file":"I18nProvider.js.map"}

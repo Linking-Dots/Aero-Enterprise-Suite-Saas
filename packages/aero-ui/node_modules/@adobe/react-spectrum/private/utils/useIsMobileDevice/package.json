@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/useIsMobileDevice.cjs",
+  "module": "../../../dist/exports/private/utils/useIsMobileDevice.js",
+  "types": "../../../dist/types/exports/private/utils/useIsMobileDevice.d.ts"
+}

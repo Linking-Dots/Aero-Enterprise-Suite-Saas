@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/provider/Provider.cjs",
+  "module": "../../../dist/exports/private/provider/Provider.js",
+  "types": "../../../dist/types/exports/private/provider/Provider.d.ts"
+}

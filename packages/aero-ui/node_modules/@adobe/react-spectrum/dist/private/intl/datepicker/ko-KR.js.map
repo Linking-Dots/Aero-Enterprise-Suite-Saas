@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iCAAK,CAAC;IACpC,aAAa,CAAC,iCAAK,CAAC;IACpB,QAAQ,CAAC,gBAAE,CAAC;AACd","sources":["packages/@adobe/react-spectrum/intl/datepicker/ko-KR.json"],"sourcesContent":["{\n  \"endTime\": \"종료 시간\",\n  \"startTime\": \"시작 시간\",\n  \"time\": \"시간\"\n}\n"],"names":[],"version":3,"file":"ko-KR.js.map"}

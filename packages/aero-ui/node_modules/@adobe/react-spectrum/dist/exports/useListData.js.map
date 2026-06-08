@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/useListData.ts"],"sourcesContent":["export {useListData} from 'react-stately/useListData';\nexport type {ListOptions, ListData} from 'react-stately/useListData';\n"],"names":[],"version":3,"file":"useListData.js.map"}

@@ -83,7 +83,7 @@
   background: linear-gradient(
     135deg,
     var(--aeos-primary-tint)              0%,
-    rgba(99, 102, 241, 0.06)              50%,  /* tertiary tint — no semantic token yet */
+    var(--aeos-tertiary-tint)             50%,
     var(--aeos-warning-tint)              100%
   );
   border: var(--aeos-border-width) solid var(--aeos-primary-border);
@@ -141,7 +141,7 @@
 /* ── Outline / Ghost ────────────────────────────────────────── */
 .aeos-card-outline {
   background: transparent;
-  border: 1.5px solid var(--aeos-primary);
+  border: var(--aeos-border-width) solid var(--aeos-primary);
   border-radius: var(--aeos-card-radius);
   padding: var(--aeos-pad-card);
 }

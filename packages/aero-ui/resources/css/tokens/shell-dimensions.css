@@ -1,0 +1,27 @@
+/* ══════════════════════════════════════════════════════════════
+   AEOS UI — Shell Dimension Tokens
+   TOKEN_FROZEN — Do not add hardcoded values; all values must
+   reference base.css scale or be overridden by theme files.
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  /* Sidebar shell */
+  --aeos-shell-sidebar-w:           56px;          /* collapsed icon rail width */
+  --aeos-shell-sidebar-w-exp:       240px;          /* expanded label width */
+  --aeos-shell-sidebar-brand-h:     var(--aeos-space-12); /* 48px brand area height */
+
+  /* Top nav shell */
+  --aeos-shell-topnav-h:            var(--aeos-h-topbar); /* inherits density-aware height */
+
+  /* Floating shell */
+  --aeos-shell-floating-w:          56px;           /* collapsed icon pill width */
+  --aeos-shell-floating-w-exp:      220px;          /* expanded floating sidebar */
+  --aeos-shell-floating-gutter:     var(--aeos-space-4); /* padding around floating shell */
+  --aeos-shell-floating-gap:        var(--aeos-gap-card);/* gap between sidebar pill and content */
+
+  /* Command shell */
+  --aeos-shell-cmd-nav-w:           max-content;    /* left nav panel */
+  --aeos-shell-cmd-nav-w-md:        160px;          /* collapsed at breakpoint */
+  --aeos-shell-rail-w:              240px;          /* right context rail default width */
+  --aeos-shell-rail-w-min:          200px;          /* minimum resizable width */
+  --aeos-shell-rail-w-max:          480px;          /* maximum resizable width */
+}

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,aAAa,CAAC;IAC/C,cAAc,CAAC,WAAW,CAAC;AAC7B","sources":["packages/@adobe/react-spectrum/intl/label/lt-LT.json"],"sourcesContent":["{\n  \"(optional)\": \"(pasirenkama)\",\n  \"(required)\": \"(privaloma)\"\n}\n"],"names":[],"version":3,"file":"lt-LT.js.map"}

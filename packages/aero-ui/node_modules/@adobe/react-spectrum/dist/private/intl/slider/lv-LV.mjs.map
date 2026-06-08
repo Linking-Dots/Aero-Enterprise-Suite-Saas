@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,yCAAiB,CAAC;IAChD,WAAW,CAAC,wCAAgB,CAAC;AAC/B","sources":["packages/@adobe/react-spectrum/intl/slider/lv-LV.json"],"sourcesContent":["{\n  \"maximum\": \"Maksimālā vērtība\",\n  \"minimum\": \"Minimālā vērtība\"\n}\n"],"names":[],"version":3,"file":"lv-LV.mjs.map"}

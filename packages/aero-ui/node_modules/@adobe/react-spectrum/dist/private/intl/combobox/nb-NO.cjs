@@ -1,0 +1,10 @@
+module.exports = {
+    "clear": `T\xf8m`,
+    "invalid": `(ugyldig)`,
+    "loading": `Laster inn ...`,
+    "noResults": `Ingen resultater`,
+    "valid": `(gyldig)`
+};
+
+
+//# sourceMappingURL=nb-NO.cjs.map

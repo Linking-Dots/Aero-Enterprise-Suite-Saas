@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,kBAAkB,CAAC,wGAAa,CAAC;AACrD","sources":["packages/@adobe/react-spectrum/intl/dropzone/ja-JP.json"],"sourcesContent":["{\n  \"replaceMessage\": \"ファイルをドロップして置換\"\n}\n"],"names":[],"version":3,"file":"ja-JP.cjs.map"}

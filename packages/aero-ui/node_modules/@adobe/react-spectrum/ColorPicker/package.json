@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ColorPicker.cjs",
+  "module": "../dist/exports/ColorPicker.js",
+  "types": "../dist/types/exports/ColorPicker.d.ts"
+}

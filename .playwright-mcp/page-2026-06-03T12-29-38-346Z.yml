@@ -1,0 +1,215 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "My Profile" [ref=e12] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e13] [cursor=pointer]:
+        - /url: /notifications
+      - link "My Dashboard" [ref=e14] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Attendance" [ref=e15] [cursor=pointer]:
+        - /url: /hrm/attendance-employee
+      - link "My Leaves" [ref=e16] [cursor=pointer]:
+        - /url: /hrm/leaves-employee
+      - link "My Time-Off" [ref=e17] [cursor=pointer]:
+        - /url: /hrm/self-service/time-off
+      - link "My Payslips" [ref=e18] [cursor=pointer]:
+        - /url: /hrm/self-service/payslips
+      - link "My Expenses" [ref=e19] [cursor=pointer]:
+        - /url: /hrm/my-expenses
+      - link "My Documents" [ref=e20] [cursor=pointer]:
+        - /url: /hrm/self-service/documents
+      - link "My Benefits" [ref=e21] [cursor=pointer]:
+        - /url: /hrm/self-service/benefits
+      - link "My Trainings" [ref=e22] [cursor=pointer]:
+        - /url: /hrm/self-service/trainings
+      - link "My Performance" [ref=e23] [cursor=pointer]:
+        - /url: /hrm/self-service/performance
+      - link "My Goals" [ref=e24] [cursor=pointer]:
+        - /url: /hrm/goals
+      - link "My Career Path" [ref=e25] [cursor=pointer]:
+        - /url: /hrm/self-service/career-path
+      - link "My 360° Feedback" [ref=e26] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Subscription & Billing" [ref=e28] [cursor=pointer]:
+        - /url: /subscription
+      - link "User Management" [ref=e29] [cursor=pointer]:
+        - /url: /users
+      - link "Roles & Module Access" [ref=e30] [cursor=pointer]:
+        - /url: /roles
+      - link "Audit & Activity Logs" [ref=e31] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Notifications" [ref=e32] [cursor=pointer]:
+        - /url: /notifications
+      - link "File Manager" [ref=e33] [cursor=pointer]:
+        - /url: /files
+      - link "Organization" [ref=e34] [cursor=pointer]:
+        - /url: /organization
+      - link "Translations / i18n" [ref=e35] [cursor=pointer]:
+        - /url: /i18n/translations
+      - link "Custom Fields" [ref=e36] [cursor=pointer]:
+        - /url: /custom-fields
+      - link "Tags & Labels" [ref=e37] [cursor=pointer]:
+        - /url: /tags
+      - link "Saved Views & Filters" [ref=e38] [cursor=pointer]:
+        - /url: /saved-views
+      - link "Form Builder" [ref=e39] [cursor=pointer]:
+        - /url: /forms
+      - link "Global Search" [ref=e40] [cursor=pointer]:
+        - /url: /search
+      - link "API & Webhooks" [ref=e41] [cursor=pointer]:
+        - /url: /api
+      - link "User Preferences" [ref=e42] [cursor=pointer]:
+        - /url: /preferences
+      - link "Data Export/Import" [ref=e43] [cursor=pointer]:
+        - /url: /export-import
+      - link "Retention Policies" [ref=e44] [cursor=pointer]:
+        - /url: /retention-policies
+      - link "Workflows & Automations" [ref=e45] [cursor=pointer]:
+        - /url: /workflows
+      - link "Email Engine" [ref=e46] [cursor=pointer]:
+        - /url: /email
+      - link "System Health" [ref=e47] [cursor=pointer]:
+        - /url: /system-health
+      - link "Mobile & PWA" [ref=e48] [cursor=pointer]:
+        - /url: /mobile-pwa
+      - link "Backup & Restore" [ref=e49] [cursor=pointer]:
+        - /url: /backup
+      - link "License Management" [ref=e50] [cursor=pointer]:
+        - /url: /license
+      - link "Document Numbering & Sequences" [ref=e51] [cursor=pointer]:
+        - /url: /numbering
+      - link "Print & PDF Templates" [ref=e52] [cursor=pointer]:
+        - /url: /print-templates
+      - link "Announcements & Banners" [ref=e53] [cursor=pointer]:
+        - /url: /announcements
+      - link "Maintenance Mode" [ref=e54] [cursor=pointer]:
+        - /url: /maintenance-mode
+      - link "Trash & Recycle Bin" [ref=e55] [cursor=pointer]:
+        - /url: /trash
+      - link "Comments & Mentions" [ref=e56] [cursor=pointer]:
+        - /url: /comments
+      - link "Help & Support" [ref=e57] [cursor=pointer]:
+        - /url: /help
+      - link "Settings" [ref=e58] [cursor=pointer]:
+        - /url: /settings/system
+      - link "Employees" [ref=e60] [cursor=pointer]:
+        - /url: /hrm/employees
+      - link "Attendance" [ref=e61] [cursor=pointer]:
+        - /url: /hrm/attendance
+      - link "Leaves" [ref=e62] [cursor=pointer]:
+        - /url: /hrm/leaves
+      - link "Payroll" [ref=e63] [cursor=pointer]:
+        - /url: /hrm/payroll
+      - link "Expenses & Claims" [ref=e64] [cursor=pointer]:
+        - /url: /hrm/expenses
+      - link "Assets Management" [ref=e65] [cursor=pointer]:
+        - /url: /hrm/assets
+      - link "Disciplinary" [ref=e66] [cursor=pointer]:
+        - /url: /hrm/disciplinary
+      - link "Recruitment" [ref=e67] [cursor=pointer]:
+        - /url: /hrm/recruitment
+      - link "Performance" [ref=e68] [cursor=pointer]:
+        - /url: /hrm/performance
+      - link "Training" [ref=e69] [cursor=pointer]:
+        - /url: /hrm/training
+      - link "HR Analytics" [ref=e70] [cursor=pointer]:
+        - /url: /hrm/analytics
+      - link "Succession Planning" [ref=e71] [cursor=pointer]:
+        - /url: /hrm/succession-planning
+      - link "Career Pathing" [ref=e72] [cursor=pointer]:
+        - /url: /hrm/career-paths
+      - link "360° Feedback" [ref=e73] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Compensation Planning" [ref=e74] [cursor=pointer]:
+        - /url: /hrm/compensation-planning
+      - link "Workforce Planning" [ref=e75] [cursor=pointer]:
+        - /url: /hrm/workforce-planning
+      - link "Overtime Management" [ref=e76] [cursor=pointer]:
+        - /url: /hrm/overtime
+      - link "Grievances & Complaints" [ref=e77] [cursor=pointer]:
+        - /url: /hrm/grievances
+      - link "Exit Interviews" [ref=e78] [cursor=pointer]:
+        - /url: /hrm/exit-interviews
+      - link "Pulse Surveys" [ref=e79] [cursor=pointer]:
+        - /url: /hrm/pulse-surveys
+      - link "Onboarding & Offboarding" [ref=e80] [cursor=pointer]:
+        - /url: /hrm/onboarding
+      - link "Workplace Safety" [ref=e81] [cursor=pointer]:
+        - /url: /hrm/safety
+      - link "HR Documents" [ref=e82] [cursor=pointer]:
+        - /url: /hrm/documents
+      - link "AI Analytics" [ref=e83] [cursor=pointer]:
+        - /url: /hrm/ai-analytics
+      - link "Org Structure" [ref=e84] [cursor=pointer]:
+        - /url: /hrm/org-structure/departments
+      - link "Benefits" [ref=e85] [cursor=pointer]:
+        - /url: /hrm/benefits
+      - link "Events & Announcements" [ref=e86] [cursor=pointer]:
+        - /url: /hrm/events
+      - link "HR Settings" [ref=e87] [cursor=pointer]:
+        - /url: /hrm/settings
+    - generic [ref=e88]:
+      - generic [ref=e89]:
+        - button "Expand sidebar" [ref=e90] [cursor=pointer]:
+          - img [ref=e91]
+        - generic [ref=e93]: My Profile
+        - generic [ref=e94]:
+          - button "Notifications" [ref=e95] [cursor=pointer]:
+            - img [ref=e97]
+          - generic [ref=e99]:
+            - generic [ref=e101]: "?"
+            - generic [ref=e102]:
+              - generic [ref=e103]: UAT HR Manager
+              - generic [ref=e104]: HR Manager
+            - button "Sign out" [ref=e105] [cursor=pointer]:
+              - img [ref=e107]
+      - main [ref=e109]:
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - navigation "Breadcrumb" [ref=e113]:
+              - generic [ref=e115]: My Profile
+            - generic [ref=e117]:
+              - heading "My Profile" [level=1] [ref=e119]
+              - paragraph [ref=e120]: Manage your account information, photo, and password.
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - paragraph [ref=e125]: Profile
+              - generic [ref=e129]:
+                - generic [ref=e130]:
+                  - generic "UAT HR Manager" [ref=e131]:
+                    - generic [ref=e132]: UM
+                  - generic [ref=e133]:
+                    - paragraph [ref=e134]: Profile Photo
+                    - generic [ref=e136] [cursor=pointer]:
+                      - img [ref=e137]
+                      - text: Choose photo
+                - generic [ref=e139]:
+                  - generic [ref=e140]: Full Name *
+                  - textbox "Your full name" [ref=e141]: UAT HR Manager
+                - generic [ref=e142]:
+                  - generic [ref=e143]: Email *
+                  - textbox "you@example.com" [ref=e144]: hr@uatco.test
+                - button "Save Profile" [ref=e146] [cursor=pointer]:
+                  - generic [ref=e147]: Save Profile
+            - generic [ref=e148]:
+              - paragraph [ref=e150]: Change Password
+              - generic [ref=e154]:
+                - generic [ref=e155]:
+                  - generic [ref=e156]: Current Password *
+                  - textbox [ref=e157]
+                - generic [ref=e158]:
+                  - generic [ref=e159]: New Password *
+                  - textbox [ref=e160]
+                - generic [ref=e161]:
+                  - generic [ref=e162]: Confirm New Password *
+                  - textbox [ref=e163]
+                - button "Update Password" [ref=e165] [cursor=pointer]:
+                  - generic [ref=e166]: Update Password
+  - button "Open Theme Studio" [ref=e167] [cursor=pointer]:
+    - img [ref=e168]

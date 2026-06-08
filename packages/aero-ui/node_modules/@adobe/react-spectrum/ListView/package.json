@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ListView.cjs",
+  "module": "../dist/exports/ListView.js",
+  "types": "../dist/types/exports/ListView.d.ts"
+}

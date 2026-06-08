@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ProgressBar.cjs",
+  "module": "../dist/exports/ProgressBar.js",
+  "types": "../dist/types/exports/ProgressBar.d.ts"
+}

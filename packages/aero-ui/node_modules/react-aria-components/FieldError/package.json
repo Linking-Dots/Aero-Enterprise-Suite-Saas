@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/FieldError.cjs",
+  "module": "../dist/exports/FieldError.js",
+  "types": "../dist/types/exports/FieldError.d.ts"
+}

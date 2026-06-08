@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,gBAAE,CAAC;IAC9B,YAAY,CAAC,gBAAE,CAAC;IAChB,UAAU,CAAC,gBAAE,CAAC;IACd,YAAY,CAAC,gBAAE,CAAC;AAClB","sources":["packages/@adobe/react-spectrum/intl/inlinealert/zh-CN.json"],"sourcesContent":["{\n  \"info\": \"信息\",\n  \"negative\": \"错误\",\n  \"notice\": \"警告\",\n  \"positive\": \"成功\"\n}\n"],"names":[],"version":3,"file":"zh-CN.js.map"}

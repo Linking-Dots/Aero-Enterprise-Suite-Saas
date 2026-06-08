@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/form/Form.ts"],"sourcesContent":["export {useFormProps} from '../../../src/form/Form';\n"],"names":[],"version":3,"file":"Form.cjs.map"}

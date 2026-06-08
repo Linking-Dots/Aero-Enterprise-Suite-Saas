@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,YAAY,CAAC;IAC9C,cAAc,CAAC,UAAU,CAAC;AAC5B","sources":["packages/@adobe/react-spectrum/intl/label/pl-PL.json"],"sourcesContent":["{\n  \"(optional)\": \"(opcjonalne)\",\n  \"(required)\": \"(wymagane)\"\n}\n"],"names":[],"version":3,"file":"pl-PL.js.map"}

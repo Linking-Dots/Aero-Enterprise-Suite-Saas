@@ -226,15 +226,17 @@ class NavigationRegistry implements NavigationRegistryInterface
                 ));
             }
 
-            // Flatten dashboards: if multiple dashboards, add each as individual item with section
-            if (! empty($dashboardNav['children'])) {
-                // Multiple dashboards - flatten them
-                foreach ($dashboardNav['children'] as $dashboard) {
-                    $dashboard['section'] = 'dashboards';
-                    $navigationItems[] = $dashboard;
-                }
+            // Group dashboards: if multiple dashboards, add as a parent section
+            if (! empty($dashboardNav['children']) && count($dashboardNav['children']) > 1) {
+                $dashboardNav['section'] = 'dashboards';
+                $navigationItems[] = $dashboardNav;
+            } elseif (! empty($dashboardNav['children'])) {
+                // Single dashboard - pull the first child up and add as is with section
+                $singleDash = $dashboardNav['children'][0];
+                $singleDash['section'] = 'dashboards';
+                $navigationItems[] = $singleDash;
             } else {
-                // Single dashboard - add as is with section
+                // No children? Just add the parent
                 $dashboardNav['section'] = 'dashboards';
                 $navigationItems[] = $dashboardNav;
             }
@@ -253,12 +255,10 @@ class NavigationRegistry implements NavigationRegistryInterface
                 ));
             }
 
-            // Flatten self-service items: add each as individual item with section
+            // Group self-service items into a single parent folder
             if (! empty($selfServiceNav['children'])) {
-                foreach ($selfServiceNav['children'] as $item) {
-                    $item['section'] = 'my-workspace';
-                    $navigationItems[] = $item;
-                }
+                $selfServiceNav['section'] = 'my-workspace';
+                $navigationItems[] = $selfServiceNav;
             }
         }
 

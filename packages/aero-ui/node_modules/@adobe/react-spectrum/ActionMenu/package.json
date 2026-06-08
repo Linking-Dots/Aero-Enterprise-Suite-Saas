@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ActionMenu.cjs",
+  "module": "../dist/exports/ActionMenu.js",
+  "types": "../dist/types/exports/ActionMenu.d.ts"
+}

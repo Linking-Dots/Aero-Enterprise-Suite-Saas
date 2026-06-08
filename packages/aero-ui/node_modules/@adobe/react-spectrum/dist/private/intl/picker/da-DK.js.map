@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,eAAY,CAAC;IAC3C,eAAe,CAAC,eAAK,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/picker/da-DK.json"],"sourcesContent":["{\n  \"loading\": \"Indlæser ...\",\n  \"placeholder\": \"Vælg…\"\n}\n"],"names":[],"version":3,"file":"da-DK.js.map"}

@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Modal.cjs",
+  "module": "../dist/exports/Modal.js",
+  "types": "../dist/types/exports/Modal.d.ts"
+}

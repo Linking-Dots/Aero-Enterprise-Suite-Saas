@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/styleProps.cjs",
+  "module": "../../../dist/exports/private/utils/styleProps.js",
+  "types": "../../../dist/types/exports/private/utils/styleProps.d.ts"
+}

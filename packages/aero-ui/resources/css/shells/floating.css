@@ -109,7 +109,7 @@
   display: flex;
   align-items: center;
   height: var(--aeos-h-topbar);
-  padding: 0 4px var(--aeos-space-4);
+  padding: 0 var(--aeos-space-1) var(--aeos-space-4);
   border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   margin-bottom: var(--aeos-space-4);
   gap: var(--aeos-space-3);
@@ -119,9 +119,9 @@
    Expanded floating sidebar (JS adds .sidebar-expanded)
    ══════════════════════════════════════════════════════════════ */
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar {
-  width: 200px;
+  width: var(--aeos-shell-floating-w-exp, max-content);
   align-items: flex-start;
-  padding: var(--aeos-space-4) 10px;
+  padding: var(--aeos-space-4) var(--aeos-pad-nav-x);
 }
 
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item {

@@ -19,6 +19,8 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }], ['list']],
   grepInvert: ENV.runDestructive ? undefined : /@destructive/,
   use: {
+    headless: false,
+    slowMo: 200,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -32,9 +34,19 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], baseURL: ENV.standaloneUrl },
     },
     {
+      name: 'standalone-headed',
+      grep: /@standalone/,
+      use: { ...devices['Desktop Chrome'], baseURL: ENV.standaloneUrl, headless: false },
+    },
+    {
       name: 'saas',
       grep: /@saas/,
       use: { ...devices['Desktop Chrome'], baseURL: ENV.saasTenantUrl },
+    },
+    {
+      name: 'saas-headed',
+      grep: /@saas/,
+      use: { ...devices['Desktop Chrome'], baseURL: ENV.saasTenantUrl, headless: false },
     },
   ],
 });

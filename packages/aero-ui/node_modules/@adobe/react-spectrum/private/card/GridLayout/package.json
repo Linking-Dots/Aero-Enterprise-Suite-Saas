@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/card/GridLayout.cjs",
+  "module": "../../../dist/exports/private/card/GridLayout.js",
+  "types": "../../../dist/types/exports/private/card/GridLayout.d.ts"
+}

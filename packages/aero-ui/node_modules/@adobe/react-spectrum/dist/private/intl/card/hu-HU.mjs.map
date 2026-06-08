@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,kCAAqB,CAAC;IACpD,eAAe,CAAC,gDAAgC,CAAC;AACnD","sources":["packages/@adobe/react-spectrum/intl/card/hu-HU.json"],"sourcesContent":["{\n  \"loading\": \"Betöltés folyamatban…\",\n  \"loadingMore\": \"Továbbiak betöltése folyamatban…\"\n}\n"],"names":[],"version":3,"file":"hu-HU.mjs.map"}

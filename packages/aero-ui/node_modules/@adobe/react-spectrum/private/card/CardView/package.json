@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/card/CardView.cjs",
+  "module": "../../../dist/exports/private/card/CardView.js",
+  "types": "../../../dist/types/exports/private/card/CardView.d.ts"
+}

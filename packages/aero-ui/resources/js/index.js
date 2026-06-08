@@ -94,10 +94,8 @@ export {
 }                                           from './hooks/index.js';
 
 // ── Icons ─────────────────────────────────────────────────────────
-// Icon: stub for backward compat — use @heroicons/react directly for new code.
-export function Icon({ name, className, style }) {
-  return null;
-}
+// Icon: custom inline SVG icon system mapped from Heroicons paths.
+export { default as Icon } from './icons/icons.jsx';
 
 // ── App Chrome ───────────────────────────────────────────────
 export {

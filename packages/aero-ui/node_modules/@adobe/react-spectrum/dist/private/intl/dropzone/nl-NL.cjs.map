@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,kBAAkB,CAAC,kCAAkC,CAAC;AAC1E","sources":["packages/@adobe/react-spectrum/intl/dropzone/nl-NL.json"],"sourcesContent":["{\n  \"replaceMessage\": \"Bestand neerzetten om te vervangen\"\n}\n"],"names":[],"version":3,"file":"nl-NL.cjs.map"}

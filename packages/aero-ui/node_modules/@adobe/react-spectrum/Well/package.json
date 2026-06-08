@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Well.cjs",
+  "module": "../dist/exports/Well.js",
+  "types": "../dist/types/exports/Well.d.ts"
+}

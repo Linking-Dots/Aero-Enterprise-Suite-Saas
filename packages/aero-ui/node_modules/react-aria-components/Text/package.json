@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Text.cjs",
+  "module": "../dist/exports/Text.js",
+  "types": "../dist/types/exports/Text.d.ts"
+}

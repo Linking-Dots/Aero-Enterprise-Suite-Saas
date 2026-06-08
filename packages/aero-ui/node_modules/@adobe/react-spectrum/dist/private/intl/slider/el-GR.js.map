@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iDAAO,CAAC;IACtC,WAAW,CAAC,wDAAQ,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/slider/el-GR.json"],"sourcesContent":["{\n  \"maximum\": \"Μέγιστο\",\n  \"minimum\": \"Ελάχιστο\"\n}\n"],"names":[],"version":3,"file":"el-GR.js.map"}

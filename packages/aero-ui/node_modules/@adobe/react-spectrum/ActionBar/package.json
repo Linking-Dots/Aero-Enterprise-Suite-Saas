@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ActionBar.cjs",
+  "module": "../dist/exports/ActionBar.js",
+  "types": "../dist/types/exports/ActionBar.d.ts"
+}

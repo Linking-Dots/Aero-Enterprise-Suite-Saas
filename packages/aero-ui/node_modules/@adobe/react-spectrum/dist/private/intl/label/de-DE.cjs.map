@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,UAAU,CAAC;IAC5C,cAAc,CAAC,cAAc,CAAC;AAChC","sources":["packages/@adobe/react-spectrum/intl/label/de-DE.json"],"sourcesContent":["{\n  \"(optional)\": \"(optional)\",\n  \"(required)\": \"(erforderlich)\"\n}\n"],"names":[],"version":3,"file":"de-DE.cjs.map"}

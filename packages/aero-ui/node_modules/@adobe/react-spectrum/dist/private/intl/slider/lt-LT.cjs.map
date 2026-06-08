@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,UAAU,CAAC;IACzC,WAAW,CAAC,eAAS,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/slider/lt-LT.json"],"sourcesContent":["{\n  \"maximum\": \"Daugiausia\",\n  \"minimum\": \"Mažiausia\"\n}\n"],"names":[],"version":3,"file":"lt-LT.cjs.map"}

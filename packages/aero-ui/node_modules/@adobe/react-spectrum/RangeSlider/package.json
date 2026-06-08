@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/RangeSlider.cjs",
+  "module": "../dist/exports/RangeSlider.js",
+  "types": "../dist/types/exports/RangeSlider.d.ts"
+}

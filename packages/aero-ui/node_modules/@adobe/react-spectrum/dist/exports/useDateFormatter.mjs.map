@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/useDateFormatter.ts"],"sourcesContent":["export {useDateFormatter} from 'react-aria/useDateFormatter';\nexport type {DateFormatter} from '@internationalized/date';\nexport type {DateFormatterOptions} from 'react-aria/useDateFormatter';\n"],"names":[],"version":3,"file":"useDateFormatter.mjs.map"}

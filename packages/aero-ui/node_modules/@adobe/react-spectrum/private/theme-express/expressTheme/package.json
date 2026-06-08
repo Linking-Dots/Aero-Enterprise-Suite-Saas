@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/theme-express/expressTheme.cjs",
+  "module": "../../../dist/exports/private/theme-express/expressTheme.js",
+  "types": "../../../dist/types/exports/private/theme-express/expressTheme.d.ts"
+}

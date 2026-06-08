@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/TextArea.cjs",
+  "module": "../dist/exports/TextArea.js",
+  "types": "../dist/types/exports/TextArea.d.ts"
+}

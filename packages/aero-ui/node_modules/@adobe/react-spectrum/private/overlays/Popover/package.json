@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/overlays/Popover.cjs",
+  "module": "../../../dist/exports/private/overlays/Popover.js",
+  "types": "../../../dist/types/exports/private/overlays/Popover.d.ts"
+}

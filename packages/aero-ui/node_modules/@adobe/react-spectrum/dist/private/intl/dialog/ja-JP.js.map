@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,gCAAI,CAAC;IACjC,WAAW,CAAC,wBAAG,CAAC;AAClB","sources":["packages/@adobe/react-spectrum/intl/dialog/ja-JP.json"],"sourcesContent":["{\n  \"alert\": \"アラート\",\n  \"dismiss\": \"閉じる\"\n}\n"],"names":[],"version":3,"file":"ja-JP.js.map"}

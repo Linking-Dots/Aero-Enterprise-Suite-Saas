@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/label/Field.cjs",
+  "module": "../../../dist/exports/private/label/Field.js",
+  "types": "../../../dist/types/exports/private/label/Field.d.ts"
+}

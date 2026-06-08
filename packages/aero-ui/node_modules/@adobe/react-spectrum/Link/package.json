@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Link.cjs",
+  "module": "../dist/exports/Link.js",
+  "types": "../dist/types/exports/Link.d.ts"
+}

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,sBAAa,CAAC;IAC5C,eAAe,CAAC,uBAAU,CAAC;AAC7B","sources":["packages/@adobe/react-spectrum/intl/picker/ro-RO.json"],"sourcesContent":["{\n  \"loading\": \"Se încarcă...\",\n  \"placeholder\": \"Selectați…\"\n}\n"],"names":[],"version":3,"file":"ro-RO.mjs.map"}

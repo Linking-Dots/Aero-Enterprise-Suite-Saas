@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Avatar.cjs",
+  "module": "../dist/exports/Avatar.js",
+  "types": "../dist/types/exports/Avatar.d.ts"
+}

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,2CAAQ,CAAC;IACvC,eAAe,CAAC,wBAAG,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/picker/ja-JP.json"],"sourcesContent":["{\n  \"loading\": \"読み込み中...\",\n  \"placeholder\": \"選択…\"\n}\n"],"names":[],"version":3,"file":"ja-JP.mjs.map"}

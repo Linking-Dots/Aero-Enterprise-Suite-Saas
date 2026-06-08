@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/slots.cjs",
+  "module": "../dist/exports/slots.js",
+  "types": "../dist/types/exports/slots.d.ts"
+}

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,UAAU,CAAC;IAC5C,cAAc,CAAC,SAAS,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/label/sl-SI.json"],"sourcesContent":["{\n  \"(optional)\": \"(opcijsko)\",\n  \"(required)\": \"(obvezno)\"\n}\n"],"names":[],"version":3,"file":"sl-SI.cjs.map"}

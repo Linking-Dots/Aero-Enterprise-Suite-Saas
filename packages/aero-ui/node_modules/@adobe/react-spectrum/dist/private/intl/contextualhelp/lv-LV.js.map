@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,qBAAS,CAAC;IACrC,QAAQ,CAAC,iBAAW,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/lv-LV.json"],"sourcesContent":["{\n  \"help\": \"Palīdzība\",\n  \"info\": \"Informācija\"\n}\n"],"names":[],"version":3,"file":"lv-LV.js.map"}

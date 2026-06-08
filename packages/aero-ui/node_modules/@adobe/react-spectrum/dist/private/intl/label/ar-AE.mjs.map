@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,mDAAS,CAAC;IAC3C,cAAc,CAAC,qCAAO,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/label/ar-AE.json"],"sourcesContent":["{\n  \"(optional)\": \"(اختياري)\",\n  \"(required)\": \"(مطلوب)\"\n}\n"],"names":[],"version":3,"file":"ar-AE.mjs.map"}

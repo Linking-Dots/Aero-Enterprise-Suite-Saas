@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,SAAS,CAAC;IAC3C,cAAc,CAAC,UAAU,CAAC;AAC5B","sources":["packages/@adobe/react-spectrum/intl/label/sr-SP.json"],"sourcesContent":["{\n  \"(optional)\": \"(opciono)\",\n  \"(required)\": \"(obavezno)\"\n}\n"],"names":[],"version":3,"file":"sr-SP.js.map"}

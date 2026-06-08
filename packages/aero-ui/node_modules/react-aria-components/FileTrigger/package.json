@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/FileTrigger.cjs",
+  "module": "../dist/exports/FileTrigger.js",
+  "types": "../dist/types/exports/FileTrigger.d.ts"
+}

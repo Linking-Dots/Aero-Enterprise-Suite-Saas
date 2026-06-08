@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,aAAa,CAAC;IAC5C,eAAe,CAAC,kBAAkB,CAAC;AACrC","sources":["packages/@adobe/react-spectrum/intl/card/pt-BR.json"],"sourcesContent":["{\n  \"loading\": \"Carregando...\",\n  \"loadingMore\": \"Carregando mais...\"\n}\n"],"names":[],"version":3,"file":"pt-BR.mjs.map"}

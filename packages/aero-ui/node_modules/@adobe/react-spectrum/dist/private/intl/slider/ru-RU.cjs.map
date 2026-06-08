@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,wDAAQ,CAAC;IACvC,WAAW,CAAC,iDAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/slider/ru-RU.json"],"sourcesContent":["{\n  \"maximum\": \"Максимум\",\n  \"minimum\": \"Минимум\"\n}\n"],"names":[],"version":3,"file":"ru-RU.cjs.map"}

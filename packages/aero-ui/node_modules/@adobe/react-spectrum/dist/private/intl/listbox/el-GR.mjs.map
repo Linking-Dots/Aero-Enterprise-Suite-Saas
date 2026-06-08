@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,oDAAU,CAAC;IACzC,eAAe,CAAC,yIAAuB,CAAC;AAC1C","sources":["packages/@adobe/react-spectrum/intl/listbox/el-GR.json"],"sourcesContent":["{\n  \"loading\": \"Φόρτωση...\",\n  \"loadingMore\": \"Φόρτωση περισσότερων...\"\n}\n"],"names":[],"version":3,"file":"el-GR.mjs.map"}

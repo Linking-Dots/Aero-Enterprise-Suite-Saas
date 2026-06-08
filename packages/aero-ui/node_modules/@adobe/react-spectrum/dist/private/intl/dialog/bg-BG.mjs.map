@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,0CAAM,CAAC;IACnC,WAAW,CAAC,sEAAU,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/dialog/bg-BG.json"],"sourcesContent":["{\n  \"alert\": \"Сигнал\",\n  \"dismiss\": \"Отхвърляне\"\n}\n"],"names":[],"version":3,"file":"bg-BG.mjs.map"}

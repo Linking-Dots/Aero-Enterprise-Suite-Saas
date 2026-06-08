@@ -13,7 +13,9 @@
   --aeos-ink-muted: var(--aeos-text-secondary-light);
   --aeos-ink-faint: var(--aeos-text-tertiary-light);
   --aeos-glass-bg:      rgba(255,255,255,.80);
+  --aeos-glass-bg-strong: rgba(255, 255, 255, 0.92);
   --aeos-glass-border:  rgba(0,163,184,.18);
+  --aeos-glass-border-h: rgba(0, 163, 184, 0.28);
   --aeos-divider:       rgba(15,23,42,.08);
 
   /* Semantic surfaces */
@@ -50,6 +52,15 @@
   --aeos-warning-tint:   rgba(180, 83, 9, 0.07);
   --aeos-warning-bg:     rgba(180, 83, 9, 0.10);
   --aeos-warning-border: rgba(180, 83, 9, 0.22);
+
+  /* Tertiary (indigo) tints — light override */
+  --aeos-tertiary-tint:   rgba(99, 102, 241, 0.06);
+  --aeos-tertiary-bg:     rgba(99, 102, 241, 0.10);
+  --aeos-tertiary-border: rgba(99, 102, 241, 0.18);
+  --aeos-tertiary-hover:  rgba(99, 102, 241, 0.12);
+
+  /* Overlay surface (glow card bg) — use white in light mode */
+  --aeos-bg-overlay: var(--aeos-bg-card-light);
 
   /* Shadows (lighter for light mode) */
   --aeos-shadow-card:     0 2px 8px rgba(15, 23, 42, 0.08);

@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Grid.cjs",
+  "module": "../dist/exports/Grid.js",
+  "types": "../dist/types/exports/Grid.d.ts"
+}

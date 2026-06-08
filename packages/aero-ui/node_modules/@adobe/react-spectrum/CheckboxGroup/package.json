@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/CheckboxGroup.cjs",
+  "module": "../dist/exports/CheckboxGroup.js",
+  "types": "../dist/types/exports/CheckboxGroup.d.ts"
+}

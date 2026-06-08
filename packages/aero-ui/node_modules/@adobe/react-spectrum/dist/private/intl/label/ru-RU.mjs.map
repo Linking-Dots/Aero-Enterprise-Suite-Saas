@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,6FAAe,CAAC;IACjD,cAAc,CAAC,+EAAa,CAAC;AAC/B","sources":["packages/@adobe/react-spectrum/intl/label/ru-RU.json"],"sourcesContent":["{\n  \"(optional)\": \"(дополнительно)\",\n  \"(required)\": \"(обязательно)\"\n}\n"],"names":[],"version":3,"file":"ru-RU.mjs.map"}

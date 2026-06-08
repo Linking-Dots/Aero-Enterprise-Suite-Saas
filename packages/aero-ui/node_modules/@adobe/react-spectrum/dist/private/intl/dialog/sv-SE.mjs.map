@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,OAAO,CAAC;IACpC,WAAW,CAAC,MAAM,CAAC;AACrB","sources":["packages/@adobe/react-spectrum/intl/dialog/sv-SE.json"],"sourcesContent":["{\n  \"alert\": \"Varning\",\n  \"dismiss\": \"Avvisa\"\n}\n"],"names":[],"version":3,"file":"sv-SE.mjs.map"}

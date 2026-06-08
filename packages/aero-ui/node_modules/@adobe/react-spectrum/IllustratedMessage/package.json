@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/IllustratedMessage.cjs",
+  "module": "../dist/exports/IllustratedMessage.js",
+  "types": "../dist/types/exports/IllustratedMessage.d.ts"
+}

@@ -1,0 +1,11 @@
+var $b88bd4192de73c0a$exports = {};
+$b88bd4192de73c0a$exports = {
+    "completed": `\u{5B8C}\u{4E86} :`,
+    "current": `\u{73FE}\u{5728} :`,
+    "notCompleted": `\u{672A}\u{5B8C}\u{4E86} :`,
+    "steplist": `\u{624B}\u{9806}\u{30EA}\u{30B9}\u{30C8}`
+};
+
+
+export {$b88bd4192de73c0a$exports as default};
+//# sourceMappingURL=ja-JP.js.map

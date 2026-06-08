@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,gBAAS,CAAC;IACxC,eAAe,CAAC,kBAAW,CAAC;AAC9B","sources":["packages/@adobe/react-spectrum/intl/picker/es-ES.json"],"sourcesContent":["{\n  \"loading\": \"Cargando…\",\n  \"placeholder\": \"Seleccione…\"\n}\n"],"names":[],"version":3,"file":"es-ES.cjs.map"}

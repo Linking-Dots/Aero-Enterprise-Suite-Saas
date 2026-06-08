@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,kBAAY,CAAC;IAC9C,cAAc,CAAC,gBAAU,CAAC;AAC5B","sources":["packages/@adobe/react-spectrum/intl/label/lv-LV.json"],"sourcesContent":["{\n  \"(optional)\": \"(neobligāti)\",\n  \"(required)\": \"(obligāti)\"\n}\n"],"names":[],"version":3,"file":"lv-LV.mjs.map"}

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,aAAa,CAAC;IAC5C,aAAa,CAAC,cAAc,CAAC;IAC7B,QAAQ,CAAC,aAAU,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/datepicker/da-DK.json"],"sourcesContent":["{\n  \"endTime\": \"Sluttidspunkt\",\n  \"startTime\": \"Starttidspunkt\",\n  \"time\": \"Klokkeslæt\"\n}\n"],"names":[],"version":3,"file":"da-DK.cjs.map"}

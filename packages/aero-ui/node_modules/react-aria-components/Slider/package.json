@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Slider.cjs",
+  "module": "../dist/exports/Slider.js",
+  "types": "../dist/types/exports/Slider.d.ts"
+}

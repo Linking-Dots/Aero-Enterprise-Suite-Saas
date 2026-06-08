@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iBAAW,CAAC;IAC1C,eAAe,CAAC,yBAAmB,CAAC;AACtC","sources":["packages/@adobe/react-spectrum/intl/listbox/lt-LT.json"],"sourcesContent":["{\n  \"loading\": \"Įkeliama...\",\n  \"loadingMore\": \"Įkeliama daugiau...\"\n}\n"],"names":[],"version":3,"file":"lt-LT.js.map"}

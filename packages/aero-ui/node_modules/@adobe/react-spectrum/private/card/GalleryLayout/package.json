@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/card/GalleryLayout.cjs",
+  "module": "../../../dist/exports/private/card/GalleryLayout.js",
+  "types": "../../../dist/types/exports/private/card/GalleryLayout.d.ts"
+}

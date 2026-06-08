@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/LogicButton.cjs",
+  "module": "../dist/exports/LogicButton.js",
+  "types": "../dist/types/exports/LogicButton.d.ts"
+}

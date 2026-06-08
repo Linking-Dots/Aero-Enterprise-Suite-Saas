@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/button/FieldButton.cjs",
+  "module": "../../../dist/exports/private/button/FieldButton.js",
+  "types": "../../../dist/types/exports/private/button/FieldButton.d.ts"
+}

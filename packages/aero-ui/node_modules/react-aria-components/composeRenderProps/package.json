@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/composeRenderProps.cjs",
+  "module": "../dist/exports/composeRenderProps.js",
+  "types": "../dist/types/exports/composeRenderProps.d.ts"
+}

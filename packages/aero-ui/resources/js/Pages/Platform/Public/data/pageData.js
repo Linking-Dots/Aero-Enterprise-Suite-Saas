@@ -1,4 +1,25 @@
 // ─── AEOS Static Page Data ────────────────────────────────────────────────────
+import {
+  UserGroupIcon,
+  BanknotesIcon,
+  CurrencyDollarIcon,
+  BuildingOffice2Icon,
+  ClipboardDocumentListIcon,
+  CubeIcon,
+  TruckIcon,
+  ShoppingCartIcon,
+  BeakerIcon,
+  ShieldCheckIcon,
+  FolderOpenIcon,
+  DocumentMagnifyingGlassIcon,
+  BoltIcon,
+  ChartBarIcon,
+  LockClosedIcon,
+  PuzzlePieceIcon,
+  CircleStackIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline';
+
 
 export const NAV_LINKS = [
   { label: "Features",   href: "/features",   i18nKey: "nav_features"   },
@@ -11,7 +32,7 @@ export const NAV_LINKS = [
 export const FEATURES = [
   {
     id: "hrm",
-    icon: "UsersGroup",
+    icon: UserGroupIcon,
     size: "large",          // bento: spans 2 cols
     label: "Human Resources",
     title: "Complete HR Management",
@@ -21,7 +42,7 @@ export const FEATURES = [
   },
   {
     id: "finance",
-    icon: "CurrencyDollar",
+    icon: CurrencyDollarIcon,
     size: "medium",
     label: "Finance",
     title: "Finance & Accounting",
@@ -31,7 +52,7 @@ export const FEATURES = [
   },
   {
     id: "crm",
-    icon: "BuildingOffice2",
+    icon: BuildingOffice2Icon,
     size: "medium",
     label: "CRM",
     title: "Customer Relationship Management",
@@ -41,7 +62,7 @@ export const FEATURES = [
   },
   {
     id: "project",
-    icon: "ClipboardDocumentList",
+    icon: ClipboardDocumentListIcon,
     size: "large",
     label: "Project Management",
     title: "Enterprise Project Intelligence",
@@ -51,7 +72,7 @@ export const FEATURES = [
   },
   {
     id: "ims",
-    icon: "CubeTransparent",
+    icon: CubeIcon,
     size: "medium",
     label: "Inventory",
     title: "Inventory Management",
@@ -61,7 +82,7 @@ export const FEATURES = [
   },
   {
     id: "scm",
-    icon: "TruckIcon",
+    icon: TruckIcon,
     size: "medium",
     label: "Supply Chain",
     title: "Supply Chain Management",
@@ -71,7 +92,7 @@ export const FEATURES = [
   },
   {
     id: "pos",
-    icon: "ShoppingCart",
+    icon: ShoppingCartIcon,
     size: "small",
     label: "Point of Sale",
     title: "Point of Sale",
@@ -80,7 +101,7 @@ export const FEATURES = [
   },
   {
     id: "quality",
-    icon: "BeakerIcon",
+    icon: BeakerIcon,
     size: "small",
     label: "Quality & Labs",
     title: "Quality Control & Labs",
@@ -89,7 +110,7 @@ export const FEATURES = [
   },
   {
     id: "compliance",
-    icon: "ShieldCheck",
+    icon: ShieldCheckIcon,
     size: "small",
     label: "HSE & Compliance",
     title: "HSE & Compliance",
@@ -98,7 +119,7 @@ export const FEATURES = [
   },
   {
     id: "dms",
-    icon: "FolderOpen",
+    icon: FolderOpenIcon,
     size: "small",
     label: "Documents",
     title: "Document Management",
@@ -107,7 +128,7 @@ export const FEATURES = [
   },
   {
     id: "rfi",
-    icon: "DocumentMagnifyingGlass",
+    icon: DocumentMagnifyingGlassIcon,
     size: "medium",
     label: "RFI & Site Intel",
     title: "RFI & Site Intelligence",
@@ -117,7 +138,7 @@ export const FEATURES = [
   },
   {
     id: "assistant",
-    icon: "Bolt",
+    icon: BoltIcon,
     size: "medium",
     label: "AI Assistant",
     title: "Built-in AI Assistant",
@@ -267,7 +288,7 @@ export const MODULES = [
   {
     id: "hrm",
     category: "people",
-    icon: "UsersGroup",
+    icon: UserGroupIcon,
     label: "Human Resources",
     tagline: "Full employee lifecycle management",
     accentColor: "var(--cyan-aeos, #00E5FF)",
@@ -287,7 +308,7 @@ export const MODULES = [
   {
     id: "payroll",
     category: "people",
-    icon: "BanknotesIcon",
+    icon: BanknotesIcon,
     label: "Payroll Engine",
     tagline: "Automated multi-jurisdiction payroll",
     accentColor: "var(--indigo-aeos, #6366F1)",
@@ -307,7 +328,7 @@ export const MODULES = [
   {
     id: "finance",
     category: "finance",
-    icon: "CurrencyDollar",
+    icon: CurrencyDollarIcon,
     label: "Finance & Accounting",
     tagline: "Enterprise-grade general ledger",
     accentColor: "var(--indigo-aeos, #6366F1)",
@@ -327,7 +348,7 @@ export const MODULES = [
   {
     id: "crm",
     category: "operations",
-    icon: "BuildingOffice2",
+    icon: BuildingOffice2Icon,
     label: "CRM Suite",
     tagline: "360° customer lifecycle management",
     accentColor: "var(--amber-aeos, #FFB347)",
@@ -347,7 +368,7 @@ export const MODULES = [
   {
     id: "project",
     category: "operations",
-    icon: "ClipboardDocumentList",
+    icon: ClipboardDocumentListIcon,
     label: "Project Management",
     tagline: "Enterprise project intelligence",
     accentColor: "var(--indigo-aeos, #6366F1)",
@@ -367,7 +388,7 @@ export const MODULES = [
   {
     id: "ims",
     category: "operations",
-    icon: "CubeTransparent",
+    icon: CubeIcon,
     label: "Inventory Management",
     tagline: "Multi-warehouse real-time stock control",
     accentColor: "var(--cyan-aeos, #00E5FF)",
@@ -387,7 +408,7 @@ export const MODULES = [
   {
     id: "scm",
     category: "operations",
-    icon: "TruckIcon",
+    icon: TruckIcon,
     label: "Supply Chain",
     tagline: "End-to-end supply chain visibility",
     accentColor: "var(--amber-aeos, #FFB347)",
@@ -407,7 +428,7 @@ export const MODULES = [
   {
     id: "pos",
     category: "operations",
-    icon: "ShoppingCart",
+    icon: ShoppingCartIcon,
     label: "Point of Sale",
     tagline: "Fast, reliable POS with offline sync",
     accentColor: "var(--indigo-aeos, #6366F1)",
@@ -427,7 +448,7 @@ export const MODULES = [
   {
     id: "quality",
     category: "quality",
-    icon: "BeakerIcon",
+    icon: BeakerIcon,
     label: "Quality Control",
     tagline: "Smart inspections & lab integration",
     accentColor: "var(--cyan-aeos, #00E5FF)",
@@ -447,7 +468,7 @@ export const MODULES = [
   {
     id: "compliance",
     category: "quality",
-    icon: "ShieldCheck",
+    icon: ShieldCheckIcon,
     label: "HSE & Compliance",
     tagline: "Digital safety & regulatory management",
     accentColor: "var(--amber-aeos, #FFB347)",
@@ -467,7 +488,7 @@ export const MODULES = [
   {
     id: "dms",
     category: "operations",
-    icon: "FolderOpen",
+    icon: FolderOpenIcon,
     label: "Document Management",
     tagline: "Centralised version-controlled repository",
     accentColor: "var(--indigo-aeos, #6366F1)",
@@ -487,7 +508,7 @@ export const MODULES = [
   {
     id: "rfi",
     category: "quality",
-    icon: "DocumentMagnifyingGlass",
+    icon: DocumentMagnifyingGlassIcon,
     label: "RFI & Site Intelligence",
     tagline: "Field-to-office auditable loop",
     accentColor: "var(--cyan-aeos, #00E5FF)",
@@ -507,7 +528,7 @@ export const MODULES = [
   {
     id: "assistant",
     category: "intelligence",
-    icon: "Bolt",
+    icon: BoltIcon,
     label: "AI Assistant",
     tagline: "Context-aware AI across every module",
     accentColor: "var(--amber-aeos, #FFB347)",
@@ -527,7 +548,7 @@ export const MODULES = [
   {
     id: "analytics",
     category: "intelligence",
-    icon: "ChartBarSquare",
+    icon: ChartBarIcon,
     label: "Analytics & Reporting",
     tagline: "Board-ready KPIs and drill-down reports",
     accentColor: "var(--cyan-aeos, #00E5FF)",
@@ -549,37 +570,37 @@ export const MODULES = [
 /** Platform architectural pillars shown in FeaturesArchitecture section */
 export const PLATFORM_PILLARS = [
   {
-    icon: "LockClosed",
+    icon: LockClosedIcon,
     title: "Isolated Tenant Databases",
     body: "Every tenant runs on its own database. Zero shared schemas, zero row-level leakage. Complete data sovereignty from day one.",
     accentColor: "var(--cyan-aeos, #00E5FF)",
   },
   {
-    icon: "ShieldCheck",
+    icon: ShieldCheckIcon,
     title: "HRMAC Access Control",
     body: "4-level permission hierarchy — module → submodule → component → action — applied uniformly across every feature in the platform.",
     accentColor: "var(--indigo-aeos, #6366F1)",
   },
   {
-    icon: "Bolt",
+    icon: BoltIcon,
     title: "Async-First Processing",
     body: "Payroll, imports, report generation, and document indexing all run as queued background jobs, keeping the UI sub-100ms responsive.",
     accentColor: "var(--amber-aeos, #FFB347)",
   },
   {
-    icon: "PuzzlePiece",
+    icon: PuzzlePieceIcon,
     title: "Modular Architecture",
     body: "Subscribe only to what you need. Each module is independently scoped with its own routes, services, and permissions — sharing only auth and tenant context.",
     accentColor: "var(--cyan-aeos, #00E5FF)",
   },
   {
-    icon: "CircleStack",
+    icon: CircleStackIcon,
     title: "API-First Design",
     body: "Every module exposes versioned REST endpoints. Webhooks, Sanctum-protected APIs, and SDK libraries enable seamless third-party integration.",
     accentColor: "var(--indigo-aeos, #6366F1)",
   },
   {
-    icon: "ArrowPath",
+    icon: ArrowPathIcon,
     title: "No-Code Configuration",
     body: "Custom fields, approval chains, role definitions, and notification rules are all configurable per tenant — no deployment or developer needed.",
     accentColor: "var(--amber-aeos, #FFB347)",

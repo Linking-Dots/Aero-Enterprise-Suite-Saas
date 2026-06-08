@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/overlays/Modal.ts"],"sourcesContent":["export {Modal} from '../../../src/overlays/Modal';\n"],"names":[],"version":3,"file":"Modal.cjs.map"}

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,sBAAa,CAAC;IAC5C,eAAe,CAAC,gCAAuB,CAAC;AAC1C","sources":["packages/@adobe/react-spectrum/intl/listbox/ro-RO.json"],"sourcesContent":["{\n  \"loading\": \"Se încarcă...\",\n  \"loadingMore\": \"Se încarcă mai multe...\"\n}\n"],"names":[],"version":3,"file":"ro-RO.cjs.map"}

@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/label/HelpText.cjs",
+  "module": "../../../dist/exports/private/label/HelpText.js",
+  "types": "../../../dist/types/exports/private/label/HelpText.d.ts"
+}

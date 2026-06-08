@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,YAAY,CAAC;IAC9C,cAAc,CAAC,WAAQ,CAAC;AAC1B","sources":["packages/@adobe/react-spectrum/intl/label/et-EE.json"],"sourcesContent":["{\n  \"(optional)\": \"(valikuline)\",\n  \"(required)\": \"(nõutav)\"\n}\n"],"names":[],"version":3,"file":"et-EE.js.map"}

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,SAAS,CAAC,iBAAc,CAAC;IAC3C,WAAW,CAAC,gBAAU,CAAC;AACzB","sources":["packages/@adobe/react-spectrum/intl/dialog/hu-HU.json"],"sourcesContent":["{\n  \"alert\": \"Figyelmeztetés\",\n  \"dismiss\": \"Elutasítás\"\n}\n"],"names":[],"version":3,"file":"hu-HU.cjs.map"}

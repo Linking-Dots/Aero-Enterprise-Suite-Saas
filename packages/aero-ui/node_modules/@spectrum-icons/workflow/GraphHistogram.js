@@ -1,0 +1,11 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+exports.__esModule = true;
+exports.default = GraphHistogram;
+var _GraphHistogram = require("@adobe/react-spectrum-workflow/dist/GraphHistogram.js");
+var _Icon = require("@adobe/react-spectrum/Icon");
+var _react = _interopRequireDefault(require("react"));
+function GraphHistogram(props) {
+  return /*#__PURE__*/_react.default.createElement(_Icon.Icon, props, /*#__PURE__*/_react.default.createElement(_GraphHistogram.A4uGraphHistogram, null));
+}

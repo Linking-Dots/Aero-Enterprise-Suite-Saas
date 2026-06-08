@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,KAAK,CAAC;IACjC,QAAQ,CAAC,aAAU,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/sk-SK.json"],"sourcesContent":["{\n  \"help\": \"Pomoc\",\n  \"info\": \"Informácie\"\n}\n"],"names":[],"version":3,"file":"sk-SK.mjs.map"}

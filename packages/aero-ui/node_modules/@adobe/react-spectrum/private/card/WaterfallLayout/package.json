@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/card/WaterfallLayout.cjs",
+  "module": "../../../dist/exports/private/card/WaterfallLayout.js",
+  "types": "../../../dist/types/exports/private/card/WaterfallLayout.d.ts"
+}

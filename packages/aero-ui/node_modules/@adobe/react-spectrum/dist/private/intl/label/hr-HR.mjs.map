@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,YAAY,CAAC;IAC9C,cAAc,CAAC,SAAS,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/label/hr-HR.json"],"sourcesContent":["{\n  \"(optional)\": \"(opcionalno)\",\n  \"(required)\": \"(obvezno)\"\n}\n"],"names":[],"version":3,"file":"hr-HR.mjs.map"}

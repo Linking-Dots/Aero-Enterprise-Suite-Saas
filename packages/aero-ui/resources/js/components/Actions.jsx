@@ -10,6 +10,15 @@
 
 import { forwardRef } from 'react';
 import { cx } from './Primitives.jsx';
+import { Icon } from '../icons/icons.jsx';
+
+const renderIcon = (ico, sizeValue) => {
+  if (!ico) return null;
+  if (typeof ico === 'string') {
+    return <Icon name={ico} size={sizeValue} />;
+  }
+  return ico;
+};
 
 /* ── Intent → CSS class maps ──────────────────────────────────────────── */
 
@@ -104,13 +113,13 @@ export const Button = forwardRef(function Button(
       )}
       {!loading && leftIcon && (
         <span className="aeos-btn-icon-left" style={{ fontSize: iconSize, lineHeight: 1 }}>
-          {leftIcon}
+          {renderIcon(leftIcon, iconSize)}
         </span>
       )}
       {children && <span className="aeos-btn-label">{children}</span>}
       {!loading && rightIcon && (
         <span className="aeos-btn-icon-right" style={{ fontSize: iconSize, lineHeight: 1 }}>
-          {rightIcon}
+          {renderIcon(rightIcon, iconSize)}
         </span>
       )}
     </Element>
@@ -253,7 +262,7 @@ export const Link = forwardRef(function Link(
       })}
       {...rest}
     >
-      {leftIcon && <span className="aeos-link-icon">{leftIcon}</span>}
+      {leftIcon && <span className="aeos-link-icon">{renderIcon(leftIcon, 14)}</span>}
       {children}
       {external && !rightIcon && (
         <span className="aeos-link-icon aeos-link-icon-external">
@@ -262,7 +271,7 @@ export const Link = forwardRef(function Link(
           </svg>
         </span>
       )}
-      {rightIcon && <span className="aeos-link-icon">{rightIcon}</span>}
+      {rightIcon && <span className="aeos-link-icon">{renderIcon(rightIcon, 14)}</span>}
     </a>
   );
 });

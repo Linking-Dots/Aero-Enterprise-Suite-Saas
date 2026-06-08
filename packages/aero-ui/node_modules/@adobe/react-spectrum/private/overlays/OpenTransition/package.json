@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/overlays/OpenTransition.cjs",
+  "module": "../../../dist/exports/private/overlays/OpenTransition.js",
+  "types": "../../../dist/types/exports/private/overlays/OpenTransition.d.ts"
+}

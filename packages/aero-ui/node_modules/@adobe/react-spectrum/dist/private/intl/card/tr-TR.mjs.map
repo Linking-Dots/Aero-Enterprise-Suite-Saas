@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,gBAAa,CAAC;IAC5C,eAAe,CAAC,2BAAwB,CAAC;AAC3C","sources":["packages/@adobe/react-spectrum/intl/card/tr-TR.json"],"sourcesContent":["{\n  \"loading\": \"Yükleniyor...\",\n  \"loadingMore\": \"Daha fazla yükleniyor...\"\n}\n"],"names":[],"version":3,"file":"tr-TR.mjs.map"}

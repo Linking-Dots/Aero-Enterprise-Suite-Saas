@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,iDAAO,CAAC;IACnC,QAAQ,CAAC,sEAAU,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/uk-UA.json"],"sourcesContent":["{\n  \"help\": \"Довідка\",\n  \"info\": \"Інформація\"\n}\n"],"names":[],"version":3,"file":"uk-UA.mjs.map"}

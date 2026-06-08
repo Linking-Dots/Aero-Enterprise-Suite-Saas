@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/textfield/TextFieldBase.cjs",
+  "module": "../../../dist/exports/private/textfield/TextFieldBase.js",
+  "types": "../../../dist/types/exports/private/textfield/TextFieldBase.d.ts"
+}

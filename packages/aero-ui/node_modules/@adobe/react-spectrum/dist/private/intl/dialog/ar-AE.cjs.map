@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,SAAS,CAAC,mCAAK,CAAC;IAClC,WAAW,CAAC,mCAAK,CAAC;AACpB","sources":["packages/@adobe/react-spectrum/intl/dialog/ar-AE.json"],"sourcesContent":["{\n  \"alert\": \"تنبيه\",\n  \"dismiss\": \"تجاهل\"\n}\n"],"names":[],"version":3,"file":"ar-AE.cjs.map"}

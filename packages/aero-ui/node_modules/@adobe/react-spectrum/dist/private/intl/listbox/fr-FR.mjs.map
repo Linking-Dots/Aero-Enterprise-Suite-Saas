@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,aAAa,CAAC;IAC5C,eAAe,CAAC,+BAA4B,CAAC;AAC/C","sources":["packages/@adobe/react-spectrum/intl/listbox/fr-FR.json"],"sourcesContent":["{\n  \"loading\": \"Chargement...\",\n  \"loadingMore\": \"Chargement supplémentaire...\"\n}\n"],"names":[],"version":3,"file":"fr-FR.mjs.map"}

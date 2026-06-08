@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iCAAK,CAAC;IACpC,eAAe,CAAC,kDAAQ,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/card/ko-KR.json"],"sourcesContent":["{\n  \"loading\": \"로드 중…\",\n  \"loadingMore\": \"추가 로드 중…\"\n}\n"],"names":[],"version":3,"file":"ko-KR.mjs.map"}

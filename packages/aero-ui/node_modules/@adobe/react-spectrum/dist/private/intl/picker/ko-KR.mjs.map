@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iCAAK,CAAC;IACpC,eAAe,CAAC,wBAAG,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/picker/ko-KR.json"],"sourcesContent":["{\n  \"loading\": \"로드 중…\",\n  \"placeholder\": \"선택…\"\n}\n"],"names":[],"version":3,"file":"ko-KR.mjs.map"}

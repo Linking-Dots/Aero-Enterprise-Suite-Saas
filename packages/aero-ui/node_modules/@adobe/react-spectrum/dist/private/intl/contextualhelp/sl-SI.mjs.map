@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,WAAK,CAAC;IACjC,QAAQ,CAAC,WAAW,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/sl-SI.json"],"sourcesContent":["{\n  \"help\": \"Pomoč\",\n  \"info\": \"Informacije\"\n}\n"],"names":[],"version":3,"file":"sl-SI.mjs.map"}

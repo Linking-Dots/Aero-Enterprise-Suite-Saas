@@ -1,6 +1,15 @@
 import { forwardRef, useState, useId } from 'react';
 import { MagnifyingGlassIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { cx, Box } from './Primitives.jsx';
+import { Icon } from '../icons/icons.jsx';
+
+const renderIcon = (ico, sizeValue = 16) => {
+  if (!ico) return null;
+  if (typeof ico === 'string') {
+    return <Icon name={ico} size={sizeValue} />;
+  }
+  return ico;
+};
 
 /** Field — label + hint + error wrapper. */
 export const Field = forwardRef(function Field(
@@ -42,13 +51,13 @@ export const Input = forwardRef(function Input(
     <div className="aeos-input-group">
       {leftIcon && (
         <span className="aeos-input-group-icon" aria-hidden="true">
-          {leftIcon}
+          {renderIcon(leftIcon, 16)}
         </span>
       )}
       {inputEl}
       {rightIcon && (
         <span className="aeos-input-group-icon-right" aria-hidden="true">
-          {rightIcon}
+          {renderIcon(rightIcon, 16)}
         </span>
       )}
     </div>

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,QAAQ,CAAC;IACvC,aAAa,CAAC,SAAS,CAAC;IACxB,QAAQ,CAAC,IAAI,CAAC;AAChB","sources":["packages/@adobe/react-spectrum/intl/datepicker/nl-NL.json"],"sourcesContent":["{\n  \"endTime\": \"Eindtijd\",\n  \"startTime\": \"Starttijd\",\n  \"time\": \"Tijd\"\n}\n"],"names":[],"version":3,"file":"nl-NL.mjs.map"}

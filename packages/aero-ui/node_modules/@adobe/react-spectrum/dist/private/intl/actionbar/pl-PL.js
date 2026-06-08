@@ -1,0 +1,12 @@
+var $223247fa8e611e4e$exports = {};
+$223247fa8e611e4e$exports = {
+    "actions": `Dzia\u{142}ania`,
+    "actionsAvailable": `Dost\u{119}pne dzia\u{142}ania.`,
+    "clearSelection": `Wyczy\u{15B}\u{107} zaznaczenie`,
+    "selected": (args)=>`Zaznaczono: ${args.count}`,
+    "selectedAll": `Wszystkie zaznaczone`
+};
+
+
+export {$223247fa8e611e4e$exports as default};
+//# sourceMappingURL=pl-PL.js.map

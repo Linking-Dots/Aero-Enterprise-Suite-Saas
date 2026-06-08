@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Autocomplete.cjs",
+  "module": "../dist/exports/Autocomplete.js",
+  "types": "../dist/types/exports/Autocomplete.d.ts"
+}

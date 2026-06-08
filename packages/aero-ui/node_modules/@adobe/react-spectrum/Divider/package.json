@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Divider.cjs",
+  "module": "../dist/exports/Divider.js",
+  "types": "../dist/types/exports/Divider.d.ts"
+}

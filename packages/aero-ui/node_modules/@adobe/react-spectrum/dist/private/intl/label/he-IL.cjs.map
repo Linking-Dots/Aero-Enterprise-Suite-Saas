@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,iEAAW,CAAC;IAC7C,cAAc,CAAC,8BAAM,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/label/he-IL.json"],"sourcesContent":["{\n  \"(optional)\": \"(אופציונלי)\",\n  \"(required)\": \"(נדרש)\"\n}\n"],"names":[],"version":3,"file":"he-IL.cjs.map"}

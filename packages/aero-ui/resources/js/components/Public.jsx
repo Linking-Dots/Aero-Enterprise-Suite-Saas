@@ -9,6 +9,27 @@
 import { useState, useEffect, useRef, forwardRef } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { cx } from './Primitives.jsx';
+import * as HeroIcons from '@heroicons/react/24/outline';
+
+const resolvePublicIcon = (ico) => {
+  if (!ico) return null;
+  if (typeof ico === 'function') {
+    const IconComponent = ico;
+    return <IconComponent className="w-6 h-6" />;
+  }
+  if (typeof ico === 'string') {
+    let name = ico;
+    // Map pageData strings to matching Heroicons component names
+    if (name === 'UsersGroup') name = 'UserGroupIcon';
+    if (name === 'CubeTransparent') name = 'CubeIcon';
+    if (name === 'ChartBarSquare') name = 'ChartBarIcon';
+    
+    const normalized = name.endsWith('Icon') ? name : `${name}Icon`;
+    const IconComponent = HeroIcons[normalized] || HeroIcons[name] || HeroIcons.Squares2X2Icon;
+    return <IconComponent className="w-6 h-6" />;
+  }
+  return ico;
+};
 
 // ─── Section ──────────────────────────────────────────────────────────────────
 /**
@@ -84,7 +105,7 @@ export function PublicFeatureCard({ icon, title, description, stat, accent = 'cy
     <div className={cx('aeos-pub-feature-card', `aeos-pub-feature-card--${size}`, `aeos-pub-accent-border--${accent}`, className)} {...rest}>
       {icon && (
         <div className={cx('aeos-pub-feature-icon-tile', `aeos-pub-icon-tile--${accent}`)}>
-          {icon}
+          {resolvePublicIcon(icon)}
         </div>
       )}
       <h3 className="aeos-pub-h3">{title}</h3>

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,kBAAY,CAAC;IAC3C,eAAe,CAAC,oCAA8B,CAAC;AACjD","sources":["packages/@adobe/react-spectrum/intl/listbox/pl-PL.json"],"sourcesContent":["{\n  \"loading\": \"Ładowanie...\",\n  \"loadingMore\": \"Wczytywanie większej liczby...\"\n}\n"],"names":[],"version":3,"file":"pl-PL.js.map"}

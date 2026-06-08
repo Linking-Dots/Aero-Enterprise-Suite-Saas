@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Group.cjs",
+  "module": "../dist/exports/Group.js",
+  "types": "../dist/types/exports/Group.d.ts"
+}

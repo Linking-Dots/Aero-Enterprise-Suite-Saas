@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,cAAW,CAAC;IAC1C,eAAe,CAAC,kBAAe,CAAC;AAClC","sources":["packages/@adobe/react-spectrum/intl/card/sv-SE.json"],"sourcesContent":["{\n  \"loading\": \"Läser in...\",\n  \"loadingMore\": \"Läser in mer...\"\n}\n"],"names":[],"version":3,"file":"sv-SE.cjs.map"}

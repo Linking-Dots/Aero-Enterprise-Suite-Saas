@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Footer.cjs",
+  "module": "../dist/exports/Footer.js",
+  "types": "../dist/types/exports/Footer.d.ts"
+}

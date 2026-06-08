@@ -34,6 +34,14 @@ class HrmacContextGuard implements HrmacModelGuardInterface
             return;
         }
 
+        // Bypassed via AeroMode::withoutTenantContextGuard()
+        $ref = new \ReflectionClass(AeroMode::class);
+        $prop = $ref->getProperty('tenantContextChecker');
+        $prop->setAccessible(true);
+        if ($prop->getValue() === null) {
+            return;
+        }
+
         // Genuine early boot before the tenant scope is wired (mirrors the original
         // TenantModel guard's only legitimate allowance).
         if (! app()->bound(TenantScopeInterface::class)) {

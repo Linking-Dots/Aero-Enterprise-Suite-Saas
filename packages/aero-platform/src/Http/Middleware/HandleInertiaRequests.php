@@ -334,6 +334,12 @@ class HandleInertiaRequests extends Middleware
             'accessible_modules' => ! $isSuperAdmin ? $this->getTenantUserAccessibleModules($user) : null,
             'modules_lookup' => ! $isSuperAdmin ? $this->getModulesLookup() : null,
             'sub_modules_lookup' => ! $isSuperAdmin ? $this->getSubModulesLookup() : null,
+            // Flat HRMAC access map consumed by the frontend useHRMAC() hook (derived
+            // from role_module_access, NOT Spatie). Super admins get the '*' wildcard;
+            // others currently rely on backend HRMAC enforcement (granular tenant map
+            // is a follow-up — mirrors mapAdminUser). Without this key useHRMAC() hides
+            // every create/edit/delete control even for the tenant super admin.
+            'hrmac_access' => $isSuperAdmin ? ['*' => true] : [],
         ]);
     }
 

@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Accordion.cjs",
+  "module": "../dist/exports/Accordion.js",
+  "types": "../dist/types/exports/Accordion.d.ts"
+}

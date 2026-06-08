@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/SharedElementTransition.cjs",
+  "module": "../dist/exports/SharedElementTransition.js",
+  "types": "../dist/types/exports/SharedElementTransition.d.ts"
+}

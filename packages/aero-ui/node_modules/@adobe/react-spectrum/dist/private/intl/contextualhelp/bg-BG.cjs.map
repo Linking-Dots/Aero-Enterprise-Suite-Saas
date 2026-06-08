@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,QAAQ,CAAC,mCAAK,CAAC;IACjC,QAAQ,CAAC,sEAAU,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/bg-BG.json"],"sourcesContent":["{\n  \"help\": \"Помощ\",\n  \"info\": \"Информация\"\n}\n"],"names":[],"version":3,"file":"bg-BG.cjs.map"}

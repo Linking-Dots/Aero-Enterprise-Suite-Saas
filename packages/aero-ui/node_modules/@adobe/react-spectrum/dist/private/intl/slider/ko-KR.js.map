@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,gBAAE,CAAC;IACjC,WAAW,CAAC,gBAAE,CAAC;AACjB","sources":["packages/@adobe/react-spectrum/intl/slider/ko-KR.json"],"sourcesContent":["{\n  \"maximum\": \"최대\",\n  \"minimum\": \"최소\"\n}\n"],"names":[],"version":3,"file":"ko-KR.js.map"}

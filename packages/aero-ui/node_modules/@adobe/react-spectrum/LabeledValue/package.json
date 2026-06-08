@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/LabeledValue.cjs",
+  "module": "../dist/exports/LabeledValue.js",
+  "types": "../dist/types/exports/LabeledValue.d.ts"
+}

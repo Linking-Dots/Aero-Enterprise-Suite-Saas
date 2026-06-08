@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,aAAa,CAAC;IAC/C,cAAc,CAAC,YAAY,CAAC;AAC9B","sources":["packages/@adobe/react-spectrum/intl/label/fi-FI.json"],"sourcesContent":["{\n  \"(optional)\": \"(valinnainen)\",\n  \"(required)\": \"(pakollinen)\"\n}\n"],"names":[],"version":3,"file":"fi-FI.js.map"}

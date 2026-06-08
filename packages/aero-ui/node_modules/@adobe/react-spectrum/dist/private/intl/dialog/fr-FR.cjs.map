@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,SAAS,CAAC,MAAM,CAAC;IACnC,WAAW,CAAC,OAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/dialog/fr-FR.json"],"sourcesContent":["{\n  \"alert\": \"Alerte\",\n  \"dismiss\": \"Rejeter\"\n}\n"],"names":[],"version":3,"file":"fr-FR.cjs.map"}

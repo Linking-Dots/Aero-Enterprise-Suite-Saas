@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ProgressCircle.cjs",
+  "module": "../dist/exports/ProgressCircle.js",
+  "types": "../dist/types/exports/ProgressCircle.d.ts"
+}

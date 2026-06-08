@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,KAAK,CAAC;IACjC,QAAQ,CAAC,WAAW,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/contextualhelp/nb-NO.json"],"sourcesContent":["{\n  \"help\": \"Hjelp\",\n  \"info\": \"Informasjon\"\n}\n"],"names":[],"version":3,"file":"nb-NO.mjs.map"}

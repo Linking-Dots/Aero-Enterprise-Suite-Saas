@@ -85,6 +85,7 @@
     radial-gradient(ellipse 40% 50% at 10% 70%, rgba(99,102,241,0.08), transparent 55%);
 
   /* Glow / shadow */
+  --aeos-primary-glow:  rgba(0, 229, 255, 0.30);   /* Raw rgba for filter: drop-shadow() uses */
   --aeos-glow-cyan:     0 0 24px rgba(0, 229, 255, 0.30);
   --aeos-glow-cyan-l:   0 0 40px rgba(0, 229, 255, 0.50);
   --aeos-glow-amber:    0 0 24px rgba(255, 179, 71, 0.25);
@@ -201,6 +202,7 @@
   --aeos-bg-hover:        rgba(255, 255, 255, 0.06);
   --aeos-bg-active:       rgba(255, 255, 255, 0.10);
   --aeos-bg-wash:         rgba(255, 255, 255, 0.14);
+  --aeos-bg-overlay:      var(--aeos-bg-card);     /* Glow card background — light themes override */
 
   /* Semantic borders */
   --aeos-border-subtle:   rgba(255, 255, 255, 0.06);
@@ -229,6 +231,12 @@
   --aeos-warning-bg:      rgba(255, 179, 71, 0.12);
   --aeos-warning-border:  rgba(255, 179, 71, 0.22);
 
+  /* Tertiary (indigo) semantic — replaces all bare rgba(99,102,241,*) uses */
+  --aeos-tertiary-tint:   rgba(99, 102, 241, 0.08);
+  --aeos-tertiary-bg:     rgba(99, 102, 241, 0.12);
+  --aeos-tertiary-border: rgba(99, 102, 241, 0.20);
+  --aeos-tertiary-hover:  rgba(99, 102, 241, 0.14);
+
   /* Z-index layers */
   --aeos-z-base:      0;
   --aeos-z-sticky:    100;
@@ -250,7 +258,7 @@
 
   /* Shell dimensions */
   --aeos-shell-sidebar-w:     56px;
-  --aeos-shell-sidebar-w-exp: 240px;
+  --aeos-shell-sidebar-w-exp: max-content;
   --aeos-shell-topnav-h:      48px;
 
   /* Shell chrome backgrounds (token-driven, overridden per theme)

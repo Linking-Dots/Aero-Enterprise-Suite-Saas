@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,iBAAW,CAAC;IAC1C,eAAe,CAAC,yBAAmB,CAAC;AACtC","sources":["packages/@adobe/react-spectrum/intl/list/lt-LT.json"],"sourcesContent":["{\n  \"loading\": \"Įkeliama...\",\n  \"loadingMore\": \"Įkeliama daugiau...\"\n}\n"],"names":[],"version":3,"file":"lt-LT.cjs.map"}

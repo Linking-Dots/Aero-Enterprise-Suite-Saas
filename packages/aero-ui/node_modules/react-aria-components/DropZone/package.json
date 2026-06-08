@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/DropZone.cjs",
+  "module": "../dist/exports/DropZone.js",
+  "types": "../dist/types/exports/DropZone.d.ts"
+}

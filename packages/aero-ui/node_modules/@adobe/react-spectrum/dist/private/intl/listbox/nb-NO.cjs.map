@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,cAAc,CAAC;IAC7C,eAAe,CAAC,oBAAoB,CAAC;AACvC","sources":["packages/@adobe/react-spectrum/intl/listbox/nb-NO.json"],"sourcesContent":["{\n  \"loading\": \"Laster inn ...\",\n  \"loadingMore\": \"Laster inn flere ...\"\n}\n"],"names":[],"version":3,"file":"nb-NO.cjs.map"}

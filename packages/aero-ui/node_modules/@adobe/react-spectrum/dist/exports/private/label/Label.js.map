@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/label/Label.ts"],"sourcesContent":["export {Label, type LabelProps, type SpectrumLabelProps} from '../../../src/label/Label';\n"],"names":[],"version":3,"file":"Label.js.map"}

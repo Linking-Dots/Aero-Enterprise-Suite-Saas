@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,kEAAY,CAAC;IAC3C,eAAe,CAAC,gEAAS,CAAC;AAC5B","sources":["packages/@adobe/react-spectrum/intl/picker/bg-BG.json"],"sourcesContent":["{\n  \"loading\": \"Зареждане...\",\n  \"placeholder\": \"Изберете…\"\n}\n"],"names":[],"version":3,"file":"bg-BG.mjs.map"}

@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/StatusLight.cjs",
+  "module": "../dist/exports/StatusLight.js",
+  "types": "../dist/types/exports/StatusLight.d.ts"
+}

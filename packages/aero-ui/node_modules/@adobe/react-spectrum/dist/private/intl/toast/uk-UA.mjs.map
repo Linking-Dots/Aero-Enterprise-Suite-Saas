@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,sEAAU,CAAC;IACtC,YAAY,CAAC,iDAAO,CAAC;IACrB,YAAY,CAAC,iDAAO,CAAC;AACvB","sources":["packages/@adobe/react-spectrum/intl/toast/uk-UA.json"],"sourcesContent":["{\n  \"info\": \"Інформація\",\n  \"negative\": \"Помилка\",\n  \"positive\": \"Успішно\"\n}\n"],"names":[],"version":3,"file":"uk-UA.mjs.map"}

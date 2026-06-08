@@ -1,0 +1,11 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+exports.__esModule = true;
+exports.default = Airplane;
+var _Airplane = require("@adobe/react-spectrum-workflow/dist/Airplane.js");
+var _Icon = require("@adobe/react-spectrum/Icon");
+var _react = _interopRequireDefault(require("react"));
+function Airplane(props) {
+  return /*#__PURE__*/_react.default.createElement(_Icon.Icon, props, /*#__PURE__*/_react.default.createElement(_Airplane.A4uAirplane, null));
+}

@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/listbox/ListBoxBase.cjs",
+  "module": "../../../dist/exports/private/listbox/ListBoxBase.js",
+  "types": "../../../dist/types/exports/private/listbox/ListBoxBase.d.ts"
+}

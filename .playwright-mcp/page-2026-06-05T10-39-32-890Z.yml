@@ -1,0 +1,132 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e103]: Admin Dashboard
+      - link "My Profile" [ref=e12] [cursor=pointer]:
+        - /url: /profile
+        - generic [ref=e104]: My Profile
+      - link "My Notifications" [ref=e13] [cursor=pointer]:
+        - /url: /notifications
+        - generic [ref=e105]: My Notifications
+      - link "User Management" [ref=e15] [cursor=pointer]:
+        - /url: /users
+        - generic [ref=e106]: User Management
+      - link "Roles & Module Access" [ref=e16] [cursor=pointer]:
+        - /url: /roles
+        - generic [ref=e107]: Roles & Module Access
+      - link "Audit & Activity Logs" [ref=e17] [cursor=pointer]:
+        - /url: /audit-logs
+        - generic [ref=e108]: Audit & Activity Logs
+      - link "Notifications" [ref=e18] [cursor=pointer]:
+        - /url: /notifications
+        - generic [ref=e109]: Notifications
+      - link "File Manager" [ref=e19] [cursor=pointer]:
+        - /url: /file-manager
+        - generic [ref=e110]: File Manager
+      - link "Organization" [ref=e20] [cursor=pointer]:
+        - /url: /organization/profile
+        - generic [ref=e111]: Organization
+      - link "Translations / i18n" [ref=e21] [cursor=pointer]:
+        - /url: /i18n/translations
+        - generic [ref=e112]: Translations / i18n
+      - link "Tags & Labels" [ref=e22] [cursor=pointer]:
+        - /url: /tags
+        - generic [ref=e113]: Tags & Labels
+      - link "Saved Views & Filters" [ref=e23] [cursor=pointer]:
+        - /url: /saved-views
+        - generic [ref=e114]: Saved Views & Filters
+      - link "Global Search" [ref=e24] [cursor=pointer]:
+        - /url: /search
+        - generic [ref=e115]: Global Search
+      - link "API & Webhooks" [ref=e25] [cursor=pointer]:
+        - /url: /api/keys
+        - generic [ref=e116]: API & Webhooks
+      - link "Data Export/Import" [ref=e26] [cursor=pointer]:
+        - /url: /export-import/exports
+        - generic [ref=e117]: Data Export/Import
+      - link "Retention Policies" [ref=e27] [cursor=pointer]:
+        - /url: /retention-policies
+        - generic [ref=e118]: Retention Policies
+      - link "Email Engine" [ref=e28] [cursor=pointer]:
+        - /url: /email/logs
+        - generic [ref=e119]: Email Engine
+      - link "System Health" [ref=e29] [cursor=pointer]:
+        - /url: /system-health
+        - generic [ref=e120]: System Health
+      - link "Mobile & PWA" [ref=e30] [cursor=pointer]:
+        - /url: /mobile-pwa
+        - generic [ref=e121]: Mobile & PWA
+      - link "Backup & Restore" [ref=e31] [cursor=pointer]:
+        - /url: /backup
+        - generic [ref=e122]: Backup & Restore
+      - link "License Management" [ref=e32] [cursor=pointer]:
+        - /url: /license
+        - generic [ref=e123]: License Management
+      - link "Document Numbering & Sequences" [ref=e33] [cursor=pointer]:
+        - /url: /numbering
+        - generic [ref=e124]: Document Numbering & Sequences
+      - link "Print & PDF Templates" [ref=e34] [cursor=pointer]:
+        - /url: /print-templates
+        - generic [ref=e125]: Print & PDF Templates
+      - link "Announcements & Banners" [ref=e35] [cursor=pointer]:
+        - /url: /announcements
+        - generic [ref=e126]: Announcements & Banners
+      - link "Maintenance Mode" [ref=e36] [cursor=pointer]:
+        - /url: /maintenance-mode
+        - generic [ref=e127]: Maintenance Mode
+      - link "Trash & Recycle Bin" [ref=e37] [cursor=pointer]:
+        - /url: /trash
+        - generic [ref=e128]: Trash & Recycle Bin
+      - link "Help & Support" [ref=e38] [cursor=pointer]:
+        - /url: /help
+        - generic [ref=e129]: Help & Support
+      - link "Settings" [ref=e39] [cursor=pointer]:
+        - /url: /settings/system
+        - generic [ref=e130]: Settings
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - button "Collapse sidebar" [ref=e131] [cursor=pointer]:
+          - img [ref=e43]
+        - generic [ref=e45]: Dashboard
+        - generic [ref=e46]:
+          - button "Notifications" [ref=e47] [cursor=pointer]:
+            - img [ref=e49]
+          - generic [ref=e51]:
+            - generic [ref=e53]: "?"
+            - generic [ref=e55]: UAT Super Admin
+            - button "Sign out" [ref=e56] [cursor=pointer]:
+              - img [ref=e58]
+      - main [ref=e60]:
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - navigation "Breadcrumb" [ref=e64]:
+              - generic [ref=e66]: Dashboard
+            - heading "Dashboard" [level=1] [ref=e70]
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - generic [ref=e74]:
+                - heading "Total Users" [level=3] [ref=e75]
+                - paragraph [ref=e76]: All registered accounts
+              - generic [ref=e78]: "1"
+            - generic [ref=e79]:
+              - generic [ref=e81]:
+                - heading "Active Users" [level=3] [ref=e82]
+                - paragraph [ref=e83]: Currently enabled
+              - generic [ref=e85]: "1"
+            - generic [ref=e86]:
+              - generic [ref=e88]:
+                - heading "Roles" [level=3] [ref=e89]
+                - paragraph [ref=e90]: Configured roles
+              - generic [ref=e92]: "1"
+            - generic [ref=e93]:
+              - generic [ref=e95]:
+                - heading "Modules Enabled" [level=3] [ref=e96]
+                - paragraph [ref=e97]: Active feature modules
+              - generic [ref=e99]: "1"
+  - button "Open Theme Studio" [ref=e100] [cursor=pointer]:
+    - img [ref=e101]

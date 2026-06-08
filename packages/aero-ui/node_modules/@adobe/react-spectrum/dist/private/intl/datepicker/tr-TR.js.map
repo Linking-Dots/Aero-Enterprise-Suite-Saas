@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,iBAAW,CAAC;IAC1C,aAAa,CAAC,8BAAe,CAAC;IAC9B,QAAQ,CAAC,IAAI,CAAC;AAChB","sources":["packages/@adobe/react-spectrum/intl/datepicker/tr-TR.json"],"sourcesContent":["{\n  \"endTime\": \"Bitiş saati\",\n  \"startTime\": \"Başlangıç saati\",\n  \"time\": \"Saat\"\n}\n"],"names":[],"version":3,"file":"tr-TR.js.map"}

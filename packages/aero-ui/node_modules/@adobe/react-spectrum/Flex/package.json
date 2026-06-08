@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Flex.cjs",
+  "module": "../dist/exports/Flex.js",
+  "types": "../dist/types/exports/Flex.d.ts"
+}

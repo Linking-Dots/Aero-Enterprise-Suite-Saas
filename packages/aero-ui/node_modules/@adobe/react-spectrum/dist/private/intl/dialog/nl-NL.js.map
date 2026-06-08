@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,SAAS,CAAC,OAAO,CAAC;IACpC,WAAW,CAAC,OAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/dialog/nl-NL.json"],"sourcesContent":["{\n  \"alert\": \"Melding\",\n  \"dismiss\": \"Negeren\"\n}\n"],"names":[],"version":3,"file":"nl-NL.js.map"}

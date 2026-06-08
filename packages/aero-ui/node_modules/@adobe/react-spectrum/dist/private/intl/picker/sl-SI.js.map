@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,YAAY,CAAC;IAC3C,eAAe,CAAC,gBAAS,CAAC;AAC5B","sources":["packages/@adobe/react-spectrum/intl/picker/sl-SI.json"],"sourcesContent":["{\n  \"loading\": \"Nalaganje...\",\n  \"placeholder\": \"Izberite…\"\n}\n"],"names":[],"version":3,"file":"sl-SI.js.map"}

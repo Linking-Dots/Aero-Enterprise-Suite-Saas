@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,aAAa,CAAC;IAC5C,eAAe,CAAC,mBAAmB,CAAC;AACtC","sources":["packages/@adobe/react-spectrum/intl/card/nb-NO.json"],"sourcesContent":["{\n  \"loading\": \"Laster inn...\",\n  \"loadingMore\": \"Laster inn flere...\"\n}\n"],"names":[],"version":3,"file":"nb-NO.mjs.map"}

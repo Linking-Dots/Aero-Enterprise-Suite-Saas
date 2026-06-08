@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/VisuallyHidden.ts"],"sourcesContent":["export {VisuallyHidden} from 'react-aria/VisuallyHidden';\nexport type {VisuallyHiddenAria, VisuallyHiddenProps} from 'react-aria/VisuallyHidden';\n"],"names":[],"version":3,"file":"VisuallyHidden.mjs.map"}

@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/button/ClearButton.cjs",
+  "module": "../../../dist/exports/private/button/ClearButton.js",
+  "types": "../../../dist/types/exports/private/button/ClearButton.d.ts"
+}

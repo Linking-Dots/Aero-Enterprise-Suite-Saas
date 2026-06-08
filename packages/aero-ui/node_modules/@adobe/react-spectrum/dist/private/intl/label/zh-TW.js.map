@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,cAAc,CAAC,kBAAI,CAAC;IACtC,cAAc,CAAC,kBAAI,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/label/zh-TW.json"],"sourcesContent":["{\n  \"(optional)\": \"(選填)\",\n  \"(required)\": \"(必填)\"\n}\n"],"names":[],"version":3,"file":"zh-TW.js.map"}

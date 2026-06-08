@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/FileTrigger.ts"],"sourcesContent":["export {FileTrigger} from 'react-aria-components/FileTrigger';\nexport type {FileTriggerProps} from 'react-aria-components/FileTrigger';\n"],"names":[],"version":3,"file":"FileTrigger.cjs.map"}

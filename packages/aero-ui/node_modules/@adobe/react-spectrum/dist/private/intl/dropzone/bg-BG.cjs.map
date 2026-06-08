@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,kBAAkB,CAAC,wIAAsB,CAAC;AAC9D","sources":["packages/@adobe/react-spectrum/intl/dropzone/bg-BG.json"],"sourcesContent":["{\n  \"replaceMessage\": \"Пуснете файл за замяна\"\n}\n"],"names":[],"version":3,"file":"bg-BG.cjs.map"}

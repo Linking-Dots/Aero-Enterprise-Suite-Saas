@@ -1,0 +1,6 @@
+import { A4uOrganize as IconComponent } from '@adobe/react-spectrum-workflow/dist/Organize.js';
+import { Icon } from '@adobe/react-spectrum/Icon';
+import React from 'react';
+export default function Organize(props) {
+  return /*#__PURE__*/React.createElement(Icon, props, /*#__PURE__*/React.createElement(IconComponent, null));
+}

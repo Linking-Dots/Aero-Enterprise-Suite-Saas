@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,QAAQ,CAAC,IAAI,CAAC;IAChC,YAAY,CAAC,IAAI,CAAC;IAClB,YAAY,CAAC,WAAQ,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/toast/da-DK.json"],"sourcesContent":["{\n  \"info\": \"Info\",\n  \"negative\": \"Fejl\",\n  \"positive\": \"Fuldført\"\n}\n"],"names":[],"version":3,"file":"da-DK.js.map"}

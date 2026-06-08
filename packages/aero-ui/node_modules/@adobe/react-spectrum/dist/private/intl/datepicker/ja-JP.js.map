@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,gCAAI,CAAC;IACnC,aAAa,CAAC,gCAAI,CAAC;IACnB,QAAQ,CAAC,gBAAE,CAAC;AACd","sources":["packages/@adobe/react-spectrum/intl/datepicker/ja-JP.json"],"sourcesContent":["{\n  \"endTime\": \"終了時刻\",\n  \"startTime\": \"開始時刻\",\n  \"time\": \"時刻\"\n}\n"],"names":[],"version":3,"file":"ja-JP.js.map"}

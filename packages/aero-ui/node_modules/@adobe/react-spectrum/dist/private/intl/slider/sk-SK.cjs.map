@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,OAAO,CAAC;IACtC,WAAW,CAAC,OAAO,CAAC;AACtB","sources":["packages/@adobe/react-spectrum/intl/slider/sk-SK.json"],"sourcesContent":["{\n  \"maximum\": \"Maximum\",\n  \"minimum\": \"Minimum\"\n}\n"],"names":[],"version":3,"file":"sk-SK.cjs.map"}

@@ -1,0 +1,11 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+exports.__esModule = true;
+exports.default = DistributeSpaceVert;
+var _DistributeSpaceVert = require("@adobe/react-spectrum-workflow/dist/DistributeSpaceVert.js");
+var _Icon = require("@adobe/react-spectrum/Icon");
+var _react = _interopRequireDefault(require("react"));
+function DistributeSpaceVert(props) {
+  return /*#__PURE__*/_react.default.createElement(_Icon.Icon, props, /*#__PURE__*/_react.default.createElement(_DistributeSpaceVert.A4uDistributeSpaceVert, null));
+}

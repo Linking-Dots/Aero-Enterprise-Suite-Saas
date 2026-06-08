@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ColorThumb.cjs",
+  "module": "../dist/exports/ColorThumb.js",
+  "types": "../dist/types/exports/ColorThumb.d.ts"
+}

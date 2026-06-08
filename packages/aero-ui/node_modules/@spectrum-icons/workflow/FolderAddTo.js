@@ -1,0 +1,11 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+exports.__esModule = true;
+exports.default = FolderAddTo;
+var _FolderAddTo = require("@adobe/react-spectrum-workflow/dist/FolderAddTo.js");
+var _Icon = require("@adobe/react-spectrum/Icon");
+var _react = _interopRequireDefault(require("react"));
+function FolderAddTo(props) {
+  return /*#__PURE__*/_react.default.createElement(_Icon.Icon, props, /*#__PURE__*/_react.default.createElement(_FolderAddTo.A4uFolderAddTo, null));
+}

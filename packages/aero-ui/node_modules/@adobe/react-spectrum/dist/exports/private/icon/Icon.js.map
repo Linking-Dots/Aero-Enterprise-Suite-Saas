@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/icon/Icon.ts"],"sourcesContent":["export {type IconPropsWithoutChildren} from '../../../src/icon/Icon';\n"],"names":[],"version":3,"file":"Icon.js.map"}

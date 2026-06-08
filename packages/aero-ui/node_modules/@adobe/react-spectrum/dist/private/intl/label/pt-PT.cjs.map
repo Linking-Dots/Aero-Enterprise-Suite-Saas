@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,UAAU,CAAC;IAC5C,cAAc,CAAC,gBAAa,CAAC;AAC/B","sources":["packages/@adobe/react-spectrum/intl/label/pt-PT.json"],"sourcesContent":["{\n  \"(optional)\": \"(opcional)\",\n  \"(required)\": \"(obrigatório)\"\n}\n"],"names":[],"version":3,"file":"pt-PT.cjs.map"}

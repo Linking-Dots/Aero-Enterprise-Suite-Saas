@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/useCollator.ts"],"sourcesContent":["export {useCollator} from 'react-aria/useCollator';\n"],"names":[],"version":3,"file":"useCollator.mjs.map"}

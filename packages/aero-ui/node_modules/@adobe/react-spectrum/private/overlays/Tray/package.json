@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/overlays/Tray.cjs",
+  "module": "../../../dist/exports/private/overlays/Tray.js",
+  "types": "../../../dist/types/exports/private/overlays/Tray.d.ts"
+}

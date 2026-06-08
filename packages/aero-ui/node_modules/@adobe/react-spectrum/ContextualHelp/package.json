@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/ContextualHelp.cjs",
+  "module": "../dist/exports/ContextualHelp.js",
+  "types": "../dist/types/exports/ContextualHelp.d.ts"
+}

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,gCAAI,CAAC;IACnC,aAAa,CAAC,gCAAI,CAAC;IACnB,QAAQ,CAAC,gBAAE,CAAC;AACd","sources":["packages/@adobe/react-spectrum/intl/datepicker/zh-TW.json"],"sourcesContent":["{\n  \"endTime\": \"結束時間\",\n  \"startTime\": \"開始時間\",\n  \"time\": \"時間\"\n}\n"],"names":[],"version":3,"file":"zh-TW.cjs.map"}

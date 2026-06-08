@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/icon/UIIcon.cjs",
+  "module": "../../../dist/exports/private/icon/UIIcon.js",
+  "types": "../../../dist/types/exports/private/icon/UIIcon.d.ts"
+}

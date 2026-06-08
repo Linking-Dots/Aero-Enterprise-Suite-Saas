@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/provider/Provider.ts"],"sourcesContent":["export {useProviderProps} from '../../../src/provider/Provider';\n"],"names":[],"version":3,"file":"Provider.mjs.map"}

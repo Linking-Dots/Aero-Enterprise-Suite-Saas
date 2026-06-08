@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,2DAAW,CAAC;IAC1C,eAAe,CAAC,8JAA0B,CAAC;AAC7C","sources":["packages/@adobe/react-spectrum/intl/card/ru-RU.json"],"sourcesContent":["{\n  \"loading\": \"Загрузка...\",\n  \"loadingMore\": \"Дополнительная загрузка...\"\n}\n"],"names":[],"version":3,"file":"ru-RU.cjs.map"}

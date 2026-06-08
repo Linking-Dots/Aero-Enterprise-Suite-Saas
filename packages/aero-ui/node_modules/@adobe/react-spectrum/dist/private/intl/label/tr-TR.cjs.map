@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,cAAc,CAAC,gCAAc,CAAC;IAChD,cAAc,CAAC,SAAS,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/label/tr-TR.json"],"sourcesContent":["{\n  \"(optional)\": \"(isteğe bağlı)\",\n  \"(required)\": \"(gerekli)\"\n}\n"],"names":[],"version":3,"file":"tr-TR.cjs.map"}

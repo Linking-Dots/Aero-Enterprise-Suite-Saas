@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/useNumberFormatter.ts"],"sourcesContent":["export {useNumberFormatter} from 'react-aria/useNumberFormatter';\n"],"names":[],"version":3,"file":"useNumberFormatter.js.map"}

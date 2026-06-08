@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,SAAS,CAAC,WAAQ,CAAC;IACrC,WAAW,CAAC,SAAS,CAAC;AACxB","sources":["packages/@adobe/react-spectrum/intl/dialog/cs-CZ.json"],"sourcesContent":["{\n  \"alert\": \"Výstraha\",\n  \"dismiss\": \"Odstranit\"\n}\n"],"names":[],"version":3,"file":"cs-CZ.cjs.map"}

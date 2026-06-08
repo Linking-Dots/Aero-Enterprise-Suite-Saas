@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Select.cjs",
+  "module": "../dist/exports/Select.js",
+  "types": "../dist/types/exports/Select.d.ts"
+}

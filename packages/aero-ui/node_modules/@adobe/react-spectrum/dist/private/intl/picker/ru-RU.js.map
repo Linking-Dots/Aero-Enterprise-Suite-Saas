@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,2DAAW,CAAC;IAC1C,eAAe,CAAC,yDAAQ,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/picker/ru-RU.json"],"sourcesContent":["{\n  \"loading\": \"Загрузка...\",\n  \"placeholder\": \"Выбрать…\"\n}\n"],"names":[],"version":3,"file":"ru-RU.js.map"}

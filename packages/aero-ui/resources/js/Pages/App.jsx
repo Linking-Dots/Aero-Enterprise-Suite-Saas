@@ -14,78 +14,11 @@ import { Head } from '@inertiajs/react';
 import { AppShell, AppBrand, AppTopbarTitle, AppUserMenu, SearchOverlay } from '@aero/ui';
 import { useTheme } from '../theme/ThemeProvider.jsx';
 
-// ─── HeroIcon → engine icon name map ─────────────────────────────────────────
-const HERO_TO_ENGINE = {
-  HomeIcon:                   'home',
-  UserIcon:                   'user',
-  UserCircleIcon:             'user',
-  UsersIcon:                  'users',
-  ShieldCheckIcon:            'shield',
-  ShieldIcon:                 'shield',
-  CogIcon:                    'settings',
-  CogWrenchIcon:              'settings',
-  WrenchScrewdriverIcon:      'settings',
-  WrenchIcon:                 'settings',
-  BellIcon:                   'bell',
-  BellAlertIcon:              'bell',
-  FolderIcon:                 'folder',
-  FolderOpenIcon:             'folder',
-  ChartBarIcon:               'chartBar',
-  ChartBarSquareIcon:         'chartBar',
-  ChartSquareBarIcon:         'chartBar',
-  PresentationChartBarIcon:   'chartBar',
-  DocumentIcon:               'document',
-  DocumentTextIcon:           'document',
-  ClipboardDocumentListIcon:  'document',
-  DocumentMagnifyingGlassIcon:'document',
-  ClipboardIcon:              'document',
-  CubeIcon:                   'cube',
-  CubeTransparentIcon:        'cube',
-  TruckIcon:                  'truck',
-  ShoppingCartIcon:           'shoppingCart',
-  BeakerIcon:                 'beaker',
-  BoltIcon:                   'bolt',
-  LockClosedIcon:             'lock',
-  LockOpenIcon:               'lockOpen',
-  ArrowPathIcon:              'refresh',
-  PuzzlePieceIcon:            'puzzle',
-  CircleStackIcon:            'database',
-  BuildingOffice2Icon:        'home',
-  BuildingOfficeIcon:         'home',
-  CurrencyDollarIcon:         'chartBar',
-  BanknotesIcon:              'chartBar',
-  GlobeAltIcon:               'globe',
-  GlobeAmericasIcon:          'globe',
-  PhoneIcon:                  'phone',
-  LinkIcon:                   'link',
-  StarIcon:                   'star',
-  SparklesIcon:               'sparkles',
-  MagnifyingGlassIcon:        'search',
-  XMarkIcon:                  'x',
-  Bars3Icon:                  'menu',
-  RectangleGroupIcon:         'layout',
-  TableCellsIcon:             'layout',
-  Squares2X2Icon:             'layout',
-  CalendarIcon:               'calendar',
-  CalendarDaysIcon:           'calendar',
-  ClockIcon:                  'clock',
-  MapPinIcon:                 'pin',
-  MapIcon:                    'globe',
-  TagIcon:                    'tag',
-  InboxIcon:                  'mail',
-  EnvelopeIcon:               'mail',
-  ChatBubbleLeftIcon:         'mail',
-  MegaphoneIcon:              'bell',
-  ExclamationCircleIcon:      'alertCircle',
-  CheckCircleIcon:            'checkCircle',
-  InformationCircleIcon:      'alertCircle',
-  ArrowTrendingUpIcon:        'trending',
-  default:                    'layout',
-};
+import * as HeroIcons from '@heroicons/react/24/outline';
 
 function mapIcon(heroIconName) {
-  if (!heroIconName) return 'layout';
-  return HERO_TO_ENGINE[heroIconName] ?? HERO_TO_ENGINE.default;
+  if (!heroIconName) return HeroIcons.Squares2X2Icon;
+  return HeroIcons[heroIconName] || HeroIcons.Squares2X2Icon;
 }
 
 function isActive(href, currentUrl) {
@@ -95,8 +28,24 @@ function isActive(href, currentUrl) {
 }
 
 function mapItem(item, currentUrl) {
-  const href = item.path || item.children?.[0]?.path || '#';
-  return { icon: mapIcon(item.icon), label: item.name ?? '', href, active: isActive(href, currentUrl) };
+  let children;
+  let hasActiveChild = false;
+  if (item.children && item.children.length > 0) {
+    children = item.children.map(child => mapItem(child, currentUrl));
+    hasActiveChild = children.some(c => c.active || c.hasActiveChild);
+  }
+
+  const href = item.path || undefined;
+  const active = isActive(href, currentUrl) || hasActiveChild;
+
+  return {
+    icon: mapIcon(item.icon),
+    label: item.name ?? '',
+    href,
+    active,
+    hasActiveChild,
+    children,
+  };
 }
 
 function transformNavigation(backendNav, currentUrl) {
@@ -124,8 +73,7 @@ function transformNavigation(backendNav, currentUrl) {
 }
 
 function mapGroupItem(item, currentUrl) {
-  const href = item.path || item.children?.[0]?.path || '#';
-  return { icon: mapIcon(item.icon), label: item.name ?? '', href, active: isActive(href, currentUrl) };
+  return mapItem(item, currentUrl);
 }
 
 function transformNavigationGroups(backendGroups, currentUrl) {

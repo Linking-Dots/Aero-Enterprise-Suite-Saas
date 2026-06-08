@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,kBAAkB,CAAC,kFAAY,CAAC;AACpD","sources":["packages/@adobe/react-spectrum/intl/dropzone/ko-KR.json"],"sourcesContent":["{\n  \"replaceMessage\": \"파일을 드롭하여 바꾸기\"\n}\n"],"names":[],"version":3,"file":"ko-KR.cjs.map"}

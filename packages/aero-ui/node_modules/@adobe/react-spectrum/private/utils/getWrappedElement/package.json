@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/getWrappedElement.cjs",
+  "module": "../../../dist/exports/private/utils/getWrappedElement.js",
+  "types": "../../../dist/types/exports/private/utils/getWrappedElement.d.ts"
+}

@@ -1,0 +1,5 @@
+{
+  "main": "../../../dist/exports/private/utils/useHasChild.cjs",
+  "module": "../../../dist/exports/private/utils/useHasChild.js",
+  "types": "../../../dist/types/exports/private/utils/useHasChild.d.ts"
+}

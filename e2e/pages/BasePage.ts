@@ -2,7 +2,13 @@ import { type Page, type Locator, expect } from '@playwright/test';
 
 /** Shared navigation + assertion helpers for all page objects. */
 export class BasePage {
-  constructor(protected page: Page) {}
+  constructor(protected page: Page) {
+    this.page.on('response', async response => {
+      if (response.status() >= 400) {
+        console.log(`[http ${response.status()}] ${response.url()}`);
+      }
+    });
+  }
 
   async goto(path: string) {
     await this.page.goto(path, { waitUntil: 'networkidle' });

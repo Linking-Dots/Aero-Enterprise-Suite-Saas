@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/react-aria-components/exports/useListData.ts"],"sourcesContent":["export {useListData} from 'react-stately/useListData';\nexport type {ListOptions as ListDataOptions, ListData} from 'react-stately/useListData';\n"],"names":[],"version":3,"file":"useListData.mjs.map"}

@@ -1,0 +1,1 @@
+{"mappings":";AAAA,4BAAiB;IAAG,WAAW,CAAC,2BAAoB,CAAC;IACnD,eAAe,CAAC,0DAA+B,CAAC;AAClD","sources":["packages/@adobe/react-spectrum/intl/card/fr-FR.json"],"sourcesContent":["{\n  \"loading\": \"Chargement en cours…\",\n  \"loadingMore\": \"Chargement d’autres d’éléments…\"\n}\n"],"names":[],"version":3,"file":"fr-FR.js.map"}

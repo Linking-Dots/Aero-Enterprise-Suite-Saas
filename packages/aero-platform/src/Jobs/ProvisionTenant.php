@@ -694,6 +694,26 @@ class ProvisionTenant implements ShouldQueue
             }
         }
 
+        // Always include hrmac migrations (modules, sub_modules, role_module_access, etc.)
+        $hrmacPath = 'vendor/aero/hrmac/database/migrations';
+        $searchedPaths[] = $hrmacPath;
+
+        if (File::exists(base_path($hrmacPath))) {
+            $paths[] = $hrmacPath;
+            $this->logStep("   → Including hrmac migrations: {$hrmacPath}", []);
+        } else {
+            // Fallback: try packages directory
+            $hrmacDevPath = 'packages/aero-hrmac/database/migrations';
+            $searchedPaths[] = $hrmacDevPath;
+
+            if (File::exists(base_path($hrmacDevPath))) {
+                $paths[] = $hrmacDevPath;
+                $this->logStep("   → Including hrmac migrations (dev): {$hrmacDevPath}", []);
+            } else {
+                $this->logStep("   ⚠️  HRMAC migrations not found at {$hrmacPath} or {$hrmacDevPath}", [], 'warning');
+            }
+        }
+
         // Get modules from tenant's subscriptions using tenant_module pivot table
         $tenantModules = $this->tenant->getActiveModules()->all();
 

@@ -1,0 +1,1 @@
+{"mappings":"AAAA,iBAAiB;IAAG,WAAW,CAAC,oDAAU,CAAC;IACzC,eAAe,CAAC,yDAAQ,CAAC;AAC3B","sources":["packages/@adobe/react-spectrum/intl/picker/el-GR.json"],"sourcesContent":["{\n  \"loading\": \"Φόρτωση...\",\n  \"placeholder\": \"Επιλογή…\"\n}\n"],"names":[],"version":3,"file":"el-GR.cjs.map"}

@@ -1,0 +1,14 @@
+module.exports = {
+    "collapse": `Colapsar`,
+    "columnResizer": `Redimensionador de coluna`,
+    "drag": `Arrastar`,
+    "expand": `Expandir`,
+    "loading": `A carregar...`,
+    "loadingMore": `A carregar mais...`,
+    "resizeColumn": `Redimensionar coluna`,
+    "sortAscending": `Ordenar por ordem ascendente`,
+    "sortDescending": `Ordenar por ordem decrescente`
+};
+
+
+//# sourceMappingURL=pt-PT.cjs.map

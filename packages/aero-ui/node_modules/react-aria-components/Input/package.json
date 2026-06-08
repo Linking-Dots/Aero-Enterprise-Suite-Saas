@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Input.cjs",
+  "module": "../dist/exports/Input.js",
+  "types": "../dist/types/exports/Input.d.ts"
+}

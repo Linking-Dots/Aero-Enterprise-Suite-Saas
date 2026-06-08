@@ -1,0 +1,1 @@
+{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/overlays/OpenTransition.ts"],"sourcesContent":["export {OpenTransition} from '../../../src/overlays/OpenTransition';\n"],"names":[],"version":3,"file":"OpenTransition.cjs.map"}

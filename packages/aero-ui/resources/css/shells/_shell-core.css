@@ -1,0 +1,70 @@
+/* ══════════════════════════════════════════════════════════════
+   AEOS UI — Shell Core (Phase B)
+   Shared structural foundation for all 4 shell variants.
+   All shells must satisfy these overflow / scroll / grid rules.
+   ── TOKEN_RULE: Zero hardcoded colors, spacing, or radii. ──
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Full-viewport shell host ────────────────────────────────── */
+.aeos-shell-root {
+  display: grid;
+  grid-template-areas: "sidebar main";
+  grid-template-columns: var(--aeos-shell-sidebar-w) 1fr;
+  min-height: 100vh;
+  min-height: 100dvh; /* mobile viewport height (no address-bar shift) */
+  overflow: hidden;
+  font-family: var(--aeos-font-body);
+  background: var(--aeos-shell-bg);
+}
+
+/* ── Main content column ─────────────────────────────────────── */
+.aeos-shell-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;        /* required for nested flex children to scroll */
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ── Scrollable content region ───────────────────────────────── */
+.aeos-shell-content {
+  flex: 1;
+  min-height: 0;        /* required — without this overflow-y has no effect */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Topbar chrome ───────────────────────────────────────────── */
+.aeos-shell-topbar {
+  display: flex;
+  align-items: center;
+  height: var(--aeos-shell-topnav-h, var(--aeos-h-topbar));
+  padding: 0 var(--aeos-space-4);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+  background: var(--aeos-shell-topbar-bg);
+  gap: var(--aeos-space-3);
+  flex-shrink: 0;
+  z-index: var(--aeos-z-sticky);
+}
+
+/* ── Footer chrome ───────────────────────────────────────────── */
+.aeos-shell-footer {
+  flex-shrink: 0;
+  border-top: var(--aeos-border-width) solid var(--aeos-divider);
+  background: var(--aeos-shell-topbar-bg);
+  padding: var(--aeos-space-3) var(--aeos-space-4);
+}
+
+/* ── Shared flex spacer ──────────────────────────────────────── */
+.aeos-shell-flex-spacer { flex: 1; min-width: 0; }
+
+/* ── Page container (max-width centering) ────────────────────── */
+.aeos-page-container {
+  width: 100%;
+  padding: var(--aeos-space-5);
+}
+
+/* Prevent body from being a grid container when shell data-attr present
+   (D-01/D-02 override — must remain here to not conflict with shells) */
+body[data-aeos-shell] { display: block; }

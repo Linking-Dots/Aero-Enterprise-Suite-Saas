@@ -1,0 +1,5 @@
+{
+  "main": "../dist/exports/Form.cjs",
+  "module": "../dist/exports/Form.js",
+  "types": "../dist/types/exports/Form.d.ts"
+}
