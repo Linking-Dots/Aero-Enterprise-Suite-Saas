@@ -106,3 +106,207 @@
   position: relative;
   text-align: left;
 }
+
+
+/* ══════════════════════════════════════════════════════════════
+   Tenant Dashboard — widget-specific classes
+   No inline styles; no <style> tags. All dashboard-specific
+   tokens expressed here, themed via --aeos-* CSS variables.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Welcome title ───────────────────────────────────────────── */
+.dash-welcome-title {
+  font-family: var(--aeos-font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--aeos-text-primary);
+  margin: 0;
+}
+
+/* ── KPI value ───────────────────────────────────────────────── */
+.dash-kpi-value {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--aeos-text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Sparkline ───────────────────────────────────────────────── */
+.dash-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 28px;
+}
+.dash-spark-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: var(--aeos-primary);
+  opacity: 0.3;
+  min-height: 3px;
+}
+.dash-spark-bar--active { opacity: 0.85; }
+
+/* ── Progress fill intent variants ──────────────────────────── */
+.aeos-progress-fill--success { background: var(--aeos-success); }
+.aeos-progress-fill--amber   { background: var(--aeos-secondary); }
+.aeos-progress-fill--danger  { background: var(--aeos-destructive); }
+.aeos-progress-fill--cyan    { background: var(--aeos-primary); }
+
+/* ── Onboarding step rows ────────────────────────────────────── */
+.dash-step-row {
+  padding: 8px 0;
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+}
+.dash-step-row--last { border-bottom: none; padding-bottom: 0; }
+
+.dash-step-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--aeos-border-base);
+  background: transparent;
+  flex-shrink: 0;
+}
+.dash-step-check--done {
+  background: var(--aeos-success);
+  border-color: var(--aeos-success);
+}
+.dash-step-check--done::after {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+}
+.dash-step-label--done {
+  text-decoration: line-through;
+}
+
+/* ── Announcements ───────────────────────────────────────────── */
+.dash-announce-item {
+  padding: 10px 0;
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+}
+.dash-announce-item--last { border-bottom: none; padding-bottom: 0; }
+
+.dash-dismiss-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--aeos-text-tertiary);
+  padding: 0 2px;
+  font-size: 14px;
+  line-height: 1;
+}
+.dash-dismiss-btn:hover { color: var(--aeos-text-primary); }
+
+/* ── Period tab badge ────────────────────────────────────────── */
+.dash-period-tab { cursor: pointer; }
+
+/* ── Chart legend dots ───────────────────────────────────────── */
+.dash-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.dash-legend-dot--primary { background: var(--aeos-primary); }
+.dash-legend-dot--success { background: var(--aeos-success); }
+
+/* ── Sessions widget ─────────────────────────────────────────── */
+.dash-session-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 4px;
+  border-right: var(--aeos-border-width) solid var(--aeos-divider);
+}
+.dash-session-stat--last { border-right: none; }
+
+.dash-session-num {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--aeos-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.dash-session-num--online { color: var(--aeos-success); }
+
+.dash-session-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--aeos-border-base);
+  flex-shrink: 0;
+}
+.dash-session-dot--online { background: var(--aeos-success); }
+
+/* ── Shared horizontal divider + top-pad pattern ────────────── */
+.dash-divider-h {
+  border-top: var(--aeos-border-width) solid var(--aeos-divider);
+  padding-top: var(--aeos-space-3);
+  margin-top: var(--aeos-space-3);
+}
+
+/* ── Vertical divider (system info footer) ───────────────────── */
+.dash-divider-v {
+  width: 1px;
+  align-self: stretch;
+  background: var(--aeos-divider);
+}
+
+/* ── Activity dot colours ────────────────────────────────────── */
+.dash-activity-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.dash-activity-dot--success { background: var(--aeos-success); }
+.dash-activity-dot--danger  { background: var(--aeos-destructive); }
+.dash-activity-dot--primary { background: var(--aeos-primary); }
+.dash-activity-dot--neutral { background: var(--aeos-text-tertiary); }
+
+/* ── Audit log rows ──────────────────────────────────────────── */
+.dash-audit-row {
+  padding: 8px 0;
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+}
+.dash-audit-row--last { border-bottom: none; padding-bottom: 0; }
+
+/* ── Quick action card + icon ────────────────────────────────── */
+.dash-qa-card { padding: 10px 12px; }
+
+.dash-qa-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--aeos-r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--aeos-primary-tint);
+  border: var(--aeos-border-width) solid var(--aeos-primary-border);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Column spans (extends utilities.css existing aeos-col-span-2/4) */
+.aeos-col-span-3 { grid-column: span 3; }
+
+/* ── Responsive overrides ────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .aeos-col-span-3 { grid-column: 1 / -1; }
+}
+@media (max-width: 639px) {
+  .aeos-col-span-2,
+  .aeos-col-span-3 { grid-column: 1 / -1; }
+}

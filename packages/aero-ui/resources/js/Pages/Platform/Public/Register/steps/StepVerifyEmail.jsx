@@ -68,21 +68,38 @@ export default function StepVerifyEmail({ email = '', companyName = '' }) {
         {resendStatus === 'sent'  && <Alert intent="success">A new code has been sent to {email}.</Alert>}
         {resendStatus === 'error' && <Alert intent="danger">Failed to resend code. Please try again.</Alert>}
 
+        {/*
+         * rl-otp-wrap makes the 6 OTP boxes distribute evenly across the
+         * full card width on every viewport size. The inner OtpInput
+         * component's default fixed sizing is overridden by the CSS in
+         * RegistrationLayout (targets .rl-otp-wrap > * and [class*="otp-box"]).
+         */}
         <Field label="Verification Code" htmlFor="otp-email">
-          <OtpInput
-            id="otp-email"
-            value={code}
-            onChange={setCode}
-            error={!!error}
-            disabled={verified}
-            autoFocus
-          />
+          <div className="rl-otp-wrap">
+            <OtpInput
+              id="otp-email"
+              value={code}
+              onChange={setCode}
+              error={!!error}
+              disabled={verified}
+              autoFocus
+              className="rl-otp-input"
+            />
+          </div>
         </Field>
 
-        <Button type="submit" intent="primary" fullWidth size="lg" loading={loading || verified} disabled={code.length < 6}>
+        <Button
+          type="submit"
+          intent="primary"
+          fullWidth
+          size="lg"
+          loading={loading || verified}
+          disabled={code.length < 6}
+        >
           {verified ? 'Verified!' : 'Verify Email'}
         </Button>
 
+        {/* Resend row */}
         <HStack gap={2} align="center">
           <Text tone="secondary" as="span">Didn&apos;t receive it?</Text>
           <Button
@@ -96,6 +113,13 @@ export default function StepVerifyEmail({ email = '', companyName = '' }) {
             {countdown > 0 ? `Resend in ${countdown}s` : 'Resend code'}
           </Button>
         </HStack>
+
+        {/* Responsive nav — stacks on mobile, inline on tablet+ */}
+        <div className="rl-nav">
+          <Button type="button" intent="ghost" leftIcon="arrowLeft" onClick={() => router.get(SR.details)}>
+            Back
+          </Button>
+        </div>
       </VStack>
     </form>
   );

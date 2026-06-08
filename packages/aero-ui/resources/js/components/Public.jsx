@@ -6,14 +6,17 @@
  * Dynamic data-driven values (avatar colors, animation timing) use CSS custom
  * properties via the `style` prop — this is the only accepted exception.
  */
-import { useState, useEffect, useRef, forwardRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, isValidElement } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { cx } from './Primitives.jsx';
 import * as HeroIcons from '@heroicons/react/24/outline';
 
 const resolvePublicIcon = (ico) => {
   if (!ico) return null;
-  if (typeof ico === 'function') {
+  if (isValidElement(ico)) {
+    return ico;
+  }
+  if (typeof ico === 'function' || (typeof ico === 'object' && ico !== null && (ico.$$typeof || ico.render))) {
     const IconComponent = ico;
     return <IconComponent className="w-6 h-6" />;
   }

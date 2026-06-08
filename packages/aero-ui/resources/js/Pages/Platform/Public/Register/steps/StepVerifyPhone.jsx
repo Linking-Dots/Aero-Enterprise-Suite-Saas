@@ -69,17 +69,27 @@ export default function StepVerifyPhone({ phone = '', companyName = '' }) {
         {resendStatus === 'error' && <Alert intent="danger">Failed to resend code. Please try again.</Alert>}
 
         <Field label="Verification Code" htmlFor="otp-phone">
-          <OtpInput
-            id="otp-phone"
-            value={code}
-            onChange={setCode}
-            error={!!error}
-            disabled={verified}
-            autoFocus
-          />
+          <div className="rl-otp-wrap">
+            <OtpInput
+              id="otp-phone"
+              value={code}
+              onChange={setCode}
+              error={!!error}
+              disabled={verified}
+              autoFocus
+              className="rl-otp-input"
+            />
+          </div>
         </Field>
 
-        <Button type="submit" intent="primary" fullWidth size="lg" loading={loading || verified} disabled={code.length < 6}>
+        <Button
+          type="submit"
+          intent="primary"
+          fullWidth
+          size="lg"
+          loading={loading || verified}
+          disabled={code.length < 6}
+        >
           {verified ? 'Verified!' : 'Verify Phone'}
         </Button>
 

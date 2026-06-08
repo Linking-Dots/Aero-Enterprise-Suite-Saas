@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { VStack, Field, Input, Button } from '@aero/ui';
+import { VStack, HStack, Field, Input, Button } from '@aero/ui';
 import { SR } from '../signupRoutes.js';
 
 export default function StepDetails({ baseDomain = '', existingSubdomain = '', savedData = {} }) {
@@ -46,7 +46,7 @@ export default function StepDetails({ baseDomain = '', existingSubdomain = '', s
           />
         </Field>
 
-        <Field label="Phone" htmlFor="phone" error={errors.phone} hint="Optional, used for SMS verification">
+        <Field label="Phone" htmlFor="phone" error={errors.phone} hint="Optional — used for SMS verification">
           <Input
             id="phone"
             type="tel"
@@ -58,7 +58,13 @@ export default function StepDetails({ baseDomain = '', existingSubdomain = '', s
           />
         </Field>
 
-        <Field label="Subdomain" htmlFor="subdomain" error={errors.subdomain} required>
+        <Field
+          label="Subdomain"
+          htmlFor="subdomain"
+          error={errors.subdomain}
+          hint={`Your workspace will be accessible at ${previewSubdomain || '<subdomain>'}.${baseDomain}`}
+          required
+        >
           <Input
             id="subdomain"
             type="text"
@@ -69,15 +75,23 @@ export default function StepDetails({ baseDomain = '', existingSubdomain = '', s
             error={!!errors.subdomain}
           />
           {data.subdomain && (
-            <div className="rl-subdomain-preview">
+            <div className="rl-subdomain-preview" aria-live="polite">
               {previewSubdomain || data.subdomain}.{baseDomain}
             </div>
           )}
         </Field>
 
+        {/* Primary CTA full-width */}
         <Button type="submit" intent="primary" fullWidth size="lg" loading={processing} rightIcon="arrowRight">
           Continue
         </Button>
+
+        {/* Back — uses rl-nav for consistent responsive stacking */}
+        <div className="rl-nav">
+          <Button type="button" intent="ghost" leftIcon="arrowLeft" onClick={() => window.history.back()}>
+            Back
+          </Button>
+        </div>
       </VStack>
     </form>
   );
