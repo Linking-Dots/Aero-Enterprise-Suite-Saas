@@ -199,9 +199,15 @@ export function PublicPricingCard({
         {users && <p className="aeos-pub-pricing-meta">{users} &middot; {subsidiaries}</p>}
       </div>
 
-      <a href={ctaHref} className={cx('aeos-pub-pricing-cta', highlighted ? 'aeos-pub-pricing-cta--primary' : 'aeos-pub-pricing-cta--ghost')}>
-        {cta}
-      </a>
+      {(() => {
+        const isInternal = ctaHref && !ctaHref.startsWith('http://') && !ctaHref.startsWith('https://') && !ctaHref.startsWith('//') && !ctaHref.startsWith('mailto:') && !ctaHref.startsWith('tel:');
+        const CtaTag = isInternal ? Link : 'a';
+        return (
+          <CtaTag href={ctaHref} className={cx('aeos-pub-pricing-cta', highlighted ? 'aeos-pub-pricing-cta--primary' : 'aeos-pub-pricing-cta--ghost')}>
+            {cta}
+          </CtaTag>
+        );
+      })()}
 
       <ul className="aeos-pub-pricing-perks">
         {perks.map((perk, i) => (

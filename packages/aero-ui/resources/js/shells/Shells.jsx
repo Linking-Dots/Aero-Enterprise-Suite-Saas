@@ -1,4 +1,5 @@
 import { forwardRef, useState, useEffect, useCallback } from 'react';
+import { Link as InertiaLink } from '@inertiajs/react';
 import { useTheme } from '../theme/ThemeProvider.jsx';
 import { Bars3Icon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { cx } from '../components/Primitives.jsx';
@@ -36,7 +37,9 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
     if (expanded || isCommand) setIsOpen(!isOpen);
   };
 
-  const Tag = item.href && !hasChildren ? 'a' : 'button';
+  const isLink = item.href && !hasChildren;
+  const isInternal = isLink && !item.href.startsWith('http://') && !item.href.startsWith('https://') && !item.href.startsWith('//') && !item.href.startsWith('mailto:') && !item.href.startsWith('tel:');
+  const Tag = isLink ? (isInternal ? InertiaLink : 'a') : 'button';
 
   // Depth indentation via CSS class — no inline style, no raw rem values
   const depthClass = depth > 0 && (expanded || isCommand) ? `aeos-nav-depth-${Math.min(depth, 3)}` : undefined;
@@ -51,7 +54,7 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
   const tagContent = (
     <Tag
       type={Tag === 'button' ? 'button' : undefined}
-      href={Tag === 'a' ? item.href : undefined}
+      href={isLink ? item.href : undefined}
       onClick={hasChildren ? toggle : item.onClick}
       className={itemClass}
       style={{ position: 'relative' }}
@@ -225,7 +228,8 @@ export function TopNavShell({ brand, nav = [], actions, subbar, footer, maxWidth
         {brand && <a className="aeos-shell-brand">{brand}</a>}
         <nav className="aeos-shell-nav" aria-label="Main navigation">
           {nav.map((item, i) => {
-            const Tag = item.href ? 'a' : 'button';
+            const isInternal = item.href && !item.href.startsWith('http://') && !item.href.startsWith('https://') && !item.href.startsWith('//') && !item.href.startsWith('mailto:') && !item.href.startsWith('tel:');
+            const Tag = item.href ? (isInternal ? InertiaLink : 'a') : 'button';
             return (
               <Tag
                 key={i}

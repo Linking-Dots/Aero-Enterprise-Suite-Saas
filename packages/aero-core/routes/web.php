@@ -286,10 +286,10 @@ Route::middleware('auth:web')->group(function () {
     Route::middleware($dashboardMiddleware)->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('core.dashboard');
         Route::get('dashboard/stats', [DashboardController::class, 'stats'])->name('core.dashboard.stats');
+        // Widget data refresh — fetches a single widget payload by key (JSON)
         Route::get('dashboard/widget/{widgetKey}', [DashboardController::class, 'widgetData'])->name('core.dashboard.widget');
+        // Activity chart period switching — no page reload (JSON)
         Route::get('dashboard/user-activity', [DashboardController::class, 'userActivity'])->name('core.dashboard.user-activity');
-        Route::post('dashboard/announcements', [DashboardController::class, 'storeAnnouncement'])->name('core.dashboard.announcements.store');
-        Route::delete('dashboard/announcements/{announcement}', [DashboardController::class, 'destroyAnnouncement'])->name('core.dashboard.announcements.destroy');
         Route::post('dashboard/announcements/{announcement}/dismiss', [DashboardController::class, 'dismissAnnouncement'])->name('core.dashboard.announcements.dismiss');
     });
 

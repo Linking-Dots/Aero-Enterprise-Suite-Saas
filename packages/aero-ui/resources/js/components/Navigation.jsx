@@ -1,4 +1,5 @@
 import { forwardRef, useState } from 'react';
+import { Link as InertiaLink } from '@inertiajs/react';
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 import { Badge } from './Display.jsx';
@@ -44,10 +45,13 @@ export function Breadcrumb({ items = [], className }) {
               <ChevronRightIcon className="aeos-icon-xs" />
             </span>
           )}
-          {it.href
-            ? <a href={it.href} className={cx('aeos-breadcrumb-link', i === items.length - 1 && 'is-current')}>{it.label}</a>
-            : <span className={cx('aeos-breadcrumb-text', i === items.length - 1 && 'is-current')}>{it.label}</span>
-          }
+          {it.href ? (() => {
+            const isInternal = !it.href.startsWith('http://') && !it.href.startsWith('https://') && !it.href.startsWith('//') && !it.href.startsWith('mailto:') && !it.href.startsWith('tel:');
+            const LinkTag = isInternal ? InertiaLink : 'a';
+            return <LinkTag href={it.href} className={cx('aeos-breadcrumb-link', i === items.length - 1 && 'is-current')}>{it.label}</LinkTag>;
+          })() : (
+            <span className={cx('aeos-breadcrumb-text', i === items.length - 1 && 'is-current')}>{it.label}</span>
+          )}
         </span>
       ))}
     </nav>
@@ -59,7 +63,8 @@ export const NavItem = forwardRef(function NavItem(
   { icon, label, href, active, onClick, count, badge, indent, className, ...rest },
   ref
 ) {
-  const Tag = href ? 'a' : 'button';
+  const isInternal = href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//') && !href.startsWith('mailto:') && !href.startsWith('tel:');
+  const Tag = href ? (isInternal ? InertiaLink : 'a') : 'button';
   return (
     <Tag
       ref={ref}
