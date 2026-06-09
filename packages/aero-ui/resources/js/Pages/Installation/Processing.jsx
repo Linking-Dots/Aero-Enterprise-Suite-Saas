@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 import InstallLayout from './InstallLayout.jsx';
@@ -7,7 +7,9 @@ import { VStack, Box, Alert, Button, Text, Mono, HStack } from '@aero/ui';
 
 const STEPS_STANDALONE = ['License', 'Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
 const STEPS_SAAS       = ['Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
-const POLL_MS = 1200;
+const POLL_BASE_MS = 1200;   // base polling interval while the server is healthy
+const POLL_MAX_MS  = 10000;  // backoff cap applied to consecutive transient failures
+const MAX_FAILURES = 5;      // consecutive failures tolerated before surfacing an error
 
 export default function Processing({ mode }) {
   const [percentage, setPercentage] = useState(0);
@@ -18,48 +20,85 @@ export default function Processing({ mode }) {
   const [currentStep, setCurrentStep] = useState(null);
   const [completedSteps, setCompletedSteps] = useState(0);
 
-  useEffect(() => {
-    let active = true;
+  // Polling lives in a ref so a single in-flight request / timer / abort
+  // controller is tracked across renders and can be cancelled cleanly on
+  // unmount or restarted by retry().
+  const pollState = useRef({ active: false, failures: 0, timer: null, abort: null });
 
-    async function poll() {
-      try {
-        const { data } = await axios.get(IR.progress);
-        if (!active) return;
+  const poll = useCallback(async function poll() {
+    const s = pollState.current;
+    if (!s.active) return;
 
-        setPercentage(data.percentage ?? 0);
-        setMessage(data.message ?? data.currentStep ?? 'Running…');
-        setStatus(data.status ?? 'running');
-        setCurrentStep(data.currentStep ?? null);
-        setCompletedSteps(data.completedSteps ?? 0);
+    // Abort any request still in flight before issuing a new one, so a slow
+    // response can never overlap with the next poll.
+    s.abort?.abort();
+    s.abort = new AbortController();
 
-        if (data.steps?.length) setSteps(data.steps);
-        if (data.error) setError(data.error);
+    try {
+      const { data } = await axios.get(IR.progress, { signal: s.abort.signal });
+      if (!s.active) return;
 
-        if (data.status === 'completed') {
-          setTimeout(() => router.get(IR.complete), 1000);
-          return;
-        }
-        if (data.status === 'failed') return;
+      s.failures = 0; // healthy response — reset the backoff
 
-        setTimeout(poll, POLL_MS);
-      } catch (err) {
-        if (!active) return;
+      setPercentage(data.percentage ?? 0);
+      setMessage(data.message ?? data.currentStep ?? 'Running…');
+      setStatus(data.status ?? 'running');
+      setCurrentStep(data.currentStep ?? null);
+      setCompletedSteps(data.completedSteps ?? 0);
+
+      if (data.steps?.length) setSteps(data.steps);
+      if (data.error) setError(data.error);
+
+      if (data.status === 'completed') {
+        s.timer = setTimeout(() => router.get(IR.complete), 1000);
+        return;
+      }
+      if (data.status === 'failed') return;
+
+      s.timer = setTimeout(poll, POLL_BASE_MS);
+    } catch (err) {
+      // A cancelled request (unmount / superseded poll) is not a real failure.
+      if (!s.active || axios.isCancel(err)) return;
+
+      s.failures += 1;
+      if (s.failures >= MAX_FAILURES) {
         setError('Lost connection to the server. Please click Retry.');
         setStatus('failed');
+        return;
       }
-    }
 
-    poll();
-    return () => { active = false; };
+      // Transient failure (server busy mid-migration, brief network blip):
+      // retry with exponential backoff (1.2s → 2.4s → 4.8s …, capped) rather
+      // than giving up on the first hiccup.
+      const delay = Math.min(POLL_BASE_MS * 2 ** s.failures, POLL_MAX_MS);
+      setMessage(`Connection issue — retrying in ${Math.round(delay / 1000)}s (attempt ${s.failures}/${MAX_FAILURES})…`);
+      s.timer = setTimeout(poll, delay);
+    }
   }, []);
 
-  async function retry() {
+  useEffect(() => {
+    const s = pollState.current;
+    s.active = true;
+    s.failures = 0;
+    poll();
+    return () => {
+      s.active = false;
+      s.abort?.abort();
+      if (s.timer) clearTimeout(s.timer);
+    };
+  }, [poll]);
+
+  const retry = useCallback(async () => {
     setError(null);
     setStatus('running');
-    setPercentage(0);
     setMessage('Retrying…');
+    const s = pollState.current;
+    s.failures = 0;
+    s.active = true;
+    if (s.timer) clearTimeout(s.timer);
     try { await axios.post(IR.retry); } catch (_) {}
-  }
+    poll(); // resume progress polling after a retry (previously stalled here)
+  }, [poll]);
 
   const stepStatuses = steps.map(s => {
     const idx    = steps.findIndex(x => x.key === s.key);
