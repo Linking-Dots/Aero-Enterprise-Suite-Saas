@@ -53,83 +53,91 @@ class MigrationStep extends BaseInstallationStep
         $output = [];
 
         // Plan 09 T3 — refuse to destroy a dirty schema.
-        // The migrate:fresh calls below DROP ALL TABLES. If the operator
-        // accidentally re-runs the installer on a database that already
-        // has data (perhaps a production DB they pointed at by mistake),
-        // every table gets wiped. The pre-check below requires either:
-        //   (a) empty database (no application tables present), OR
-        //   (b) explicit migrations history (table was provisioned by us)
-        // — refuses anything else with a clear error.
         $this->assertSchemaIsSafeToMigrate();
 
-        if ($this->mode === 'saas') {
-            // SaaS Mode: Run only platform package migrations
-            $this->log('Running platform package migrations (SaaS mode)');
+        $packageCodes = $this->getAvailablePackageCodes();
+        
+        $tier1 = []; // infrastructure
+        $tier2 = []; // core
+        $tier3 = []; // hrmac
+        $tier4 = []; // other foundation
+        $tier5 = []; // platform or product packages
+
+        foreach ($packageCodes as $code) {
+            if (! $this->shouldMigratePackage($code)) {
+                continue;
+            }
+
+            $path = $this->getPackageMigrationsPath($code);
+            if (! $path) {
+                continue;
+            }
+
+            if ($code === 'infrastructure') {
+                $tier1[] = ['code' => $code, 'path' => $path];
+            } elseif ($code === 'core') {
+                $tier2[] = ['code' => $code, 'path' => $path];
+            } elseif ($code === 'hrmac') {
+                $tier3[] = ['code' => $code, 'path' => $path];
+            } else {
+                $category = $this->getPackageCategory($code);
+                if ($code === 'platform') {
+                    $tier5[] = ['code' => $code, 'path' => $path];
+                } elseif ($category === 'product') {
+                    $tier5[] = ['code' => $code, 'path' => $path];
+                } else {
+                    $tier4[] = ['code' => $code, 'path' => $path];
+                }
+            }
+        }
+
+        $migrationQueue = array_merge($tier1, $tier2, $tier3, $tier4, $tier5);
+
+        if (empty($migrationQueue)) {
+            $this->log('No package migrations to run');
+            return [
+                'migrations_run' => 0,
+                'tags_processed' => 0,
+                'by_tag' => [],
+                'total_migrated' => [],
+            ];
+        }
+
+        $isFirst = true;
+        foreach ($migrationQueue as $item) {
+            $code = $item['code'];
+            $path = $item['path'];
+
+            $this->log("Migrating package: {$code} (path: {$path})");
             try {
-                // Use migrate:fresh for fresh installation to ensure clean state
-                // This drops all tables and re-runs migrations
-                $exitCode = Artisan::call('migrate:fresh', [
-                    '--path' => 'vendor/aero/platform/database/migrations',
-                    '--force' => true,
-                ]);
+                if ($isFirst) {
+                    // Wipes the database and starts clean
+                    $exitCode = Artisan::call('migrate:fresh', [
+                        '--path' => $path,
+                        '--force' => true,
+                    ]);
+                    $isFirst = false;
+                } else {
+                    $exitCode = Artisan::call('migrate', [
+                        '--path' => $path,
+                        '--force' => true,
+                    ]);
+                }
 
                 if ($exitCode === 0) {
-                    $migrated['platform'] = 'success';
-                    $output['platform'] = 'success';
-                    $this->log('Platform package migrations completed successfully');
+                    $migrated[$code] = 'success';
+                    $output[$code] = 'success';
+                    $this->log("Package migrations for '{$code}' completed successfully");
                 } else {
-                    throw new \Exception("Platform package migrations failed with exit code: {$exitCode}");
+                    throw new \Exception("Migrations for '{$code}' failed with exit code: {$exitCode}");
                 }
             } catch (\Exception $e) {
-                $output['platform'] = 'failed';
-                throw new \Exception("Critical platform migrations failed: ".$e->getMessage());
+                $output[$code] = 'failed';
+                throw new \Exception("Critical migration failed for package '{$code}': " . $e->getMessage());
             }
 
             // Verify migrations ran successfully
-            $this->verifyMigrationsRan('vendor/aero/platform/database/migrations');
-        } else {
-            // Standalone Mode: Run core + other packages migrations (excluding platform)
-            $this->log('Running core package migrations (Standalone mode)');
-            try {
-                // Use migrate:fresh for fresh installation to ensure clean state
-                $exitCode = Artisan::call('migrate:fresh', [
-                    '--path' => 'vendor/aero/core/database/migrations',
-                    '--force' => true,
-                ]);
-
-                if ($exitCode === 0) {
-                    $migrated['core'] = 'success';
-                    $output['core'] = 'success';
-                    $this->log('Core package migrations completed successfully');
-                } else {
-                    throw new \Exception("Core package migrations failed with exit code: {$exitCode}");
-                }
-            } catch (\Exception $e) {
-                $output['core'] = 'failed';
-                throw new \Exception("Critical core migrations failed: ".$e->getMessage());
-            }
-
-            // Run other package migrations (excluding platform)
-            $this->log('Running other package migrations (Standalone mode)');
-            try {
-                $exitCode = Artisan::call('migrate', [
-                    '--force' => true,
-                ]);
-
-                if ($exitCode === 0) {
-                    $migrated['other_packages'] = 'success';
-                    $output['other_packages'] = 'success';
-                    $this->log('Other package migrations completed successfully');
-                } else {
-                    throw new \Exception("Other package migrations failed with exit code: {$exitCode}");
-                }
-            } catch (\Exception $e) {
-                $output['other_packages'] = 'failed';
-                throw new \Exception("Other package migrations failed: ".$e->getMessage());
-            }
-
-            // Verify migrations ran successfully
-            $this->verifyMigrationsRan('vendor/aero/core/database/migrations');
+            $this->verifyMigrationsRan($path);
         }
 
         return [
@@ -138,6 +146,108 @@ class MigrationStep extends BaseInstallationStep
             'by_tag' => $output,
             'total_migrated' => $migrated,
         ];
+    }
+
+    /**
+     * Get available package codes by scanning local packages and vendor packages
+     */
+    protected function getAvailablePackageCodes(): array
+    {
+        $codes = [];
+        
+        // Scan packages directory
+        $packagesDir = base_path('packages');
+        if (is_dir($packagesDir)) {
+            $dirs = glob($packagesDir . '/aero-*');
+            foreach ($dirs as $dir) {
+                if (is_dir($dir)) {
+                    $code = str_replace('aero-', '', basename($dir));
+                    $codes[$code] = true;
+                }
+            }
+        }
+        
+        // Scan vendor/aero directory
+        $vendorDir = base_path('vendor/aero');
+        if (is_dir($vendorDir)) {
+            $dirs = glob($vendorDir . '/*');
+            foreach ($dirs as $dir) {
+                if (is_dir($dir)) {
+                    $code = basename($dir);
+                    $codes[$code] = true;
+                }
+            }
+        }
+        
+        return array_keys($codes);
+    }
+
+    /**
+     * Determine if a package should be migrated in the current mode
+     */
+    protected function shouldMigratePackage(string $code): bool
+    {
+        if ($code === 'installation') {
+            return false;
+        }
+
+        $category = $this->getPackageCategory($code);
+
+        if ($this->mode === 'saas') {
+            // SaaS: Exclude product packages. Exclude anything categorized as product.
+            if ($category === 'product') {
+                return false;
+            }
+            return true;
+        } else {
+            // Standalone: Exclude platform.
+            if ($code === 'platform') {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Get the relative migrations path for a package code
+     */
+    protected function getPackageMigrationsPath(string $code): ?string
+    {
+        $paths = [
+            "packages/aero-{$code}/database/migrations",
+            "vendor/aero/{$code}/database/migrations",
+        ];
+
+        foreach ($paths as $path) {
+            if (is_dir(base_path($path))) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Read the category from a package's own composer.json
+     */
+    protected function getPackageCategory(string $code): ?string
+    {
+        $paths = [
+            base_path("packages/aero-{$code}/composer.json"),
+            base_path("vendor/aero/{$code}/composer.json"),
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                $data = json_decode($content, true);
+                if (is_array($data) && isset($data['extra']['aero']['category'])) {
+                    return $data['extra']['aero']['category'];
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

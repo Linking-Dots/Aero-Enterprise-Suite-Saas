@@ -41,12 +41,28 @@ class AdminUserStep extends BaseInstallationStep
 
     public function execute(): array
     {
-        $adminEmail = env('ADMIN_EMAIL', 'admin@aeros.test');
-        $adminPassword = env('ADMIN_PASSWORD', 'Admin@12345');
-        $adminName = env('ADMIN_NAME', 'Administrator');
+        // Load persisted config if available
+        $configPath = storage_path('framework/installation_config.json');
+        $persistedConfig = [];
+        if (file_exists($configPath)) {
+            $persistedConfig = json_decode(file_get_contents($configPath), true) ?? [];
+        }
 
-        if (empty($adminEmail) || empty($adminPassword)) {
-            throw new \Exception('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required');
+        $adminConfig = $persistedConfig['admin'] ?? [];
+
+        $adminEmail = $adminConfig['email'] ?? env('ADMIN_EMAIL');
+        $adminName = ($adminConfig['first_name'] ?? env('ADMIN_FIRST_NAME', 'Admin')).' '.($adminConfig['last_name'] ?? env('ADMIN_LAST_NAME', 'User'));
+
+        if (empty($adminEmail)) {
+            throw new \Exception('Admin email not provided. Complete the Admin step in the installer before proceeding.');
+        }
+
+        if (!empty($adminConfig['password_hash'])) {
+            $hashedPassword = $adminConfig['password_hash'];
+        } elseif (!empty(env('ADMIN_PASSWORD'))) {
+            $hashedPassword = Hash::make(env('ADMIN_PASSWORD'));
+        } else {
+            throw new \Exception('Admin password not provided. Complete the Admin step in the installer before proceeding.');
         }
 
         // In SaaS mode, use landlord_users table; in standalone, use users table
@@ -70,7 +86,7 @@ class AdminUserStep extends BaseInstallationStep
             $adminId = DB::table($userTable)->insertGetId([
                 'name' => $adminName,
                 'email' => $adminEmail,
-                'password' => Hash::make($adminPassword),
+                'password' => $hashedPassword,
                 'email_verified_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),

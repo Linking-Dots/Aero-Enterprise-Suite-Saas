@@ -867,32 +867,31 @@ class UnifiedInstallationController extends Controller
     {
         $mode = $this->getMode();
         putenv("INSTALLATION_MODE={$mode}");
+        $sessionId = session()->getId();
 
         try {
-            // Get or create orchestrator in session
-            $orchestratorKey = 'installation_orchestrator_'.session()->getId();
-            $orchestrator = Cache::remember($orchestratorKey,
-                now()->addMinutes(30),
-                function () use ($mode) {
-                    $orch = new InstallationOrchestrator($mode);
+            $stepsToRegister = [
+                new ConfigurationStep,
+                new DatabaseConnectionStep,
+                new MigrationStep,
+                new ModuleDiscoveryStep,
+                new AdminUserStep,
+                new SeedingStep,
+                new SettingsStep,
+                new CacheStep,
+                new LicenseStep,
+                new FinalizeStep,
+            ];
 
-                    // Register all steps
-                    $orch->registerSteps([
-                        new ConfigurationStep,
-                        new DatabaseConnectionStep,
-                        new MigrationStep,
-                        new ModuleDiscoveryStep,
-                        new AdminUserStep,
-                        new SeedingStep,
-                        new SettingsStep,
-                        new CacheStep,
-                        new LicenseStep,
-                        new FinalizeStep,
-                    ]);
+            $orchestrator = InstallationOrchestrator::loadState($sessionId, $mode);
 
-                    return $orch;
-                }
-            );
+            if (! $orchestrator) {
+                $orchestrator = new InstallationOrchestrator($mode, $sessionId);
+                $orchestrator->registerSteps($stepsToRegister);
+                $orchestrator->saveState();
+            } else {
+                $orchestrator->registerSteps($stepsToRegister);
+            }
 
             // Execute next step
             $progress = $orchestrator->executeNextStep();
@@ -907,7 +906,8 @@ class UnifiedInstallationController extends Controller
 
             // If completed or failed, forget orchestrator
             if (in_array($progress['status'], ['completed', 'failed'])) {
-                Cache::forget($orchestratorKey);
+                $orchestrator->clearState();
+                Cache::forget('installation_in_progress');
 
                 if ($progress['status'] === 'completed') {
                     $this->createLockFile();
@@ -1242,6 +1242,14 @@ class UnifiedInstallationController extends Controller
         // Handle soft-deleted users: check with trashed first, restore or create
         $user = $userClass::withTrashed()->where('email', $email)->first();
 
+        $passwordHash = $adminConfig['password_hash'] ?? null;
+        if (!$passwordHash && env('ADMIN_PASSWORD')) {
+            $passwordHash = Hash::make(env('ADMIN_PASSWORD'));
+        }
+        if (!$passwordHash) {
+            throw new \Exception('Admin password/hash not configured.');
+        }
+
         if ($user) {
             // User exists (possibly soft-deleted), restore if needed
             if ($user->trashed()) {
@@ -1251,7 +1259,7 @@ class UnifiedInstallationController extends Controller
             $user->update([
                 'name' => ($adminConfig['first_name'] ?? 'Admin').' '.($adminConfig['last_name'] ?? 'User'),
                 'user_name' => strtolower(str_replace(' ', '_', ($adminConfig['first_name'] ?? 'admin').'_'.($adminConfig['last_name'] ?? 'user'))),
-                'password' => $adminConfig['password_hash'] ?? Hash::make('password'),
+                'password' => $passwordHash,
                 'email_verified_at' => now(),
             ]);
         } else {
@@ -1260,7 +1268,7 @@ class UnifiedInstallationController extends Controller
                 'email' => $email,
                 'name' => ($adminConfig['first_name'] ?? 'Admin').' '.($adminConfig['last_name'] ?? 'User'),
                 'user_name' => strtolower(str_replace(' ', '_', ($adminConfig['first_name'] ?? 'admin').'_'.($adminConfig['last_name'] ?? 'user'))),
-                'password' => $adminConfig['password_hash'] ?? Hash::make('password'),
+                'password' => $passwordHash,
                 'email_verified_at' => now(),
             ]);
         }

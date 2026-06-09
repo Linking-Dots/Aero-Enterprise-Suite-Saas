@@ -56,7 +56,6 @@ export default function Processing({ mode }) {
   async function retry() {
     setError(null);
     setStatus('running');
-    setPercentage(0);
     setMessage('Retrying…');
     try { await axios.post(IR.retry); } catch (_) {}
   }

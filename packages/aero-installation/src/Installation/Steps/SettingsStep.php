@@ -33,33 +33,45 @@ class SettingsStep extends BaseInstallationStep
 
     public function execute(): array
     {
-        $settings = [];
+        $configPath = storage_path('framework/installation_config.json');
+        $persisted = [];
+        if (file_exists($configPath)) {
+            $persisted = json_decode(file_get_contents($configPath), true) ?? [];
+        }
+        $settings = $persisted['settings'] ?? [];
 
-        // Default settings to configure
-        $defaultSettings = [
-            'app.name' => env('APP_NAME', 'aeos365'),
-            'app.url' => env('APP_URL'),
-            'app.timezone' => env('APP_TIMEZONE', 'UTC'),
-            'app.locale' => env('APP_LOCALE', 'en'),
-            'mail.from.name' => env('APP_NAME', 'Aero'),
-            'mail.from.address' => env('MAIL_FROM_ADDRESS', 'noreply@aeros.local'),
+        if (empty($settings)) {
+            $this->warn('No persisted settings found; skipping settings step');
+            return ['settings_configured' => 0, 'settings' => []];
+        }
+
+        $toSet = [
+            'app.name' => $settings['site_name'] ?? $settings['company_name'] ?? null,
+            'app.url' => $settings['app_url'] ?? null,
+            'app.timezone' => $settings['timezone'] ?? null,
+            'app.locale' => $settings['locale'] ?? 'en',
+            'mail.from.name' => $settings['mail_from_name'] ?? null,
+            'mail.from.address' => $settings['mail_from_address'] ?? null,
         ];
 
-        foreach ($defaultSettings as $key => $value) {
+        $saved = 0;
+        foreach ($toSet as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
             try {
-                // Set in settings table if exists
                 $this->setSetting($key, $value);
-                $settings[$key] = $value;
+                $saved++;
             } catch (\Exception $e) {
                 $this->warn("Failed to set setting {$key}: ".$e->getMessage());
             }
         }
 
-        $this->log('Platform settings configured');
+        $this->log('Platform settings configured from persisted config');
 
         return [
-            'settings_configured' => count($settings),
-            'settings' => $settings,
+            'settings_configured' => $saved,
+            'settings' => $toSet,
         ];
     }
 

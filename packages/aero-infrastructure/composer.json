@@ -1,0 +1,23 @@
+{
+    "name": "aero/infrastructure",
+    "description": "Aero Infrastructure Package - shared database tables used by both core and platform",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Aero\\Infrastructure\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\Infrastructure\\InfrastructureServiceProvider"
+            ]
+        },
+        "aero": {
+            "package": "infrastructure",
+            "category": "foundation",
+            "description": "Shared database infrastructure for aero-core and aero-platform"
+        }
+    }
+}

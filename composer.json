@@ -1,5 +1,22 @@
 {
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/*",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "require": {
+        "aero/core": "*",
+        "aero/installation": "*",
+        "aero/platform": "*",
+        "aero/ui": "*"
+    },
     "require-dev": {
         "laravel/pint": "^1.29"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

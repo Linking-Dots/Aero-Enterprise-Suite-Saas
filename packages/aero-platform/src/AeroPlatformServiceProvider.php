@@ -454,10 +454,10 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 try {
                     $db = $this->app->make('db');
                     $db->extend('central', function ($config, $name) use ($db) {
-                        return $db->connection();
+                        return $db->connection('sqlite');
                     });
                     $db->extend('mysql', function ($config, $name) use ($db) {
-                        return $db->connection();
+                        return $db->connection('sqlite');
                     });
                 } catch (\Throwable $e) {
                     // Silently ignore if DB is not accessible yet
@@ -1169,6 +1169,14 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 {
                     // Get all migration files from all paths
                     $files = parent::getMigrationFiles($paths);
+
+                    // If running tests with sqlite connection, bypass connection filtering
+                    // and return all package migrations to build the complete single-database schema.
+                    if (app()->environment('testing') && config('database.default') === 'sqlite') {
+                        return collect($files)->unique(function ($path) {
+                            return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
+                        })->all();
+                    }
 
                     // Check if we're on a tenant database (tenancy is initialized)
                     // If tenancy is initialized, allow ALL package migrations

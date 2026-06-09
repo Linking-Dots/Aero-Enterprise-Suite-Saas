@@ -43,11 +43,17 @@ class InstallationOrchestrator
     protected ?\DateTime $startTime = null;
 
     /**
+     * Session ID for tracking
+     */
+    protected ?string $sessionId = null;
+
+    /**
      * Constructor
      */
-    public function __construct(string $mode = 'standalone')
+    public function __construct(string $mode = 'standalone', ?string $sessionId = null)
     {
         $this->mode = $mode;
+        $this->sessionId = $sessionId ?? session()->getId();
         $this->steps = collect();
     }
 
@@ -301,6 +307,7 @@ class InstallationOrchestrator
         try {
             $this->executeStep($nextStep);
             $completedCount++;
+            $this->saveState();
 
             return [
                 'status' => 'running',
@@ -316,6 +323,7 @@ class InstallationOrchestrator
                 'error' => $e->getMessage(),
                 'timestamp' => now(),
             ];
+            $this->saveState();
 
             return [
                 'status' => 'failed',
@@ -370,6 +378,161 @@ class InstallationOrchestrator
             'totalSteps' => $totalSteps,
             'message' => $currentStep->description(),
         ];
+    }
+
+    /**
+     * Get a registered step by name
+     */
+    public function getStep(string $name): ?BaseInstallationStep
+    {
+        return $this->steps->first(fn ($step) => $step->name() === $name);
+    }
+
+    /**
+     * Get current pending step name
+     */
+    protected function getCurrentPendingStepName(): string
+    {
+        try {
+            $ordered = $this->getOrderedSteps();
+            $next = $ordered->first(function (BaseInstallationStep $step) {
+                return ! isset($this->completed[$step->name()]) && ! isset($this->failed[$step->name()]);
+            });
+
+            return $next ? $next->name() : 'unknown';
+        } catch (\Throwable $e) {
+            return 'unknown';
+        }
+    }
+
+    /**
+     * Save state to DB or file
+     */
+    public function saveState(): void
+    {
+        $state = [
+            'session_id' => $this->sessionId,
+            'mode' => $this->mode,
+            'start_time' => $this->startTime,
+            'completed' => $this->completed,
+            'failed' => $this->failed,
+            'updated_at' => now()->toDateTimeString(),
+        ];
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('installation_progress')) {
+                \DB::table('installation_progress')->updateOrInsert(
+                    ['session_id' => $this->sessionId],
+                    [
+                        'status' => count($this->failed) > 0 ? 'failed' : 'running',
+                        'step' => $this->getCurrentPendingStepName(),
+                        'percentage' => $this->calculateProgress($this->getCurrentPendingStepName()),
+                        'metadata' => json_encode($state),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            $this->warn('Failed to save state to DB: '.$e->getMessage());
+        }
+
+        try {
+            $stateJson = json_encode($state, JSON_PRETTY_PRINT);
+            $progressFile = storage_path('app/installation_progress.json');
+            if (! is_dir(dirname($progressFile))) {
+                mkdir(dirname($progressFile), 0755, true);
+            }
+            file_put_contents($progressFile, $stateJson);
+        } catch (\Exception $e) {
+            $this->warn('Failed to save state to file: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Load state from DB or file
+     */
+    public static function loadState(string $sessionId, string $mode): ?self
+    {
+        $state = null;
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('installation_progress')) {
+                $record = \DB::table('installation_progress')
+                    ->where('session_id', $sessionId)
+                    ->first();
+
+                if ($record && $record->metadata) {
+                    $state = json_decode($record->metadata, true);
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore DB error, try file
+        }
+
+        if (! $state) {
+            try {
+                $progressFile = storage_path('app/installation_progress.json');
+                if (file_exists($progressFile)) {
+                    $state = json_decode(file_get_contents($progressFile), true);
+                }
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+
+        if (! $state) {
+            return null;
+        }
+
+        $orchestrator = new self($state['mode'] ?? $mode, $sessionId);
+        $orchestrator->completed = $state['completed'] ?? [];
+        $orchestrator->failed = $state['failed'] ?? [];
+        $orchestrator->startTime = isset($state['start_time']) ? new \DateTime($state['start_time']) : null;
+
+        return $orchestrator;
+    }
+
+    /**
+     * Clear saved state
+     */
+    public function clearState(): void
+    {
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('installation_progress')) {
+                \DB::table('installation_progress')
+                    ->where('session_id', $this->sessionId)
+                    ->delete();
+            }
+        } catch (\Exception $e) {
+            // Ignore
+        }
+
+        try {
+            $progressFile = storage_path('app/installation_progress.json');
+            if (file_exists($progressFile)) {
+                @unlink($progressFile);
+            }
+        } catch (\Exception $e) {
+            // Ignore
+        }
+    }
+
+    /**
+     * Calculate progress percentage
+     */
+    protected function calculateProgress(string $currentStep): int
+    {
+        $ordered = $this->getOrderedSteps();
+        $totalSteps = $ordered->count();
+        $completedCount = count($this->completed);
+
+        if ($totalSteps === 0) {
+            return 0;
+        }
+
+        $percentage = ($completedCount / $totalSteps) * 100;
+
+        return (int) round($percentage);
     }
 
     /**

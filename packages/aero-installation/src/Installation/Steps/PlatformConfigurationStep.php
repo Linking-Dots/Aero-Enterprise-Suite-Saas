@@ -97,57 +97,105 @@ class PlatformConfigurationStep extends BaseInstallationStep
     }
 
     /**
-     * Configure platform settings from UI input (environment variables)
-     * Settings are collected from UI and set as environment variables
-     */
-    protected function seedPlatformSettings(): void
-    {
-        $now = now();
+      * Configure platform settings from persisted installation config
+      */
+     protected function seedPlatformSettings(): void
+     {
+         $now = now();
 
-        // Check if settings already exist
-        $existing = DB::table('platform_settings')->count();
-        if ($existing > 0) {
-            $this->log("Platform settings already exist ({$existing} records), skipping configuration");
-            return;
-        }
+         $configPath = storage_path('framework/installation_config.json');
+         $persisted = [];
+         if (file_exists($configPath)) {
+             $persisted = json_decode(file_get_contents($configPath), true) ?? [];
+         }
+         $settings = $persisted['settings'] ?? [];
 
-        // Collect settings from UI (environment variables set by UI)
-        // Only use columns that exist in the platform_settings table
-        $settings = [
-            'slug' => 'platform',
-            'site_name' => env('SITE_NAME', 'aeos365'),
-            'legal_name' => env('COMPANY_NAME', 'Aero Enterprise'),
-            'tagline' => env('TAGLINE', null),
-            'support_email' => env('SUPPORT_EMAIL', 'support@aero-suite.com'),
-            'support_phone' => env('SUPPORT_PHONE', null),
-            'marketing_url' => env('MARKETING_URL', null),
-            'status_page_url' => env('STATUS_PAGE_URL', null),
-            'branding' => json_encode([
-                'logo' => env('LOGO_URL', null),
-                'favicon' => env('FAVICON_URL', null),
-            ]),
-            'email_settings' => json_encode([
-                'from_name' => env('EMAIL_FROM_NAME', 'Aero Enterprise'),
-                'from_address' => env('EMAIL_FROM_ADDRESS', 'noreply@aero-suite.com'),
-            ]),
-            'legal' => json_encode([
-                'terms_url' => env('TERMS_URL', null),
-                'privacy_url' => env('PRIVACY_URL', null),
-            ]),
-            'metadata' => json_encode([
-                'time_zone' => env('TIME_ZONE', 'UTC'),
-                'trial_days' => (int) env('TRIAL_DAYS', 14),
-                'grace_days' => (int) env('GRACE_DAYS', 7),
-                'currency' => env('CURRENCY', 'USD'),
-                'tax_rate' => (float) env('TAX_RATE', 0),
-                'registration_enabled' => filter_var(env('REGISTRATION_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
-                'allow_subdomain_registration' => filter_var(env('ALLOW_SUBDOMAIN_REGISTRATION', true), FILTER_VALIDATE_BOOLEAN),
-            ]),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ];
+         if (empty($settings)) {
+             $this->warn('No persisted settings found; platform configuration skipped');
+             return;
+         }
 
-        DB::table('platform_settings')->insert($settings);
-        $this->log('Platform settings configured from UI input');
-    }
+         $existing = DB::table('platform_settings')->count();
+         if ($existing > 0) {
+             $this->log("Platform settings already exist ({$existing} records), updating from persisted config");
+         }
+
+         $record = [
+             'slug' => 'platform',
+             'site_name' => $settings['site_name'] ?? null,
+             'legal_name' => $settings['company_name'] ?? null,
+             'support_email' => $settings['support_email'] ?? null,
+             'support_phone' => $settings['support_phone'] ?? null,
+             'updated_at' => $now,
+         ];
+
+         if (! empty($settings['tagline'])) {
+             $record['tagline'] = $settings['tagline'];
+         }
+         if (! empty($settings['app_url'])) {
+             $record['marketing_url'] = $settings['app_url'];
+         }
+
+         $branding = [];
+         if (! empty($settings['logo_url'])) {
+             $branding['logo'] = $settings['logo_url'];
+         }
+         if (! empty($settings['favicon_url'])) {
+             $branding['favicon'] = $settings['favicon_url'];
+         }
+         if (! empty($branding)) {
+             $record['branding'] = json_encode($branding);
+         }
+
+         $emailSettings = [];
+         if (! empty($settings['mail_from_name'])) {
+             $emailSettings['from_name'] = $settings['mail_from_name'];
+         }
+         if (! empty($settings['mail_from_address'])) {
+             $emailSettings['from_address'] = $settings['mail_from_address'];
+         }
+         if (! empty($emailSettings)) {
+             $record['email_settings'] = json_encode($emailSettings);
+         }
+
+         $legal = [];
+         if (! empty($settings['terms_url'])) {
+             $legal['terms_url'] = $settings['terms_url'];
+         }
+         if (! empty($settings['privacy_url'])) {
+             $legal['privacy_url'] = $settings['privacy_url'];
+         }
+         if (! empty($legal)) {
+             $record['legal'] = json_encode($legal);
+         }
+
+         $metadata = [];
+         if (! empty($settings['timezone'])) {
+             $metadata['time_zone'] = $settings['timezone'];
+         }
+         if (isset($settings['trial_days'])) {
+             $metadata['trial_days'] = (int) $settings['trial_days'];
+         }
+         if (isset($settings['grace_days'])) {
+             $metadata['grace_days'] = (int) $settings['grace_days'];
+         }
+         if (! empty($settings['currency'])) {
+             $metadata['currency'] = $settings['currency'];
+         }
+         if (isset($settings['tax_rate'])) {
+             $metadata['tax_rate'] = (float) $settings['tax_rate'];
+         }
+         if (! empty($metadata)) {
+             $record['metadata'] = json_encode($metadata);
+         }
+
+         if ($existing > 0) {
+             DB::table('platform_settings')->where('slug', 'platform')->update($record);
+         } else {
+             $record['created_at'] = $now;
+             DB::table('platform_settings')->insert($record);
+         }
+
+         $this->log('Platform settings configured from persisted installation config');
+     }
 }

@@ -16,15 +16,12 @@ return new class extends Migration
         }
 
         Schema::create('installation_progress', function (Blueprint $table) {
-            $table->id();
-            $table->string('session_id')->nullable();
-            $table->json('payload')->nullable();
-            $table->string('latest_error')->nullable();
-            $table->string('status')->default('pending');
+            $table->string('session_id')->primary();
+            $table->string('step');
+            $table->string('status');
+            $table->text('error_message')->nullable();
+            $table->json('meta')->nullable();
             $table->timestamps();
-
-            $table->index('session_id');
-            $table->index('status');
         });
     }
 

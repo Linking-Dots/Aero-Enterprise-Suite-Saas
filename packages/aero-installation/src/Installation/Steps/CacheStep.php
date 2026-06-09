@@ -46,20 +46,12 @@ class CacheStep extends BaseInstallationStep
         }
 
         // Generate config cache
-        // NOTE: We intentionally skip route:cache here. At this point
+        // NOTE: We intentionally skip route:cache and config:cache here. At this point
         // storage/app/aeos.installed does not exist yet, so service
         // providers (AeroPlatformServiceProvider) skip registering
-        // platform/tenant routes. Caching routes now would permanently
-        // omit them until optimize:clear is run manually.
-        // Route caching is deferred to FinalizeStep after lock files exist.
-        $this->log('Generating config cache');
-        try {
-            Artisan::call('config:cache');
-            $results['config_cached'] = true;
-        } catch (\Exception $e) {
-            $this->warn('Config cache failed: '.$e->getMessage());
-            $results['config_cached'] = false;
-        }
+        // platform/tenant routes and config bindings. Caching now would permanently
+        // omit/corrupt them. They are deferred to FinalizeStep after lock files exist.
+        $results['config_cached'] = 'deferred';
 
         return $results;
     }

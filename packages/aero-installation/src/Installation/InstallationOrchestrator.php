@@ -38,18 +38,24 @@ class InstallationOrchestrator
     protected array $failed = [];
 
     /**
-     * Installation start time
+     * Installation start time (ISO 8601 string for serialization safety)
      */
-    protected ?\DateTime $startTime = null;
+    protected ?string $startTime = null;
 
     /**
-     * Constructor
+     * Session ID for DB state persistence
      */
-    public function __construct(string $mode = 'standalone')
-    {
-        $this->mode = $mode;
-        $this->steps = collect();
-    }
+    protected string $sessionId;
+
+    /**
+      * Constructor
+      */
+     public function __construct(string $mode = 'standalone', ?string $sessionId = null)
+     {
+         $this->mode = $mode;
+         $this->sessionId = $sessionId ?? session()->getId();
+         $this->steps = collect();
+     }
 
     /**
      * Get steps ordered for the current mode
@@ -96,87 +102,98 @@ class InstallationOrchestrator
     }
 
     /**
-     * Execute full installation pipeline with atomic transaction
-     */
-    public function execute(): array
-    {
-        $this->log("execute() called", [
-            'mode' => $this->mode,
-            'steps_count' => $this->steps->count(),
-        ]);
+      * Execute full installation pipeline with atomic transaction
+      */
+     public function execute(): array
+     {
+         $this->log("execute() called", [
+             'mode' => $this->mode,
+             'steps_count' => $this->steps->count(),
+         ]);
 
-        return \DB::transaction(function () {
-            try {
-                $this->startTime = now();
-                $this->log("Starting installation in {$this->mode} mode");
+         $this->saveState();
+         $result = \DB::transaction(function () {
+             try {
+                 if ($this->startTime === null) {
+                     $this->startTime = now()->toDateTimeString();
+                 }
+                 $this->log("Starting installation in {$this->mode} mode");
 
-                // Acquire mutex lock to prevent concurrent installations
-                $this->acquireLock();
+                 // Acquire mutex lock to prevent concurrent installations
+                 $this->acquireLock();
 
-                $ordered = $this->getOrderedSteps();
+                 $ordered = $this->getOrderedSteps();
 
-                if ($ordered->isEmpty()) {
-                    throw new \Exception('No installation steps registered');
-                }
+                 if ($ordered->isEmpty()) {
+                     throw new \Exception('No installation steps registered');
+                 }
 
-                $this->log("Steps to execute", [
-                    'count' => $ordered->count(),
-                    'steps' => $ordered->map(fn($s) => $s->name())->toArray(),
-                ]);
+                 $this->log("Steps to execute", [
+                     'count' => $ordered->count(),
+                     'steps' => $ordered->map(fn($s) => $s->name())->toArray(),
+                 ]);
 
-                // Execute each step in order
-                foreach ($ordered as $step) {
-                    // Skip steps based on mode
-                    if ($this->shouldSkipStep($step)) {
-                        $this->log("Skipping step '{$step->name()}' for {$this->mode} mode");
-                        $this->completed[$step->name()] = [
-                            'skipped' => true,
-                            'timestamp' => now(),
-                        ];
+                 // Execute each step in order
+                 foreach ($ordered as $step) {
+                     // Skip steps based on mode
+                     if ($this->shouldSkipStep($step)) {
+                         $this->log("Skipping step '{$step->name()}' for {$this->mode} mode");
+                         $this->completed[$step->name()] = [
+                             'skipped' => true,
+                             'timestamp' => now()->toDateTimeString(),
+                         ];
+                         $this->saveState();
 
-                        continue;
-                    }
+                         continue;
+                     }
 
-                    // Check dependencies
-                    $depCheck = $this->checkDependencies($step);
-                    if (! $depCheck['satisfied']) {
-                        throw new \Exception(
-                            "Dependencies not satisfied for step '{$step->name()}': "
-                            .implode(', ', $depCheck['missing'])
-                        );
-                    }
+                     // Check dependencies
+                     $depCheck = $this->checkDependencies($step);
+                     if (! $depCheck['satisfied']) {
+                         throw new \Exception(
+                             "Dependencies not satisfied for step '{$step->name()}': "
+                             .implode(', ', $depCheck['missing'])
+                         );
+                     }
 
-                    // Execute the step
-                    $this->executeStep($step);
-                }
+                     // Execute the step
+                     $this->executeStep($step);
+                     $this->saveState();
+                 }
 
-                $duration = now()->diffInSeconds($this->startTime);
-                $this->log("Installation completed successfully in {$duration}s");
+                 $start = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startTime) ?: now();
+                 $duration = now()->diffInSeconds($start);
+                 $this->log("Installation completed successfully in {$duration}s");
 
-                // Release lock on success
-                $this->releaseLock();
+                 // Release lock on success
+                 $this->releaseLock();
 
-                return [
-                    'status' => 'success',
-                    'message' => 'Installation completed',
-                    'completed_steps' => array_keys($this->completed),
-                    'failed_steps' => [],
-                    'duration_seconds' => $duration,
-                ];
+                 return [
+                     'status' => 'success',
+                     'message' => 'Installation completed',
+                     'completed_steps' => array_keys($this->completed),
+                     'failed_steps' => [],
+                     'duration_seconds' => $duration,
+                 ];
 
-            } catch (\Throwable $e) {
-                $this->logError('Installation failed: '.$e->getMessage());
+             } catch (\Throwable $e) {
+                 $this->logError('Installation failed: '.$e->getMessage());
+                 $stepName = $this->getCurrentPendingStepName($ordered ?? $this->getOrderedSteps());
+                 $this->failed[$stepName] = [
+                     'error' => $e->getMessage(),
+                     'timestamp' => now()->toDateTimeString(),
+                 ];
+                 $this->saveState();
 
-                // Rollback steps in reverse order
-                $this->rollback();
+                 // Release lock on failure
+                 $this->releaseLock();
 
-                // Release lock on failure
-                $this->releaseLock();
-
-                throw $e;
-            }
-        });
-    }
+                 throw $e;
+             }
+         });
+         $result['session_id'] = $this->sessionId;
+         return $result;
+     }
 
     /**
      * Check if step should be skipped in current mode
@@ -423,7 +440,7 @@ class InstallationOrchestrator
         } catch (\Exception $e) {
             $this->failed[$nextStep->name()] = [
                 'error' => $e->getMessage(),
-                'timestamp' => now(),
+                'timestamp' => now()->toDateTimeString(),
             ];
 
             $this->logError("Step execution failed", [
@@ -500,12 +517,144 @@ class InstallationOrchestrator
     }
 
     /**
-     * Logging
-     */
-    protected function log(string $message, array $context = []): void
-    {
-        Log::info("[Installation::{$this->mode}] {$message}", $context);
-    }
+      * Get current pending step name for error tracking
+      */
+     protected function getCurrentPendingStepName($ordered = null): string
+     {
+         try {
+             $steps = $ordered ?? $this->getOrderedSteps();
+             $next = $steps->first(function (BaseInstallationStep $step) {
+                 return ! isset($this->completed[$step->name()]) && ! isset($this->failed[$step->name()]);
+             });
+
+             return $next ? $next->name() : 'unknown';
+         } catch (\Throwable) {
+             return 'unknown';
+         }
+     }
+
+     /**
+      * Save orchestrator state to database and file
+      */
+     protected function saveState(): void
+     {
+         $state = [
+             'session_id' => $this->sessionId,
+             'mode' => $this->mode,
+             'start_time' => $this->startTime,
+             'completed' => $this->completed,
+             'failed' => $this->failed,
+             'updated_at' => now()->toDateTimeString(),
+         ];
+
+         try {
+             // Try DB first
+             if (\Schema::hasTable('installation_progress')) {
+                 \DB::table('installation_progress')->updateOrInsert(
+                     ['session_id' => $this->sessionId],
+                     [
+                         'status' => count($this->failed) > 0 ? 'failed' : 'running',
+                         'step' => $this->getCurrentPendingStepName(),
+                         'percentage' => $this->calculateProgress($this->getCurrentPendingStepName()),
+                         'metadata' => json_encode($state),
+                         'updated_at' => now(),
+                     ]
+                 );
+             }
+         } catch (\Exception $e) {
+             $this->warn('Failed to save state to DB: '.$e->getMessage());
+         }
+
+         try {
+             // Fallback to file
+             $stateJson = json_encode($state, JSON_PRETTY_PRINT);
+             $progressFile = storage_path('app/installation_progress.json');
+             if (! is_dir(dirname($progressFile))) {
+                 mkdir(dirname($progressFile), 0755, true);
+             }
+             file_put_contents($progressFile, $stateJson);
+         } catch (\Exception $e) {
+             $this->warn('Failed to save state to file: '.$e->getMessage());
+         }
+     }
+
+     /**
+      * Load orchestrator state from DB or file
+      */
+     public static function loadState(string $sessionId, string $mode): ?self
+     {
+         $state = null;
+
+         try {
+             if (\Schema::hasTable('installation_progress')) {
+                 $record = \DB::table('installation_progress')
+                     ->where('session_id', $sessionId)
+                     ->first();
+
+                 if ($record && $record->metadata) {
+                     $state = json_decode($record->metadata, true);
+                 }
+             }
+         } catch (\Exception $e) {
+             // Try file fallback
+         }
+
+         if (! $state) {
+             try {
+                 $progressFile = storage_path('app/installation_progress.json');
+                 if (file_exists($progressFile)) {
+                     $state = json_decode(file_get_contents($progressFile), true);
+                 }
+             } catch (\Exception $e) {
+                 return null;
+             }
+         }
+
+         if (! $state) {
+             return null;
+         }
+
+         $orchestrator = new self($state['mode'] ?? $mode, $sessionId);
+         $orchestrator->completed = $state['completed'] ?? [];
+         $orchestrator->failed = $state['failed'] ?? [];
+         $orchestrator->startTime = $state['start_time'] ?? null;
+
+         // Re-register steps is handled by the caller
+         return $orchestrator;
+     }
+
+     /**
+      * Clear saved state for this session
+      */
+     public function clearState(): void
+     {
+         try {
+             if (\Schema::hasTable('installation_progress')) {
+                 \DB::table('installation_progress')
+                     ->where('session_id', $this->sessionId)
+                     ->delete();
+             }
+         } catch (\Exception $e) {
+             // Ignore
+         }
+
+         try {
+             $progressFile = storage_path('app/installation_progress.json');
+             if (file_exists($progressFile)) {
+                 unlink($progressFile);
+             }
+         } catch (\Exception $e) {
+             // Ignore
+         }
+     }
+
+     /**
+      * Logging
+      */
+     protected function log(string $message, array $context = []): void
+     {
+         Log::info("[Installation::{$this->mode}] {$message}", $context);
+     }
 
     protected function warn(string $message, array $context = []): void
     {

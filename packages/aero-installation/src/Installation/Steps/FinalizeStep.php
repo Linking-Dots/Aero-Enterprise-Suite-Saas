@@ -55,6 +55,11 @@ class FinalizeStep extends BaseInstallationStep
             $this->markInstallationComplete();
             $this->createLockFile();
             $results['marked_complete'] = true;
+            
+            // Warm up configuration cache now that the lock file is present
+            $this->log('Warming configuration cache');
+            Artisan::call('config:cache');
+            $results['config_cached'] = true;
         } catch (\Exception $e) {
             $this->warn('Failed to mark installation complete: '.$e->getMessage());
             $results['marked_complete'] = false;
@@ -153,7 +158,7 @@ class FinalizeStep extends BaseInstallationStep
                 [
                     'status' => 'complete',
                     'completed_at' => now(),
-                    'mode' => env('INSTALLATION_MODE', 'standalone'),
+                    'mode' => env('INSTALLATION_MODE'),
                 ]
             );
 
@@ -216,17 +221,19 @@ class FinalizeStep extends BaseInstallationStep
 
         // Check admin user exists
         try {
-            $adminCount = DB::table('users')
-                ->orWhere(function ($q) {
-                    $q->from('landlord_users');
-                })
-                ->count();
+            $adminCount = 0;
+            if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
+                $adminCount += DB::table('users')->count();
+            }
+            if (\Illuminate\Support\Facades\Schema::hasTable('landlord_users')) {
+                $adminCount += DB::table('landlord_users')->count();
+            }
 
             if ($adminCount === 0) {
                 $issues[] = 'No admin user created';
             }
-        } catch (\Exception) {
-            // Table may not exist
+        } catch (\Exception $e) {
+            $issues[] = 'Failed to verify admin user presence: ' . $e->getMessage();
         }
 
         return [
@@ -241,18 +248,13 @@ class FinalizeStep extends BaseInstallationStep
     protected function generateSummary(): array
     {
         return [
-            'application_name' => env('APP_NAME', 'aeos365'),
+            'application_name' => env('APP_NAME'),
             'application_url' => env('APP_URL'),
-            'installation_mode' => env('INSTALLATION_MODE', 'standalone'),
+            'installation_mode' => env('INSTALLATION_MODE'),
             'installed_at' => now(),
-            'admin_email' => env('ADMIN_EMAIL', 'admin@aeros.test'),
+            'admin_email' => env('ADMIN_EMAIL'),
             'database' => env('DB_DATABASE'),
-            'next_steps' => [
-                '1. Log in to admin panel at '.env('APP_URL'),
-                '2. Configure additional settings',
-                '3. Create first organization/tenant',
-                '4. Display feature modules',
-            ],
+            'next_steps' => $this->getNextSteps(),
         ];
     }
 
@@ -275,9 +277,33 @@ class FinalizeStep extends BaseInstallationStep
         InstallationState::markInstalled();
 
         // Also write the mode file used by service providers
-        $mode = env('INSTALLATION_MODE', 'standalone');
+        $mode = env('INSTALLATION_MODE');
+        if (! $mode) {
+            $mode = file_exists(storage_path('app/aeos.mode'))
+                ? trim(file_get_contents(storage_path('app/aeos.mode')))
+                : 'standalone';
+        }
         $modeFile = storage_path('app/aeos.mode');
         File::put($modeFile, $mode);
+    }
+
+    protected function getNextSteps(): array
+    {
+        $steps = [
+            '1. Log in to admin panel at '.(env('APP_URL') ?: 'http://localhost'),
+        ];
+
+        if (env('INSTALLATION_MODE') === 'saas') {
+            $steps[] = '2. Configure your first tenant/organization';
+            $steps[] = '3. Set up billing and subscription plans';
+            $steps[] = '4. Invite team members';
+        } else {
+            $steps[] = '2. Configure additional system settings';
+            $steps[] = '3. Activate your license from Settings > License';
+            $steps[] = '4. Enable desired modules';
+        }
+
+        return $steps;
     }
 
     public function canSkip(): bool

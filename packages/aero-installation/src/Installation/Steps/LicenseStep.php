@@ -67,6 +67,14 @@ class LicenseStep extends BaseInstallationStep
         }
 
         try {
+            if (!app()->bound(LicenseServiceInterface::class)) {
+                $this->log('LicenseServiceInterface is not bound. Continuing in trial/grace mode.');
+                return [
+                    'license_status' => 'unbound_trial',
+                    'message' => 'License verification service is not active. Continuing in trial mode.',
+                ];
+            }
+
             /** @var LicenseServiceInterface $licenseService */
             $licenseService = app(LicenseServiceInterface::class);
             $licenseService->activate($licenseKey, $productId);
@@ -80,6 +88,12 @@ class LicenseStep extends BaseInstallationStep
 
         } catch (LicenseException $e) {
             throw new \Exception($e->getMessage());
+        } catch (\Illuminate\Contracts\Container\BindingResolutionException $e) {
+            $this->log('License service binding failed: ' . $e->getMessage() . '. Continuing in trial/grace mode.');
+            return [
+                'license_status' => 'unbound_trial',
+                'message' => 'License verification service is not active. Continuing in trial mode.',
+            ];
         } catch (\Throwable $e) {
             $this->log('License activation encountered an unexpected error: '.$e->getMessage());
 
@@ -103,6 +117,14 @@ class LicenseStep extends BaseInstallationStep
 
     private function getLicenseKey(): string
     {
+        $configPath = storage_path('framework/installation_config.json');
+        if (file_exists($configPath)) {
+            $persistedConfig = json_decode(file_get_contents($configPath), true) ?? [];
+            if (isset($persistedConfig['license']['key'])) {
+                return $persistedConfig['license']['key'];
+            }
+        }
+
         return request()->input('license_key') ?? env('LICENSE_KEY', '');
     }
 }
