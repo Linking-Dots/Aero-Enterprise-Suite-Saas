@@ -1,11 +1,27 @@
-import { forwardRef, useState, useEffect, useCallback } from 'react';
+/**
+ * AEOS UI — Shells.jsx  (Overhaul v2)
+ * ─────────────────────────────────────────────────────────────────────────
+ * Four shell layout components. All visual decisions live in CSS — this file
+ * only manages structure, state, and class names.
+ *
+ * Shells:
+ *   SidebarShell   — 56px icon rail ↔ 240px expanded (default)
+ *   TopNavShell    — Sticky full-width top bar
+ *   FloatingShell  — Inset glass pill sidebar; mobile → bottom tab bar
+ *   CommandShell   — Three-panel (left nav | center | right rail)
+ *
+ * Public API surface is backwards-compatible with v1.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+
+import { forwardRef, useState, useEffect, useCallback, useRef } from 'react';
 import { Link as InertiaLink } from '@inertiajs/react';
 import { useTheme } from '../theme/ThemeProvider.jsx';
-import { Bars3Icon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { cx } from '../components/Primitives.jsx';
 import { Tooltip } from '../components/Overlays.jsx';
 
-/* ── Shell preference persistence ───────────────────────────────── */
+/* ─── Shell preference persistence ─────────────────────────────────────── */
 const SHELL_PREFS_KEY = 'aeos-shell-prefs';
 
 function loadShellPrefs() {
@@ -21,34 +37,36 @@ function saveShellPrefs(patch) {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(SHELL_PREFS_KEY, JSON.stringify({ ...current, ...patch }));
     }
-  } catch { /* quota/private mode — not fatal */ }
+  } catch { /* quota / private mode — non-fatal */ }
 }
 
-/* ── RecursiveNavItem ───────────────────────────────────────────── */
+/* ─── RecursiveNavItem ──────────────────────────────────────────────────── */
 function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true }) {
-  const [isOpen, setIsOpen] = useState(item.hasActiveChild || false);
-  const hasChildren = item.children && item.children.length > 0;
+  const [isOpen, setIsOpen] = useState(item.hasActiveChild ?? false);
+  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
 
   if (item.divider) return <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
-  if (item.spacer)  return <div className="aeos-shell-sidebar-spacer" aria-hidden="true" />;
+  if (item.spacer)  return <div className="aeos-shell-sidebar-spacer"  aria-hidden="true" />;
 
-  const toggle = (e) => {
+  const toggle = useCallback((e) => {
     e.preventDefault();
-    if (expanded || isCommand) setIsOpen(!isOpen);
-  };
+    if (expanded || isCommand) setIsOpen(v => !v);
+  }, [expanded, isCommand]);
 
-  const isLink = item.href && !hasChildren;
-  const isInternal = isLink && !item.href.startsWith('http://') && !item.href.startsWith('https://') && !item.href.startsWith('//') && !item.href.startsWith('mailto:') && !item.href.startsWith('tel:');
-  const Tag = isLink ? (isInternal ? InertiaLink : 'a') : 'button';
+  const isLink     = Boolean(item.href) && !hasChildren;
+  const isInternal = isLink && !/^(https?:|\/\/|mailto:|tel:)/.test(item.href);
+  const Tag        = isLink ? (isInternal ? InertiaLink : 'a') : 'button';
 
-  // Depth indentation via CSS class — no inline style, no raw rem values
-  const depthClass = depth > 0 && (expanded || isCommand) ? `aeos-nav-depth-${Math.min(depth, 3)}` : undefined;
+  const depthClass = depth > 0 && (expanded || isCommand)
+    ? `aeos-nav-depth-${Math.min(depth, 3)}`
+    : undefined;
 
+  const baseClass = isCommand ? 'aeos-shell-nav-item' : 'aeos-shell-sidebar-item';
   const itemClass = cx(
-    isCommand ? 'aeos-shell-nav-item' : 'aeos-shell-sidebar-item',
+    baseClass,
     item.active && !hasChildren && 'active',
-    item.hasActiveChild && 'active-parent',
-    depthClass
+    item.hasActiveChild           && 'active-parent',
+    depthClass,
   );
 
   const tagContent = (
@@ -57,18 +75,15 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
       href={isLink ? item.href : undefined}
       onClick={hasChildren ? toggle : item.onClick}
       className={itemClass}
-      style={{ position: 'relative' }}
       title={item.label}
       aria-label={item.label}
       aria-current={item.active && !hasChildren ? 'page' : undefined}
       aria-expanded={hasChildren ? isOpen : undefined}
     >
-      {/* Active indicator — rendered as CSS class, no inline style */}
       {item.active && !hasChildren && (
-        <div className="aeos-nav-active-indicator" aria-hidden="true" />
+        <span className="aeos-nav-active-indicator" aria-hidden="true" />
       )}
 
-      {/* Icon — size driven by CSS (.aeos-shell-nav-icon), not inline style */}
       {item.icon && (
         <item.icon
           className={cx('aeos-shell-nav-icon', depth > 0 && 'aeos-shell-nav-icon--child')}
@@ -76,33 +91,35 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
         />
       )}
 
-      {(!isCommand && expanded) || isCommand ? (
+      {(isCommand || expanded) && (
         <>
-          <span className={isCommand ? '' : 'aeos-shell-sidebar-label'} style={{ flex: 1, textAlign: 'left', whiteSpace: 'nowrap' }}>
+          <span className={isCommand ? 'aeos-shell-nav-item-label' : 'aeos-shell-sidebar-label'}>
             {item.label}
           </span>
+
           {item.count != null && (
             <span className={cx('aeos-shell-cmd-nav-count', hasChildren && 'aeos-shell-cmd-nav-count--spaced')}>
               {item.count}
             </span>
           )}
+
           {hasChildren && (
             <span className={cx('aeos-shell-nav-chevron', isOpen && 'is-open')} aria-hidden="true">
               <ChevronRightIcon />
             </span>
           )}
         </>
-      ) : null}
+      )}
     </Tag>
   );
 
-  const wrappedContent = (!expanded && !isCommand && depth === 0)
+  const content = (!expanded && !isCommand && depth === 0)
     ? <Tooltip label={item.label} side="right">{tagContent}</Tooltip>
     : tagContent;
 
   return (
     <div className="aeos-nav-item-wrapper">
-      {wrappedContent}
+      {content}
 
       {hasChildren && (expanded || isCommand) && (
         <div
@@ -110,7 +127,7 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
           style={{
             display: 'grid',
             gridTemplateRows: isOpen ? '1fr' : '0fr',
-            transition: `grid-template-rows var(--aeos-dur-base) var(--aeos-ease-out)`,
+            transition: 'grid-template-rows var(--aeos-dur-base) var(--aeos-ease-out)',
           }}
         >
           <div style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -124,7 +141,7 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
   );
 }
 
-/* ── AppShell — auto-routes to the correct shell variant ────────── */
+/* ─── AppShell — variant router ─────────────────────────────────────────── */
 export function AppShell({ variant, ...props }) {
   const theme = useTheme();
   const shell = variant ?? theme.shell;
@@ -136,16 +153,13 @@ export function AppShell({ variant, ...props }) {
   }
 }
 
-/* ── SidebarShell ───────────────────────────────────────────────── */
+/* ─── SidebarShell ──────────────────────────────────────────────────────── */
 export function SidebarShell({
   brand, nav = [], topbar, actions, footer,
-  hideTopbar, maxWidth, children,
-  expanded: expandedProp, onExpandedChange,
+  hideTopbar = false, maxWidth,
+  expanded: expandedProp, onExpandedChange, children,
 }) {
-  // Load persisted collapse state from localStorage
-  const [localExp, setLocalExp] = useState(() => {
-    try { return loadShellPrefs().sidebarExpanded ?? false; } catch { return false; }
-  });
+  const [localExp, setLocalExp] = useState(() => loadShellPrefs().sidebarExpanded ?? false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const expanded = expandedProp ?? localExp;
 
@@ -156,7 +170,6 @@ export function SidebarShell({
     onExpandedChange?.(next);
   }, [expanded, onExpandedChange]);
 
-  // Close mobile overlay on Escape
   useEffect(() => {
     if (!mobileOpen) return;
     const onKey = (e) => { if (e.key === 'Escape') setMobileOpen(false); };
@@ -164,21 +177,22 @@ export function SidebarShell({
     return () => document.removeEventListener('keydown', onKey);
   }, [mobileOpen]);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   return (
     <div
       data-aeos-shell="sidebar"
-      className={cx(expanded && 'sidebar-expanded', mobileOpen && 'mobile-open')}
+      className={cx('aeos-app-chrome-active', expanded && 'sidebar-expanded', mobileOpen && 'mobile-open')}
     >
-      {/* Mobile overlay backdrop */}
+      <a href="#aeos-main-content" className="aeos-skip-link">Skip to content</a>
+
       {mobileOpen && (
-        <div
-          className="aeos-shell-mobile-backdrop"
-          onClick={() => setMobileOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="aeos-shell-mobile-backdrop" onClick={() => setMobileOpen(false)} aria-hidden="true" />
       )}
 
-      {/* Icon rail / expanded sidebar */}
       <aside className="aeos-shell-sidebar" aria-label="Side navigation">
         {brand && <div className="aeos-shell-sidebar-brand">{brand}</div>}
         {nav.map((item, i) => (
@@ -186,21 +200,15 @@ export function SidebarShell({
         ))}
       </aside>
 
-      {/* Main column */}
       <div className="aeos-shell-main">
         {!hideTopbar && (
           <div className="aeos-shell-topbar">
             <button
               type="button"
               className="aeos-icon-btn"
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setMobileOpen(v => !v);
-                } else {
-                  toggle();
-                }
-              }}
+              onClick={() => { if (window.innerWidth < 768) setMobileOpen(v => !v); else toggle(); }}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-expanded={expanded}
             >
               <Bars3Icon className="aeos-icon-sm" aria-hidden="true" />
             </button>
@@ -209,26 +217,31 @@ export function SidebarShell({
             {actions}
           </div>
         )}
-        <main className="aeos-shell-content">
+
+        <main id="aeos-main-content" className="aeos-shell-content" tabIndex={-1}>
           <div className="aeos-page-container" style={maxWidth ? { maxWidth } : undefined}>
             {children}
           </div>
         </main>
+
         {footer && <footer className="aeos-shell-footer">{footer}</footer>}
       </div>
     </div>
   );
 }
 
-/* ── TopNavShell ────────────────────────────────────────────────── */
+/* ─── TopNavShell ───────────────────────────────────────────────────────── */
 export function TopNavShell({ brand, nav = [], actions, subbar, footer, maxWidth, children }) {
   return (
-    <div data-aeos-shell="topnav">
-      <header className="aeos-shell-topbar">
-        {brand && <a className="aeos-shell-brand">{brand}</a>}
+    <div data-aeos-shell="topnav" className="aeos-app-chrome-active">
+      <a href="#aeos-main-content" className="aeos-skip-link">Skip to content</a>
+
+      <header className="aeos-shell-topbar" role="banner">
+        {brand && <span className="aeos-shell-brand">{brand}</span>}
+
         <nav className="aeos-shell-nav" aria-label="Main navigation">
           {nav.map((item, i) => {
-            const isInternal = item.href && !item.href.startsWith('http://') && !item.href.startsWith('https://') && !item.href.startsWith('//') && !item.href.startsWith('mailto:') && !item.href.startsWith('tel:');
+            const isInternal = item.href && !/^(https?:|\/\/|mailto:|tel:)/.test(item.href);
             const Tag = item.href ? (isInternal ? InertiaLink : 'a') : 'button';
             return (
               <Tag
@@ -239,32 +252,41 @@ export function TopNavShell({ brand, nav = [], actions, subbar, footer, maxWidth
                 className={cx('aeos-shell-nav-item', item.active && 'active')}
                 aria-current={item.active ? 'page' : undefined}
               >
+                {item.icon && <item.icon className="aeos-shell-nav-icon" aria-hidden="true" />}
                 {item.label}
+                {item.count != null && <span className="aeos-tab-count">{item.count}</span>}
               </Tag>
             );
           })}
         </nav>
+
+        <span className="aeos-shell-flex-spacer" />
         {actions && <div className="aeos-shell-actions">{actions}</div>}
       </header>
-      {subbar && <div className="aeos-shell-subbar">{subbar}</div>}
-      <main className="aeos-shell-content">
+
+      {subbar && (
+        <div className="aeos-shell-subbar" role="navigation" aria-label="Sub navigation">
+          {subbar}
+        </div>
+      )}
+
+      <main id="aeos-main-content" className="aeos-shell-content" tabIndex={-1}>
         <div className="aeos-page-container" style={maxWidth ? { maxWidth } : undefined}>
           {children}
         </div>
       </main>
+
       {footer && <footer className="aeos-shell-footer">{footer}</footer>}
     </div>
   );
 }
 
-/* ── FloatingShell ──────────────────────────────────────────────── */
+/* ─── FloatingShell ─────────────────────────────────────────────────────── */
 export function FloatingShell({
   brand, nav = [], actions, footer, maxWidth, children,
   expanded: expandedProp, onExpandedChange,
 }) {
-  const [localExp, setLocalExp] = useState(() => {
-    try { return loadShellPrefs().floatingExpanded ?? false; } catch { return false; }
-  });
+  const [localExp, setLocalExp] = useState(() => loadShellPrefs().floatingExpanded ?? false);
   const expanded = expandedProp ?? localExp;
 
   const toggle = useCallback(() => {
@@ -277,29 +299,29 @@ export function FloatingShell({
   return (
     <div
       data-aeos-shell="floating"
-      className={cx(expanded && 'sidebar-expanded')}
+      className={cx('aeos-app-chrome-active', expanded && 'sidebar-expanded')}
     >
+      <a href="#aeos-main-content" className="aeos-skip-link">Skip to content</a>
+
       <nav className="aeos-shell-sidebar" aria-label="Side navigation">
         {brand && (
           <div className="aeos-shell-sidebar-brand">
             {brand}
             <button
-              type="button"
-              className="aeos-icon-btn"
-              onClick={toggle}
+              type="button" className="aeos-icon-btn" onClick={toggle}
               aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-expanded={expanded}
             >
               <Bars3Icon className="aeos-icon-sm" aria-hidden="true" />
             </button>
           </div>
         )}
-        {nav.map((item, i) => (
-          <RecursiveNavItem key={i} item={item} expanded={expanded} />
-        ))}
+        {nav.map((item, i) => <RecursiveNavItem key={i} item={item} expanded={expanded} />)}
       </nav>
-      <main className="aeos-shell-content">
+
+      <main id="aeos-main-content" className="aeos-shell-content" tabIndex={-1}>
         {actions && (
-          <div className="aeos-shell-topbar">
+          <div className="aeos-shell-topbar" role="toolbar" aria-label="Page actions">
             <span className="aeos-shell-flex-spacer" />
             {actions}
           </div>
@@ -307,23 +329,25 @@ export function FloatingShell({
         <div className="aeos-page-container" style={maxWidth ? { maxWidth } : undefined}>
           {children}
         </div>
+        {footer && <footer className="aeos-shell-footer">{footer}</footer>}
       </main>
     </div>
   );
 }
 
-/* ── CommandSection ─────────────────────────────────────────────── */
+/* ─── CommandSection ────────────────────────────────────────────────────── */
 function CommandSection({ group }) {
   const [isOpen, setIsOpen] = useState(true);
+  const toggle = useCallback(() => setIsOpen(v => !v), []);
+
   return (
     <div className="aeos-shell-cmd-nav-group">
       {group.title && (
         <div
           className="aeos-shell-nav-section"
-          onClick={() => setIsOpen(!isOpen)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsOpen(!isOpen); }}
+          role="button" tabIndex={0}
+          onClick={toggle}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggle(); }}
           aria-expanded={isOpen}
         >
           {group.title}
@@ -332,16 +356,15 @@ function CommandSection({ group }) {
           </span>
         </div>
       )}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: isOpen ? '1fr' : '0fr',
-          transition: `grid-template-rows var(--aeos-dur-base) var(--aeos-ease-out)`,
-        }}
-      >
+
+      <div style={{
+        display: 'grid',
+        gridTemplateRows: isOpen ? '1fr' : '0fr',
+        transition: 'grid-template-rows var(--aeos-dur-base) var(--aeos-ease-out)',
+      }}>
         <div style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {(group.items ?? []).map((item, i) => (
-            <RecursiveNavItem key={i} item={item} isCommand={true} expanded={true} />
+            <RecursiveNavItem key={i} item={item} isCommand expanded />
           ))}
         </div>
       </div>
@@ -349,57 +372,52 @@ function CommandSection({ group }) {
   );
 }
 
-/* ── CommandShell ───────────────────────────────────────────────── */
+/* ─── CommandShell ──────────────────────────────────────────────────────── */
 export function CommandShell({
   brand, nav = [], topbar, actions,
   rail, railTitle, railWidth,
   footer, children,
 }) {
-  // Persist rail width to localStorage
-  const [localRailWidth, setLocalRailWidth] = useState(() => {
-    try { return loadShellPrefs().commandRailWidth ?? railWidth ?? null; } catch { return railWidth ?? null; }
-  });
-
+  const [localRailWidth] = useState(() => loadShellPrefs().commandRailWidth ?? railWidth ?? null);
   const effectiveRailWidth = railWidth ?? localRailWidth;
 
-  // Auto-wrap flat nav items into a single default group for backward compatibility
-  const groups = nav.length > 0 && nav[0].items
+  const groups = nav.length > 0 && nav[0]?.items
     ? nav
     : [{ title: null, items: nav.filter(item => !item.divider && !item.spacer) }];
 
   return (
-    <div data-aeos-shell="command">
-      {/* Left nav panel */}
+    <div data-aeos-shell="command" className="aeos-app-chrome-active">
+      <a href="#aeos-main-content" className="aeos-skip-link">Skip to content</a>
+
       <aside className="aeos-shell-left" aria-label="Navigation">
         {brand && <div className="aeos-shell-cmd-brand">{brand}</div>}
-        {groups.map((group, gi) => (
-          <CommandSection key={gi} group={group} />
-        ))}
+        {groups.map((group, i) => <CommandSection key={i} group={group} />)}
       </aside>
 
-      {/* Center main panel */}
       <div className="aeos-shell-main">
-        <header className="aeos-shell-topbar">
+        <header className="aeos-shell-topbar" role="banner">
           {topbar}
           <span className="aeos-shell-flex-spacer" />
           {actions}
         </header>
-        <div className="aeos-shell-content">{children}</div>
+
+        <main id="aeos-main-content" className="aeos-shell-content" tabIndex={-1}>
+          {children}
+        </main>
+
+        {footer && <footer className="aeos-shell-footer aeos-shell-cmd-footer">{footer}</footer>}
       </div>
 
-      {/* Right context rail */}
       {rail && (
         <aside
           className="aeos-shell-right"
-          style={effectiveRailWidth ? { width: effectiveRailWidth } : undefined}
           aria-label="Context panel"
+          style={effectiveRailWidth ? { '--aeos-shell-rail-w': effectiveRailWidth } : undefined}
         >
           {railTitle && <header className="aeos-shell-cmd-rail-header">{railTitle}</header>}
           <div className="aeos-shell-cmd-rail-body">{rail}</div>
         </aside>
       )}
-
-      {footer && <footer className="aeos-shell-footer aeos-shell-cmd-footer">{footer}</footer>}
     </div>
   );
 }

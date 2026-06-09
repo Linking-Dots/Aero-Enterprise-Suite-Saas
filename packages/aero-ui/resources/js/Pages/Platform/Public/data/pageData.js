@@ -22,11 +22,79 @@ import {
 
 
 export const NAV_LINKS = [
-  { label: "Features",   href: "/features",   i18nKey: "nav_features"   },
+  { label: "Home",       href: "/",           i18nKey: "nav_home"       },
+  { label: "Features",   href: "/features",   i18nKey: "nav_features",   hasMega: true },
   { label: "Pricing",    href: "/pricing",    i18nKey: "nav_pricing"    },
   { label: "Enterprise", href: "/enterprise", i18nKey: "nav_enterprise" },
   { label: "About",      href: "/about",      i18nKey: "nav_about"      },
   { label: "Docs",       href: "/docs",       i18nKey: "nav_docs"       },
+  { label: "Contact",    href: "/contact",    i18nKey: "nav_contact"    },
+];
+
+export const CTA_LINKS = [
+  { label: "Sign up",  href: "/signup" },
+  { label: "Try demo", href: "https://demo.aeos365.com", primary: true, external: true },
+];
+
+export const LOGIN_HREF = "/login";
+
+export const BRAND = {
+  name:    "aeos365",
+  tagline: "The modular enterprise platform built for scale, security, and sovereignty. Every module. Every tenant. One coherent system.",
+};
+
+export const ANNOUNCEMENT_BAR = {
+  id:          "ann-ai-2026-06",
+  message:     "AI Assistant is now included in all paid plans — at no extra cost.",
+  cta:         "Explore what's new",
+  href:        "/features#assistant",
+  variant:     "indigo",
+  dismissable: true,
+};
+
+export const MEGA_MENU_CATEGORIES = [
+  {
+    label: "People & HR",
+    items: [
+      { label: "Human Resources",  href: "/features#hrm",        accent: "cyan"   },
+      { label: "Payroll Engine",   href: "/features#payroll",    accent: "cyan"   },
+      { label: "Performance Mgmt", href: "/features#hrm",        accent: "cyan"   },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { label: "Finance & Accounting", href: "/features#finance", accent: "indigo" },
+      { label: "AP / AR",              href: "/features#finance", accent: "indigo" },
+      { label: "Tax Management",       href: "/features#finance", accent: "indigo" },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { label: "CRM Suite",          href: "/features#crm",     accent: "amber"  },
+      { label: "Project Management", href: "/features#project", accent: "amber"  },
+      { label: "Inventory",          href: "/features#ims",     accent: "amber"  },
+      { label: "Supply Chain",       href: "/features#scm",     accent: "amber"  },
+      { label: "Point of Sale",      href: "/features#pos",     accent: "amber"  },
+    ],
+  },
+  {
+    label: "Quality & Safety",
+    items: [
+      { label: "Quality Control",  href: "/features#quality",    accent: "cyan"   },
+      { label: "HSE & Compliance", href: "/features#compliance", accent: "cyan"   },
+      { label: "RFI & Site Intel", href: "/features#rfi",        accent: "cyan"   },
+      { label: "Document Mgmt",    href: "/features#dms",        accent: "indigo" },
+    ],
+  },
+  {
+    label: "Intelligence",
+    items: [
+      { label: "AI Assistant", href: "/features#assistant", accent: "amber" },
+      { label: "Analytics",   href: "/features#analytics", accent: "cyan"  },
+    ],
+  },
 ];
 
 export const FEATURES = [
@@ -232,43 +300,55 @@ export const TRUST_LOGOS = [
   "Continuum Corp", "Quanta Dynamics", "Orbis Consulting",
 ];
 
-export const FOOTER_LINKS = {
-  Platform: [
-    { label: "Human Resources",     href: "/features#hrm"     },
-    { label: "Payroll Engine",       href: "/features#payroll" },
-    { label: "CRM Suite",            href: "/features#crm"     },
-    { label: "Inventory Management", href: "/features#ims"     },
-    { label: "Finance & Accounting", href: "/features#finance" },
-    { label: "Project Management",   href: "/features#project" },
-  ],
-  Developers: [
-    { label: "API Documentation", href: "/docs/api"                                   },
-    { label: "SDKs & Libraries",  href: "/docs/sdks"                                  },
-    { label: "Webhooks",          href: "/docs/webhooks"                              },
-    { label: "Changelog",         href: "/docs/changelog"                             },
-    { label: "Status Page",       href: "https://status.aeos365.com", external: true  },
-    { label: "Open Source",       href: "https://github.com/aeos365",  external: true },
-  ],
-  Company: [
-    { label: "About aeos365", href: "/about"          },
-    { label: "Careers",       href: "/about#careers"  },
-    { label: "Blog",          href: "/blog"           },
-    { label: "Press Kit",     href: "/about#press"    },
-    { label: "Partners",      href: "/about#partners" },
-    { label: "Contact",       href: "/contact"        },
-  ],
-  Legal: [
-    { label: "Privacy Policy",   href: "/legal/privacy"  },
-    { label: "Terms of Service", href: "/legal/terms"    },
-    { label: "Cookie Policy",    href: "/legal/cookies"  },
-    { label: "Security",         href: "/legal/security" },
-  ],
-};
+export const FOOTER_LINKS = [
+  {
+    category: "Platform",
+    links: [
+      { label: "Human Resources",     href: "/features#hrm"     },
+      { label: "Payroll Engine",       href: "/features#payroll" },
+      { label: "CRM Suite",            href: "/features#crm"     },
+      { label: "Inventory Management", href: "/features#ims"     },
+      { label: "Finance & Accounting", href: "/features#finance" },
+      { label: "Project Management",   href: "/features#project" },
+    ],
+  },
+  {
+    category: "Developers",
+    links: [
+      { label: "API Documentation", href: "/docs/api"                                   },
+      { label: "SDKs & Libraries",  href: "/docs/sdks"                                  },
+      { label: "Webhooks",          href: "/docs/webhooks"                              },
+      { label: "Changelog",         href: "/docs/changelog"                             },
+      { label: "Status Page",       href: "https://status.aeos365.com", external: true  },
+      { label: "Open Source",       href: "https://github.com/aeos365",  external: true },
+    ],
+  },
+  {
+    category: "Company",
+    links: [
+      { label: "About aeos365", href: "/about"          },
+      { label: "Careers",       href: "/about#careers"  },
+      { label: "Blog",          href: "/blog"           },
+      { label: "Press Kit",     href: "/about#press"    },
+      { label: "Partners",      href: "/about#partners" },
+      { label: "Contact",       href: "/contact"        },
+    ],
+  },
+  {
+    category: "Legal",
+    links: [
+      { label: "Privacy Policy",   href: "/legal/privacy"  },
+      { label: "Terms of Service", href: "/legal/terms"    },
+      { label: "Cookie Policy",    href: "/legal/cookies"  },
+      { label: "Security",         href: "/legal/security" },
+    ],
+  },
+];
 
 export const SOCIAL_LINKS = [
-  { platform: "GitHub",   href: "#", label: "aeos365 on GitHub" },
-  { platform: "Twitter",  href: "#", label: "aeos365 on X / Twitter" },
-  { platform: "LinkedIn", href: "#", label: "aeos365 on LinkedIn" },
+  { platform: "GitHub",   href: "https://github.com/aeos365",              label: "aeos365 on GitHub"      },
+  { platform: "Twitter",  href: "https://twitter.com/aeos365",             label: "aeos365 on X / Twitter" },
+  { platform: "LinkedIn", href: "https://linkedin.com/company/aeos365",   label: "aeos365 on LinkedIn"    },
 ];
 
 // ─── FEATURES PAGE DATA ───────────────────────────────────────────────────────

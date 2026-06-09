@@ -1,148 +1,202 @@
-/* ══════════════════════════════════════════════════════════════
-   aeos365 — Shell: Three-Panel / Command Layout (Phase 2)
-   Left: nav tree, Center: main workspace, Right: context panel.
-   Inspired by VS Code / Figma / enterprise dashboard patterns.
-   Usage: <div data-aeos-shell="command">
-            <aside class="aeos-shell-left">...</aside>
-            <main class="aeos-shell-main">
-              <div class="aeos-shell-topbar">...</div>
-              ...
-            </main>
-            <aside class="aeos-shell-right">...</aside>
-          </div>
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — Shell: Three-Panel / Command Layout  (Overhaul v2)
+   Left: labeled nav tree | Center: main workspace | Right: context rail
+   ══════════════════════════════════════════════════════════════════════════ */
 
 [data-aeos-shell="command"] {
   display: grid;
-  grid-template-columns: max-content 1fr var(--aeos-shell-rail-w, 240px);
-  min-height: 100vh;
+  grid-template-columns:
+    var(--aeos-shell-cmd-nav-w)
+    1fr
+    var(--aeos-shell-rail-w);
+  grid-template-rows: 1fr;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   background: var(--aeos-shell-bg);
   font-family: var(--aeos-font-body);
 }
 
-/* ── Left Nav Panel ──────────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-left {
   background: var(--aeos-shell-panel-bg);
   border-right: var(--aeos-border-width) solid var(--aeos-divider);
-  padding: var(--aeos-space-4);
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--aeos-space-1);
+  gap: 0;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: calc(var(--aeos-space-4) * var(--aeos-density-factor));
+  box-sizing: border-box;
+  min-width: 140px;
 }
 
-/* Section label */
+[data-aeos-shell="command"] .aeos-shell-cmd-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  padding: var(--aeos-space-1) var(--aeos-space-3) var(--aeos-space-4);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+  margin-bottom: var(--aeos-space-3);
+  flex-shrink: 0;
+}
+
+[data-aeos-shell="command"] .aeos-shell-cmd-nav-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--aeos-space-2);
+}
+
 [data-aeos-shell="command"] .aeos-shell-nav-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-family: var(--aeos-font-mono);
   font-size: var(--aeos-text-2xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--aeos-text-tertiary);
   padding: var(--aeos-space-3) var(--aeos-space-3) var(--aeos-space-1);
-  margin: var(--aeos-space-2) 0;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--aeos-r-md);
+  transition: color var(--aeos-dur-fast) var(--aeos-ease-out);
 }
+[data-aeos-shell="command"] .aeos-shell-nav-section:hover { color: var(--aeos-text-secondary); }
 
 [data-aeos-shell="command"] .aeos-shell-nav-item {
-  padding: var(--aeos-pad-nav-y) var(--aeos-pad-nav-x);
-  border-radius: var(--aeos-r-md);
-  font-size: var(--aeos-text-sm);
-  color: var(--aeos-text-secondary);
-  cursor: pointer;
-  transition:
-    background      var(--aeos-dur-fast) var(--aeos-ease-out),
-    color           var(--aeos-dur-fast) var(--aeos-ease-out),
-    border-color    var(--aeos-dur-fast) var(--aeos-ease-out);
-  border: var(--aeos-border-width) solid transparent;
-  text-decoration: none;
   display: flex;
   align-items: center;
   gap: var(--aeos-space-2);
+  padding: calc(var(--aeos-pad-nav-y) * var(--aeos-density-factor))
+           calc(var(--aeos-pad-nav-x) * var(--aeos-density-factor));
+  border-radius: var(--aeos-r-md);
+  font-size: var(--aeos-text-sm);
   font-weight: 500;
-  user-select: none;
+  color: var(--aeos-text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  border: var(--aeos-border-width) solid transparent;
+  background: transparent;
   white-space: nowrap;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  transition:
+    background   var(--aeos-dur-fast) var(--aeos-ease-out),
+    color        var(--aeos-dur-fast) var(--aeos-ease-out),
+    border-color var(--aeos-dur-fast) var(--aeos-ease-out);
 }
-
 [data-aeos-shell="command"] .aeos-shell-nav-item:hover {
   background: var(--aeos-bg-hover);
   color: var(--aeos-text-primary);
+  border-color: var(--aeos-border-subtle);
 }
-
 [data-aeos-shell="command"] .aeos-shell-nav-item.active {
   background: var(--aeos-primary-tint);
   border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
 }
+[data-aeos-shell="command"] .aeos-shell-nav-item.active:hover { background: var(--aeos-primary-hover); }
 
-/* Divider */
-[data-aeos-shell="command"] .aeos-shell-nav-divider {
-  height: 1px;
-  background: var(--aeos-divider);
-  margin: var(--aeos-space-2) 0;
+[data-aeos-shell="command"] .aeos-nav-active-indicator {
+  position: absolute;
+  left: 0; top: 25%;
+  height: 50%; width: 3px;
+  background: var(--aeos-primary);
+  border-radius: 0 var(--aeos-r-sm) var(--aeos-r-sm) 0;
+  box-shadow: 0 0 8px var(--aeos-primary-tint);
 }
 
-/* Spacer */
-[data-aeos-shell="command"] .aeos-shell-nav-spacer {
-  flex: 1;
-}
-
-/* ── Center Main Panel ───────────────────────────────────────── */
-[data-aeos-shell="command"] .aeos-shell-main {
-  padding: var(--aeos-space-5);
-  min-height: 0;
-  overflow-y: auto;
-  background: var(--aeos-bg-page);
-  display: flex;
-  flex-direction: column;
-}
-
-/* Optional topbar inside center panel */
-[data-aeos-shell="command"] .aeos-shell-topbar {
-  display: flex;
-  align-items: center;
-  height: var(--aeos-shell-topnav-h, var(--aeos-h-topbar));
-  padding: 0 var(--aeos-space-5);
-  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
-  background: var(--aeos-shell-topbar-bg);
-  gap: var(--aeos-space-3);
+[data-aeos-shell="command"] .aeos-shell-cmd-nav-count {
+  margin-left: auto;
+  font-family: var(--aeos-font-mono);
+  font-size: var(--aeos-text-2xs);
+  color: var(--aeos-text-tertiary);
+  background: var(--aeos-bg-hover);
+  padding: 1px 5px;
+  border-radius: var(--aeos-r-full);
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: var(--aeos-z-sticky);
+}
+[data-aeos-shell="command"] .aeos-shell-nav-item.active .aeos-shell-cmd-nav-count {
+  background: var(--aeos-primary-bg);
+  color: var(--aeos-primary);
 }
 
-/* Content scrollable area */
+[data-aeos-shell="command"] .aeos-nav-depth-1 { padding-left: var(--aeos-space-7); }
+[data-aeos-shell="command"] .aeos-nav-depth-2 { padding-left: calc(var(--aeos-space-7) + var(--aeos-space-5)); }
+[data-aeos-shell="command"] .aeos-nav-depth-3 { padding-left: calc(var(--aeos-space-7) + var(--aeos-space-10)); }
+
+.aeos-shell-nav-chevron {
+  display: flex; align-items: center;
+  margin-left: auto; opacity: 0.5; flex-shrink: 0;
+}
+.aeos-shell-nav-chevron svg {
+  width: var(--aeos-icon-xs); height: var(--aeos-icon-xs);
+  transition: transform var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-shell-nav-chevron.is-open svg { transform: rotate(90deg); }
+
+[data-aeos-shell="command"] .aeos-shell-nav-divider {
+  height: var(--aeos-border-width);
+  background: var(--aeos-divider);
+  margin: var(--aeos-space-2) var(--aeos-space-3);
+}
+[data-aeos-shell="command"] .aeos-shell-nav-spacer { flex: 1; min-height: var(--aeos-space-4); }
+
+.aeos-nav-item-wrapper { display: flex; flex-direction: column; width: 100%; }
+
+[data-aeos-shell="command"] .aeos-shell-main {
+  display: flex; flex-direction: column;
+  min-height: 0; max-height: 100dvh;
+  overflow: hidden; background: var(--aeos-bg-page);
+}
+[data-aeos-shell="command"] .aeos-shell-topbar { --aeos-shell-topbar-blur: 8px; }
 [data-aeos-shell="command"] .aeos-shell-content {
-  flex: 1;
-  min-height: 0;
-  padding: var(--aeos-space-4);
-  overflow-y: auto;
+  flex: 1; min-height: 0;
+  overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
-/* ── Right Context Panel ─────────────────────────────────────── */
 [data-aeos-shell="command"] .aeos-shell-right {
   background: var(--aeos-shell-panel-bg);
   border-left: var(--aeos-border-width) solid var(--aeos-divider);
-  padding: var(--aeos-space-4);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   gap: var(--aeos-gap-card);
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: sticky; top: 0; height: 100dvh;
+  overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: calc(var(--aeos-space-4) * var(--aeos-density-factor));
+  box-sizing: border-box;
+  width: clamp(var(--aeos-shell-rail-w-min), var(--aeos-shell-rail-w), var(--aeos-shell-rail-w-max));
 }
 
-/* ── Right Panel Widgets ─────────────────────────────────────── */
+[data-aeos-shell="command"] .aeos-shell-cmd-rail-header {
+  flex-shrink: 0;
+  padding-bottom: var(--aeos-space-3);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+  margin-bottom: var(--aeos-space-3);
+  font-family: var(--aeos-font-mono);
+  font-size: var(--aeos-text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--aeos-text-secondary);
+}
+[data-aeos-shell="command"] .aeos-shell-cmd-rail-body {
+  flex: 1; display: flex; flex-direction: column;
+  gap: var(--aeos-gap-card); min-height: 0;
+}
+
 .aeos-shell-widget {
   background: var(--aeos-bg-subtle);
   border: var(--aeos-border-width) solid var(--aeos-divider);
   border-radius: var(--aeos-r-lg);
-  padding: var(--aeos-space-4);
+  padding: calc(var(--aeos-space-4) * var(--aeos-density-factor));
+  flex-shrink: 0;
 }
-
 .aeos-shell-widget-title {
   font-family: var(--aeos-font-mono);
   font-size: var(--aeos-text-2xs);
@@ -152,26 +206,23 @@
   margin-bottom: var(--aeos-space-3);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Responsive: collapse to sidebar + main on medium screens,
-   hide right panel on small screens.
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
-  [data-aeos-shell="command"] {
-    grid-template-columns: 160px 1fr;
-  }
+[data-aeos-shell="command"] .aeos-shell-cmd-footer { grid-column: 1 / -1; }
 
-  [data-aeos-shell="command"] .aeos-shell-right {
-    display: none;
+@media (min-width: 1600px) {
+  [data-aeos-shell="command"] {
+    --aeos-shell-rail-w: 280px;
+    --aeos-shell-cmd-nav-w: 200px;
   }
 }
-
+@media (max-width: 1200px) {
+  [data-aeos-shell="command"] { grid-template-columns: var(--aeos-shell-cmd-nav-w-md) 1fr; }
+  [data-aeos-shell="command"] .aeos-shell-right { display: none; }
+}
+@media (max-width: 900px) {
+  [data-aeos-shell="command"] { grid-template-columns: 160px 1fr; }
+}
 @media (max-width: 768px) {
-  [data-aeos-shell="command"] {
-    grid-template-columns: 1fr;
-  }
-
-  [data-aeos-shell="command"] .aeos-shell-left {
-    display: none;
-  }
+  [data-aeos-shell="command"] { grid-template-columns: 1fr; }
+  [data-aeos-shell="command"] .aeos-shell-left { display: none; }
+  [data-aeos-shell="command"] .aeos-shell-main { max-height: 100dvh; }
 }

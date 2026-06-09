@@ -1,0 +1,352 @@
+/**
+ * AEOS Dashboard — widget-specific CSS
+ * ─────────────────────────────────────────────────────────────────────────────
+ * All classes are prefixed with `dash-` to avoid collisions with the
+ * global `aeos-` design-system namespace.
+ *
+ * Import this file in app.css AFTER the core token and component imports:
+ *   @import './dashboard.css';
+ *
+ * Conventions followed from base.css:
+ *   • No hard-coded colour hex values — CSS custom properties only.
+ *   • No inline style values reproduced here; those are single dynamic values
+ *     handled by the JS layer (progress widths, heatmap opacity).
+ *   • Motion is gated behind the global prefers-reduced-motion query.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/* ── Grid ──────────────────────────────────────────────────────────────── */
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--aeos-space-3);
+    padding: var(--aeos-space-5) var(--aeos-space-5) var(--aeos-space-8);
+}
+
+/* Column spans */
+.aeos-col-span-1 { grid-column: span 1; }
+.aeos-col-span-2 { grid-column: span 2; }
+.aeos-col-span-3 { grid-column: span 3; }
+.aeos-col-span-4 { grid-column: span 4; }
+
+/* ── Refresh button ────────────────────────────────────────────────────── */
+.dash-widget-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--aeos-r-sm);
+    background: transparent;
+    border: 1px solid var(--aeos-border-subtle);
+    color: var(--aeos-text-tertiary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--aeos-dur-fast) var(--aeos-ease-out),
+                color     var(--aeos-dur-fast) var(--aeos-ease-out),
+                border-color var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.dash-widget-refresh-btn:hover {
+    background: var(--aeos-bg-hover);
+    color: var(--aeos-text-secondary);
+    border-color: var(--aeos-border);
+}
+.dash-widget-refresh-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Widget error strip ─────────────────────────────────────────────────── */
+.dash-widget-error {
+    background: var(--aeos-danger-bg);
+    border: 1px solid var(--aeos-danger-border);
+    border-radius: var(--aeos-r-md);
+    padding: var(--aeos-space-2) var(--aeos-space-3);
+    margin-bottom: var(--aeos-space-3);
+}
+.dash-widget-error-icon { color: var(--aeos-danger); }
+
+/* ── Welcome card ───────────────────────────────────────────────────────── */
+.dash-welcome-card {
+    background: linear-gradient(
+        135deg,
+        rgba(0, 229, 255, 0.06) 0%,
+        transparent 55%
+    ), var(--aeos-bg-card);
+    border-color: var(--aeos-primary-border);
+}
+.dash-welcome-name {
+    font-family: var(--aeos-font-display);
+    font-size: var(--aeos-text-xl);
+    font-weight: 700;
+    color: var(--aeos-text-primary);
+    line-height: 1.1;
+}
+
+/* ── KPI tiles ──────────────────────────────────────────────────────────── */
+.dash-kpi-card { min-height: 120px; }
+.dash-kpi-header { margin-bottom: var(--aeos-space-1); }
+.dash-kpi-value {
+    font-family: var(--aeos-font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--aeos-text-primary);
+    line-height: 1.05;
+    margin: var(--aeos-space-1) 0;
+}
+.dash-kpi-value--success { color: var(--aeos-success); }
+.dash-kpi-value--danger  { color: var(--aeos-danger); }
+.dash-kpi-error { color: var(--aeos-danger); margin-top: var(--aeos-space-1); }
+
+/* ── Period / filter tab badges ─────────────────────────────────────────── */
+.dash-period-tab {
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--aeos-dur-fast) var(--aeos-ease-out),
+                color     var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+
+/* ── Activity chart legend ──────────────────────────────────────────────── */
+.dash-legend-swatch {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* ── Sessions widget ────────────────────────────────────────────────────── */
+.dash-session-stats-row { margin-bottom: var(--aeos-space-3); }
+.dash-session-stat {
+    flex: 1;
+    text-align: center;
+    padding: var(--aeos-space-2) 0;
+}
+.dash-session-stat + .dash-session-stat {
+    border-left: 1px solid var(--aeos-divider);
+}
+
+.dash-session-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--aeos-text-tertiary);
+    flex-shrink: 0;
+}
+.dash-session-dot--online {
+    background: var(--aeos-success);
+    box-shadow: 0 0 6px var(--aeos-success);
+    animation: aeos-pulse 2s ease-in-out infinite;
+}
+
+.dash-section-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: var(--aeos-space-1);
+}
+
+/* ── Metric mini card (Security / Storage) ──────────────────────────────── */
+.dash-metric-mini {
+    background: var(--aeos-bg-tint);
+    border: 1px solid var(--aeos-border-subtle);
+    border-radius: var(--aeos-r-md);
+    padding: var(--aeos-space-2) var(--aeos-space-3);
+    flex: 1;
+}
+.dash-metric-mini-row {
+    margin-bottom: var(--aeos-space-3);
+    align-items: stretch;
+}
+
+/* ── Audit log feed ─────────────────────────────────────────────────────── */
+.dash-audit-list { gap: 0; }
+.dash-audit-row {
+    padding: var(--aeos-space-2) 0;
+    border-bottom: 1px solid var(--aeos-divider);
+}
+.dash-audit-row:last-child { border-bottom: none; }
+.dash-audit-empty { padding: var(--aeos-space-3) 0; }
+
+.dash-audit-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+.dash-audit-dot--success { background: var(--aeos-success); }
+.dash-audit-dot--primary { background: var(--aeos-primary); }
+.dash-audit-dot--danger  { background: var(--aeos-danger); }
+.dash-audit-dot--amber   { background: var(--aeos-secondary); }
+.dash-audit-dot--tertiary{ background: var(--aeos-tertiary); }
+.dash-audit-dot--neutral { background: var(--aeos-text-tertiary); }
+
+.dash-view-all-link {
+    font-size: var(--aeos-text-sm);
+    color: var(--aeos-primary);
+    text-decoration: none;
+    transition: opacity var(--aeos-dur-fast);
+}
+.dash-view-all-link:hover { opacity: .75; text-decoration: underline; }
+
+/* ── Quick actions ──────────────────────────────────────────────────────── */
+.dash-qa-row {
+    display: flex;
+    align-items: center;
+    gap: var(--aeos-space-3);
+    padding: var(--aeos-space-2) var(--aeos-space-3);
+    border-radius: var(--aeos-r-md);
+    border: 1px solid var(--aeos-border-subtle);
+    background: var(--aeos-bg-tint);
+    text-decoration: none;
+    color: var(--aeos-text-primary);
+    transition: background   var(--aeos-dur-fast) var(--aeos-ease-out),
+                border-color var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.dash-qa-row:hover {
+    background: var(--aeos-bg-hover);
+    border-color: var(--aeos-border);
+}
+.dash-qa-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--aeos-r-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.dash-qa-icon--cyan    { background: var(--aeos-primary-bg);   color: var(--aeos-primary);   }
+.dash-qa-icon--success { background: var(--aeos-success-bg);   color: var(--aeos-success);   }
+.dash-qa-icon--amber   { background: var(--aeos-warning-bg);   color: var(--aeos-secondary); }
+.dash-qa-icon--indigo  { background: var(--aeos-tertiary-bg);  color: var(--aeos-tertiary);  }
+.dash-qa-icon--neutral { background: var(--aeos-bg-tint);      color: var(--aeos-text-secondary); }
+.dash-qa-arrow { color: var(--aeos-text-tertiary); }
+
+/* ── Onboarding ─────────────────────────────────────────────────────────── */
+.dash-onboarding-progress { margin: var(--aeos-space-2) 0 var(--aeos-space-3); }
+.dash-step-row {
+    padding: var(--aeos-space-2) 0;
+    border-bottom: 1px solid var(--aeos-divider);
+}
+.dash-step-row:last-child { border-bottom: none; }
+.dash-step-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--aeos-border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: transparent;
+}
+.dash-step-check--done {
+    background: var(--aeos-success-bg);
+    border-color: var(--aeos-success-border);
+    color: var(--aeos-success);
+}
+.dash-step-check--pending {
+    border-color: var(--aeos-secondary);
+    background: var(--aeos-warning-bg);
+}
+
+/* ── Announcements ──────────────────────────────────────────────────────── */
+.dash-ann-row {
+    padding: var(--aeos-space-2) 0;
+    border-bottom: 1px solid var(--aeos-divider);
+}
+.dash-ann-row:last-child { border-bottom: none; }
+.dash-ann-pin { font-size: 14px; flex-shrink: 0; width: 18px; }
+.dash-dismiss-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--aeos-r-sm);
+    background: transparent;
+    border: none;
+    color: var(--aeos-text-tertiary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color var(--aeos-dur-fast);
+}
+.dash-dismiss-btn:hover { color: var(--aeos-text-primary); }
+
+/* ── Peak hours heatmap ─────────────────────────────────────────────────── */
+.dash-heat-row {
+    display: flex;
+    gap: 3px;
+    align-items: stretch;
+}
+.dash-heat-cell {
+    flex: 1;
+    height: 16px;
+    border-radius: 3px;
+    cursor: default;
+    /*
+     * Colour driven by --pct CSS custom property injected from JS.
+     * --aeos-primary-rgb must be declared in base.css as the R,G,B
+     * components of var(--aeos-primary) e.g. "0, 229, 255".
+     */
+    background: rgba(var(--aeos-primary-rgb, 0, 229, 255), var(--pct, 0.06));
+    transition: opacity var(--aeos-dur-fast);
+}
+.dash-heat-cell:hover { opacity: .7; }
+
+.dash-heat-axis {
+    margin-top: var(--aeos-space-1);
+    justify-content: space-between;
+}
+
+.dash-heat-legend-gradient {
+    flex: 1;
+    height: 5px;
+    border-radius: var(--aeos-r-full);
+    background: linear-gradient(
+        to right,
+        rgba(var(--aeos-primary-rgb, 0, 229, 255), 0.08),
+        var(--aeos-primary)
+    );
+    display: block;
+}
+
+/* ── System health footer ───────────────────────────────────────────────── */
+.dash-health-card {
+    background: var(--aeos-bg-elevated);
+    border-color: var(--aeos-border);
+}
+.dash-health-divider {
+    display: block;
+    width: 1px;
+    align-self: stretch;
+    background: var(--aeos-divider);
+}
+
+/* ── Responsive overrides ───────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+    .dash-grid { grid-template-columns: repeat(3, 1fr); }
+    .aeos-col-span-4 { grid-column: span 3; }
+}
+
+@media (max-width: 960px) {
+    .dash-grid { grid-template-columns: repeat(2, 1fr); }
+    .aeos-col-span-3,
+    .aeos-col-span-4 { grid-column: span 2; }
+}
+
+@media (max-width: 640px) {
+    .dash-grid { grid-template-columns: 1fr; gap: var(--aeos-space-2); padding: var(--aeos-space-3); }
+    .aeos-col-span-1,
+    .aeos-col-span-2,
+    .aeos-col-span-3,
+    .aeos-col-span-4 { grid-column: span 1; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .dash-session-dot--online { animation: none; }
+    .dash-widget-refresh-btn svg { animation: none !important; }
+}

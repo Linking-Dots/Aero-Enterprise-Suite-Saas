@@ -9,6 +9,13 @@ use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\PlatformWidgetRegistry;
+use Aero\Platform\Widgets\BillingOverviewWidget;
+use Aero\Platform\Widgets\ModuleUsageWidget;
+use Aero\Platform\Widgets\QuickActionsWidget;
+use Aero\Platform\Widgets\RecentActivityWidget;
+use Aero\Platform\Widgets\SubscriptionDistributionWidget;
+use Aero\Platform\Widgets\SystemAlertsWidget;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,239 +28,210 @@ use Inertia\Response;
  * Admin Dashboard Controller
  *
  * Main dashboard for the platform administration panel.
- * Aggregates widgets from Platform and provides real-time metrics.
- *
- * Using Platform's own widget registry:
- * - Uses PlatformWidgetRegistry for dynamic widgets (independent from Core)
- * - Provides API endpoints for lazy loading
- * - Caches expensive aggregations
+ * Aggregates all platform widgets and exposes them as named Inertia props.
+ * Individual widgets support lazy/deferred loading via Inertia::lazy().
  */
 class AdminDashboardController extends Controller
 {
     public function __construct(
-        protected PlatformWidgetRegistry $widgetRegistry
+        protected PlatformWidgetRegistry      $widgetRegistry,
+        protected BillingOverviewWidget       $billingWidget,
+        protected ModuleUsageWidget           $moduleWidget,
+        protected QuickActionsWidget          $quickActionsWidget,
+        protected RecentActivityWidget        $activityWidget,
+        protected SubscriptionDistributionWidget $distWidget,
+        protected SystemAlertsWidget          $alertsWidget,
     ) {}
 
-    /**
-     * Display the main admin dashboard.
-     */
+    // ── Main render ───────────────────────────────────────────────────────────
+
     public function index(Request $request): Response
     {
-        $user = Auth::guard('landlord')->user();
+        return Inertia::render('Platform/Admin/Dashboard/Index', [
 
-        // Get platform stats (cached for performance)
-        $stats = $this->getPlatformStats();
+            /* Command bar — always eager (tiny payload) */
+            'welcome' => $this->buildWelcome(),
 
-        // Get dynamic widgets from registry (from Platform + registered modules)
-        // The registry handles lazy loading and permission checks
-        $dynamicWidgets = $this->widgetRegistry->getWidgetsForFrontend();
+            /* KPI strip — eager, cached 5 min */
+            'stats' => $this->calculatePlatformStats(),
 
-        // Filter to only platform widgets for admin dashboard
-        // Then key by widget key for easier frontend access
-        $platformWidgets = collect($dynamicWidgets)
-            ->filter(fn ($widget) => $widget['module'] === 'platform')
-            ->keyBy('key')
-            ->toArray();
-
-        return Inertia::render('Platform/Admin/Dashboard', [
-            'title' => 'Dashboard - Admin',
-            'stats' => $stats,
-            'dynamicWidgets' => $platformWidgets,
-            'recentTenants' => fn () => $this->getRecentTenants(),
-            'systemHealth' => fn () => $this->getSystemHealth(),
+            /* Lazy props — resolved only when visited or partial-reloaded */
+            'billingOverview'          => Inertia::lazy(fn () => $this->billingWidget->getData()),
+            'systemAlerts'             => Inertia::lazy(fn () => $this->buildSystemAlerts()),
+            'systemHealth'             => Inertia::lazy(fn () => $this->buildSystemHealth()),
+            'recentTenants'            => Inertia::lazy(fn () => $this->buildRecentTenants()),
+            'moduleUsage'              => Inertia::lazy(fn () => $this->moduleWidget->getData()),
+            'subscriptionDistribution' => Inertia::lazy(fn () => $this->distWidget->getData()),
+            'recentActivity'           => Inertia::lazy(fn () => $this->activityWidget->getData()),
+            'quickActions'             => Inertia::lazy(fn () => $this->quickActionsWidget->getData()),
         ]);
     }
 
-    /**
-     * Get dashboard stats (for async loading).
-     */
+    // ── Partial-reload endpoints ──────────────────────────────────────────────
+
     public function stats(Request $request): JsonResponse
     {
-        return response()->json($this->getPlatformStats());
+        return response()->json($this->calculatePlatformStats());
     }
 
-    /**
-     * Get widget data for a specific widget (for lazy loading).
-     */
     public function widgetData(Request $request, string $widgetKey): JsonResponse
     {
-        $widgets = $this->widgetRegistry->getWidgets();
+        // Try the new named widgets first
+        $data = match ($widgetKey) {
+            'stats'                    => $this->calculatePlatformStats(),
+            'billingOverview'          => $this->billingWidget->getData(),
+            'systemAlerts'             => $this->buildSystemAlerts(),
+            'systemHealth'             => $this->buildSystemHealth(),
+            'recentTenants'            => $this->buildRecentTenants(),
+            'moduleUsage'              => $this->moduleWidget->getData(),
+            'subscriptionDistribution' => $this->distWidget->getData(),
+            'recentActivity'           => $this->activityWidget->getData(),
+            'quickActions'             => $this->quickActionsWidget->getData(),
+            default                    => null,
+        };
 
-        foreach ($widgets as $widget) {
-            if ($widget->getKey() === $widgetKey) {
-                return response()->json([
-                    'key' => $widget->getKey(),
-                    'data' => $widget->getData(),
-                ]);
+        // Fallback: check the generic widget registry (legacy compatibility)
+        if ($data === null) {
+            foreach ($this->widgetRegistry->getWidgets() as $widget) {
+                if ($widget->getKey() === $widgetKey) {
+                    return response()->json(['key' => $widget->getKey(), 'data' => $widget->getData()]);
+                }
             }
+            return response()->json(['error' => 'Widget not found'], 404);
         }
 
-        return response()->json(['error' => 'Widget not found'], 404);
+        return response()->json($data);
     }
 
-    /**
-     * Refresh dashboard cache.
-     */
     public function refresh(Request $request): JsonResponse
     {
-        // Clear cached stats
         Cache::forget('platform.dashboard.stats');
         Cache::forget('platform.dashboard.alerts');
         Cache::forget('platform.dashboard.subscription_distribution');
+        Cache::forget('platform.dashboard.recent_tenants');
+        Cache::forget('platform.dashboard.system_health');
+        Cache::forget('platform:dashboard:stats');
 
         return response()->json([
             'success' => true,
             'message' => 'Dashboard cache refreshed',
-            'stats' => $this->getPlatformStats(),
+            'stats'   => $this->calculatePlatformStats(),
         ]);
     }
 
-    /**
-     * Get platform statistics.
-     * Cached for 5 minutes to reduce database load.
-     */
-    protected function getPlatformStats(): array
+    // ── Private builders ─────────────────────────────────────────────────────
+
+    private function buildWelcome(): array
     {
-        return Cache::remember('platform.dashboard.stats', 300, function () {
-            return $this->calculatePlatformStats();
-        });
-    }
-
-    /**
-     * Calculate all platform statistics.
-     */
-    protected function calculatePlatformStats(): array
-    {
-        // Tenant statistics
-        $totalTenants = Tenant::count();
-        $activeTenants = Tenant::where('status', Tenant::STATUS_ACTIVE)->count();
-        $pendingTenants = Tenant::where('status', Tenant::STATUS_PENDING)->count();
-        $suspendedTenants = Tenant::where('status', Tenant::STATUS_SUSPENDED)->count();
-        $failedTenants = Tenant::where('status', Tenant::STATUS_FAILED)->count();
-        $provisioningTenants = Tenant::where('status', Tenant::STATUS_PROVISIONING)->count();
-
-        // Trial tenants
-        $trialTenants = Tenant::where('status', Tenant::STATUS_ACTIVE)
-            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', now()))
-            ->count();
-
-        // User statistics
-        $totalAdmins = LandlordUser::count();
-        $activeAdmins = LandlordUser::where('active', true)->count();
-
-        // Revenue statistics
-        $activeSubscriptions = Subscription::where('status', Subscription::STATUS_ACTIVE)->count();
-
-        $monthlyMrr = Subscription::where('status', Subscription::STATUS_ACTIVE)
-            ->where('billing_cycle', 'monthly')
-            ->sum('amount');
-
-        $yearlyMrr = Subscription::where('status', Subscription::STATUS_ACTIVE)
-            ->where('billing_cycle', 'yearly')
-            ->selectRaw('SUM(amount / 12) as mrr')
-            ->value('mrr') ?? 0;
-
-        $mrr = (float) $monthlyMrr + (float) $yearlyMrr;
-        $arr = $mrr * 12;
-
-        // Average revenue per tenant
-        $arpt = $activeTenants > 0 ? $mrr / $activeTenants : 0;
-
-        // Growth metrics
-        $newThisMonth = Tenant::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count();
-
-        $newThisWeek = Tenant::where('created_at', '>=', now()->startOfWeek())
-            ->count();
-
-        // Calculate churn rate (last 30 days)
-        $cancelledLast30 = Subscription::where('status', Subscription::STATUS_CANCELLED)
-            ->where('cancelled_at', '>=', now()->subDays(30))
-            ->count();
-
-        $activeAt30DaysAgo = Subscription::where('starts_at', '<=', now()->subDays(30))
-            ->where(function ($q) {
-                $q->whereNull('cancelled_at')
-                    ->orWhere('cancelled_at', '>', now()->subDays(30));
-            })
-            ->count();
-
-        $churnRate = $activeAt30DaysAgo > 0
-            ? round(($cancelledLast30 / $activeAt30DaysAgo) * 100, 2)
-            : 0;
-
-        // System health indicators
-        $systemStatus = 'operational';
-        if ($failedTenants > 0 || $provisioningTenants > 5) {
-            $systemStatus = 'degraded';
-        }
+        $user = Auth::guard('landlord')->user();
+        $hour = (int) now()->format('H');
 
         return [
-            // Tenant metrics
-            'totalTenants' => $totalTenants,
-            'activeTenants' => $activeTenants,
-            'pendingTenants' => $pendingTenants,
-            'suspendedTenants' => $suspendedTenants,
-            'failedTenants' => $failedTenants,
-            'provisioningTenants' => $provisioningTenants,
-            'trialTenants' => $trialTenants,
-
-            // User metrics (aliased for frontend compatibility)
-            'totalAdmins' => $totalAdmins,
-            'activeAdmins' => $activeAdmins,
-            'totalUsers' => $totalAdmins,
-            'activeUsers' => $activeAdmins,
-
-            // Revenue metrics
-            'activeSubscriptions' => $activeSubscriptions,
-            'mrr' => round($mrr, 2),
-            'arr' => round($arr, 2),
-            'arpt' => round($arpt, 2),
-            'avgRevenuePerTenant' => round($arpt, 0),
-
-            // Growth metrics
-            'newThisMonth' => $newThisMonth,
-            'newThisWeek' => $newThisWeek,
-            'churnRate' => $churnRate,
-
-            // System health
-            'systemStatus' => $systemStatus,
-            'uptime' => 99.98,
-
-            // Formatted values for display
-            'formatted' => [
-                'mrr' => '$'.number_format($mrr / 1000, 1).'K',
-                'arr' => '$'.number_format($arr / 1000000, 2).'M',
-                'arpt' => '$'.number_format($arpt, 0),
-            ],
+            'greeting' => match (true) {
+                $hour < 12 => 'Good morning',
+                $hour < 17 => 'Good afternoon',
+                default    => 'Good evening',
+            },
+            'userName' => $user?->name ?? 'Admin',
+            'date'     => Carbon::now()->translatedFormat('l, F j Y'),
         ];
     }
 
-    /**
-     * Get recent tenants for dashboard display (last 10 created).
-     *
-     * @return array<int, array{id: string, name: string, domain: string, status: string, plan: string, users: int, createdAt: string}>
-     */
-    protected function getRecentTenants(): array
+    private function buildSystemAlerts(): array
+    {
+        $raw        = $this->alertsWidget->getData();
+        $alerts     = $raw['alerts'] ?? (is_array($raw) && isset($raw[0]) ? $raw : []);
+        $hasCritical = collect($alerts)->contains(
+            fn ($a) => ($a['severity'] ?? $a['level'] ?? '') === 'critical'
+        );
+
+        return [
+            'alerts'      => array_values($alerts),
+            'totalCount'  => count($alerts),
+            'hasCritical' => $hasCritical,
+        ];
+    }
+
+    private function buildSystemHealth(): array
+    {
+        return Cache::remember('platform.dashboard.system_health', 60, function () {
+            $services = [];
+
+            // Central database
+            try {
+                $start = microtime(true);
+                DB::connection()->getPdo();
+                $latency = round((microtime(true) - $start) * 1000, 2);
+                $dbStatus = 'ok';
+                $services['database'] = ['status' => 'ok', 'latency' => $latency];
+            } catch (\Throwable) {
+                $dbStatus = 'down';
+                $services['database'] = ['status' => 'down', 'latency' => null];
+            }
+
+            // Cache
+            try {
+                Cache::put('_health_check', true, 5);
+                $cacheOk = Cache::get('_health_check') === true;
+                $services['cache'] = ['status' => $cacheOk ? 'ok' : 'degraded', 'latency' => null];
+            } catch (\Throwable) {
+                $services['cache'] = ['status' => 'down', 'latency' => null];
+            }
+
+            // Queue
+            try {
+                $failedJobs = DB::table('failed_jobs')->count();
+                $services['queue'] = [
+                    'status'  => $failedJobs > 50 ? 'degraded' : 'ok',
+                    'latency' => null,
+                    'failed'  => $failedJobs,
+                ];
+            } catch (\Throwable) {
+                $services['queue'] = ['status' => 'unknown', 'latency' => null];
+            }
+
+            // Storage / disk
+            $diskFree  = @disk_free_space(base_path());
+            $diskTotal = @disk_total_space(base_path());
+            $diskPct   = ($diskFree && $diskTotal)
+                ? round((1 - $diskFree / $diskTotal) * 100, 1)
+                : 0;
+            $services['storage'] = ['status' => $diskPct > 90 ? 'degraded' : 'ok', 'latency' => null];
+
+            // Mail + Search placeholders
+            $services['mail']   = ['status' => 'ok',      'latency' => null];
+            $services['search'] = ['status' => 'unknown', 'latency' => null];
+
+            return [
+                'cpu'      => null,
+                'memory'   => null,
+                'disk'     => $diskPct,
+                'services' => $services,
+            ];
+        });
+    }
+
+    private function buildRecentTenants(): array
     {
         return Cache::remember('platform.dashboard.recent_tenants', 300, function () {
             return Tenant::query()
-                ->with(['subscription.plan'])
+                ->with(['subscription.plan', 'domains'])
                 ->orderByDesc('created_at')
                 ->limit(10)
                 ->get()
                 ->map(function (Tenant $tenant) {
-                    $domain = $tenant->domains()->first();
+                    $domain = $tenant->domains->first()?->domain ?? $tenant->id;
+                    $isTrial = $tenant->status === Tenant::STATUS_ACTIVE
+                        && ($tenant->subscription?->onTrial() ?? false);
 
                     return [
-                        'id' => $tenant->id,
-                        'name' => $tenant->name ?? $tenant->id,
-                        'domain' => $domain?->domain ?? $tenant->id,
-                        'status' => $this->resolveTenantDisplayStatus($tenant),
-                        'plan' => $tenant->subscription?->plan?->name ?? 'No Plan',
-                        'users' => (int) ($tenant->data['team_size'] ?? 0),
-                        'createdAt' => $tenant->created_at?->diffForHumans() ?? '',
+                        'id'        => $tenant->id,
+                        'name'      => $tenant->name ?? $tenant->id,
+                        'domain'    => $domain,
+                        'plan'      => $tenant->subscription?->plan?->name ?? null,
+                        'status'    => $isTrial ? 'trial' : ($tenant->status ?? 'unknown'),
+                        'mrr'       => $tenant->subscription?->mrr ?? null,
+                        'createdAt' => $tenant->created_at?->diffForHumans() ?? null,
                     ];
                 })
                 ->toArray();
@@ -261,93 +239,94 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Resolve display-friendly tenant status (active, trial, pending, suspended, failed).
+     * Calculate all platform statistics.
+     * Cached for 5 minutes to reduce database load.
      */
-    protected function resolveTenantDisplayStatus(Tenant $tenant): string
+    protected function calculatePlatformStats(): array
     {
-        if ($tenant->status === Tenant::STATUS_ACTIVE && ($tenant->subscription('default')?->onTrial() ?? false)) {
-            return 'trial';
-        }
+        return Cache::remember('platform.dashboard.stats', 300, function () {
+            $totalTenants        = Tenant::count();
+            $activeTenants       = Tenant::where('status', Tenant::STATUS_ACTIVE)->count();
+            $pendingTenants      = Tenant::where('status', Tenant::STATUS_PENDING)->count();
+            $suspendedTenants    = Tenant::where('status', Tenant::STATUS_SUSPENDED)->count();
+            $failedTenants       = Tenant::where('status', Tenant::STATUS_FAILED)->count();
+            $provisioningTenants = Tenant::where('status', Tenant::STATUS_PROVISIONING)->count();
+            $archivedTenants     = Tenant::where('status', 'archived')->count();
 
-        return $tenant->status ?? 'unknown';
-    }
+            $trialTenants = Tenant::where('status', Tenant::STATUS_ACTIVE)
+                ->whereHas('subscription', fn ($q) =>
+                    $q->where('status', Subscription::STATUS_TRIALING)
+                      ->where('trial_ends_at', '>', now())
+                )
+                ->count();
 
-    /**
-     * Get basic system health via PHP-native checks.
-     *
-     * @return array{cpu: int, memory: int, disk: int, network: int, services: array, dbStatus: string, failedJobs: int, queueSize: int, tenantDbCount: int}
-     */
-    protected function getSystemHealth(): array
-    {
-        return Cache::remember('platform.dashboard.system_health', 60, function () {
-            $services = [];
+            $totalAdmins  = LandlordUser::count();
+            $activeAdmins = LandlordUser::where('active', true)->count();
 
-            // Central database check
-            try {
-                $start = microtime(true);
-                DB::connection()->getPdo();
-                $latency = round((microtime(true) - $start) * 1000);
-                $dbStatus = 'healthy';
-                $services[] = ['name' => 'Central Database', 'status' => 'healthy', 'latency' => $latency.'ms'];
-            } catch (\Throwable) {
-                $dbStatus = 'critical';
-                $services[] = ['name' => 'Central Database', 'status' => 'critical', 'latency' => '—'];
-            }
+            $activeSubscriptions = Subscription::where('status', Subscription::STATUS_ACTIVE)->count();
 
-            // Tenant database count
-            $tenantDbCount = Tenant::where('status', Tenant::STATUS_ACTIVE)->count();
-            $services[] = ['name' => "Tenant Databases ({$tenantDbCount})", 'status' => 'healthy', 'latency' => '—'];
+            $monthlyMrr = Subscription::where('status', Subscription::STATUS_ACTIVE)
+                ->where('billing_cycle', 'monthly')
+                ->sum('amount');
 
-            // Failed jobs
-            $failedJobs = 0;
-            try {
-                $failedJobs = DB::table('failed_jobs')->count();
-                $services[] = [
-                    'name' => 'Job Queue',
-                    'status' => $failedJobs > 10 ? 'warning' : ($failedJobs > 0 ? 'warning' : 'healthy'),
-                    'latency' => $failedJobs.' failed',
-                ];
-            } catch (\Throwable) {
-                $services[] = ['name' => 'Job Queue', 'status' => 'warning', 'latency' => 'N/A'];
-            }
+            $yearlyMrr = Subscription::where('status', Subscription::STATUS_ACTIVE)
+                ->where('billing_cycle', 'yearly')
+                ->selectRaw('SUM(amount / 12) as mrr')
+                ->value('mrr') ?? 0;
 
-            // Queue size (pending jobs)
-            $queueSize = 0;
-            try {
-                $queueSize = DB::table('jobs')->count();
-                $services[] = [
-                    'name' => 'Queue Backlog',
-                    'status' => $queueSize > 100 ? 'warning' : 'healthy',
-                    'latency' => $queueSize.' pending',
-                ];
-            } catch (\Throwable) {
-                $services[] = ['name' => 'Queue Backlog', 'status' => 'warning', 'latency' => 'N/A'];
-            }
+            $mrr  = (float) $monthlyMrr + (float) $yearlyMrr;
+            $arr  = $mrr * 12;
+            $arpt = $activeTenants > 0 ? $mrr / $activeTenants : 0;
 
-            // Disk usage (PHP-native)
-            $diskFree = @disk_free_space(base_path());
-            $diskTotal = @disk_total_space(base_path());
-            $diskPercent = ($diskFree && $diskTotal) ? (int) round((1 - $diskFree / $diskTotal) * 100) : 0;
+            $newThisMonth = Tenant::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)->count();
 
-            // Cache check
-            try {
-                Cache::put('_health_check', true, 5);
-                $cacheOk = Cache::get('_health_check') === true;
-                $services[] = ['name' => 'Cache', 'status' => $cacheOk ? 'healthy' : 'warning', 'latency' => $cacheOk ? 'OK' : 'Unreachable'];
-            } catch (\Throwable) {
-                $services[] = ['name' => 'Cache', 'status' => 'critical', 'latency' => 'Error'];
-            }
+            $newThisWeek = Tenant::where('created_at', '>=', now()->startOfWeek())->count();
+
+            $cancelledLast30 = Subscription::where('status', Subscription::STATUS_CANCELLED)
+                ->where('cancelled_at', '>=', now()->subDays(30))->count();
+
+            $activeAt30DaysAgo = Subscription::where('starts_at', '<=', now()->subDays(30))
+                ->where(fn ($q) => $q->whereNull('cancelled_at')
+                    ->orWhere('cancelled_at', '>', now()->subDays(30)))
+                ->count();
+
+            $churnRate = $activeAt30DaysAgo > 0
+                ? round(($cancelledLast30 / $activeAt30DaysAgo) * 100, 2)
+                : 0;
 
             return [
-                'cpu' => 0,
-                'memory' => 0,
-                'disk' => $diskPercent,
-                'network' => 0,
-                'services' => $services,
-                'dbStatus' => $dbStatus,
-                'failedJobs' => $failedJobs,
-                'queueSize' => $queueSize,
-                'tenantDbCount' => $tenantDbCount,
+                // Tenant pipeline (all statuses)
+                'totalTenants'        => $totalTenants,
+                'activeTenants'       => $activeTenants,
+                'pendingTenants'      => $pendingTenants,
+                'suspendedTenants'    => $suspendedTenants,
+                'failedTenants'       => $failedTenants,
+                'provisioningTenants' => $provisioningTenants,
+                'archivedTenants'     => $archivedTenants,
+                'trialTenants'        => $trialTenants,
+
+                // Admin users
+                'totalAdmins'  => $totalAdmins,
+                'activeAdmins' => $activeAdmins,
+                'totalUsers'   => $totalAdmins,
+                'activeUsers'  => $activeAdmins,
+
+                // Revenue
+                'activeSubscriptions' => $activeSubscriptions,
+                'mrr'                 => round($mrr, 2),
+                'arr'                 => round($arr, 2),
+                'arpt'                => round($arpt, 2),
+                'avgRevenuePerTenant' => round($arpt, 0),
+
+                // Growth
+                'newThisMonth' => $newThisMonth,
+                'newThisWeek'  => $newThisWeek,
+                'churnRate'    => $churnRate,
+
+                // System
+                'systemStatus' => ($failedTenants > 0 || $provisioningTenants > 5) ? 'degraded' : 'operational',
+                'uptime'       => 99.98,
             ];
         });
     }
