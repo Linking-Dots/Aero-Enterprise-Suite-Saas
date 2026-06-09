@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/SelectionIndicator.cjs",
-  "module": "../dist/exports/SelectionIndicator.js",
-  "types": "../dist/types/exports/SelectionIndicator.d.ts"
-}

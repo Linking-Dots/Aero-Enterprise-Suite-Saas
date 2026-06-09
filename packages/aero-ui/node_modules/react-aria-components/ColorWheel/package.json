@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/ColorWheel.cjs",
-  "module": "../dist/exports/ColorWheel.js",
-  "types": "../dist/types/exports/ColorWheel.d.ts"
-}

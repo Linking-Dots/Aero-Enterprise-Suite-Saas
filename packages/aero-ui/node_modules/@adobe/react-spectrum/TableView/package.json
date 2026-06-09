@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/TableView.cjs",
-  "module": "../dist/exports/TableView.js",
-  "types": "../dist/types/exports/TableView.d.ts"
-}

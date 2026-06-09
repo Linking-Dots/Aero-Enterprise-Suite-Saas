@@ -53,8 +53,6 @@ class AeroHrmServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        // Load views (if any)
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'hrm');
 
         // Register routes
         $this->registerRoutes();

@@ -25,8 +25,6 @@ class FieldServiceServiceProvider extends ServiceProvider
         // Load routes
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
 
-        // Register views
-        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'field-service');
 
         // Publish configuration
         $this->publishes([

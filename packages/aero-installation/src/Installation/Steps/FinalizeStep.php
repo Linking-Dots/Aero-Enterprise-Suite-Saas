@@ -74,9 +74,9 @@ class FinalizeStep extends BaseInstallationStep
         }
 
         // Clear all caches
-        $this->log('Clearing application caches');
+        $this->log('Clearing application caches (preserving cache to protect installation orchestrator state)');
         try {
-            Artisan::call('cache:clear');
+            // Artisan::call('cache:clear'); // Bypass to preserve orchestrator session
             Artisan::call('config:clear');
             Artisan::call('route:clear');
             Artisan::call('view:clear');

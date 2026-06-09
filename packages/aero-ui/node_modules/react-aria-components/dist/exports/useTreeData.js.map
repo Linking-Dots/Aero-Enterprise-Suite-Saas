@@ -1,1 +1,0 @@
-{"mappings":"","sources":["packages/react-aria-components/exports/useTreeData.ts"],"sourcesContent":["export {useTreeData} from 'react-stately/useTreeData';\nexport type {TreeOptions as TreeDataOptions, TreeData} from 'react-stately/useTreeData';\n"],"names":[],"version":3,"file":"useTreeData.js.map"}

@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/DialogContainer.cjs",
-  "module": "../dist/exports/DialogContainer.js",
-  "types": "../dist/types/exports/DialogContainer.d.ts"
-}

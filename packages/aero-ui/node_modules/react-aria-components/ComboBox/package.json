@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/ComboBox.cjs",
-  "module": "../dist/exports/ComboBox.js",
-  "types": "../dist/types/exports/ComboBox.d.ts"
-}

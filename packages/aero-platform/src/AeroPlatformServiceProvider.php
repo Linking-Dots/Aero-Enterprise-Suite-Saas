@@ -419,8 +419,6 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Publish assets
         $this->registerPublishing();
 
-        // Register views (for email templates, etc.)
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-platform');
 
         // NOTE: Vite configuration is handled by aero/ui package
         // All frontend code lives in aero/ui - this package is backend-only
@@ -449,6 +447,23 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Register Platform dashboard widgets
         // These appear on the Admin Dashboard following the Core pattern
         $this->registerPlatformDashboardWidgets();
+
+        // In testing environment, if default database is sqlite, redirect mysql and central connection resolution to the default connection to share the same :memory: database
+        if ($this->app->environment('testing') && config('database.default') === 'sqlite') {
+            $this->app->booted(function () {
+                try {
+                    $db = $this->app->make('db');
+                    $db->extend('central', function ($config, $name) use ($db) {
+                        return $db->connection();
+                    });
+                    $db->extend('mysql', function ($config, $name) use ($db) {
+                        return $db->connection();
+                    });
+                } catch (\Throwable $e) {
+                    // Silently ignore if DB is not accessible yet
+                }
+            });
+        }
     }
 
     /**
@@ -812,28 +827,53 @@ class AeroPlatformServiceProvider extends ServiceProvider
      * Resolve the database name from available sources.
      *
      * Priority:
-     * 1. .env DB_DATABASE (if set and non-empty)
-     * 2. installation_db_config.json (installation wizard stored config)
-     * 3. Fallback to 'eos365'
+     * 1. Config mysql database or .env DB_DATABASE (if set and non-empty)
+     * 2. framework/installation_config.json (new unified config file)
+     * 3. installation_db_config.json (legacy flat config file)
+     * 4. Fallback to 'aeos365'
      */
     protected function resolveDatabase(): string
     {
-        // Priority 1: Check .env
+        // Priority 1: Check config mysql database (handles cached config)
+        $configDatabase = config('database.connections.mysql.database');
+        if (! empty($configDatabase) && ! in_array($configDatabase, ['forge', 'laravel', 'database', 'eos365'])) {
+            return $configDatabase;
+        }
+
+        // Priority 1b: Check .env directly
         $envDatabase = env('DB_DATABASE');
         if (! empty($envDatabase)) {
             return $envDatabase;
         }
 
-        // Priority 2: Check installation config file
-        $configPath = storage_path('installation_db_config.json');
-        if (file_exists($configPath)) {
+        // Priority 2: Check new unified installation config file
+        $newConfigPath = storage_path('framework/installation_config.json');
+        if (file_exists($newConfigPath)) {
             try {
-                $config = json_decode(file_get_contents($configPath), true);
-                if (! empty($config['db_database'])) {
-                    // Also update host/port/user/pass from installation config
+                $config = json_decode(file_get_contents($newConfigPath), true);
+                if (isset($config['database']) && is_array($config['database'])) {
+                    $dbName = $config['database']['db_database'] ?? $config['database']['database'] ?? null;
+                    if (! empty($dbName)) {
+                        $this->applyInstallationDbConfig($config);
+
+                        return $dbName;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Silently ignore parse errors
+            }
+        }
+
+        // Priority 2b: Check legacy installation config file
+        $legacyConfigPath = storage_path('installation_db_config.json');
+        if (file_exists($legacyConfigPath)) {
+            try {
+                $config = json_decode(file_get_contents($legacyConfigPath), true);
+                $dbName = $config['db_database'] ?? $config['database'] ?? null;
+                if (! empty($dbName)) {
                     $this->applyInstallationDbConfig($config);
 
-                    return $config['db_database'];
+                    return $dbName;
                 }
             } catch (\Throwable $e) {
                 // Silently ignore parse errors
@@ -841,7 +881,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
         }
 
         // Priority 3: Fallback
-        return 'eos365';
+        return '';
     }
 
     /**
@@ -849,21 +889,32 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function applyInstallationDbConfig(array $config): void
     {
-        $mysqlConfig = config('database.connections.mysql', []);
+        // Support both old flat format (db_host, etc.) and new unified format (nested under 'database')
+        $dbConfig = $config;
+        if (isset($config['database']) && is_array($config['database'])) {
+            $dbConfig = $config['database'];
+        }
 
-        if (! empty($config['db_host'])) {
-            Config::set('database.connections.mysql.host', $config['db_host']);
+        $host = $dbConfig['db_host'] ?? $dbConfig['host'] ?? null;
+        if (! empty($host)) {
+            Config::set('database.connections.mysql.host', $host);
         }
-        if (! empty($config['db_port'])) {
-            Config::set('database.connections.mysql.port', $config['db_port']);
+
+        $port = $dbConfig['db_port'] ?? $dbConfig['port'] ?? null;
+        if (! empty($port)) {
+            Config::set('database.connections.mysql.port', $port);
         }
-        if (! empty($config['db_username'])) {
-            Config::set('database.connections.mysql.username', $config['db_username']);
+
+        $username = $dbConfig['db_username'] ?? $dbConfig['username'] ?? null;
+        if (! empty($username)) {
+            Config::set('database.connections.mysql.username', $username);
         }
-        if (isset($config['db_password'])) {
-            $password = $config['db_password'];
-            // Decrypt if encrypted
-            if (! empty($config['db_password_encrypted']) && ! empty($password)) {
+
+        $password = $dbConfig['db_password'] ?? $dbConfig['password'] ?? null;
+        if ($password !== null) {
+            // Decrypt if encrypted (only old format had db_password_encrypted, but handle it just in case)
+            $isEncrypted = ! empty($dbConfig['db_password_encrypted']) || ! empty($config['db_password_encrypted']);
+            if ($isEncrypted && ! empty($password)) {
                 try {
                     $password = Crypt::decryptString($password);
                 } catch (\Throwable $e) {
@@ -1149,12 +1200,26 @@ class AeroPlatformServiceProvider extends ServiceProvider
                         return false;
                     });
 
-                    // Deduplicate within the filtered set by operation name.
-                    // This removes any internal duplicates (e.g. create_notification_logs_table
-                    // exists in both aero-platform and as a copy from another path).
-                    return $platformFiles->unique(function ($path) {
-                        return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
-                    })->all();
+                    // Determine the current connection the migrator is running on
+                    $currentConn = $this->connection ?: config('database.default');
+
+                    if ($currentConn === $this->centralDatabase) {
+                        // Deduplicate within the filtered set by operation name.
+                        // This removes any internal duplicates (e.g. create_notification_logs_table
+                        // exists in both aero-platform and as a copy from another path).
+                        return $platformFiles->unique(function ($path) {
+                            return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
+                        })->all();
+                    } else {
+                        // If we are migrating the default connection in a testing environment,
+                        // exclude the platform/landlord migrations (as they are run on central connection)
+                        // to avoid duplicate column/table definition conflicts on shared sqlite files.
+                        if (app()->environment('testing')) {
+                            $platformPaths = $platformFiles->keys()->toArray();
+                            return collect($files)->except($platformPaths)->all();
+                        }
+                        return $files;
+                    }
                 }
             };
         });

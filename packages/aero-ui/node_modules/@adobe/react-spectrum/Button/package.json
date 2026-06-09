@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Button.cjs",
-  "module": "../dist/exports/Button.js",
-  "types": "../dist/types/exports/Button.d.ts"
-}

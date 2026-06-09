@@ -20,6 +20,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (Schema::connection('central')->hasColumn('tenants', 'encryption_key_id')) {
+            return;
+        }
+
         Schema::connection('central')->table('tenants', function (Blueprint $table) {
             // Zero-Trust encryption
             $table->string('encryption_key_id')->nullable()->after('status')

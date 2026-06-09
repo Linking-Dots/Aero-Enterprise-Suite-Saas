@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/ListBox.cjs",
-  "module": "../dist/exports/ListBox.js",
-  "types": "../dist/types/exports/ListBox.d.ts"
-}

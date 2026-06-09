@@ -1,5 +1,0 @@
-{
-  "main": "../../../dist/exports/private/card/types.cjs",
-  "module": "../../../dist/exports/private/card/types.js",
-  "types": "../../../dist/types/exports/private/card/types.d.ts"
-}

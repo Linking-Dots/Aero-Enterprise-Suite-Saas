@@ -401,7 +401,6 @@ class AeroCoreServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/web.php.stub' => base_path('routes/web.php'),
         ], 'aero-core-stubs');
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-core');
 
         // JSON translations are now loaded by aero-i18n package
 

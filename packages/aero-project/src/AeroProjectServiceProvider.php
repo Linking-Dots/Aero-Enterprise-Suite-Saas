@@ -89,11 +89,6 @@ class AeroProjectServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        // Load views (if any)
-        $viewsPath = __DIR__.'/../resources/views';
-        if (is_dir($viewsPath)) {
-            $this->loadViewsFrom($viewsPath, 'project');
-        }
 
         // Register routes
         $this->registerRoutes();

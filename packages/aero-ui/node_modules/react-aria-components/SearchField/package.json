@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/SearchField.cjs",
-  "module": "../dist/exports/SearchField.js",
-  "types": "../dist/types/exports/SearchField.d.ts"
-}

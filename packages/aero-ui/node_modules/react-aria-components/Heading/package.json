@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Heading.cjs",
-  "module": "../dist/exports/Heading.js",
-  "types": "../dist/types/exports/Heading.d.ts"
-}

@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Tabs.cjs",
-  "module": "../dist/exports/Tabs.js",
-  "types": "../dist/types/exports/Tabs.d.ts"
-}

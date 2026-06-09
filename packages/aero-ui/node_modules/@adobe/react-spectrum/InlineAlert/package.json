@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/InlineAlert.cjs",
-  "module": "../dist/exports/InlineAlert.js",
-  "types": "../dist/types/exports/InlineAlert.d.ts"
-}

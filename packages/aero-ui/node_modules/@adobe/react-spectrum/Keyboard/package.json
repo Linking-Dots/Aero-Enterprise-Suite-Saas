@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Keyboard.cjs",
-  "module": "../dist/exports/Keyboard.js",
-  "types": "../dist/types/exports/Keyboard.d.ts"
-}

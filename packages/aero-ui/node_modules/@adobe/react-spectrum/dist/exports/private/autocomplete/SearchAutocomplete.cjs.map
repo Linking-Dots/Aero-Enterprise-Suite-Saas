@@ -1,1 +1,0 @@
-{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/autocomplete/SearchAutocomplete.ts"],"sourcesContent":["export {\n  SearchAutocomplete,\n  type SpectrumSearchAutocompleteProps\n} from '../../../src/autocomplete/SearchAutocomplete';\n"],"names":[],"version":3,"file":"SearchAutocomplete.cjs.map"}

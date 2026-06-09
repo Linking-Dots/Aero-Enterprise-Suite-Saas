@@ -1,5 +1,0 @@
-{
-  "main": "../../../dist/exports/private/utils/useMediaQuery.cjs",
-  "module": "../../../dist/exports/private/utils/useMediaQuery.js",
-  "types": "../../../dist/types/exports/private/utils/useMediaQuery.d.ts"
-}

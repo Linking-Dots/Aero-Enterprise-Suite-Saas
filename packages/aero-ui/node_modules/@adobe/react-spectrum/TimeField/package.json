@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/TimeField.cjs",
-  "module": "../dist/exports/TimeField.js",
-  "types": "../dist/types/exports/TimeField.d.ts"
-}

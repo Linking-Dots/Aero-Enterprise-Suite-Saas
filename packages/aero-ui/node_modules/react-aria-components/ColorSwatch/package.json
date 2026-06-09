@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/ColorSwatch.cjs",
-  "module": "../dist/exports/ColorSwatch.js",
-  "types": "../dist/types/exports/ColorSwatch.d.ts"
-}

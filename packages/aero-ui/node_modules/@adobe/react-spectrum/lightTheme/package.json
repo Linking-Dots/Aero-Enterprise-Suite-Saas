@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/lightTheme.cjs",
-  "module": "../dist/exports/lightTheme.js",
-  "types": "../dist/types/exports/lightTheme.d.ts"
-}

@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Badge.cjs",
-  "module": "../dist/exports/Badge.js",
-  "types": "../dist/types/exports/Badge.d.ts"
-}

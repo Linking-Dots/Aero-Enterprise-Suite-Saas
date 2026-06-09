@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/defaultTheme.cjs",
-  "module": "../dist/exports/defaultTheme.js",
-  "types": "../dist/types/exports/defaultTheme.d.ts"
-}

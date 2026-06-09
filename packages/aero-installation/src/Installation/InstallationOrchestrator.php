@@ -398,6 +398,18 @@ class InstallationOrchestrator
                 'new_completed_count' => $completedCount,
             ]);
 
+            if ($completedCount >= $totalSteps) {
+                $this->log("All steps executed successfully, installation complete");
+                return [
+                    'status' => 'completed',
+                    'percentage' => 100,
+                    'currentStep' => 'complete',
+                    'completedSteps' => $completedCount,
+                    'totalSteps' => $totalSteps,
+                    'steps' => $steps,
+                ];
+            }
+
             return [
                 'status' => 'running',
                 'percentage' => ($completedCount / $totalSteps) * 100,

@@ -1,5 +1,0 @@
-{
-  "main": "../../../dist/exports/private/autocomplete/SearchAutocomplete.cjs",
-  "module": "../../../dist/exports/private/autocomplete/SearchAutocomplete.js",
-  "types": "../../../dist/types/exports/private/autocomplete/SearchAutocomplete.d.ts"
-}

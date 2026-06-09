@@ -129,6 +129,7 @@ class CleanupFailedInstallation extends Command
             'installation_db_config.json',
             'installation_platform_config.json',
             'installation_admin_config.json',
+            'framework/installation_config.json',
         ];
 
         $cleaned = 0;

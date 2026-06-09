@@ -78,8 +78,6 @@ class AeroRfiServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        // Load views (if any - for email templates, PDFs, etc.)
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'rfi');
 
         // Register routes
         $this->registerRoutes();

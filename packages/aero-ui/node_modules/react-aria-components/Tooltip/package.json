@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Tooltip.cjs",
-  "module": "../dist/exports/Tooltip.js",
-  "types": "../dist/types/exports/Tooltip.d.ts"
-}

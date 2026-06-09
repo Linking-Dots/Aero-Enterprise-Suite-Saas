@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Picker.cjs",
-  "module": "../dist/exports/Picker.js",
-  "types": "../dist/types/exports/Picker.d.ts"
-}

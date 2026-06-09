@@ -1,1 +1,0 @@
-{"mappings":"","sources":["packages/@adobe/react-spectrum/exports/private/progress/ProgressBarBase.ts"],"sourcesContent":["export {\n  ProgressBarBase,\n  type SpectrumProgressBarBaseProps\n} from '../../../src/progress/ProgressBarBase';\n"],"names":[],"version":3,"file":"ProgressBarBase.mjs.map"}

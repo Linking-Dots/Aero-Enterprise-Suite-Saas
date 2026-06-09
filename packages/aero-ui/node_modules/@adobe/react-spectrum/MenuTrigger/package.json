@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/MenuTrigger.cjs",
-  "module": "../dist/exports/MenuTrigger.js",
-  "types": "../dist/types/exports/MenuTrigger.d.ts"
-}

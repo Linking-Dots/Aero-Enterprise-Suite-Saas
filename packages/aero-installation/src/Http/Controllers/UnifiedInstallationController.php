@@ -809,6 +809,22 @@ class UnifiedInstallationController extends Controller
     public function getProgressData()
     {
         $mode = $this->getMode();
+
+        // Check if application is already installed to prevent re-running steps or recreating orchestrator
+        if ($this->isInstalled()) {
+            Log::info('[Installation] Application is already installed, returning completed progress');
+
+            return [
+                'status' => 'completed',
+                'percentage' => 100,
+                'currentStep' => 'complete',
+                'completedSteps' => 12,
+                'totalSteps' => 12,
+                'message' => 'Installation completed successfully',
+                'steps' => $this->getProgressSteps($mode),
+            ];
+        }
+
         $orchestratorKey = 'installation_orchestrator_'.session()->getId();
 
         // First check if orchestrator exists in cache (installation in progress)

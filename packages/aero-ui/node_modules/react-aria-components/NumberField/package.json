@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/NumberField.cjs",
-  "module": "../dist/exports/NumberField.js",
-  "types": "../dist/types/exports/NumberField.d.ts"
-}

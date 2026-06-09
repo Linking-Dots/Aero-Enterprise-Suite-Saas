@@ -1,5 +1,0 @@
-{
-  "main": "../../../dist/exports/private/steplist/StepList.cjs",
-  "module": "../../../dist/exports/private/steplist/StepList.js",
-  "types": "../../../dist/types/exports/private/steplist/StepList.d.ts"
-}

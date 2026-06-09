@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Label.cjs",
-  "module": "../dist/exports/Label.js",
-  "types": "../dist/types/exports/Label.d.ts"
-}

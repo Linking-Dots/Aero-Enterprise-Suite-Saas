@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/TextField.cjs",
-  "module": "../dist/exports/TextField.js",
-  "types": "../dist/types/exports/TextField.d.ts"
-}

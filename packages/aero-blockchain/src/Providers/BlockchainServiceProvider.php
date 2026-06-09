@@ -22,8 +22,6 @@ class BlockchainServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
-        // Load views
-        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'blockchain');
 
         // Register publishable assets
         if ($this->app->runningInConsole()) {

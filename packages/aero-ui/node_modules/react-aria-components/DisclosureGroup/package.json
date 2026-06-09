@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/DisclosureGroup.cjs",
-  "module": "../dist/exports/DisclosureGroup.js",
-  "types": "../dist/types/exports/DisclosureGroup.d.ts"
-}

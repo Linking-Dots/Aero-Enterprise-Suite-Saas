@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Tree.cjs",
-  "module": "../dist/exports/Tree.js",
-  "types": "../dist/types/exports/Tree.d.ts"
-}

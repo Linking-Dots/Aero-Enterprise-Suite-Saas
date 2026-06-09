@@ -1,5 +1,0 @@
-{
-  "main": "../dist/exports/Toast.cjs",
-  "module": "../dist/exports/Toast.js",
-  "types": "../dist/types/exports/Toast.d.ts"
-}
