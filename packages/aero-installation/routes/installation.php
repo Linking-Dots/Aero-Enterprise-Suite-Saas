@@ -12,15 +12,20 @@
  * - 'standalone': Default mode for single-tenant installations
  *
  * After installation, these routes are protected by the BootstrapGuard middleware.
+ *
+ * CSRF: These routes run inside the standard `web` middleware group, so CSRF
+ * verification is enforced on all state-changing requests. The React UI issues
+ * its POSTs via axios / Inertia, both of which automatically replay the
+ * XSRF-TOKEN cookie as the X-XSRF-TOKEN header. GET page loads set that cookie.
+ * The host application ships with an APP_KEY, and the installer only generates
+ * one when it is missing (see ConfigurationStep), so no in-flight token is
+ * invalidated by a key rotation during the wizard.
  */
 
 use Aero\Installation\Http\Controllers\UnifiedInstallationController;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('install')->name('installation.')->middleware(['web', 'inertia.installation'])->group(function () {
-    // Exclude CSRF verification for installation routes (system not fully set up yet)
-    Route::withoutMiddleware([VerifyCsrfToken::class])->group(function () {
     // ==========================================================================
     // Page routes (render Inertia pages from aero-ui)
     // ==========================================================================
@@ -61,22 +66,12 @@ Route::prefix('install')->name('installation.')->middleware(['web', 'inertia.ins
     Route::post('/test-email', [UnifiedInstallationController::class, 'testEmail'])->name('test-email');
 
     // ==========================================================================
-    // Legacy route aliases (backward compatibility with old install.* names)
+    // Legacy URI aliases (older /application URL scheme — kept for back-compat).
+    // The canonical routes above already own every other install URI, so the
+    // previous block of duplicate registrations was dead weight and has been
+    // removed. Only the two genuinely-unique legacy URIs remain.
     // ==========================================================================
 
-    Route::get('/', [UnifiedInstallationController::class, 'welcome'])->name('install.index');
-    Route::get('/license', [UnifiedInstallationController::class, 'license'])->name('install.license');
-    Route::get('/requirements', [UnifiedInstallationController::class, 'requirements'])->name('install.requirements');
-    Route::get('/database', [UnifiedInstallationController::class, 'database'])->name('install.database');
-    Route::get('/application', [UnifiedInstallationController::class, 'settings'])->name('install.application');
-    Route::get('/admin', [UnifiedInstallationController::class, 'admin'])->name('install.admin');
-    Route::get('/complete', [UnifiedInstallationController::class, 'complete'])->name('install.complete');
-    Route::post('/validate-license', [UnifiedInstallationController::class, 'validateLicense'])->name('install.validate-license');
-    Route::post('/test-database', [UnifiedInstallationController::class, 'testDatabaseServer'])->name('install.test-database');
-    Route::post('/save-application', [UnifiedInstallationController::class, 'saveSettings'])->name('install.save-application');
-    Route::post('/save-admin', [UnifiedInstallationController::class, 'saveAdmin'])->name('install.save-admin');
-    Route::post('/', [UnifiedInstallationController::class, 'execute'])->name('install.process');
-    Route::get('/progress', [UnifiedInstallationController::class, 'progress'])->name('install.progress');
-    Route::post('/test-email', [UnifiedInstallationController::class, 'testEmail'])->name('install.test-email');
-    });
+    Route::get('/application', [UnifiedInstallationController::class, 'settings'])->name('application');
+    Route::post('/save-application', [UnifiedInstallationController::class, 'saveSettings'])->name('save-application');
 });
