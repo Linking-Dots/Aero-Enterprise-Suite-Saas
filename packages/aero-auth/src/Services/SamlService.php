@@ -2,7 +2,7 @@
 
 namespace Aero\Auth\Services;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

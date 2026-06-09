@@ -1,10 +1,10 @@
 <?php
 
-namespace Aero\Core\Models;
+namespace Aero\Auth\Models;
 
+use Aero\Auth\Database\Factories\UserFactory;
 use Aero\Contracts\Searchable;
 use Aero\Contracts\UserContract;
-use Aero\Core\Database\Factories\UserFactory;
 use Aero\Core\Models\Concerns\EnforcesTenantContext;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\Searchable as SearchableTrait;
@@ -368,7 +368,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
             'model_has_roles',
             'model_id',
             'role_id'
-        )->where('model_has_roles.model_type', static::class);
+        )->where('model_has_roles.model_type', $this->getMorphClass());
     }
 
     /**
@@ -454,7 +454,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
         foreach ($roleIds as $roleId) {
             \DB::table('model_has_roles')->updateOrInsert([
                 'role_id' => $roleId,
-                'model_type' => static::class,
+                'model_type' => $this->getMorphClass(),
                 'model_id' => $this->id,
             ]);
         }
@@ -482,7 +482,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
         if ($roleId) {
             \DB::table('model_has_roles')
                 ->where('role_id', $roleId)
-                ->where('model_type', static::class)
+                ->where('model_type', $this->getMorphClass())
                 ->where('model_id', $this->id)
                 ->delete();
         }
@@ -515,7 +515,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
 
         // Delete existing roles
         \DB::table('model_has_roles')
-            ->where('model_type', static::class)
+            ->where('model_type', $this->getMorphClass())
             ->where('model_id', $this->id)
             ->delete();
 
@@ -523,7 +523,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
         foreach ($roleIds as $roleId) {
             \DB::table('model_has_roles')->insert([
                 'role_id' => $roleId,
-                'model_type' => static::class,
+                'model_type' => $this->getMorphClass(),
                 'model_id' => $this->id,
             ]);
         }
@@ -590,7 +590,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
     {
         // Return empty relationship - we use role_module_access instead
         return $this->belongsToMany(
-            Role::class, // Dummy model, never queried due to whereRaw
+            \Aero\HRMAC\Models\Role::class, // Dummy model, never queried due to whereRaw
             'model_has_permissions',
             'model_id',
             'permission_id'

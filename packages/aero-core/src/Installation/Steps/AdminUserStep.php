@@ -175,10 +175,12 @@ class AdminUserStep extends BaseInstallationStep
                 $roleId = $role->id;
             }
 
-            // model_has_roles uses the Eloquent model FQCN
+            // model_has_roles stores a polymorphic morph key. The tenant User is
+            // mapped to the stable 'user' morph key (see AeroCoreServiceProvider morphMap
+            // / Phase 2 decoupling); LandlordUser still persists its class FQN.
             $modelType = ($mode === 'saas')
                 ? 'Aero\\Platform\\Models\\LandlordUser'
-                : 'Aero\\Core\\Models\\User';
+                : 'user';
 
             if (!DB::getSchemaBuilder()->hasTable('model_has_roles')) {
                 return;

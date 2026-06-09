@@ -253,7 +253,7 @@ abstract class PackageTestCase extends TestCase
 
         DB::table('model_has_roles')->insertOrIgnore([
             'role_id'    => $roleId,
-            'model_type' => User::class,
+            'model_type' => $user->getMorphClass(),
             'model_id'   => $user->id,
         ]);
 

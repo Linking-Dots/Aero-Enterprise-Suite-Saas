@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Models;
+namespace Aero\Auth\Models;
 
+use Aero\Core\Models\TenantModel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

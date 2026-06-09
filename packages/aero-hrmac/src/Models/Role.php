@@ -82,12 +82,17 @@ class Role extends HrmacModel
     {
         $userModel = config('hrmac.models.user', \Aero\Core\Models\User::class);
 
+        // Filter by the user model's morph key (not its raw FQN) so role rows stay
+        // resolvable when the User class moves package — Phase 2 decoupling. Falls back
+        // to the class name if the model has no morphMap entry (e.g. LandlordUser).
+        $morphType = (new $userModel)->getMorphClass();
+
         return $this->belongsToMany(
             $userModel,
             'model_has_roles',
             'role_id',
             'model_id'
-        )->where('model_has_roles.model_type', $userModel);
+        )->where('model_has_roles.model_type', $morphType);
     }
 
     /**

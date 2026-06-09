@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
  * AuthContext — describes the runtime context in which authentication operates.
  *
  * There are two concrete implementations:
- *   - TenantAuthContext   → web guard, Aero\Core\Models\User, tenant login
+ *   - TenantAuthContext   → web guard, Aero\Auth\Models\User, tenant login
  *   - LandlordAuthContext → landlord guard, Aero\Platform\Models\LandlordUser, admin login
  *
  * Controllers and services consume this interface; they never branch on guard names

@@ -1,8 +1,8 @@
 <?php
 
-namespace Aero\Core\Database\Factories;
+namespace Aero\Auth\Database\Factories;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;

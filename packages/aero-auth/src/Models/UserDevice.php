@@ -1,7 +1,8 @@
 <?php
 
-namespace Aero\Core\Models;
+namespace Aero\Auth\Models;
 
+use Aero\Core\Models\TenantModel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

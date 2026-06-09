@@ -6,7 +6,7 @@ namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Auth\Services\SessionManagementService;
-use Aero\Core\Models\UserSession;
+use Aero\Auth\Models\UserSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

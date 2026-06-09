@@ -3,8 +3,8 @@
 namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Models\TenantInvitation;
-use Aero\Core\Models\User;
+use Aero\Auth\Models\TenantInvitation;
+use Aero\Auth\Models\User;
 use Aero\Core\Notifications\InviteTeamMember;
 use Aero\HRM\Models\Department;
 use Aero\HRM\Models\Designation;

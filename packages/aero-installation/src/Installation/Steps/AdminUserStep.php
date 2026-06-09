@@ -176,11 +176,13 @@ class AdminUserStep extends BaseInstallationStep
                 $superAdminRole = (object) ['id' => $superAdminRoleId];
             }
 
-            // Assign role (if model_has_roles table exists)
+            // Assign role (if model_has_roles table exists). model_has_roles stores a
+            // polymorphic morph key: the tenant User maps to the stable 'user' key
+            // (Phase 2 decoupling); the central LandlordUser persists its class FQN.
             try {
                 DB::table('model_has_roles')->insert([
                     'role_id' => $superAdminRole->id,
-                    'model_type' => 'App\Models\User',
+                    'model_type' => $this->mode === 'saas' ? 'Aero\\Platform\\Models\\LandlordUser' : 'user',
                     'model_id' => $userId,
                 ]);
                 $this->log("Assigned Super Administrator role to user ID: {$userId} in table: {$userTable}");

@@ -76,6 +76,8 @@ class AeroCoreServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->registerIdentityModelAliases();
+
         try {
             // Register the Core module service provider
             // This handles navigation, self-service items, dashboards, etc.
@@ -362,8 +364,46 @@ class AeroCoreServiceProvider extends ServiceProvider
     /**
      * Bootstrap services.
      */
+    /**
+     * Dependency decoupling (Phase 2): the identity models (User + device/session/
+     * invitation) moved out of aero-core into aero-auth. ~250 files across every product
+     * package still reference the old `Aero\Core\Models\*` names (foreign keys, type
+     * hints, belongsTo), so we register class aliases from the legacy core names to the
+     * new aero-auth classes. This keeps those references resolving with zero edits while
+     * they are repointed incrementally over later phases (the aliases are removed in the
+     * final enforcement phase). Registered in register() — before any model is used — and
+     * in EVERY context (tenant, central, standalone, the aero-core package test) because
+     * core boots everywhere. Guarded so it is a no-op if the alias is already defined.
+     */
+    private function registerIdentityModelAliases(): void
+    {
+        $aliases = [
+            \Aero\Auth\Models\User::class             => 'Aero\\Core\\Models\\User',
+            \Aero\Auth\Models\UserDevice::class       => 'Aero\\Core\\Models\\UserDevice',
+            \Aero\Auth\Models\UserSession::class      => 'Aero\\Core\\Models\\UserSession',
+            \Aero\Auth\Models\TenantInvitation::class => 'Aero\\Core\\Models\\TenantInvitation',
+        ];
+
+        foreach ($aliases as $original => $legacyAlias) {
+            if (! class_exists($legacyAlias, false)) {
+                class_alias($original, $legacyAlias);
+            }
+        }
+    }
+
     public function boot(): void
     {
+        // Dependency decoupling (Phase 2): decouple the User morph identity from its
+        // namespace. model_has_roles / model_has_permissions persist a polymorphic
+        // model_type; binding it to a stable morph key ('user') instead of the class
+        // FQN means the User model can move package (Aero\Core\Models\User ->
+        // Aero\Auth\Models\User) without orphaning every existing role/permission row.
+        // Registered here (boots in EVERY context: tenant, central, standalone, and the
+        // aero-core package test) so getMorphClass() is consistent everywhere.
+        \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
+            'user' => \Aero\Auth\Models\User::class,
+        ]);
+
         // Force file-based sessions BEFORE any session driver is instantiated
         // This allows installation to work without database tables
         if (! $this->installed()) {

@@ -20,7 +20,6 @@
     ],
     "require": {
         "php": "^8.2",
-        "aero/core": "^1.0",
         "aero/contracts": "^1.0",
         "laravel/framework": "^11.0|^12.0",
         "laravel/fortify": "^1.24",

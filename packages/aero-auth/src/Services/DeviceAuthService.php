@@ -2,8 +2,8 @@
 
 namespace Aero\Auth\Services;
 
-use Aero\Core\Models\User;
-use Aero\Core\Models\UserDevice;
+use Aero\Auth\Models\User;
+use Aero\Auth\Models\UserDevice;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
