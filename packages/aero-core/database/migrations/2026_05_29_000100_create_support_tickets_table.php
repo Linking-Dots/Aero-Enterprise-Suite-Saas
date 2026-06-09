@@ -18,6 +18,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // aero-platform's create_help_center_tables migration also defines a
+        // support_tickets table (on the central connection). In any single-DB
+        // context (standalone, or the test :memory: DB where central resolves
+        // to the default connection) both creates target one database, so this
+        // create must defer when the table already exists — matching the guard
+        // convention aero-core's create_notification_logs migration documents.
+        // Proper per-context isolation is handled later by the 3-tag migration
+        // system (see docs/plans/migration-collision-classification.md).
+        if (Schema::hasTable('support_tickets')) {
+            return;
+        }
+
         Schema::create('support_tickets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
