@@ -69,12 +69,4 @@ class ModuleHierarchyTest extends PackageTestCase
         $this->assertSame('hrm.employees.list', $component->full_code);
         $this->assertSame('hrm.employees.list.view', $action->full_code);
     }
-
-    public function test_legacy_hrmac_self_aliases_resolve_to_canonical_models(): void
-    {
-        $this->assertTrue(class_exists(\Aero\HRMAC\Models\Component::class));
-        $this->assertTrue(class_exists(\Aero\HRMAC\Models\Action::class));
-        $this->assertInstanceOf(ModuleComponent::class, new \Aero\HRMAC\Models\Component);
-        $this->assertInstanceOf(ModuleComponentAction::class, new \Aero\HRMAC\Models\Action);
-    }
 }

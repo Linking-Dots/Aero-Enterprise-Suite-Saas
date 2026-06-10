@@ -62,6 +62,7 @@ PURE LEAVES   aero-ui · aero-hrmac · aero-i18n · aero-notifications
 ### Foundation purity
 14. `contracts`, `infrastructure`, and pure leaves have **no upward imports, ever**.
 15. `CentralModel` / `TenantModel` have a **single** canonical definition in `aero-contracts`. Copies elsewhere are forbidden.
+16. The module hierarchy (`Module`, `SubModule`, `ModuleComponent`, `ModuleComponentAction`) has a **single** canonical definition in `aero-hrmac` (context-free `HrmacModel` base, owns the table migrations). Legacy `Aero\Core\Models\*` / `Aero\Platform\Models\*` FQNs resolve via `class_alias` bridges in `HRMACServiceProvider`; new code imports the `Aero\HRMAC\Models\*` FQNs directly. Platform-only coupling (e.g. `Module::plans()` → `Plan`) is registered onto the canonical model at boot via `resolveRelationUsing`, never embedded in hrmac. *(Consolidated 2026-06-10 — module-model 3-way dedup.)*
 
 ---
 
@@ -92,6 +93,7 @@ PURE LEAVES   aero-ui · aero-hrmac · aero-i18n · aero-notifications
 ### Structural duplications
 - **Installation wizard duplicated**: `UnifiedInstallationController` + `InstallationOrchestrator` exist in **both** `aero-core` and `aero-installation` (11 Steps in core, 14 in installation), hand-synced.
 - **`CentralModel`/`TenantModel` triplicated**: `contracts` + `core` + `platform`.
+- ~~**Module hierarchy triplicated** (`Module`/`SubModule`/`ModuleComponent`/`ModuleComponentAction` in core/tenant, platform/central, hrmac/context-free)~~ — **RESOLVED 2026-06-10**: consolidated into the single canonical `aero-hrmac` set; 12 duplicate model files + 1 duplicate `create_modules` migration deleted; legacy FQNs bridged via `class_alias`.
 - **License algorithm duplicated**: core validates (`Services/License/*`), platform issues (`LicenseIssuer`), kept in sync by hand-copied comments.
 
 ---
