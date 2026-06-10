@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -792,6 +793,11 @@ class UnifiedInstallationController extends Controller
 
         $progressData = $this->getProgressData();
 
+        // Surface a tail of the real installation log lines for the "Show details"
+        // panel on the Processing screen. Read once here so every getProgressData()
+        // return path gets it.
+        $progressData['log'] = $this->getInstallationLogTail();
+
         Log::info('[Installation] Progress data returned', [
             'percentage' => $progressData['percentage'] ?? 0,
             'current_step' => $progressData['currentStep'] ?? 'unknown',
@@ -801,6 +807,63 @@ class UnifiedInstallationController extends Controller
         ]);
 
         return response()->json($progressData);
+    }
+
+    /**
+     * Read the tail of the most recent Laravel log file and return only the
+     * installation-related lines (those tagged "[Installation"), trimmed of the
+     * leading timestamp/level prefix and trailing JSON context for readability.
+     *
+     * @return array<int, string>
+     */
+    protected function getInstallationLogTail(int $lines = 25): array
+    {
+        try {
+            $dir = storage_path('logs');
+            if (! is_dir($dir)) {
+                return [];
+            }
+
+            $files = glob($dir.DIRECTORY_SEPARATOR.'laravel*.log') ?: [];
+            if (empty($files)) {
+                return [];
+            }
+
+            // Newest file first (handles the `daily` channel's rotated files).
+            usort($files, fn ($a, $b) => filemtime($b) <=> filemtime($a));
+            $file = $files[0];
+
+            // Only read the last chunk of the file to avoid loading huge logs.
+            $size = filesize($file);
+            $chunk = (int) min($size, 256 * 1024);
+            $handle = fopen($file, 'rb');
+            if ($handle === false) {
+                return [];
+            }
+            if ($chunk < $size) {
+                fseek($handle, -$chunk, SEEK_END);
+            }
+            $content = (string) fread($handle, $chunk);
+            fclose($handle);
+
+            $out = [];
+            foreach (preg_split('/\r?\n/', $content) ?: [] as $line) {
+                $pos = stripos($line, '[Installation');
+                if ($pos === false) {
+                    continue;
+                }
+                // Keep from the "[Installation…]" marker, drop a trailing JSON context blob.
+                $msg = preg_replace('/\s+\{.*\}\s*$/', '', substr($line, $pos));
+                $msg = trim((string) $msg);
+                if ($msg !== '') {
+                    $out[] = $msg;
+                }
+            }
+
+            return array_slice($out, -$lines);
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     /**
@@ -1593,7 +1656,43 @@ class UnifiedInstallationController extends Controller
             // Password is intentionally not passed — user already knows it; never echo it back.
             'licensedModules' => $licensedModules,
             'installationKey' => $installationKey,
+            // Real, verified destination URLs for the Complete-page quick actions.
+            // Each falls back to appUrl when the named route does not exist (or is
+            // tenant-scoped and cannot be resolved without params), so links never 404.
+            'actions' => $this->resolveCompleteActions($appUrl),
         ]);
+    }
+
+    /**
+     * Resolve quick-action URLs for the Complete page from named routes,
+     * guarding each lookup and falling back to the app URL.
+     */
+    protected function resolveCompleteActions(string $appUrl): array
+    {
+        $resolve = function (array $names) use ($appUrl) {
+            foreach ($names as $name) {
+                try {
+                    if (Route::has($name)) {
+                        return route($name);
+                    }
+                } catch (\Throwable $e) {
+                    // Route exists but needs params we don't have (e.g. tenant scope) — try next.
+                }
+            }
+
+            return $appUrl;
+        };
+
+        // Each chain prefers the most specific real route, then degrades to a
+        // resolvable sign-in route, then the app URL — so a card always points
+        // somewhere real (e.g. on a SaaS central domain the tenant-scoped
+        // dashboard/settings routes aren't registered, but `login` is).
+        return [
+            'app' => $appUrl,
+            'dashboard' => $resolve(['dashboard', 'admin.dashboard', 'login']),
+            'login' => $resolve(['login']),
+            'settings' => $resolve(['settings', 'admin.settings', 'dashboard', 'login']),
+        ];
     }
 
     /**

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 import InstallLayout from './InstallLayout.jsx';
@@ -17,6 +17,9 @@ export default function Processing({ mode }) {
   const [steps, setSteps]           = useState([]);
   const [currentStep, setCurrentStep] = useState(null);
   const [completedSteps, setCompletedSteps] = useState(0);
+  const [log, setLog]         = useState([]);
+  const [showLog, setShowLog] = useState(false);
+  const startRef = useRef(Date.now());
 
   useEffect(() => {
     let active = true;
@@ -33,6 +36,7 @@ export default function Processing({ mode }) {
         setCompletedSteps(data.completedSteps ?? 0);
 
         if (data.steps?.length) setSteps(data.steps);
+        if (Array.isArray(data.log)) setLog(data.log);
         if (data.error) setError(data.error);
 
         if (data.status === 'completed') {
@@ -68,6 +72,20 @@ export default function Processing({ mode }) {
     if (s.key === currentStep && status === 'failed')  return 'failed';
     return 'pending';
   });
+
+  // Estimated time remaining — extrapolated from elapsed time vs. progress so
+  // far. Computed in render (percentage updates drive re-renders), so it stays
+  // independent of the polling loop.
+  const etaText = (() => {
+    if (status !== 'running' || percentage <= 2) return null;
+    const elapsed   = (Date.now() - startRef.current) / 1000;
+    const remaining = Math.max(0, Math.round(elapsed / (percentage / 100) - elapsed));
+    if (remaining < 5)  return 'almost done…';
+    if (remaining < 60) return `~${remaining}s remaining`;
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    return `~${m} min${s ? ` ${s}s` : ''} remaining`;
+  })();
 
   return (
     <VStack gap={5} align="center" className="aeos-text-center">
@@ -127,7 +145,7 @@ export default function Processing({ mode }) {
 
       {steps.length > 0 && (
         <Text size="xs" tone="tertiary">
-          Step {completedSteps} of {steps.length}
+          Step {completedSteps} of {steps.length}{etaText ? ` · ${etaText}` : ''}
         </Text>
       )}
 
@@ -157,6 +175,19 @@ export default function Processing({ mode }) {
               </HStack>
             );
           })}
+        </Box>
+      )}
+
+      {log.length > 0 && (
+        <Box style={{ width: '100%', textAlign: 'left' }}>
+          <button type="button" className="il-copy-btn" onClick={() => setShowLog(v => !v)}>
+            {showLog ? 'Hide details' : 'Show details'}
+          </button>
+          {showLog && (
+            <div className="il-log-tail" aria-live="polite">
+              {log.map((line, i) => <div key={i}>{line}</div>)}
+            </div>
+          )}
         </Box>
       )}
 
