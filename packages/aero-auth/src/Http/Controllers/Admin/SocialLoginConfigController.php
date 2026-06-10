@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditEventType;
+use Aero\Kernel\Audit\AuditEventType;
 use Aero\Core\Services\Audit\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Auth\Services;
 
 use Aero\Auth\Models\User;
-use Aero\Core\Support\TenantCache;
+use Aero\Kernel\Support\TenantCache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;

@@ -2,9 +2,9 @@
 
 namespace Aero\Auth\Http\Controllers\Admin;
 
-use Aero\Core\Http\Controllers\Controller;
+use Aero\Kernel\Http\Controllers\Controller;
 use Aero\Core\Services\Audit\AuditService;
-use Aero\Core\Services\Audit\AuditEventType;
+use Aero\Kernel\Audit\AuditEventType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
