@@ -79,7 +79,7 @@ class Role extends HrmacModel
      */
     public function users(): BelongsToMany
     {
-        $userModel = config('hrmac.models.user', \Aero\Core\Models\User::class);
+        $userModel = config('hrmac.models.user') ?: config('auth.providers.users.model');
 
         // Filter by the user model's morph key (not its raw FQN) so role rows stay
         // resolvable when the User class moves package — Phase 2 decoupling. Falls back

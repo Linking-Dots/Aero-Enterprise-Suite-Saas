@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Services;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Contracts\RoleModuleAccessInterface;
-use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\Audit\AuditService;
 use Aero\HRMAC\Models\Role;
+use Aero\Kernel\Audit\AuditEventType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
  */
 class RoleService
 {
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(private readonly AuditServiceInterface $audit) {}
 
     public function create(array $data, Model $actor): Role
     {
