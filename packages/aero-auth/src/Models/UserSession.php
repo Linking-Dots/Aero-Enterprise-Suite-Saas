@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Models;
 
-use Aero\Core\Models\TenantModel;
+use Aero\Contracts\Models\TenantModel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

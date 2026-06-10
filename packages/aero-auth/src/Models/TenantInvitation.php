@@ -2,7 +2,7 @@
 
 namespace Aero\Auth\Models;
 
-use Aero\Core\Models\TenantModel;
+use Aero\Contracts\Models\TenantModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
