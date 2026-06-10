@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Aero\HRMAC\Http\Controllers;
 
 use Aero\Core\Http\Controllers\Controller;
-use Aero\Core\Models\User;
 use Aero\HRMAC\Http\Requests\StoreRoleRequest;
 use Aero\HRMAC\Http\Requests\UpdateRoleRequest;
 use Aero\HRMAC\Models\Role;
@@ -66,7 +65,7 @@ class RoleController extends Controller
      */
     private function assignableUsers(): \Illuminate\Support\Collection
     {
-        $userModel = config('hrmac.models.user', User::class);
+        $userModel = config('hrmac.models.user') ?: config('auth.providers.users.model');
 
         try {
             return $userModel::query()->orderBy('name')->get(['id', 'name', 'email']);
@@ -106,7 +105,8 @@ class RoleController extends Controller
             'roles.*' => ['integer'],
         ]);
 
-        $user = User::findOrFail($data['user_id']);
+        $userModel = config('hrmac.models.user') ?: config('auth.providers.users.model');
+        $user = $userModel::findOrFail($data['user_id']);
         $this->roles->assignToUser($user, $data['roles'], $request->user());
 
         return back()->with('success', 'Roles assigned.');

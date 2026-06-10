@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-use Aero\Core\Models\User;
 use Aero\HRMAC\Http\Middleware\CheckRoleModuleAccess;
 use Aero\HRMAC\Http\Middleware\SmartLandingRedirect;
 use Aero\HRMAC\Models\Role;
@@ -22,7 +21,9 @@ return [
 
     'models' => [
         'role' => Role::class,
-        'user' => User::class,
+        // null = resolve the host's user model from config('auth.providers.users.model').
+        // HRMAC is a pure leaf and must not name a concrete app/core User class.
+        'user' => null,
         // RoleModuleAccess model. Uses the DEFAULT connection so the host's runtime
         // context (tenancy / central / standalone) decides which DB is read/written.
         'role_module_access' => RoleModuleAccess::class,

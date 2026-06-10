@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 

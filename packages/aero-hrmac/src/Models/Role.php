@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;

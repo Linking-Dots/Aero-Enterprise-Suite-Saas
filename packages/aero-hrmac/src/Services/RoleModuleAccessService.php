@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Aero\HRMAC\Services;
 
 use Aero\Contracts\RoleModuleAccessInterface;
-use Aero\Core\Models\User;
 use Aero\HRMAC\Models\ModuleComponentAction;
 use Aero\HRMAC\Models\ModuleComponent;
 use Aero\HRMAC\Models\HrmacAuditLog;
@@ -698,8 +697,8 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             return collect();
         }
 
-        // Get the User model class from config
-        $userModel = config('hrmac.models.user', User::class);
+        // Resolve the host's user model (HRMAC names no concrete User class).
+        $userModel = config('hrmac.models.user') ?: config('auth.providers.users.model');
 
         // Find all active users with these roles
         return $userModel::whereHas('roles', function ($query) use ($roleIds) {
@@ -783,8 +782,8 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             return collect();
         }
 
-        // Get the User model class from config
-        $userModel = config('hrmac.models.user', User::class);
+        // Resolve the host's user model (HRMAC names no concrete User class).
+        $userModel = config('hrmac.models.user') ?: config('auth.providers.users.model');
 
         // Find all active users with these roles
         return $userModel::whereHas('roles', function ($query) use ($roleIds) {
