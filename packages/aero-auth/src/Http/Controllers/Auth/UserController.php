@@ -5,7 +5,7 @@ namespace Aero\Auth\Http\Controllers\Auth;
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Auth\Models\TenantInvitation;
 use Aero\Auth\Models\User;
-use Aero\Core\Notifications\InviteTeamMember;
+use Aero\Auth\Notifications\InviteTeamMember;
 use Aero\HRM\Models\Department;
 use Aero\HRM\Models\Designation;
 use Aero\HRM\Models\Employee;

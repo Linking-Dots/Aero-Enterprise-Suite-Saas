@@ -1,9 +1,9 @@
 <?php
 
-namespace Aero\Core\Notifications;
+namespace Aero\Auth\Notifications;
 
+use Aero\Auth\Models\TenantInvitation;
 use Aero\Contracts\MailSenderInterface;
-use Aero\Core\Models\TenantInvitation;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 

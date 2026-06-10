@@ -2,7 +2,7 @@
 
 namespace Aero\Auth\Http\Middleware;
 
-use Aero\Core\Services\Shared\Auth\DeviceAuthService;
+use Aero\Auth\Services\DeviceAuthService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

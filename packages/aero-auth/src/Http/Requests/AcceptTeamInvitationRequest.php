@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Http\Requests;
+namespace Aero\Auth\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;

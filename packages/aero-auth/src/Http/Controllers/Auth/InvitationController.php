@@ -3,7 +3,7 @@
 namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Http\Requests\AcceptTeamInvitationRequest;
+use Aero\Auth\Http\Requests\AcceptTeamInvitationRequest;
 use Aero\Core\Services\AuditService;
 use Aero\Core\Services\UserInvitationService;
 use Inertia\Inertia;
