@@ -27,6 +27,8 @@ class AeroKernelServiceProvider extends ServiceProvider
         \Aero\Kernel\Audit\AuditEventType::class   => 'Aero\\Core\\Services\\Audit\\AuditEventType',
         \Aero\Kernel\Support\SafeRedirect::class   => 'Aero\\Core\\Support\\SafeRedirect',
         \Aero\Kernel\Support\TenantCache::class    => 'Aero\\Core\\Support\\TenantCache',
+        \Aero\Kernel\Module\ModuleRegistry::class  => 'Aero\\Core\\Services\\ModuleRegistry',
+        \Aero\Kernel\Module\ModuleDiscoveryService::class => 'Aero\\Core\\Services\\Module\\ModuleDiscoveryService',
     ];
 
     public function register(): void

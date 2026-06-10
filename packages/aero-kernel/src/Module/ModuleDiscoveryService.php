@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Services\Module;
+namespace Aero\Kernel\Module;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Aero\Core\Services;
+namespace Aero\Kernel\Module;
 
 use Aero\Contracts\ModuleProviderInterface;
 use Aero\Contracts\ModuleRegistryInterface;
-use Aero\Core\Support\TenantCache;
+use Aero\Kernel\Support\TenantCache;
 use Illuminate\Support\Collection;
 
 /**
