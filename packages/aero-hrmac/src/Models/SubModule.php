@@ -70,6 +70,14 @@ class SubModule extends HrmacModel
     }
 
     /**
+     * Get only active components for this sub-module.
+     */
+    public function activeComponents(): HasMany
+    {
+        return $this->hasMany(ModuleComponent::class)->where('is_active', true)->orderBy('priority');
+    }
+
+    /**
      * Parent sub-module (nested sub-modules). Null for top-level.
      */
     public function parent(): BelongsTo

@@ -26,9 +26,12 @@ class ModuleComponentAction extends HrmacModel
         'code',
         'name',
         'description',
+        'is_active',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     /**
      * Get the parent component.

@@ -89,11 +89,27 @@ class Module extends HrmacModel
     }
 
     /**
+     * Scope for a specific category.
+     */
+    public function scopeInCategory($query, string $category)
+    {
+        return $query->where('category', $category);
+    }
+
+    /**
      * Get sub-modules for this module.
      */
     public function subModules(): HasMany
     {
         return $this->hasMany(SubModule::class)->orderBy('priority');
+    }
+
+    /**
+     * Get only active sub-modules for this module.
+     */
+    public function activeSubModules(): HasMany
+    {
+        return $this->hasMany(SubModule::class)->where('is_active', true)->orderBy('priority');
     }
 
     /**

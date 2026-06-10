@@ -67,6 +67,14 @@ class ModuleComponent extends HrmacModel
     }
 
     /**
+     * Scope for a specific component type.
+     */
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    /**
      * Get the parent module.
      */
     public function module(): BelongsTo
@@ -88,6 +96,14 @@ class ModuleComponent extends HrmacModel
     public function actions(): HasMany
     {
         return $this->hasMany(ModuleComponentAction::class, 'module_component_id');
+    }
+
+    /**
+     * Get only active actions for this component.
+     */
+    public function activeActions(): HasMany
+    {
+        return $this->hasMany(ModuleComponentAction::class, 'module_component_id')->where('is_active', true);
     }
 
     /**
