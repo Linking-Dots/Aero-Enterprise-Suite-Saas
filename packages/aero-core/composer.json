@@ -25,6 +25,7 @@
         "aero/contracts": "^1.0",
         "aero/infrastructure": "self.version",
         "aero/kernel": "self.version",
+        "aero/license": "^1.0",
         "laravel/framework": "^11.0|^12.0",
         "spatie/laravel-medialibrary": "^11.0",
         "spatie/laravel-backup": "^9.0",
