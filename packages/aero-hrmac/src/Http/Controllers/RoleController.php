@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Http\Controllers;
 
-use Aero\Core\Http\Controllers\Controller;
 use Aero\HRMAC\Http\Requests\StoreRoleRequest;
 use Aero\HRMAC\Http\Requests\UpdateRoleRequest;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Services\RoleService;
+use Aero\Kernel\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

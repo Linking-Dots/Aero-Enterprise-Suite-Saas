@@ -1,0 +1,122 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "aeos365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic [ref=e11]:
+      - generic [ref=e12]: SaaS Mode
+      - button "Switch to light mode" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+  - navigation "Installation progress" [ref=e17]:
+    - list [ref=e18]:
+      - listitem [ref=e19]:
+        - 'generic "Current: Requirements" [ref=e20]':
+          - generic [ref=e21]: "1"
+        - generic [ref=e22]: Requirements
+      - listitem [ref=e24]:
+        - 'generic "Upcoming: Database" [ref=e25]':
+          - generic [ref=e26]: "2"
+        - generic [ref=e27]: Database
+      - listitem [ref=e29]:
+        - 'generic "Upcoming: Settings" [ref=e30]':
+          - generic [ref=e31]: "3"
+        - generic [ref=e32]: Settings
+      - listitem [ref=e34]:
+        - 'generic "Upcoming: Admin" [ref=e35]':
+          - generic [ref=e36]: "4"
+        - generic [ref=e37]: Admin
+      - listitem [ref=e39]:
+        - 'generic "Upcoming: Review" [ref=e40]':
+          - generic [ref=e41]: "5"
+        - generic [ref=e42]: Review
+      - listitem [ref=e44]:
+        - 'generic "Upcoming: Install" [ref=e45]':
+          - generic [ref=e46]: "6"
+        - generic [ref=e47]: Install
+      - listitem [ref=e49]:
+        - 'generic "Upcoming: Complete" [ref=e50]':
+          - generic [ref=e51]: "7"
+        - generic [ref=e52]: Complete
+    - paragraph [ref=e53]:
+      - text: Step 1 of 7
+      - generic [ref=e54]: · Requirements
+    - 'progressbar "Installation progress: 14%" [ref=e55]'
+  - main [ref=e57]:
+    - generic [ref=e59]:
+      - generic [ref=e60]: SaaS Platform Setup
+      - generic [ref=e61]:
+        - heading "Welcome to aeos365" [level=1] [ref=e62]
+        - paragraph [ref=e63]: This wizard will guide you through setting up your multi-tenant SaaS platform. The process takes about 5 minutes.
+      - generic [ref=e64]:
+        - generic [ref=e65]: v1.0.0
+        - generic [ref=e66]: PHP 8.3.30
+        - generic [ref=e67]: Laravel 12.61.1
+        - generic [ref=e68]: SaaS Mode
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - img [ref=e72]
+          - generic [ref=e74]:
+            - heading "Multi-tenant" [level=3] [ref=e75]
+            - paragraph [ref=e76]: Full tenant isolation with per-tenant databases
+        - generic [ref=e77]:
+          - img [ref=e79]
+          - generic [ref=e81]:
+            - heading "Modular" [level=3] [ref=e82]
+            - paragraph [ref=e83]: 27+ enterprise modules — enable only what you need
+        - generic [ref=e84]:
+          - img [ref=e86]
+          - generic [ref=e88]:
+            - heading "AEOS Design" [level=3] [ref=e89]
+            - paragraph [ref=e90]: Stunning UI with 12 themes and full customizer
+        - generic [ref=e91]:
+          - img [ref=e93]
+          - generic [ref=e95]:
+            - heading "Analytics" [level=3] [ref=e96]
+            - paragraph [ref=e97]: Built-in KPIs, dashboards, and audit logs
+      - generic [ref=e98]:
+        - paragraph [ref=e99]: What you'll need before starting
+        - generic [ref=e100]:
+          - generic [ref=e101]:
+            - img [ref=e103]
+            - paragraph [ref=e105]: Database credentials (MySQL, PostgreSQL, or SQLite)
+          - generic [ref=e106]:
+            - img [ref=e108]
+            - paragraph [ref=e110]: Application domain / URL
+          - generic [ref=e111]:
+            - img [ref=e113]
+            - paragraph [ref=e115]: SMTP mail configuration (or use log driver for local dev)
+          - generic [ref=e116]:
+            - img [ref=e118]
+            - paragraph [ref=e120]: Admin account email and password
+      - generic [ref=e121]:
+        - paragraph [ref=e122]: Installation steps
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125]: "1"
+            - text: Welcome
+          - generic [ref=e126]:
+            - generic [ref=e127]: "2"
+            - text: Requirements
+          - generic [ref=e128]:
+            - generic [ref=e129]: "3"
+            - text: Database
+          - generic [ref=e130]:
+            - generic [ref=e131]: "4"
+            - text: Settings
+          - generic [ref=e132]:
+            - generic [ref=e133]: "5"
+            - text: Admin
+          - generic [ref=e134]:
+            - generic [ref=e135]: "6"
+            - text: Review
+          - generic [ref=e136]:
+            - generic [ref=e137]: "7"
+            - text: Processing
+          - generic [ref=e138]:
+            - generic [ref=e139]: "8"
+            - text: Complete
+      - button "Begin Setup" [ref=e141] [cursor=pointer]:
+        - generic [ref=e142]: Begin Setup
+        - img [ref=e144]
+  - contentinfo [ref=e146]: aeos365 · Setup Wizard

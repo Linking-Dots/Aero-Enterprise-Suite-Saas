@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Http\Controllers;
+namespace Aero\Kernel\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -8,10 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 
 /**
- * Base Controller for Aero Core
+ * Shared base Controller for all Aero packages.
  *
- * All Aero Core controllers should extend this class.
- * This makes the package independent of the host application's base controller.
+ * Lives in aero-kernel so core (tenant/standalone) and platform (central) controllers —
+ * plus the shared packages (hrmac, auth, notifications, …) — extend one base without
+ * any sibling depending on another. Independent of the host application's base controller.
  */
 class Controller extends BaseController
 {

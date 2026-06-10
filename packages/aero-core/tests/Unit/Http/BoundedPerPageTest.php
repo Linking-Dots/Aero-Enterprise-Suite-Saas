@@ -2,7 +2,7 @@
 
 namespace Aero\Core\Tests\Unit\Http;
 
-use Aero\Core\Http\Controllers\Controller;
+use Aero\Kernel\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\TestCase;
 

@@ -29,6 +29,7 @@ class AeroKernelServiceProvider extends ServiceProvider
         \Aero\Kernel\Support\TenantCache::class    => 'Aero\\Core\\Support\\TenantCache',
         \Aero\Kernel\Module\ModuleRegistry::class  => 'Aero\\Core\\Services\\ModuleRegistry',
         \Aero\Kernel\Module\ModuleDiscoveryService::class => 'Aero\\Core\\Services\\Module\\ModuleDiscoveryService',
+        \Aero\Kernel\Http\Controllers\Controller::class => 'Aero\\Core\\Http\\Controllers\\Controller',
     ];
 
     public function register(): void

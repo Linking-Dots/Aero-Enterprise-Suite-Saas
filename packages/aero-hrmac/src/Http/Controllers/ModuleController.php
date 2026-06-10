@@ -4,7 +4,6 @@ namespace Aero\HRMAC\Http\Controllers;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Contracts\PlanCatalogInterface;
-use Aero\Core\Http\Controllers\Controller;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\ModuleComponent;
 use Aero\HRMAC\Models\ModuleComponentAction;
@@ -12,6 +11,7 @@ use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\RoleModuleAccess;
 use Aero\HRMAC\Models\SubModule;
 use Aero\HRMAC\Services\RoleModuleAccessService;
+use Aero\Kernel\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;

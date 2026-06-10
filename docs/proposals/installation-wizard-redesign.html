@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aeos365 · Installation Wizard Redesign Proposal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<style>
+  /* ---- Standalone design tokens (light theme) so this file renders without the app ---- */
+  :root{
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --color-background-primary:#ffffff;
+    --color-background-secondary:#f4f5f7;
+    --color-text-primary:#16191f;
+    --color-text-secondary:#5a6472;
+    --color-text-tertiary:#98a2b3;
+    --color-border-tertiary:#e4e7ec;
+    --border-radius-md:8px;
+    --border-radius-lg:12px;
+    --color-background-info:#e6f4f7;     --color-text-info:#0277a8;    --color-border-info:#26a0c2;
+    --color-background-warning:#fef6e7;  --color-text-warning:#b76e00; --color-border-warning:#e8a13a;
+    --color-background-success:#e7f6ee;  --color-text-success:#1a8a52; --color-border-success:#2fb574;
+    --color-background-danger:#fdecec;   --color-text-danger:#c0392b;  --color-border-danger:#e05a4d;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --color-background-primary:#16191f;
+      --color-background-secondary:#1f242c;
+      --color-text-primary:#eef1f5;
+      --color-text-secondary:#9aa4b2;
+      --color-text-tertiary:#6b7480;
+      --color-border-tertiary:#2c333d;
+      --color-background-info:#0c2730;   --color-text-info:#4fc3e0;
+      --color-background-warning:#2e2410;--color-text-warning:#e2a94a;
+      --color-background-success:#0e2a1d;--color-text-success:#43c486;
+      --color-background-danger:#2e1614; --color-text-danger:#ef6f63;
+      color-scheme:dark;
+    }
+  }
+  body{background:var(--color-background-secondary);padding:1.5rem;max-width:920px;margin:0 auto}
+
+  h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-sans)}
+  .root{padding:1.5rem 0}
+  .section-label{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.5rem}
+  .tabs{display:flex;gap:4px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:4px;margin-bottom:1.5rem}
+  .tab{flex:1;padding:8px 12px;border:none;background:transparent;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;transition:all .15s;white-space:nowrap}
+  .tab.active{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary)}
+  .panel{display:none}.panel.active{display:block}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+  .card-accent{border-left:3px solid var(--color-border-info)}
+  .card-warn{border-left:3px solid var(--color-border-warning)}
+  .card-success{border-left:3px solid var(--color-border-success)}
+  .card-danger{border-left:3px solid var(--color-border-danger)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem}
+  .stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem}
+  .stat-num{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+  .stat-lbl{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+  .badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px;margin-right:4px}
+  .badge-blue{background:var(--color-background-info);color:var(--color-text-info)}
+  .badge-warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+  .badge-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+  .badge-green{background:var(--color-background-success);color:var(--color-text-success)}
+  .badge-gray{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+  .step-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .step-row:last-child{border-bottom:none}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--color-background-info);color:var(--color-text-info);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+  .step-num.new{background:var(--color-background-success);color:var(--color-text-success)}
+  .step-num.removed{background:var(--color-background-danger);color:var(--color-text-danger)}
+  .step-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+  .step-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px;line-height:1.5}
+  .tag-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .change-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .change-row:last-child{border-bottom:none}
+  .mode-toggle{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+  .mode-btn{padding:6px 14px;border:0.5px solid var(--color-border-tertiary);background:transparent;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+  .mode-btn.active{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+  .mock-shell{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.5rem;overflow:hidden}
+  .mock-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+  .mock-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--color-text-primary)}
+  .mock-logo-icon{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#00B8D4,#6366F1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+  .mock-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+  .mock-steps{display:flex;align-items:center;gap:0;margin-bottom:1rem;overflow:hidden}
+  .mock-step-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
+  .msd-done{background:rgba(0,163,184,.1);color:#00A3B8;border:0.5px solid rgba(0,163,184,.25)}
+  .msd-current{background:#00A3B8;color:#fff}
+  .msd-pending{background:var(--color-background-secondary);color:var(--color-text-tertiary);border:0.5px solid var(--color-border-tertiary)}
+  .mock-step-line{flex:1;height:1px;background:var(--color-border-tertiary)}
+  .mock-step-line.done{background:rgba(0,163,184,.25)}
+  .mock-progress{height:3px;background:var(--color-border-tertiary);border-radius:2px;margin-bottom:1.25rem;overflow:hidden}
+  .mock-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#00B8D4,#6366F1);transition:width .4s}
+  .mock-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:1.25rem}
+  .mock-title{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+  .mock-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem;line-height:1.5}
+  .mock-field{margin-bottom:.75rem}
+  .mock-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px}
+  .mock-input{width:100%;height:34px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0 10px;font-size:12px;color:var(--color-text-primary)}
+  .mock-input-row{display:grid;grid-template-columns:1fr 80px;gap:8px}
+  .mock-nav{display:flex;justify-content:space-between;align-items:center;margin-top:1rem;padding-top:.75rem;border-top:0.5px solid var(--color-border-tertiary)}
+  .mock-btn{padding:6px 14px;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary)}
+  .mock-btn-primary{background:linear-gradient(135deg,#00B8D4,#6366F1);color:#fff;border:none;padding:7px 16px}
+  .mock-check-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .mock-check-row:last-child{border-bottom:none}
+  .mock-ci{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+  .mci-pass{background:rgba(34,197,94,.12);color:#16A34A}
+  .mci-fail{background:rgba(239,68,68,.1);color:#DC2626}
+  .proc-step{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .proc-step:last-child{border-bottom:none}
+  .proc-icon{width:18px;font-size:11px;font-family:var(--font-mono);flex-shrink:0;text-align:center}
+  .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  .feat-item{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem;border:0.5px solid var(--color-border-tertiary)}
+  .feat-icon{font-size:16px;margin-bottom:4px}
+  .feat-title{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+  .feat-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+  .sa-row{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .sa-row:last-child{border-bottom:none}
+  .issue-badge{padding:1px 6px;border-radius:4px;font-size:10px;font-weight:500}
+  .ib-high{background:var(--color-background-danger);color:var(--color-text-danger)}
+  .ib-med{background:var(--color-background-warning);color:var(--color-text-warning)}
+  .ib-low{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .sa-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+  .sa-desc{font-size:12px;color:var(--color-text-secondary);margin-top:2px;line-height:1.5}
+  .sa-fix{font-size:11px;color:var(--color-text-info);margin-top:4px;font-style:italic}
+  select.mock-input{appearance:none}
+  .review-row{display:flex;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .review-row:last-child{border-bottom:none}
+  .rr-key{color:var(--color-text-secondary);flex:0 0 120px}
+  .rr-val{color:var(--color-text-primary);font-family:var(--font-mono);font-size:11px}
+  .alert-box{border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:12px;margin-bottom:.75rem}
+  .alert-success{background:var(--color-background-success);color:var(--color-text-success)}
+  .alert-info{background:var(--color-background-info);color:var(--color-text-info)}
+  .impl-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .impl-row:last-child{border-bottom:none}
+  .impl-num{width:24px;height:24px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0;margin-top:1px}
+  .impl-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+  .impl-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px;line-height:1.5}
+  .impl-files{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  .file-pill{font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:4px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+  code{font-family:var(--font-mono);font-size:.92em;background:var(--color-background-secondary);padding:1px 4px;border-radius:4px}
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">aeos365 installation wizard UI/UX redesign proposal — five panels covering the audit, step-by-step redesign, wireframe preview, issues found, and implementation plan.</h2>
+
+<div class="root">
+  <div class="section-label">aeos365 · Installation wizard redesign proposal</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show('overview',this)">Overview</button>
+    <button class="tab" onclick="show('steps',this)">Step redesign</button>
+    <button class="tab" onclick="show('preview',this)">Wireframe</button>
+    <button class="tab" onclick="show('issues',this)">Issues found</button>
+    <button class="tab" onclick="show('plan',this)">Impl. plan</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="panel-overview" class="panel active">
+    <div class="grid3" style="margin-bottom:1rem">
+      <div class="stat"><div class="stat-num">9</div><div class="stat-lbl">Wizard steps (standalone)</div></div>
+      <div class="stat"><div class="stat-num">8</div><div class="stat-lbl">Wizard steps (SaaS mode)</div></div>
+      <div class="stat"><div class="stat-num">12</div><div class="stat-lbl">JSX page components</div></div>
+      <div class="stat"><div class="stat-num">14</div><div class="stat-lbl">Backend step classes</div></div>
+      <div class="stat"><div class="stat-num">2054</div><div class="stat-lbl">Controller lines</div></div>
+      <div class="stat"><div class="stat-num">76 KB</div><div class="stat-lbl">Controller file size</div></div>
+    </div>
+
+    <div class="card card-accent" style="margin-bottom:1rem">
+      <div class="section-label" style="margin-bottom:.5rem">What I found in the codebase</div>
+      <div class="change-row">
+        <i class="ti ti-file-code" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i>
+        <div><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Solid layout shell — <code>InstallLayout.jsx</code></div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">Step dots + progress bar already in place. Brand header consistent with auth pages. Theme toggle works. <strong>Good foundation.</strong></div></div>
+      </div>
+      <div class="change-row">
+        <i class="ti ti-git-branch" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i>
+        <div><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Dual-mode routing — SaaS vs Standalone</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">Controller detects mode via <code>class_exists(AeroPlatformServiceProvider)</code>. SaaS skips the License step. Route aliases for backward-compat included.</div></div>
+      </div>
+      <div class="change-row">
+        <i class="ti ti-database" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i>
+        <div><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Config persistence via JSON file</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px"><code>storage/framework/installation_config.json</code> — browser-refresh-safe state. Each step saves before Continue is enabled.</div></div>
+      </div>
+      <div class="change-row">
+        <i class="ti ti-refresh" style="font-size:16px;color:var(--color-text-warning)" aria-hidden="true"></i>
+        <div><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">Processing polls <code>/install/progress</code> every 1.2 s</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">Retry + per-step status list. Works but risks polling loop on network failures. Needs exponential backoff.</div></div>
+      </div>
+      <div class="change-row" style="border-bottom:none">
+        <i class="ti ti-alert-triangle" style="font-size:16px;color:var(--color-text-danger)" aria-hidden="true"></i>
+        <div><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">4 UX pain-points identified</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">Step labels hidden on mobile, no in-flow inline validation, CSRF skipped globally, no estimated time on processing screen.</div></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:.5rem">Redesign philosophy</div>
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem"><i class="ti ti-device-mobile" style="font-size:15px;margin-right:6px" aria-hidden="true"></i>Mobile-first step indicators</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Current step labels use <code>display:none</code> on mobile. Redesign replaces with icon-only dots + a centered "Step X of N · Label" text line that's always visible at any width.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem"><i class="ti ti-check" style="font-size:15px;margin-right:6px" aria-hidden="true"></i>Inline field validation</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Database &amp; Settings forms currently show errors only on submit. Redesign adds debounced inline validation so the Continue button activates as fields pass — no silent failures.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem"><i class="ti ti-clock" style="font-size:15px;margin-right:6px" aria-hidden="true"></i>Estimated time on Processing</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Processing screen shows only a spinner and step list. Redesign adds an ETA line ("About 2 min remaining") based on observed step durations, reducing perceived wait anxiety.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem"><i class="ti ti-layout-sidebar" style="font-size:15px;margin-right:6px" aria-hidden="true"></i>Review step visual hierarchy</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Review page is a flat mono table. Redesign groups config into collapsible sections (Database, Settings, Admin) with an edit shortcut on each section — no back-navigating to fix a typo.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP REDESIGN -->
+  <div id="panel-steps" class="panel">
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setMode('standalone',this)">Standalone (9 steps)</button>
+      <button class="mode-btn" onclick="setMode('saas',this)">SaaS mode (8 steps)</button>
+    </div>
+
+    <div id="steps-standalone">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Welcome <span class="badge badge-gray">unchanged</span></div>
+          <div class="step-sub">Feature highlights, version badges, step overview strip. Redesign: replace generic Stat cards with a <strong>two-column installation checklist</strong> (left: what will happen, right: what you'll need — DB creds, license key). Helps admins prepare before starting.</div>
+          <div class="tag-row"><span class="badge badge-blue">Welcome.jsx</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">2</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">License <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Currently: two fields (key, email) + submit. Redesign: add a <strong>real-time format hint</strong> (AP-XXXX-XXXX pattern mask), show license type badge (Extended / Regular / Dev) immediately after validation succeeds, and persist the expiry date visibly so it's clear what they bought.</div>
+          <div class="tag-row"><span class="badge badge-blue">License.jsx</span><span class="badge badge-blue">validateLicense()</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">3</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Requirements <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Currently: three sections (PHP, extensions, directories). Redesign: add a <strong>one-click auto-fix</strong> button for chmod issues (generates the exact shell command in a copyable code block), and a <strong>collapse-passed</strong> toggle so failed items stay prominent. Also surfaces recommended extensions (not just required).</div>
+          <div class="tag-row"><span class="badge badge-blue">Requirements.jsx</span><span class="badge badge-blue">recheckRequirements()</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">4</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Database <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Currently: form → "Test Connection" → "Save" → Continue. Redesign: <strong>merge Test + Save</strong> into a single "Verify &amp; Save" action that auto-enables Continue on success. Add a <strong>database picker dropdown</strong> (after successful server connection, list available DBs from the server rather than free-typing). Show a green latency badge ("Connected · 4ms") in the field on success.</div>
+          <div class="tag-row"><span class="badge badge-blue">Database.jsx</span><span class="badge badge-blue">listDatabases()</span><span class="badge badge-blue">testDatabaseServer()</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">5</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Settings <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Currently: app name, URL, mail settings — all in one flat form. Redesign: split into <strong>two sub-sections</strong> (Application + Mail), with a collapsible Mail section that defaults to the "log" driver with a yellow advisory ("OTPs will log to <code>storage/logs/laravel.log</code>"). Add a "Send test email" button inline — the API already has this endpoint.</div>
+          <div class="tag-row"><span class="badge badge-blue">Settings.jsx</span><span class="badge badge-blue">saveSettings()</span><span class="badge badge-blue">testEmail()</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">6</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Admin account <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Currently: name, email, password, confirm. Redesign: add a <strong>password strength meter</strong> (inline, visual bar) and a "Generate strong password" button, show the email field with a domain preview ("admin@ → yourdomain.com"), and add a prominent checkbox "Use this account as the first SaaS tenant owner" in SaaS mode.</div>
+          <div class="tag-row"><span class="badge badge-blue">Admin.jsx</span><span class="badge badge-blue">saveAdmin()</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">7</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Review <span class="badge badge-warn">major rework</span></div>
+          <div class="step-sub">Currently: flat mono table of all config. Redesign: <strong>grouped accordion panels</strong> (Database · Application · Mail · Admin) each with an inline "Edit" link that jumps back to that step without losing other config. Add a "Configuration health" summary at the top: three green checkmarks or red warnings. This is the most impactful single-step change.</div>
+          <div class="tag-row"><span class="badge badge-blue">Review.jsx</span><span class="badge badge-warn">new sections</span></div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">8</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Processing <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Currently: spinner, step list, percentage. Redesign: add <strong>ETA line</strong> ("~1 min remaining"), replace plain text step icons (✓ / ✗ / ·) with styled animated status chips, add an <strong>expandable log tail</strong> ("Show details") that streams the raw installation log for power users, and implement exponential backoff (1.2s → 2s → 4s → 8s) on the polling loop.</div>
+          <div class="tag-row"><span class="badge badge-blue">Processing.jsx</span><span class="badge badge-blue">progress()</span><span class="badge badge-warn">backoff logic</span></div>
+        </div>
+      </div>
+      <div class="step-row" style="border-bottom:none">
+        <div class="step-num" style="background:var(--color-background-success);color:var(--color-text-success)">9</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Complete <span class="badge badge-green">new content</span></div>
+          <div class="step-sub">Currently: success message + login button. Redesign: add a <strong>"What's next" card</strong> with 3 quick actions (Go to dashboard, Configure modules, Invite first user), show the admin email and login URL prominently, and — for SaaS mode — show the tenant subdomain routing guide with a copy button.</div>
+          <div class="tag-row"><span class="badge badge-blue">Complete.jsx</span><span class="badge badge-green">quick actions</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="steps-saas" style="display:none">
+      <div class="card card-accent" style="margin-bottom:1rem">
+        <div style="font-size:12px;color:var(--color-text-secondary)"><strong>SaaS mode</strong> omits the License step (step 1 in standalone). Steps 1–7 below map to standalone steps 3–9. All redesign proposals from standalone apply equally except where noted.</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">1</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Requirements <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Same as standalone step 3. In SaaS mode, additionally check that <code>SAAS_MODE=true</code> is set and <code>AeroPlatformServiceProvider</code> is registered — surface these as dedicated requirement rows.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">2</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Database <span class="badge badge-warn">improved</span></div>
+          <div class="step-sub">Same as standalone. SaaS note: show an advisory that a <strong>second database</strong> will be created per tenant at provisioning time, and that the landlord DB is configured here.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">3</div>
+        <div style="flex:1;min-width:0">
+          <div class="step-title">Platform settings <span class="badge badge-warn">SaaS-specific</span></div>
+          <div class="step-sub">Routes to <code>/install/platform</code> which maps to <code>saveSettings()</code>. Redesign: add a dedicated <strong>Domain configuration</strong> sub-section — root domain, wildcard subdomain pattern (<code>*.yourdomain.com</code>), and a DNS verification ping button. This is where the UAT blocker (hosts file entries) can be surfaced as a guide.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">4</div>
+        <div style="flex:1;min-width:0"><div class="step-title">Admin account <span class="badge badge-warn">improved</span></div><div class="step-sub">Identical to standalone step 6 but the "first tenant owner" checkbox is pre-checked and labelled more prominently.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">5</div>
+        <div style="flex:1;min-width:0"><div class="step-title">Review <span class="badge badge-warn">major rework</span></div><div class="step-sub">Identical groups but adds a "Platform config" accordion with the domain/subdomain settings.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-num" style="background:var(--color-background-warning);color:var(--color-text-warning)">6</div>
+        <div style="flex:1;min-width:0"><div class="step-title">Processing <span class="badge badge-warn">improved</span></div><div class="step-sub">SaaS processing runs additional steps: TenantProvisioning, PlanSeeding, PlatformConfiguration. The step list should display these with clearer labels — "Seeding subscription plans" rather than raw class names.</div></div>
+      </div>
+      <div class="step-row" style="border-bottom:none">
+        <div class="step-num" style="background:var(--color-background-success);color:var(--color-text-success)">7</div>
+        <div style="flex:1;min-width:0"><div class="step-title">Complete <span class="badge badge-green">new content</span></div><div class="step-sub">SaaS version shows the tenant subdomain URL pattern (<code>tenant.yourdomain.com</code>), a hosts file snippet for local dev, and a "Provision first tenant" quick action.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIREFRAME PREVIEW -->
+  <div id="panel-preview" class="panel">
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setScreen('welcome',this)">Welcome</button>
+      <button class="mode-btn" onclick="setScreen('requirements',this)">Requirements</button>
+      <button class="mode-btn" onclick="setScreen('database',this)">Database</button>
+      <button class="mode-btn" onclick="setScreen('review',this)">Review</button>
+      <button class="mode-btn" onclick="setScreen('processing',this)">Processing</button>
+    </div>
+
+    <div class="mock-shell">
+      <div class="mock-header">
+        <div class="mock-logo">
+          <div class="mock-logo-icon">A</div>
+          <span>aeos365</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="mock-badge" id="mode-badge">SaaS Mode</span>
+          <div style="width:30px;height:30px;border-radius:50%;border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary)"><i class="ti ti-sun" style="font-size:14px" aria-hidden="true"></i></div>
+        </div>
+      </div>
+
+      <div id="step-indicator" style="margin-bottom:.5rem">
+        <div class="mock-steps" id="step-dots"></div>
+        <div style="text-align:center;font-size:11px;color:var(--color-text-secondary);margin-top:4px" id="step-label-text"></div>
+      </div>
+      <div class="mock-progress"><div class="mock-progress-fill" id="prog-fill"></div></div>
+
+      <div class="mock-card" id="screen-welcome">
+        <div class="mock-title">Welcome to aeos365</div>
+        <div class="mock-sub">This wizard guides you through setting up your SaaS platform. Takes about 5 minutes.</div>
+        <div class="feat-grid" style="margin-bottom:1rem">
+          <div class="feat-item"><div class="feat-icon"><i class="ti ti-users" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i></div><div class="feat-title">Multi-tenant</div><div class="feat-sub">Full tenant isolation</div></div>
+          <div class="feat-item"><div class="feat-icon"><i class="ti ti-layout-grid" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i></div><div class="feat-title">Modular</div><div class="feat-sub">27+ enterprise modules</div></div>
+          <div class="feat-item"><div class="feat-icon"><i class="ti ti-palette" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i></div><div class="feat-title">AEOS design</div><div class="feat-sub">12 themes + customizer</div></div>
+          <div class="feat-item"><div class="feat-icon"><i class="ti ti-chart-bar" style="font-size:16px;color:var(--color-text-info)" aria-hidden="true"></i></div><div class="feat-title">Analytics</div><div class="feat-sub">Built-in KPIs</div></div>
+        </div>
+        <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem;margin-bottom:.75rem">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-tertiary);margin-bottom:.5rem">What you'll need</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+            <i class="ti ti-check" style="color:var(--color-text-success);margin-right:5px;font-size:12px" aria-hidden="true"></i>Database credentials (MySQL/PostgreSQL)<br>
+            <i class="ti ti-check" style="color:var(--color-text-success);margin-right:5px;font-size:12px" aria-hidden="true"></i>App domain and SMTP mail config<br>
+            <i class="ti ti-check" style="color:var(--color-text-success);margin-right:5px;font-size:12px" aria-hidden="true"></i>Admin email and password
+          </div>
+        </div>
+        <div class="mock-nav" style="border-top:none;padding-top:0;margin-top:0;justify-content:flex-end">
+          <button class="mock-btn mock-btn-primary">Begin setup <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+        </div>
+      </div>
+
+      <div class="mock-card" id="screen-requirements" style="display:none">
+        <div class="mock-title">System requirements</div>
+        <div class="mock-sub">Checking that your server meets the minimum requirements.</div>
+        <div class="alert-box alert-success" style="margin-bottom:.75rem;display:flex;align-items:center;gap:8px"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> All requirements met — ready to proceed</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:.5rem">
+          <button class="mock-btn" style="font-size:11px;padding:3px 10px">Collapse passed <i class="ti ti-chevron-up" style="font-size:11px" aria-hidden="true"></i></button>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:.75rem">
+          <div style="padding:6px 10px;background:var(--color-background-secondary);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-tertiary)">PHP version</div>
+          <div class="mock-check-row" style="padding:8px 12px">
+            <div class="mock-ci mci-pass"><i class="ti ti-check" aria-hidden="true"></i></div>
+            <div style="flex:1;font-size:12px;color:var(--color-text-primary)">PHP 8.2.x</div>
+            <span style="font-size:11px;color:var(--color-text-success);font-family:var(--font-mono)">8.2.10 · Pass</span>
+          </div>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:.75rem">
+          <div style="padding:6px 10px;background:var(--color-background-secondary);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-tertiary)">PHP extensions</div>
+          <div class="mock-check-row" style="padding:8px 12px"><div class="mock-ci mci-pass"><i class="ti ti-check" aria-hidden="true"></i></div><div style="flex:1;font-size:12px;color:var(--color-text-primary)">pdo_mysql</div><span style="font-size:11px;color:var(--color-text-success);font-family:var(--font-mono)">Pass</span></div>
+          <div class="mock-check-row" style="padding:8px 12px"><div class="mock-ci mci-pass"><i class="ti ti-check" aria-hidden="true"></i></div><div style="flex:1;font-size:12px;color:var(--color-text-primary)">openssl</div><span style="font-size:11px;color:var(--color-text-success);font-family:var(--font-mono)">Pass</span></div>
+          <div class="mock-check-row" style="padding:8px 12px;border-bottom:none"><div class="mock-ci mci-fail"><i class="ti ti-x" aria-hidden="true"></i></div><div style="flex:1"><div style="font-size:12px;color:var(--color-text-primary)">redis</div><div style="font-size:11px;color:var(--color-text-secondary)">Recommended for queue worker performance</div></div><span style="font-size:11px;color:var(--color-text-warning);font-family:var(--font-mono)">Optional</span></div>
+        </div>
+        <div class="mock-nav">
+          <button class="mock-btn"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
+          <button class="mock-btn" style="margin-right:6px">Re-check</button>
+          <button class="mock-btn mock-btn-primary">Continue <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+        </div>
+      </div>
+
+      <div class="mock-card" id="screen-database" style="display:none">
+        <div class="mock-title">Database configuration</div>
+        <div class="mock-sub">Configure the database connection for aeos365.</div>
+        <div class="mock-field">
+          <div class="mock-label">Database driver</div>
+          <select class="mock-input"><option>MySQL</option><option>PostgreSQL</option><option>SQLite</option></select>
+        </div>
+        <div class="mock-input-row" style="margin-bottom:.75rem">
+          <div class="mock-field" style="margin-bottom:0">
+            <div class="mock-label">Host</div>
+            <div class="mock-input" style="display:flex;align-items:center;font-size:12px;color:var(--color-text-primary)"><i class="ti ti-link" style="font-size:12px;margin-right:6px;color:var(--color-text-tertiary)" aria-hidden="true"></i>127.0.0.1</div>
+          </div>
+          <div class="mock-field" style="margin-bottom:0">
+            <div class="mock-label">Port</div>
+            <div class="mock-input" style="display:flex;align-items:center;font-size:12px;color:var(--color-text-primary)">3306</div>
+          </div>
+        </div>
+        <div class="mock-field">
+          <div class="mock-label">Database name <span style="font-size:10px;color:var(--color-text-tertiary);margin-left:4px">or pick from server →</span></div>
+          <div style="display:flex;gap:6px">
+            <div class="mock-input" style="flex:1;display:flex;align-items:center;font-size:12px;color:var(--color-text-primary)"><i class="ti ti-database" style="font-size:12px;margin-right:6px;color:var(--color-text-tertiary)" aria-hidden="true"></i>aeos365</div>
+            <button class="mock-btn" style="font-size:11px;padding:0 10px;flex-shrink:0">Browse</button>
+          </div>
+        </div>
+        <div class="mock-input-row" style="margin-bottom:.75rem">
+          <div class="mock-field" style="margin-bottom:0"><div class="mock-label">Username</div><div class="mock-input" style="display:flex;align-items:center;font-size:12px;color:var(--color-text-primary)">root</div></div>
+          <div class="mock-field" style="margin-bottom:0"><div class="mock-label">Password</div><div class="mock-input" style="display:flex;align-items:center;font-size:12px;color:var(--color-text-tertiary)">••••••••</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem">
+          <button class="mock-btn mock-btn-primary" style="font-size:11px;padding:5px 12px">Verify &amp; Save</button>
+          <span style="font-size:11px;color:var(--color-text-success);display:flex;align-items:center;gap:4px"><i class="ti ti-circle-check" style="font-size:13px" aria-hidden="true"></i> Connected · 4ms</span>
+        </div>
+        <div class="mock-nav">
+          <button class="mock-btn"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
+          <button class="mock-btn mock-btn-primary">Continue <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+        </div>
+      </div>
+
+      <div class="mock-card" id="screen-review" style="display:none">
+        <div class="mock-title">Review configuration</div>
+        <div class="mock-sub">Everything looks good. Review your settings before installation begins.</div>
+        <div class="alert-box alert-success" style="margin-bottom:.75rem;display:flex;align-items:center;gap:8px"><i class="ti ti-circle-check" style="font-size:16px" aria-hidden="true"></i> Configuration health: 3/3 checks passed</div>
+        <div id="rev-accordion">
+          <div class="rev-section" style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:.5rem;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--color-background-secondary);cursor:pointer" onclick="toggleRev(0)">
+              <span style="font-size:13px;font-weight:500;color:var(--color-text-primary)"><i class="ti ti-database" style="margin-right:6px;font-size:13px" aria-hidden="true"></i>Database</span>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--color-text-info);cursor:pointer">Edit</span><i class="ti ti-chevron-down rev-arrow" style="font-size:12px;color:var(--color-text-tertiary)" aria-hidden="true"></i></div>
+            </div>
+            <div class="rev-body" style="padding:8px 12px">
+              <div class="review-row"><div class="rr-key">Driver</div><div class="rr-val">mysql</div></div>
+              <div class="review-row"><div class="rr-key">Host</div><div class="rr-val">127.0.0.1:3306</div></div>
+              <div class="review-row" style="border-bottom:none"><div class="rr-key">Database</div><div class="rr-val">aeos365</div></div>
+            </div>
+          </div>
+          <div class="rev-section" style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:.5rem;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--color-background-secondary);cursor:pointer" onclick="toggleRev(1)">
+              <span style="font-size:13px;font-weight:500;color:var(--color-text-primary)"><i class="ti ti-settings" style="margin-right:6px;font-size:13px" aria-hidden="true"></i>Application</span>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--color-text-info);cursor:pointer">Edit</span><i class="ti ti-chevron-down rev-arrow" style="font-size:12px;color:var(--color-text-tertiary)" aria-hidden="true"></i></div>
+            </div>
+            <div class="rev-body" style="display:none;padding:8px 12px">
+              <div class="review-row"><div class="rr-key">App name</div><div class="rr-val">aeos365</div></div>
+              <div class="review-row" style="border-bottom:none"><div class="rr-key">App URL</div><div class="rr-val">https://aeos365.test</div></div>
+            </div>
+          </div>
+          <div class="rev-section" style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:.5rem;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--color-background-secondary);cursor:pointer" onclick="toggleRev(2)">
+              <span style="font-size:13px;font-weight:500;color:var(--color-text-primary)"><i class="ti ti-user" style="margin-right:6px;font-size:13px" aria-hidden="true"></i>Admin account</span>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--color-text-info);cursor:pointer">Edit</span><i class="ti ti-chevron-down rev-arrow" style="font-size:12px;color:var(--color-text-tertiary)" aria-hidden="true"></i></div>
+            </div>
+            <div class="rev-body" style="display:none;padding:8px 12px">
+              <div class="review-row"><div class="rr-key">Name</div><div class="rr-val">Admin</div></div>
+              <div class="review-row" style="border-bottom:none"><div class="rr-key">Email</div><div class="rr-val">admin@aeos365.test</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-nav">
+          <button class="mock-btn"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
+          <button class="mock-btn mock-btn-primary">Install now <i class="ti ti-rocket" aria-hidden="true"></i></button>
+        </div>
+      </div>
+
+      <div class="mock-card" id="screen-processing" style="display:none">
+        <div style="text-align:center;padding:1rem 0">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(0,163,184,.08);border:1.5px solid rgba(0,163,184,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;position:relative">
+            <div style="width:60px;height:60px;border-radius:50%;border:1.5px solid transparent;border-top-color:#00B8D4;position:absolute;animation:spin .8s linear infinite"></div>
+            <span style="font-size:18px;font-weight:700;background:linear-gradient(135deg,#00B8D4,#6366F1);-webkit-background-clip:text;-webkit-text-fill-color:transparent">A</span>
+          </div>
+          <div class="mock-title" style="margin-bottom:4px">Installing aeos365</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px">Running migrations…</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:1rem">~1 min 20 sec remaining</div>
+          <div style="height:6px;background:var(--color-background-secondary);border-radius:3px;margin-bottom:4px;overflow:hidden"><div style="width:42%;height:100%;border-radius:3px;background:linear-gradient(90deg,#00B8D4,#6366F1)"></div></div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:1rem">Step 4 of 10</div>
+        </div>
+        <div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--color-background-secondary)">
+            <span style="font-size:11px;color:var(--color-text-secondary)">Installation steps</span>
+            <button class="mock-btn" style="font-size:10px;padding:2px 8px">Show log</button>
+          </div>
+          <div class="proc-step" style="padding:6px 12px"><div class="proc-icon" style="color:var(--color-text-success)">✓</div><div style="flex:1;font-size:12px;color:var(--color-text-secondary)">License validation</div><span style="font-size:10px;color:var(--color-text-success);font-family:var(--font-mono)">done</span></div>
+          <div class="proc-step" style="padding:6px 12px"><div class="proc-icon" style="color:var(--color-text-success)">✓</div><div style="flex:1;font-size:12px;color:var(--color-text-secondary)">Database connection</div><span style="font-size:10px;color:var(--color-text-success);font-family:var(--font-mono)">done</span></div>
+          <div class="proc-step" style="padding:6px 12px"><div class="proc-icon" style="color:var(--color-text-success)">✓</div><div style="flex:1;font-size:12px;color:var(--color-text-secondary)">Configuration</div><span style="font-size:10px;color:var(--color-text-success);font-family:var(--font-mono)">done</span></div>
+          <div class="proc-step" style="padding:6px 12px;background:rgba(0,163,184,.04)"><div class="proc-icon" style="color:#00B8D4">↻</div><div style="flex:1;font-size:12px;font-weight:500;color:var(--color-text-primary)">Database migrations</div><span style="font-size:10px;color:#00B8D4;font-family:var(--font-mono)">running…</span></div>
+          <div class="proc-step" style="padding:6px 12px"><div class="proc-icon" style="color:var(--color-text-tertiary)">·</div><div style="flex:1;font-size:12px;color:var(--color-text-tertiary)">Module discovery</div><span style="font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono)">waiting</span></div>
+          <div class="proc-step" style="padding:6px 12px;border-bottom:none"><div class="proc-icon" style="color:var(--color-text-tertiary)">·</div><div style="flex:1;font-size:12px;color:var(--color-text-tertiary)">Seeding data</div><span style="font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono)">waiting</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUES FOUND -->
+  <div id="panel-issues" class="panel">
+    <div class="card card-danger" style="margin-bottom:.5rem">
+      <div class="section-label" style="margin-bottom:.75rem">High severity</div>
+      <div class="sa-row">
+        <span class="issue-badge ib-high">High</span>
+        <div style="flex:1;min-width:0">
+          <div class="sa-title">CSRF disabled globally for all installation routes</div>
+          <div class="sa-desc"><code>Route::withoutMiddleware([VerifyCsrfToken::class])</code> wraps every route — including the production-side POST routes. This means all installation API endpoints accept cross-origin POST requests with no token check during the install window.</div>
+          <div class="sa-fix">Fix: Scope the CSRF exclusion to only the 3–4 routes that legitimately need it (e.g., <code>/install/progress</code>, <code>/install/check-requirements</code>). Keep CSRF on all form-submit routes.</div>
+        </div>
+      </div>
+      <div class="sa-row" style="border-bottom:none">
+        <span class="issue-badge ib-high">High</span>
+        <div style="flex:1;min-width:0">
+          <div class="sa-title">76 KB / 2054-line controller — no chunking</div>
+          <div class="sa-desc"><code>UnifiedInstallationController.php</code> handles page rendering, AJAX validation, DB testing, config persistence, and execution orchestration in one file. Any change requires loading the full file; PHP opcache invalidates the entire unit on each touch.</div>
+          <div class="sa-fix">Fix: Extract into thin action classes — <code>ValidateLicenseAction</code>, <code>TestDatabaseAction</code>, <code>SaveSettingsAction</code>, etc. — and keep the controller as a thin router. Matches the existing <code>Steps/</code> pattern.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-warn" style="margin-bottom:.5rem">
+      <div class="section-label" style="margin-bottom:.75rem">Medium severity</div>
+      <div class="sa-row">
+        <span class="issue-badge ib-med">Med</span>
+        <div style="flex:1;min-width:0">
+          <div class="sa-title">Polling loop has no backoff or abort</div>
+          <div class="sa-desc"><code>Processing.jsx</code> calls <code>setTimeout(poll, 1200)</code> on every iteration. A slow server or network hiccup causes the poll to fire before the previous response returns, potentially queuing multiple concurrent requests.</div>
+          <div class="sa-fix">Fix: Implement exponential backoff (1.2s → 2.4s → 4.8s → cap at 10s) and abort the previous fetch on retry. Wrap with <code>AbortController</code>.</div>
+        </div>
+      </div>
+      <div class="sa-row">
+        <span class="issue-badge ib-med">Med</span>
+        <div style="flex:1;min-width:0">
+          <div class="sa-title">Step label text hidden at all mobile widths</div>
+          <div class="sa-desc"><code>InstallLayout.jsx</code> sets <code>.il-step-lbl { display: none }</code> and only shows it at <code>min-width: 560px</code>. On a 375px phone the user sees unlabeled dots with no text context of which step they're on.</div>
+          <div class="sa-fix">Fix: Replace with a single centered <code>"Step 3 of 9 · Database"</code> text line below the dots. Always visible, zero extra width, better than tiny labels on a cramped row.</div>
+        </div>
+      </div>
+      <div class="sa-row">
+        <span class="issue-badge ib-med">Med</span>
+        <div style="flex:1;min-width:0">
+          <div class="sa-title">Duplicate route definitions (legacy aliases re-register page routes)</div>
+          <div class="sa-desc"><code>installation.php</code> defines e.g. <code>GET /</code> twice — once as <code>installation.index</code> and again as <code>install.index</code>. Laravel resolves both but the route cache will log a duplicate warning and named-route resolution is non-deterministic on the duplicate key.</div>
+          <div class="sa-fix">Fix: Keep legacy names as <code>->name('install.index')</code> aliases using <code>Route::alias()</code> or simply redirect old URLs to new route names in middleware.</div>
+        </div>
+      </div>
+      <div class="sa-row" style="border-bottom:none">
+        <span class="issue-badge ib-med">Med</span>
+        <div style="flex:1;min-width:0">
+          <div class="sa-title">No inline validation — "Continue" enabled only after Save round-trip</div>
+          <div class="sa-desc">Database and Settings forms disable Continue until a server round-trip succeeds. If the user corrects a typo they must re-click "Test" / "Save" even though the field is clearly changed. No client-side indication of why Continue is greyed out.</div>
+          <div class="sa-fix">Fix: Add a <code>useEffect</code> debounce validator per field. Show inline field-level errors without a submit. Enable Continue only when all fields pass the client schema.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-success">
+      <div class="section-label" style="margin-bottom:.75rem">Low / cosmetic</div>
+      <div class="sa-row"><span class="issue-badge ib-low">Low</span><div style="flex:1;min-width:0"><div class="sa-title">Processing step labels use raw class keys</div><div class="sa-desc">Step keys like <code>MigrationStep</code>, <code>PlanSeedingStep</code> leak internal class names to users via the step list in <code>Processing.jsx</code>.</div><div class="sa-fix">Fix: Map step keys to human labels in <code>Processing.jsx</code>: <code>{ MigrationStep: 'Running database migrations', PlanSeedingStep: 'Seeding subscription plans' }</code></div></div></div>
+      <div class="sa-row"><span class="issue-badge ib-low">Low</span><div style="flex:1;min-width:0"><div class="sa-title">Complete step has no quick actions</div><div class="sa-desc">After installation, the user lands on a congratulations screen with only a login button — no guidance on what to do next.</div><div class="sa-fix">Fix: Add 3 contextual quick-action cards: Dashboard, Module configuration, Invite team members.</div></div></div>
+      <div class="sa-row" style="border-bottom:none"><span class="issue-badge ib-low">Low</span><div style="flex:1;min-width:0"><div class="sa-title"><code>AlreadyInstalled.jsx</code> exists but isn't imported by any step</div><div class="sa-desc">The file is in the Installation directory but the controller redirects to login rather than rendering the Inertia page, making the component unreachable.</div><div class="sa-fix">Consider rendering it for informational purposes when someone hits <code>/install</code> post-installation, rather than a silent redirect.</div></div></div>
+    </div>
+  </div>
+
+  <!-- IMPLEMENTATION PLAN -->
+  <div id="panel-plan" class="panel">
+    <div class="card card-accent" style="margin-bottom:1rem">
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">All changes are confined to <strong>aero-ui</strong> (JSX/CSS) and <strong>aero-installation</strong> (PHP). No new npm dependencies required. Follows the same patterns as the registration flow and admin dashboard redesigns.</div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:.75rem">Phase 1 — Critical fixes (no UI change)</div>
+    <div class="card" style="margin-bottom:.75rem">
+      <div class="impl-row">
+        <div class="impl-num">1</div>
+        <div><div class="impl-title">Scope CSRF exclusions</div><div class="impl-sub">Update <code>installation.php</code> to only exclude CSRF for the specific GET/polling routes that need it. Restore CSRF verification on all POST form-submission routes.</div><div class="impl-files"><span class="file-pill">routes/installation.php</span></div></div>
+      </div>
+      <div class="impl-row">
+        <div class="impl-num">2</div>
+        <div><div class="impl-title">Fix duplicate route names</div><div class="impl-sub">Remove the duplicated <code>GET /</code>, <code>GET /license</code> etc. from the legacy aliases block. Introduce a redirect middleware for old <code>install.*</code> → <code>installation.*</code> named routes.</div><div class="impl-files"><span class="file-pill">routes/installation.php</span></div></div>
+      </div>
+      <div class="impl-row" style="border-bottom:none">
+        <div class="impl-num">3</div>
+        <div><div class="impl-title">Add step-key label map to Processing</div><div class="impl-sub">Define a <code>STEP_LABELS</code> constant mapping PHP class names → human strings. No backend change needed.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Processing.jsx</span></div></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:.75rem">Phase 2 — UX improvements (UI changes)</div>
+    <div class="card" style="margin-bottom:.75rem">
+      <div class="impl-row">
+        <div class="impl-num">4</div>
+        <div><div class="impl-title">Step indicator — mobile text line</div><div class="impl-sub">Replace <code>.il-step-lbl { display:none }</code> pattern in <code>InstallLayout.jsx</code> with a centred "Step N of M · StepName" text line rendered below the dot row at all widths.</div><div class="impl-files"><span class="file-pill">Pages/Installation/InstallLayout.jsx</span></div></div>
+      </div>
+      <div class="impl-row">
+        <div class="impl-num">5</div>
+        <div><div class="impl-title">Database — Verify &amp; Save + DB picker</div><div class="impl-sub">Merge Test + Save into one action. On server connection success, call <code>/install/list-databases</code> and replace the text input with a dropdown. Show latency badge on success.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Database.jsx</span></div></div>
+      </div>
+      <div class="impl-row">
+        <div class="impl-num">6</div>
+        <div><div class="impl-title">Review — grouped accordion with Edit shortcuts</div><div class="impl-sub">Rebuild <code>Review.jsx</code> with collapsible sections. Each section header has an inline "Edit" link that routes back using <code>router.get(IR.stepRoute)</code> with current state preserved via the JSON config file.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Review.jsx</span><span class="file-pill">installRoutes.js</span></div></div>
+      </div>
+      <div class="impl-row">
+        <div class="impl-num">7</div>
+        <div><div class="impl-title">Processing — ETA + backoff + log tail</div><div class="impl-sub">Add ETA computation from step start timestamps. Implement <code>AbortController</code>-based fetch with exponential backoff. Add "Show log" expandable panel.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Processing.jsx</span></div></div>
+      </div>
+      <div class="impl-row" style="border-bottom:none">
+        <div class="impl-num">8</div>
+        <div><div class="impl-title">Complete — quick actions card</div><div class="impl-sub">Add three context-aware quick-action cards after the success message. SaaS mode adds a subdomain guide + copy button.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Complete.jsx</span></div></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:.75rem">Phase 3 — Architectural (optional, larger scope)</div>
+    <div class="card">
+      <div class="impl-row">
+        <div class="impl-num">9</div>
+        <div><div class="impl-title">Controller decomposition</div><div class="impl-sub">Extract the 2054-line controller into action classes per operation. Recommended: <code>Actions/</code> directory alongside <code>Steps/</code>. Each action is independently testable.</div><div class="impl-files"><span class="file-pill">Http/Controllers/UnifiedInstallationController.php</span><span class="file-pill">src/Actions/ (new)</span></div></div>
+      </div>
+      <div class="impl-row">
+        <div class="impl-num">10</div>
+        <div><div class="impl-title">Settings — mail sub-section + test email inline</div><div class="impl-sub">Split <code>Settings.jsx</code> into two visual sections. Add the log-driver advisory and wire the existing <code>/install/test-email</code> endpoint to an inline button.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Settings.jsx</span></div></div>
+      </div>
+      <div class="impl-row" style="border-bottom:none">
+        <div class="impl-num">11</div>
+        <div><div class="impl-title">SaaS — domain verification on Platform step</div><div class="impl-sub">Add a DNS ping action on the backend and a "Verify DNS" button in the SaaS platform settings step. Surface the hosts file snippet for local dev.</div><div class="impl-files"><span class="file-pill">Pages/Installation/Settings.jsx</span><span class="file-pill">UnifiedInstallationController.php</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var screens = ['welcome','requirements','database','review','processing'];
+var stepConfigs = {
+  welcome:{step:1,total:9,label:'Welcome'},
+  requirements:{step:2,total:9,label:'Requirements'},
+  database:{step:3,total:9,label:'Database'},
+  review:{step:7,total:9,label:'Review'},
+  processing:{step:8,total:9,label:'Processing'}
+};
+
+function show(id, btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('panel-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function setMode(m, btn){
+  document.querySelectorAll('#panel-steps .mode-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('steps-standalone').style.display = m==='standalone'?'block':'none';
+  document.getElementById('steps-saas').style.display = m==='saas'?'block':'none';
+}
+
+function setScreen(id, btn){
+  document.querySelectorAll('#panel-preview .mode-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  screens.forEach(function(s){
+    var el = document.getElementById('screen-'+s);
+    if(el) el.style.display = s===id?'block':'none';
+  });
+  renderSteps(id);
+}
+
+function renderSteps(screenId){
+  var cfg = stepConfigs[screenId]||{step:1,total:9,label:'Welcome'};
+  var dotsEl = document.getElementById('step-dots');
+  var labelEl = document.getElementById('step-label-text');
+  var fill = document.getElementById('prog-fill');
+  dotsEl.innerHTML='';
+  for(var i=1;i<=cfg.total;i++){
+    var dot = document.createElement('div');
+    dot.className = 'mock-step-dot '+(i<cfg.step?'msd-done':i===cfg.step?'msd-current':'msd-pending');
+    dot.textContent = i<cfg.step?'✓':i;
+    dotsEl.appendChild(dot);
+    if(i<cfg.total){
+      var line = document.createElement('div');
+      line.className = 'mock-step-line'+(i<cfg.step?' done':'');
+      dotsEl.appendChild(line);
+    }
+  }
+  labelEl.textContent = 'Step '+cfg.step+' of '+cfg.total+' · '+cfg.label;
+  fill.style.width = Math.round((cfg.step/cfg.total)*100)+'%';
+}
+
+function toggleRev(idx){
+  var bodies = document.querySelectorAll('#rev-accordion .rev-body');
+  var arrows = document.querySelectorAll('#rev-accordion .rev-arrow');
+  var body = bodies[idx];
+  var arrow = arrows[idx];
+  if(!body) return;
+  var open = body.style.display!=='none';
+  body.style.display = open?'none':'block';
+  if(arrow) arrow.style.transform = open?'':'rotate(180deg)';
+}
+
+renderSteps('welcome');
+</script>
+</body>
+</html>

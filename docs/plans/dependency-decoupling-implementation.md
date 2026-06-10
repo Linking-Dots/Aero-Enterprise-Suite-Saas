@@ -22,7 +22,7 @@
 
 ---
 
-## Phase 1 — Contracts foundation  *(V6, V9, + TenancyProvider interface)*
+## Phase 1 — Contracts foundation  *(V6, V9, + TenancyProvider interface)*  ✅ DONE 2026-06-09 (9381588b8)
 
 - Canonicalize `CentralModel`/`TenantModel` in `aero-contracts`; add `class_alias` from `core`/`platform` copies.
 - Move Mail/SMS/`TranslationDriverInterface` **interfaces** into `contracts`.
@@ -30,6 +30,8 @@
 
 **Delegate:** Backend Engineer (opus — base-model semantics are subtle). QC (sonnet).
 **Gate:** suite green; both copies still resolve via alias. **Risk:** low.
+
+**Outcome:** Mostly pre-done in-flight. `CentralModel`/`TenantModel` already canonical in `aero-contracts/src/Models/` with core+platform BC shims (subclasses, not `class_alias` — equivalent BC). V9 interfaces (`MailContextResolverInterface`, `SmsContextResolverInterface`, `TranslationDriverInterface`, …) already in `contracts`, implemented by core's `Core*ContextResolver`. **Net new:** (1) platform `CentralModel` shim was extending `\Aero\Core\Models\CentralModel` — a platform→core edge — repointed to `\Aero\Contracts\Models\CentralModel` (last base-model sibling edge gone). (2) Added `Aero\Contracts\TenancyProvider` (inversion seam; interface only; implemented in Phase 5). Verified 0 regression. Existing `DomainContextContract` + `TenantScopeInterface` are query-only (no overlap).
 
 ---
 
