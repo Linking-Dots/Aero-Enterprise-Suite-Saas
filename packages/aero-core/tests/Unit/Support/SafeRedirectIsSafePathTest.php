@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Core\Tests\Unit\Support;
 
-use Aero\Core\Support\SafeRedirect;
+use Aero\Kernel\Support\SafeRedirect;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -24,7 +24,9 @@ class AeroKernelServiceProvider extends ServiceProvider
      * while they are repointed incrementally. Removed in the final enforcement phase.
      */
     private const LEGACY_ALIASES = [
-        \Aero\Kernel\Audit\AuditEventType::class => 'Aero\\Core\\Services\\Audit\\AuditEventType',
+        \Aero\Kernel\Audit\AuditEventType::class   => 'Aero\\Core\\Services\\Audit\\AuditEventType',
+        \Aero\Kernel\Support\SafeRedirect::class   => 'Aero\\Core\\Support\\SafeRedirect',
+        \Aero\Kernel\Support\TenantCache::class    => 'Aero\\Core\\Support\\TenantCache',
     ];
 
     public function register(): void

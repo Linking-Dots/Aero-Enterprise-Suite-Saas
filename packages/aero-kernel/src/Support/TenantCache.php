@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Support;
+namespace Aero\Kernel\Support;
 
 use Illuminate\Support\Facades\Cache;
 

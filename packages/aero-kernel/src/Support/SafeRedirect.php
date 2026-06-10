@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Support;
+namespace Aero\Kernel\Support;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
