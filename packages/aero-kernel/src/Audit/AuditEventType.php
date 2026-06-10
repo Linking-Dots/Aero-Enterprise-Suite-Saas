@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Services\Audit;
+namespace Aero\Kernel\Audit;
 
 enum AuditEventType: string
 {

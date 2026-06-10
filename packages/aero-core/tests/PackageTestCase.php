@@ -34,6 +34,7 @@ abstract class PackageTestCase extends TestCase
     {
         return [
             InertiaServiceProvider::class,
+            \Aero\Kernel\AeroKernelServiceProvider::class,
             AeroCoreServiceProvider::class,
             HRMACServiceProvider::class,
         ];
