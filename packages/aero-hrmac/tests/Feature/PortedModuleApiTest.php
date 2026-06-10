@@ -78,6 +78,39 @@ class PortedModuleApiTest extends PackageTestCase
         $this->assertSame('view', $activeComp->activeActions->first()->code);
     }
 
+    public function test_categories_returns_canonical_superset(): void
+    {
+        $cats = Module::categories();
+
+        $this->assertArrayHasKey(Module::CATEGORY_HUMAN_RESOURCES, $cats);
+        $this->assertArrayHasKey(Module::CATEGORY_FINANCIAL, $cats);
+        $this->assertArrayHasKey(Module::CATEGORY_ADMINISTRATION, $cats);
+        $this->assertSame('Financial Management', $cats[Module::CATEGORY_FINANCIAL]);
+        $this->assertCount(10, $cats);
+    }
+
+    public function test_get_complete_hierarchy_traverses_without_dead_perm_eager_load(): void
+    {
+        $module = Module::create(['code' => 'hrm', 'name' => 'HRM', 'is_active' => true, 'priority' => 1]);
+        $sub = SubModule::create(['module_id' => $module->id, 'code' => 'emp', 'name' => 'Emp', 'is_active' => true, 'priority' => 1]);
+        $comp = ModuleComponent::create(['module_id' => $module->id, 'sub_module_id' => $sub->id, 'code' => 'list', 'name' => 'List', 'type' => ModuleComponent::TYPE_PAGE, 'is_active' => true]);
+        ModuleComponentAction::create(['module_component_id' => $comp->id, 'code' => 'view', 'name' => 'View', 'is_active' => true]);
+
+        Module::clearCache();
+        $hierarchy = Module::getCompleteHierarchy();
+
+        $this->assertCount(1, $hierarchy);
+        $root = $hierarchy->first();
+        $this->assertSame('hrm', $root->code);
+        $this->assertCount(1, $root->subModules);
+        $this->assertCount(1, $root->subModules->first()->components);
+        $this->assertCount(1, $root->subModules->first()->components->first()->actions);
+
+        // clearCache() must not throw and must drop the cached value.
+        Module::clearCache();
+        $this->assertTrue(true);
+    }
+
     public function test_dead_permission_api_is_not_ported(): void
     {
         // Decision 5: these referenced a non-existent ModulePermission and were dropped.

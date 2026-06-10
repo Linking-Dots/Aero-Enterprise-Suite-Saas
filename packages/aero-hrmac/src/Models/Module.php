@@ -6,6 +6,8 @@ namespace Aero\HRMAC\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Module Model
@@ -50,11 +52,45 @@ class Module extends HrmacModel
 
     public const CATEGORY_PLATFORM = 'platform';
 
+    public const CATEGORY_SELF_SERVICE = 'self_service';
+
     public const CATEGORY_HUMAN_RESOURCES = 'human_resources';
 
     public const CATEGORY_PROJECT_MANAGEMENT = 'project_management';
 
     public const CATEGORY_DOCUMENT_MANAGEMENT = 'document_management';
+
+    public const CATEGORY_CUSTOMER_RELATIONS = 'customer_relations';
+
+    public const CATEGORY_SUPPLY_CHAIN = 'supply_chain';
+
+    public const CATEGORY_RETAIL_SALES = 'retail_sales';
+
+    public const CATEGORY_FINANCIAL = 'financial_management';
+
+    public const CATEGORY_ADMINISTRATION = 'system_administration';
+
+    /**
+     * Human-readable category labels (canonical superset, ported from the retired
+     * core/platform Module sets — used by module create/update validation).
+     *
+     * @return array<string, string>
+     */
+    public static function categories(): array
+    {
+        return [
+            self::CATEGORY_CORE => 'Core System',
+            self::CATEGORY_SELF_SERVICE => 'Self Service',
+            self::CATEGORY_HUMAN_RESOURCES => 'Human Resources',
+            self::CATEGORY_PROJECT_MANAGEMENT => 'Project Management',
+            self::CATEGORY_DOCUMENT_MANAGEMENT => 'Document Management',
+            self::CATEGORY_CUSTOMER_RELATIONS => 'Customer Relations',
+            self::CATEGORY_SUPPLY_CHAIN => 'Supply Chain',
+            self::CATEGORY_RETAIL_SALES => 'Retail & Sales',
+            self::CATEGORY_FINANCIAL => 'Financial Management',
+            self::CATEGORY_ADMINISTRATION => 'System Administration',
+        ];
+    }
 
     /**
      * Scope for tenant modules.
@@ -134,5 +170,38 @@ class Module extends HrmacModel
     public static function findByCode(string $code): ?self
     {
         return static::where('code', $code)->first();
+    }
+
+    /**
+     * Complete active module hierarchy: modules → sub-modules → components → actions.
+     *
+     * Ported from the retired core/platform Module sets, but stripped of the dead
+     * `permissionRequirements` eager-load (it referenced a non-existent ModulePermission
+     * class — see consolidation Decision 5). Cached via the framework cache, which the
+     * host's tenancy bootstrapper prefixes per-tenant, so this stays context-free.
+     */
+    public static function getCompleteHierarchy(): Collection
+    {
+        return Cache::remember('modules_complete_hierarchy', 600, function () {
+            return static::active()
+                ->ordered()
+                ->with([
+                    'subModules' => fn ($q) => $q->where('is_active', true)->orderBy('priority'),
+                    'subModules.components' => fn ($q) => $q->where('is_active', true),
+                    'subModules.components.actions',
+                ])
+                ->get();
+        });
+    }
+
+    /**
+     * Clear the cached module hierarchy.
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('modules_complete_hierarchy');
+        Cache::forget('modules_with_structure');
+        Cache::forget('user_accessible_modules');
+        Cache::forget('all_modules');
     }
 }

@@ -4,8 +4,8 @@ namespace Aero\Platform\Services;
 
 use Aero\Core\Models\User;
 use Aero\Core\Support\TenantCache;
-use Aero\Platform\Models\Action;
-use Aero\Platform\Models\Component;
+use Aero\HRMAC\Models\ModuleComponentAction;
+use Aero\HRMAC\Models\ModuleComponent;
 use Aero\Platform\Models\Module;
 use Aero\Platform\Models\SubModule;
 
@@ -121,7 +121,7 @@ class ModuleAccessService
         $cacheKey = "user.{$user->id}.component.{$moduleCode}.{$subModuleCode}.{$componentCode}";
 
         return TenantCache::tags(['module-access', "user-{$user->id}"])->remember($cacheKey, 3600, function () use ($user, $moduleCode, $subModuleCode, $componentCode) {
-            $component = Component::whereHas('subModule.module', function ($query) use ($moduleCode) {
+            $component = ModuleComponent::whereHas('subModule.module', function ($query) use ($moduleCode) {
                 $query->where('code', $moduleCode);
             })
                 ->whereHas('subModule', function ($query) use ($subModuleCode) {
@@ -167,7 +167,7 @@ class ModuleAccessService
         $cacheKey = "user.{$user->id}.action.{$moduleCode}.{$subModuleCode}.{$componentCode}.{$actionCode}";
 
         return TenantCache::tags(['module-access', "user-{$user->id}"])->remember($cacheKey, 3600, function () use ($user, $moduleCode, $subModuleCode, $componentCode, $actionCode) {
-            $action = Action::whereHas('component.subModule.module', function ($query) use ($moduleCode) {
+            $action = ModuleComponentAction::whereHas('component.subModule.module', function ($query) use ($moduleCode) {
                 $query->where('code', $moduleCode);
             })
                 ->whereHas('component.subModule', function ($query) use ($subModuleCode) {
