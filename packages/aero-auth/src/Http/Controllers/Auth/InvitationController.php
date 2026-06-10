@@ -4,8 +4,8 @@ namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Auth\Http\Requests\AcceptTeamInvitationRequest;
+use Aero\Contracts\UserInvitationServiceInterface;
 use Aero\Core\Services\AuditService;
-use Aero\Core\Services\UserInvitationService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +18,7 @@ use Inertia\Response;
 class InvitationController extends Controller
 {
     public function __construct(
-        protected UserInvitationService $invitationService,
+        protected UserInvitationServiceInterface $invitationService,
         protected AuditService $auditService
     ) {}
 

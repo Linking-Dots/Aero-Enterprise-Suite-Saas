@@ -151,6 +151,10 @@ class AeroCoreServiceProvider extends ServiceProvider
             // concrete core service (which owns the media-bearing SystemSetting model).
             $this->app->singleton(\Aero\Contracts\SystemSettingServiceInterface::class, \Aero\Core\Services\SystemSettingService::class);
 
+            // User invitations — shared packages (auth) depend on the token-acceptance
+            // contract; the concrete core service keeps its richer admin surface.
+            $this->app->singleton(\Aero\Contracts\UserInvitationServiceInterface::class, \Aero\Core\Services\UserInvitationService::class);
+
             // Register Core Singletons
             $this->app->singleton(ModuleRegistry::class);
             $this->app->alias(ModuleRegistry::class, \Aero\Contracts\ModuleRegistryInterface::class);
