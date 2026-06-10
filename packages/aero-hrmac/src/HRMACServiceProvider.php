@@ -47,15 +47,41 @@ class HRMACServiceProvider extends ServiceProvider
     /**
      * Class aliases for the consolidated module-hierarchy models.
      *
-     * TEMPORARY self-aliases (consolidation Task 2 — removed in Task 8): keep the
-     * pre-rename hrmac FQNs (Component/Action) resolving to the canonical
-     * ModuleComponent/ModuleComponentAction while any string/dynamic references migrate.
+     * aero-hrmac is the single canonical home for Module/SubModule/ModuleComponent/
+     * ModuleComponentAction. The legacy aero-core (tenant) and aero-platform (central)
+     * model sets were retired; these aliases keep their ~53 consumer references resolving
+     * to the canonical hrmac classes with zero consumer edits.
+     *
+     * Each alias is guarded by class_exists(..., false): while a real legacy class file
+     * still exists (pre-deletion) the alias is a dormant no-op; it activates once Task 5
+     * deletes the duplicate file. The core/platform bridge is the permanent compatibility
+     * shim (removed only in the final deptrac-enforcement phase). The HRMAC self-aliases
+     * (Component/Action) are TEMPORARY (consolidation Task 2 — removed in Task 8).
      */
     protected function registerModelAliases(): void
     {
         $aliases = [
-            \Aero\HRMAC\Models\ModuleComponent::class => ['Aero\\HRMAC\\Models\\Component'],
-            \Aero\HRMAC\Models\ModuleComponentAction::class => ['Aero\\HRMAC\\Models\\Action'],
+            // Permanent BC bridge: legacy core + platform FQNs -> canonical hrmac models.
+            \Aero\HRMAC\Models\Module::class => [
+                'Aero\\Core\\Models\\Module',
+                'Aero\\Platform\\Models\\Module',
+            ],
+            \Aero\HRMAC\Models\SubModule::class => [
+                'Aero\\Core\\Models\\SubModule',
+                'Aero\\Platform\\Models\\SubModule',
+            ],
+            \Aero\HRMAC\Models\ModuleComponent::class => [
+                'Aero\\Core\\Models\\ModuleComponent',
+                'Aero\\Platform\\Models\\ModuleComponent',
+                // TEMPORARY self-alias (Task 2 -> removed Task 8):
+                'Aero\\HRMAC\\Models\\Component',
+            ],
+            \Aero\HRMAC\Models\ModuleComponentAction::class => [
+                'Aero\\Core\\Models\\ModuleComponentAction',
+                'Aero\\Platform\\Models\\ModuleComponentAction',
+                // TEMPORARY self-alias (Task 2 -> removed Task 8):
+                'Aero\\HRMAC\\Models\\Action',
+            ],
         ];
 
         foreach ($aliases as $canonical => $legacyNames) {
