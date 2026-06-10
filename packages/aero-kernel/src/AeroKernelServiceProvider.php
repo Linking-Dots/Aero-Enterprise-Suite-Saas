@@ -29,7 +29,11 @@ class AeroKernelServiceProvider extends ServiceProvider
         \Aero\Kernel\Support\TenantCache::class    => 'Aero\\Core\\Support\\TenantCache',
         \Aero\Kernel\Module\ModuleRegistry::class  => 'Aero\\Core\\Services\\ModuleRegistry',
         \Aero\Kernel\Module\ModuleDiscoveryService::class => 'Aero\\Core\\Services\\Module\\ModuleDiscoveryService',
-        \Aero\Kernel\Http\Controllers\Controller::class => 'Aero\\Core\\Http\\Controllers\\Controller',
+        // NOTE: the base Http Controller is NOT aliased — it is a base class that gets
+        // *extended*, and pure-unit tests reflect on subclasses without booting providers
+        // (so a runtime alias never fires). It uses a thin BC shim class instead
+        // (Aero\Core\Http\Controllers\Controller extends the kernel base), mirroring the
+        // CentralModel/TenantModel shim pattern.
     ];
 
     public function register(): void
