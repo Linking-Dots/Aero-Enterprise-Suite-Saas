@@ -192,7 +192,24 @@ foreach ($aliases as $canonical => $legacyNames) {
 - **MED — three sets drift during the work:** core/platform sets are near-identical now; do Tasks 2-5 in one focused pass so they don't diverge under a background committer.
 - **LOW — hrmac test harness:** new (Task 3a); keep it minimal.
 
-## Findings appendix (filled during Task 1)
+## Findings appendix (filled during Task 1, 2026-06-10)
 
-- Light `Component`/`Action` consumers: _TBD Task 1_
-- `plans()` callers: _TBD Task 1_
+**Boss ruling (2026-06-10):** "do whatever recommended to bring 0 duplicates in models and migrations." → light sets ARE retired (not deferred); legacy `Services\ModuleAccessService` is kept working but repointed onto the canonical models (Option 2, not a service rewrite). Goal = exactly ONE model per table + ONE create migration per table.
+
+**Light `Component`/`Action` consumers (NOT dead — live):**
+- `Aero\Core\Services\ModuleAccessService` (`use Models\{Component,Action}`) — **bound singleton** (`AeroCoreServiceProvider:168`); reached via `'module'` middleware (`Http/Kernel:111`), `'module.access'` middleware, and `ChecksModuleAccess` trait (live aero-hrm + aero-rfi policies).
+- `Aero\Platform\Services\ModuleAccessService` — platform twin, same shape.
+- **Resolution:** repoint both `Services\ModuleAccessService` `Component→ModuleComponent`, `Action→ModuleComponentAction` (Task 5). The methods used (`canAccessComponent`, `canPerformAction`) rely on relations `subModule`/`module`/`component`, all present on hrmac canonical models. `getAccessibleModules()` eager-loads `Module::with('activeSubModules.activeComponents.activeActions')` — **already broken today** (rich core `Module` has no `activeSubModules` relation) → zero regression, but we ADD the 3 pure `active*` relations to hrmac (`module_component_actions` has `is_active`) to make it correct.
+
+**`plans()` callers (Decision-6 registry targets, all platform):** `ModuleAnalyticsController` (L77/99/170/205/206), `Admin/ModuleController:470`. Mechanism confirmed available: `User::resolveRelationUsing` + `UserRelationshipRegistry` widely used → use `Module::resolveRelationUsing('plans', …)` from `AeroPlatformServiceProvider`.
+
+**`ModulePermission` class — CONFIRMED NON-EXISTENT** (`find` returns nothing). The entire permission API (`userCanAccess`/`permissionRequirements`/`getAllRequiredPermissions`/`getModuleLevelPermissions`/`getRequiredPermissions`) is dead → DROP per Decision 5.
+
+**Methods to port (smaller than planned):** `Module::scopeInCategory` (core Module:225); `ModuleComponent::scopeOfType` (core ModuleComponent:186). hrmac `Component` **already has** `types()` + TYPE_ constants → NOT ported.
+
+**Migration duplicates (the full "0 duplicate migrations" audit):** only ONE — `aero-platform/database/migrations/2025_11_29_000000_create_modules_table.php` duplicates hrmac's `2024_01_01_000001_create_modules_table`. The other 3 tables (`sub_modules`, `module_components`, `module_component_actions`) have a single create each, all in hrmac. → Task 7 deletes platform's (Boss-gated).
+
+**Rename (Task 2) reference reach — broader than plan stated. Refs to `Aero\HRMAC\Models\{Component,Action}` to repoint:**
+- *intra-hrmac:* `Services/RoleModuleAccessService`, `Models/{SubModule:70, RoleModuleAccess:127/135, Module:105}`, `Models/Component:91`→self, `Models/Action:39`→self, `Console/Commands/SyncModuleHierarchy:8/9`, `Concerns/ChecksHRMAC:9`.
+- *external (hrmac-external consumers exist → temp self-alias warranted, Task 2 Step 4):* core `Http/Middleware/HandleInertiaRequests:10/11/500`; platform `Jobs/ProvisionTenant:7/8/977-981`, `database/seeders/PlatformHrmacSeeder:6`, `Services/Tenant/TenantRoleSeeder:8`.
+- `RoleService.php` + hrmac `ModuleController.php`: NO direct model refs (plan listed them; they don't apply).
