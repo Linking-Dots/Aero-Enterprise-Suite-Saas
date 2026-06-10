@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -67,7 +66,7 @@ class SubModule extends HrmacModel
      */
     public function components(): HasMany
     {
-        return $this->hasMany(Component::class)->orderBy('priority');
+        return $this->hasMany(ModuleComponent::class)->orderBy('priority');
     }
 
     /**

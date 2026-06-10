@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Component Model (Module Component)
+ * ModuleComponent Model
  *
  * Represents a specific UI component or feature within a sub-module
  * that requires permission control (pages, sections, widgets, actions, APIs).
  * Connection-agnostic: uses current database context.
  */
-class Component extends HrmacModel
+class ModuleComponent extends HrmacModel
 {
     use HasFactory;
 
@@ -88,7 +87,7 @@ class Component extends HrmacModel
      */
     public function actions(): HasMany
     {
-        return $this->hasMany(Action::class, 'module_component_id');
+        return $this->hasMany(ModuleComponentAction::class, 'module_component_id');
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Aero\Platform\Database\Seeders;
 
 use Aero\Contracts\RoleModuleAccessInterface;
-use Aero\HRMAC\Models\Action as HrmacAction;
+use Aero\HRMAC\Models\ModuleComponentAction as HrmacAction;
 use Aero\HRMAC\Models\Module as HrmacModule;
 use Aero\HRMAC\Models\Role as HrmacRole;
 use Illuminate\Database\Seeder;

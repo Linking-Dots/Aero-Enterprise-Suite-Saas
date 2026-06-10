@@ -40,6 +40,31 @@ class HRMACServiceProvider extends ServiceProvider
         $this->app->alias(RoleModuleAccessInterface::class, 'hrmac');
         $this->app->alias(RoleModuleAccessInterface::class, RoleModuleAccessService::class);
         $this->app->alias(ModuleDiscoveryService::class, 'hrmac.discovery');
+
+        $this->registerModelAliases();
+    }
+
+    /**
+     * Class aliases for the consolidated module-hierarchy models.
+     *
+     * TEMPORARY self-aliases (consolidation Task 2 — removed in Task 8): keep the
+     * pre-rename hrmac FQNs (Component/Action) resolving to the canonical
+     * ModuleComponent/ModuleComponentAction while any string/dynamic references migrate.
+     */
+    protected function registerModelAliases(): void
+    {
+        $aliases = [
+            \Aero\HRMAC\Models\ModuleComponent::class => ['Aero\\HRMAC\\Models\\Component'],
+            \Aero\HRMAC\Models\ModuleComponentAction::class => ['Aero\\HRMAC\\Models\\Action'],
+        ];
+
+        foreach ($aliases as $canonical => $legacyNames) {
+            foreach ($legacyNames as $legacy) {
+                if (! class_exists($legacy, false)) {
+                    class_alias($canonical, $legacy);
+                }
+            }
+        }
     }
 
     /**

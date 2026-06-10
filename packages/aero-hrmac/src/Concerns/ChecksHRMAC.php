@@ -6,7 +6,7 @@ namespace Aero\HRMAC\Concerns;
 
 use Aero\Core\Models\User;
 use Aero\HRMAC\Facades\HRMAC;
-use Aero\HRMAC\Models\Action;
+use Aero\HRMAC\Models\ModuleComponentAction;
 
 /**
  * Trait ChecksHRMAC
@@ -152,7 +152,7 @@ trait ChecksHRMAC
             return true;
         }
 
-        $actionRecord = Action::where('code', $actionCode)
+        $actionRecord = ModuleComponentAction::where('code', $actionCode)
             ->where('is_active', true)
             ->whereHas('component', function ($q) use ($componentCode, $subModuleCode, $moduleCode) {
                 $q->where('code', $componentCode)

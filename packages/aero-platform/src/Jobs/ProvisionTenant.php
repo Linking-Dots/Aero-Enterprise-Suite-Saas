@@ -2,11 +2,9 @@
 
 namespace Aero\Platform\Jobs;
 
-use Aero\Core\Models\ModuleComponent;
-use Aero\Core\Models\ModuleComponentAction;
-use Aero\HRMAC\Models\Action;
-use Aero\HRMAC\Models\Component;
 use Aero\HRMAC\Models\Module;
+use Aero\HRMAC\Models\ModuleComponent;
+use Aero\HRMAC\Models\ModuleComponentAction;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\SubModule;
 use Aero\Platform\Events\TenantProvisioningStepCompleted;
@@ -967,19 +965,13 @@ class ProvisionTenant implements ShouldQueue
      */
     protected function syncModuleToDatabase(array $moduleDef): void
     {
-        // Use HRMAC models if available, else fall back to Core models
-        $moduleClass = class_exists(Module::class)
-            ? Module::class
-            : \Aero\Core\Models\Module::class;
-        $subModuleClass = class_exists(SubModule::class)
-            ? SubModule::class
-            : \Aero\Core\Models\SubModule::class;
-        $componentClass = class_exists(Component::class)
-            ? Component::class
-            : ModuleComponent::class;
-        $actionClass = class_exists(Action::class)
-            ? Action::class
-            : ModuleComponentAction::class;
+        // HRMAC owns the canonical module-hierarchy models. It is a foundational
+        // shared package that always boots in both central and tenant contexts,
+        // so these are the single source of truth — no core/platform fallback.
+        $moduleClass = Module::class;
+        $subModuleClass = SubModule::class;
+        $componentClass = ModuleComponent::class;
+        $actionClass = ModuleComponentAction::class;
 
         // Sync module (top level)
         $module = $moduleClass::updateOrCreate(

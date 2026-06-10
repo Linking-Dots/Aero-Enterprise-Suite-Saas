@@ -6,8 +6,8 @@ namespace Aero\HRMAC\Services;
 
 use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Models\User;
-use Aero\HRMAC\Models\Action;
-use Aero\HRMAC\Models\Component;
+use Aero\HRMAC\Models\ModuleComponentAction;
+use Aero\HRMAC\Models\ModuleComponent;
 use Aero\HRMAC\Models\HrmacAuditLog;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\RoleModuleAccess;
@@ -99,7 +99,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             }
 
             // Check parent sub-module access (inheritance)
-            $component = Component::find($componentId);
+            $component = ModuleComponent::find($componentId);
             if ($component && $component->sub_module_id) {
                 return $this->canAccessSubModule($roleId, $component->sub_module_id);
             }
@@ -126,7 +126,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             }
 
             // Check parent component access (inheritance)
-            $action = Action::find($actionId);
+            $action = ModuleComponentAction::find($actionId);
             if ($action) {
                 $componentId = $action->module_component_id ?? $action->component_id;
                 if ($componentId) {
@@ -246,7 +246,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         }
 
         // Find action by code in any component of this sub-module
-        $action = Action::where('code', $actionCode)
+        $action = ModuleComponentAction::where('code', $actionCode)
             ->where('is_active', true)
             ->whereHas('component', function ($q) use ($subModule) {
                 $q->where('sub_module_id', $subModule->id)->where('is_active', true);
@@ -347,15 +347,15 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
                         $moduleIds->push($subModule->module_id);
                     }
                 } elseif ($entry->component_id) {
-                    $component = Component::find($entry->component_id);
+                    $component = ModuleComponent::find($entry->component_id);
                     if ($component) {
                         $moduleIds->push($component->module_id);
                     }
                 } elseif ($entry->action_id) {
-                    $action = Action::find($entry->action_id);
+                    $action = ModuleComponentAction::find($entry->action_id);
                     $componentId = $action->module_component_id ?? $action->component_id ?? null;
                     if ($componentId) {
-                        $component = Component::find($componentId);
+                        $component = ModuleComponent::find($componentId);
                         if ($component) {
                             $moduleIds->push($component->module_id);
                         }
@@ -401,15 +401,15 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
                     }
                     // Component/action level access - get parent sub-module
                     elseif ($entry->component_id) {
-                        $component = Component::find($entry->component_id);
+                        $component = ModuleComponent::find($entry->component_id);
                         if ($component) {
                             $subModuleIds->push($component->sub_module_id);
                         }
                     } elseif ($entry->action_id) {
-                        $action = Action::find($entry->action_id);
+                        $action = ModuleComponentAction::find($entry->action_id);
                         $componentId = $action->module_component_id ?? $action->component_id ?? null;
                         if ($componentId) {
-                            $component = Component::find($componentId);
+                            $component = ModuleComponent::find($componentId);
                             if ($component) {
                                 $subModuleIds->push($component->sub_module_id);
                             }
@@ -670,7 +670,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         // If action code is specified, also include component/action level access
         if ($actionCode) {
             // Get components in this submodule that have the specified action
-            $componentIds = Component::where('sub_module_id', $subModule->id)
+            $componentIds = ModuleComponent::where('sub_module_id', $subModule->id)
                 ->where('is_active', true)
                 ->pluck('id');
 
@@ -681,7 +681,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
                 });
 
                 // Also check specific action access
-                $actionIds = Action::whereIn('component_id', $componentIds)
+                $actionIds = ModuleComponentAction::whereIn('component_id', $componentIds)
                     ->where('code', $actionCode)
                     ->where('is_active', true)
                     ->pluck('id');
@@ -734,7 +734,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             return collect();
         }
 
-        $component = Component::where('sub_module_id', $subModule->id)
+        $component = ModuleComponent::where('sub_module_id', $subModule->id)
             ->where('code', $componentCode)
             ->where('is_active', true)
             ->first();
@@ -742,7 +742,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
             return collect();
         }
 
-        $action = Action::where('component_id', $component->id)
+        $action = ModuleComponentAction::where('component_id', $component->id)
             ->where('code', $actionCode)
             ->where('is_active', true)
             ->first();

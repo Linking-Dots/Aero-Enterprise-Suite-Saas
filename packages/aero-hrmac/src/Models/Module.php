@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -102,7 +101,7 @@ class Module extends HrmacModel
      */
     public function components(): HasMany
     {
-        return $this->hasMany(Component::class);
+        return $this->hasMany(ModuleComponent::class);
     }
 
     /**

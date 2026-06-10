@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Action Model (Module Component Action)
+ * ModuleComponentAction Model
  *
  * Represents granular actions that can be performed on a component.
  * Examples: view, create, update, delete, export, import, approve, etc.
  * Connection-agnostic: uses current database context.
  */
-class Action extends HrmacModel
+class ModuleComponentAction extends HrmacModel
 {
     use HasFactory;
 
@@ -36,7 +35,7 @@ class Action extends HrmacModel
      */
     public function component(): BelongsTo
     {
-        return $this->belongsTo(Component::class, 'module_component_id');
+        return $this->belongsTo(ModuleComponent::class, 'module_component_id');
     }
 
     /**

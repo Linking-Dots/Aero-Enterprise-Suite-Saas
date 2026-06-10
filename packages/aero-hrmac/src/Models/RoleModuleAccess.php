@@ -124,7 +124,7 @@ class RoleModuleAccess extends HrmacModel
      */
     public function component(): BelongsTo
     {
-        return $this->belongsTo(Component::class, 'component_id');
+        return $this->belongsTo(ModuleComponent::class, 'component_id');
     }
 
     /**
@@ -132,7 +132,7 @@ class RoleModuleAccess extends HrmacModel
      */
     public function action(): BelongsTo
     {
-        return $this->belongsTo(Action::class, 'action_id');
+        return $this->belongsTo(ModuleComponentAction::class, 'action_id');
     }
 
     /**
