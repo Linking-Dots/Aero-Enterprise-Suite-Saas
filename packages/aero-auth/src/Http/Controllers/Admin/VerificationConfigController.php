@@ -2,8 +2,8 @@
 
 namespace Aero\Auth\Http\Controllers\Admin;
 
+use Aero\Contracts\SystemSettingServiceInterface;
 use Aero\Core\Http\Controllers\Controller;
-use Aero\Core\Services\SystemSettingService;
 use Aero\Core\Services\Audit\AuditService;
 use Aero\Core\Services\Audit\AuditEventType;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +14,7 @@ use Inertia\Response;
 class VerificationConfigController extends Controller
 {
     public function __construct(
-        private SystemSettingService $settings,
+        private SystemSettingServiceInterface $settings,
         private AuditService $audit,
     ) {}
 

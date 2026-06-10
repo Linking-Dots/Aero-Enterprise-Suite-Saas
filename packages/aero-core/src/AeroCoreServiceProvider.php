@@ -147,6 +147,10 @@ class AeroCoreServiceProvider extends ServiceProvider
             // Audit service — writes to audit_logs (tenant) or platform_audit_logs (central)
             $this->app->singleton(AuditServiceInterface::class, \Aero\Core\Services\Audit\AuditService::class);
 
+            // System settings — shared/feature packages depend on the contract, not the
+            // concrete core service (which owns the media-bearing SystemSetting model).
+            $this->app->singleton(\Aero\Contracts\SystemSettingServiceInterface::class, \Aero\Core\Services\SystemSettingService::class);
+
             // Register Core Singletons
             $this->app->singleton(ModuleRegistry::class);
             $this->app->alias(ModuleRegistry::class, \Aero\Contracts\ModuleRegistryInterface::class);
