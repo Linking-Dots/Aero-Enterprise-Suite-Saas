@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -13,7 +13,7 @@ use Inertia\Response;
 
 class LoginActivityController extends Controller
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditServiceInterface $audit) {}
 
     public function index(Request $request): Response
     {

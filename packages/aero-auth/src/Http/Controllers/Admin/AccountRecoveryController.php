@@ -4,7 +4,7 @@ namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Contracts\SystemSettingServiceInterface;
 use Aero\Kernel\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Kernel\Audit\AuditEventType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ class AccountRecoveryController extends Controller
 {
     public function __construct(
         private SystemSettingServiceInterface $settings,
-        private AuditService $audit,
+        private AuditServiceInterface $audit,
     ) {}
 
     public function index(): Response

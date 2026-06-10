@@ -3,7 +3,7 @@
 namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Kernel\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Kernel\Audit\AuditEventType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Inertia\Response;
 
 class OAuthProviderController extends Controller
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditServiceInterface $audit) {}
 
     public function index(): Response
     {

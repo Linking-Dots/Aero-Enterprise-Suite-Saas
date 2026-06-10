@@ -6,7 +6,7 @@ namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Kernel\Audit\AuditEventType;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ use Inertia\Response;
 
 class MagicLinkConfigController extends Controller
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditServiceInterface $audit) {}
 
     private function getConfig(): array
     {
