@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Services;
+namespace Aero\Kernel\Services;
 
 use Closure;
 

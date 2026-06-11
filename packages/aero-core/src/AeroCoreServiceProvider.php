@@ -161,6 +161,12 @@ class AeroCoreServiceProvider extends ServiceProvider
             $this->app->singleton(NavigationRegistry::class);
             $this->app->alias(NavigationRegistry::class, \Aero\Contracts\NavigationRegistryInterface::class);
             $this->app->singleton(UserRelationshipRegistry::class);
+            // UserRelationshipRegistry moved to aero-kernel. class_alias unifies the class
+            // symbol but NOT container keys, so consumers that resolve via the kernel FQN
+            // (e.g. aero-auth User) would otherwise get a SEPARATE, empty singleton and lose
+            // every module-registered relationship. Alias the kernel container key to the
+            // same singleton the legacy key is bound to.
+            $this->app->alias(UserRelationshipRegistry::class, \Aero\Kernel\Services\UserRelationshipRegistry::class);
             $this->app->singleton(DashboardRegistry::class);
 
             // Bind notification context resolvers — use aero-core interfaces as the canonical binding
