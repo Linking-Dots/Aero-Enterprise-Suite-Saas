@@ -5,7 +5,7 @@ namespace Aero\Auth\Models;
 use Aero\Auth\Database\Factories\UserFactory;
 use Aero\Contracts\Searchable;
 use Aero\Contracts\UserContract;
-use Aero\Core\Models\Concerns\EnforcesTenantContext;
+use Aero\Contracts\Models\Concerns\EnforcesTenantContext;
 use Aero\Kernel\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\Searchable as SearchableTrait;
 use Aero\Core\Traits\Taggable;
