@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\Http\Requests;
+namespace Aero\Notifications\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

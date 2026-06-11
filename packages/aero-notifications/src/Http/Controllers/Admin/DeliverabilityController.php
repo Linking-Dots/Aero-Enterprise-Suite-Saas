@@ -3,7 +3,7 @@
 namespace Aero\Notifications\Http\Controllers\Admin;
 
 use Aero\Contracts\SystemSettingServiceInterface;
-use Aero\Core\Http\Controllers\Controller;
+use Aero\Kernel\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
