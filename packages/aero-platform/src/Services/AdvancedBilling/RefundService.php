@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services\AdvancedBilling;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Refund;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ use InvalidArgumentException;
 class RefundService
 {
     public function __construct(
-        private readonly AuditService $audit
+        private readonly AuditServiceInterface $audit
     ) {}
 
     /**

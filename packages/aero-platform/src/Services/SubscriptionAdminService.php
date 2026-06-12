@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 class SubscriptionAdminService
 {
     public function __construct(
-        private readonly AuditService $audit
+        private readonly AuditServiceInterface $audit
     ) {}
 
     /**
@@ -83,6 +83,7 @@ class SubscriptionAdminService
 
                 $this->audit->log(
                     AuditEventType::PRODUCT_SUBSCRIPTIONS_CANCELLED->value,
+                    'cancelled',
                     $subscription,
                     "All product subscriptions cancelled for tenant {$subscription->tenant_id}"
                 );
@@ -90,6 +91,7 @@ class SubscriptionAdminService
 
             $this->audit->log(
                 AuditEventType::SUBSCRIPTION_CANCELLED->value,
+                'cancelled',
                 $subscription,
                 "Subscription [{$subscription->id}] cancelled by admin.",
                 ['status' => Subscription::STATUS_ACTIVE],
@@ -119,6 +121,7 @@ class SubscriptionAdminService
 
             $this->audit->log(
                 AuditEventType::SUBSCRIPTION_UPGRADED->value,
+                'plan_changed',
                 $subscription,
                 "Subscription [{$subscription->id}] plan changed by admin.",
                 ['plan_id' => $oldPlanId],
@@ -159,6 +162,7 @@ class SubscriptionAdminService
 
             $this->audit->log(
                 'subscription.reactivated',
+                'reactivated',
                 $subscription,
                 "Subscription [{$subscription->id}] reactivated by admin."
             );

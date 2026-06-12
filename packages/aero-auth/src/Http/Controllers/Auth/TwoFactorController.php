@@ -6,7 +6,7 @@ namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Auth\Services\TwoFactorAuthService;
-use Aero\Core\Services\AuditService;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +21,7 @@ class TwoFactorController extends Controller
 {
     public function __construct(
         protected TwoFactorAuthService $twoFactorService,
-        protected AuditService $auditService
+        protected AuditServiceInterface $auditService
     ) {}
 
     /**

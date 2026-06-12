@@ -92,6 +92,170 @@ final class AuditService implements AuditServiceInterface
     }
 
     /**
+     * Log session created (auth.session_created).
+     */
+    public function logSessionCreated(Model $user, ?string $deviceName = null): void
+    {
+        $this->log(
+            event: 'auth.session_created',
+            action: 'created',
+            subject: $user,
+            description: "Created session for user: {$user->getAuditLabel()}",
+            metadata: ['device_name' => $deviceName],
+        );
+    }
+
+    /**
+     * Log session terminated (auth.session_terminated).
+     */
+    public function logSessionTerminated(Model $user, ?string $sessionId = null, bool $terminatedByUser = true): void
+    {
+        $this->log(
+            event: 'auth.session_terminated',
+            action: 'terminated',
+            subject: $user,
+            description: "Terminated session for user: {$user->getAuditLabel()}",
+            metadata: [
+                'session_id' => $sessionId,
+                'terminated_by_user' => $terminatedByUser,
+            ],
+        );
+    }
+
+    /**
+     * Log all sessions terminated for a user (logout from all devices).
+     */
+    public function logAllSessionsTerminated(Model $user, int $sessionsCount): void
+    {
+        $this->log(
+            event: 'auth.session_terminated_all',
+            action: 'terminated_all',
+            subject: $user,
+            description: "Terminated all sessions ({$sessionsCount}) for user: {$user->getAuditLabel()}",
+            metadata: ['sessions_count' => $sessionsCount],
+        );
+    }
+
+    /**
+     * Log two-factor authentication enabled.
+     */
+    public function log2FAEnabled(Model $user): void
+    {
+        $this->log(
+            event: 'auth.2fa_enabled',
+            action: 'enabled',
+            subject: $user,
+            description: "Enabled two-factor authentication for user: {$user->getAuditLabel()}",
+        );
+    }
+
+    /**
+     * Log two-factor authentication disabled.
+     */
+    public function log2FADisabled(Model $user): void
+    {
+        $this->log(
+            event: 'auth.2fa_disabled',
+            action: 'disabled',
+            subject: $user,
+            description: "Disabled two-factor authentication for user: {$user->getAuditLabel()}",
+        );
+    }
+
+    /**
+     * Log two-factor authentication recovery codes regenerated.
+     */
+    public function log2FACodesRegenerated(Model $user): void
+    {
+        $this->log(
+            event: 'auth.2fa_codes_regenerated',
+            action: 'regenerated',
+            subject: $user,
+            description: "Regenerated 2FA recovery codes for user: {$user->getAuditLabel()}",
+        );
+    }
+
+    /**
+     * Log a user device being removed/deactivated.
+     */
+    public function logDeviceRemoved(Model $user, string $deviceName, ?string $deviceId = null): void
+    {
+        $this->log(
+            event: 'auth.device_removed',
+            action: 'removed',
+            subject: $user,
+            description: "Removed device: {$deviceName}",
+            metadata: [
+                'device_name' => $deviceName,
+                'device_id' => $deviceId,
+            ],
+        );
+    }
+
+    /**
+     * Log a role's module access configuration being changed.
+     *
+     * @param  Model  $role  The role whose access tree was modified.
+     * @param  array<string, mixed>|null  $oldAccess  Access tree before the change (null on initial config).
+     * @param  array<string, mixed>  $newAccess  Access tree after the change.
+     */
+    public function logRoleAccessChanged(Model $role, ?array $oldAccess, array $newAccess): void
+    {
+        $summary = $this->summarizeAccessChanges($oldAccess, $newAccess);
+
+        $this->log(
+            event: 'core.role.access_changed',
+            action: 'access_changed',
+            subject: $role,
+            description: "Modified module access for role: {$role->getAuditLabel()} - {$summary}",
+            before: $oldAccess,
+            after: $newAccess,
+            metadata: ['summary' => $summary],
+        );
+    }
+
+    /**
+     * Summarize role access-tree changes for a human-readable audit description.
+     *
+     * @param  array<string, mixed>|null  $oldAccess
+     * @param  array<string, mixed>  $newAccess
+     */
+    private function summarizeAccessChanges(?array $oldAccess, array $newAccess): string
+    {
+        if (! $oldAccess) {
+            return 'Initial access configuration';
+        }
+
+        $changes = [];
+
+        $oldModules = count($oldAccess['modules'] ?? []);
+        $newModules = count($newAccess['modules'] ?? []);
+        if ($oldModules !== $newModules) {
+            $changes[] = "Modules: {$oldModules} → {$newModules}";
+        }
+
+        $oldSubs = count($oldAccess['sub_modules'] ?? []);
+        $newSubs = count($newAccess['sub_modules'] ?? []);
+        if ($oldSubs !== $newSubs) {
+            $changes[] = "SubModules: {$oldSubs} → {$newSubs}";
+        }
+
+        $oldComps = count($oldAccess['components'] ?? []);
+        $newComps = count($newAccess['components'] ?? []);
+        if ($oldComps !== $newComps) {
+            $changes[] = "Components: {$oldComps} → {$newComps}";
+        }
+
+        $oldActions = count($oldAccess['actions'] ?? []);
+        $newActions = count($newAccess['actions'] ?? []);
+        if ($oldActions !== $newActions) {
+            $changes[] = "Actions: {$oldActions} → {$newActions}";
+        }
+
+        return empty($changes) ? 'Access reconfigured' : implode(', ', $changes);
+    }
+
+    /**
      * Is this a platform-context audit (vs tenant-context)? (Axis B B1)
      *
      * Previously keyed on app()->bound('currentTenant') — a container binding that
