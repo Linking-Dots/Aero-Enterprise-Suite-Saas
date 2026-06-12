@@ -129,10 +129,12 @@ class VerifyTiersCommand extends Command
      */
     private function aeroDirs(): array
     {
+        // vendor/aero first, then packages/ — so a monorepo packages/ entry (the source of
+        // truth) overwrites a vendored copy of the same package on de-dupe by name.
         $dirs = [];
-        foreach ([base_path('packages/aero-*'), base_path('vendor/aero/*')] as $glob) {
+        foreach ([base_path('vendor/aero/*'), base_path('packages/aero-*')] as $glob) {
             foreach ((array) glob($glob, GLOB_ONLYDIR) as $dir) {
-                $dirs[basename($dir)] = $dir; // de-dupe by name (packages wins over vendor)
+                $dirs[basename($dir)] = $dir;
             }
         }
 
