@@ -20,6 +20,15 @@ namespace Aero\Kernel\Migration;
  * Fail-closed: an unclassified package belongs to NO context, so it never silently
  * routes into the wrong database (the aero:verify-tiers gate refuses install if any
  * package is unclassified).
+ *
+ * Where this is enforced at runtime (so even a raw `php artisan migrate` is tier-safe):
+ *   - SaaS central : AeroPlatformServiceProvider::overrideMigratorForLandlord() confines the
+ *                    migrator to migrationPathsForContext('central').
+ *   - SaaS tenant  : the same override excludes platform-tier migrations on a tenant DB.
+ *   - standalone   : needs NO runtime override — the host physically installs exactly its tier
+ *                    set (core+sharable+product, never platform), so the migrator's global
+ *                    loadMigrationsFrom set already equals the standalone tier. Tier-correct by
+ *                    construction; the install wizard (MigrationStep) is the gate at install time.
  */
 final class PackageTier
 {

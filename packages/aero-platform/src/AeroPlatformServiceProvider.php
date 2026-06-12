@@ -1150,25 +1150,29 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // aero-infrastructure (a sharable: installation_history/progress/module_pricing/
         // system_health_logs). The sharable packages are pure single-schema packages used
         // identically by central and tenants — no per-context columns.
+        $platformMigrationPath = realpath(__DIR__.'/../database/migrations') ?: __DIR__.'/../database/migrations';
         $allowedMigrationPaths = array_values(array_filter(array_unique(array_merge(
-            [realpath(__DIR__.'/../database/migrations')],
+            [$platformMigrationPath],
             \Aero\Kernel\Migration\PackageTier::migrationPathsForContext('central')
         ))));
         $centralDatabase = config('tenancy.database.central_connection', config('database.default'));
 
-        $this->app->extend('migrator', function ($migrator, $app) use ($allowedMigrationPaths, $centralDatabase) {
-            return new class($app['migration.repository'], $app['db'], $app['files'], $app['events'], $allowedMigrationPaths, $centralDatabase) extends Migrator
+        $this->app->extend('migrator', function ($migrator, $app) use ($allowedMigrationPaths, $centralDatabase, $platformMigrationPath) {
+            return new class($app['migration.repository'], $app['db'], $app['files'], $app['events'], $allowedMigrationPaths, $centralDatabase, $platformMigrationPath) extends Migrator
             {
                 /** @var array<int, string> */
                 protected array $allowedMigrationPaths;
 
                 protected string $centralDatabase;
 
-                public function __construct($repository, $resolver, $files, $dispatcher, array $allowedMigrationPaths, string $centralDatabase)
+                protected string $platformMigrationPath;
+
+                public function __construct($repository, $resolver, $files, $dispatcher, array $allowedMigrationPaths, string $centralDatabase, string $platformMigrationPath)
                 {
                     parent::__construct($repository, $resolver, $files, $dispatcher);
                     $this->allowedMigrationPaths = $allowedMigrationPaths;
                     $this->centralDatabase = $centralDatabase;
+                    $this->platformMigrationPath = $platformMigrationPath;
                 }
 
                 public function getMigrationFiles($paths)
@@ -1184,10 +1188,19 @@ class AeroPlatformServiceProvider extends ServiceProvider
                         })->all();
                     }
 
-                    // Check if we're on a tenant database (tenancy is initialized)
-                    // If tenancy is initialized, allow ALL package migrations
+                    // On a TENANT database (tenancy initialized): tenant tier = core + sharable
+                    // + product, which is EVERYTHING EXCEPT platform. Phase-4: exclude the
+                    // platform-tier migrations so a raw `tenants:migrate` (e.g. the admin
+                    // "re-migrate tenant DB" action, TenantDatabaseController) can never create
+                    // landlord/platform tables on a tenant DB. Deny-list (not allow-list) so any
+                    // legit app-level/non-package tenant migrations still pass through; no dedup
+                    // — a tenant must run all of its distinct package migrations.
                     if (function_exists('tenancy') && tenancy()->initialized) {
-                        return $files;
+                        return collect($files)->reject(function ($path) {
+                            $normalizedPath = realpath($path) ?: $path;
+
+                            return str_starts_with($normalizedPath, $this->platformMigrationPath);
+                        })->all();
                     }
 
                     // During installation (not yet installed), allow ALL package migrations.
