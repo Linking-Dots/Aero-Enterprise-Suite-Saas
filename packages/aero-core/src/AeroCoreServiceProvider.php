@@ -63,6 +63,7 @@ use Aero\Core\Services\UserInvitationService;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRM\Services\EmployeeService;
+use Aero\HRMAC\Services\NullRoleModuleAccessService;
 use Aero\HRMAC\Services\RoleModuleAccessService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -266,60 +267,26 @@ class AeroCoreServiceProvider extends ServiceProvider
                 }
             });
 
-            $this->app->singleton(RoleModuleAccessService::class, function ($app) {
-                // Only instantiate if installed to avoid DB queries pre-install
+            // RBAC authority. The RoleModuleAccessInterface (Aero\Contracts) is the
+            // single binding key; it resolves to the HRMAC implementation, or to
+            // HRMAC's NULL implementation before installation so RBAC fails CLOSED
+            // with no DB queries. Both stubs honour the real contract (no ad-hoc
+            // anonymous classes with mismatched signatures).
+            $this->app->singleton(RoleModuleAccessInterface::class, function ($app) {
                 if (! InstallationState::isInstalled()) {
-                    return new class
-                    {
-                        public function canUserAccessModule(int $userId, string $moduleCode): bool
-                        {
-                            return false;
-                        }
-
-                        public function getUserAccessibleModules(int $userId): array
-                        {
-                            return [];
-                        }
-
-                        public function getFirstAccessibleRoute(int $userId): ?string
-                        {
-                            return null;
-                        }
-
-                        public function __call(string $method, array $args): mixed
-                        {
-                            return str_starts_with($method, 'get') ? ($method === 'getFirstAccessibleRoute' ? null : []) : false;
-                        }
-                    };
+                    return new NullRoleModuleAccessService;
                 }
 
                 try {
                     return new RoleModuleAccessService;
                 } catch (\Throwable $e) {
-                    return new class
-                    {
-                        public function canUserAccessModule(int $userId, string $moduleCode): bool
-                        {
-                            return false;
-                        }
-
-                        public function getUserAccessibleModules(int $userId): array
-                        {
-                            return [];
-                        }
-
-                        public function getFirstAccessibleRoute(int $userId): ?string
-                        {
-                            return null;
-                        }
-
-                        public function __call(string $method, array $args): mixed
-                        {
-                            return str_starts_with($method, 'get') ? ($method === 'getFirstAccessibleRoute' ? null : []) : false;
-                        }
-                    };
+                    return new NullRoleModuleAccessService;
                 }
             });
+
+            // Concrete-class alias: callers that type-hint the HRMAC concrete class
+            // resolve the same (install-gated) instance as the interface.
+            $this->app->alias(RoleModuleAccessInterface::class, RoleModuleAccessService::class);
 
             // Bind TenantScopeInterface to StandaloneTenantScope as default
             // This can be overridden by aero-platform for SaaS mode
@@ -979,6 +946,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             NavigationRegistry::class,
             UserRelationshipRegistry::class,
             ModuleAccessService::class,
+            RoleModuleAccessInterface::class,
             RoleModuleAccessService::class,
         ];
     }

@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Aero\Platform\Services\Module;
+namespace Aero\HRMAC\Services;
 
-use Aero\HRMAC\Services\RoleModuleAccessService;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Illuminate\Support\Collection;
 
 /**
- * Null Object implementation of RoleModuleAccessService.
+ * Null Object implementation of the RoleModuleAccess contract.
  *
- * Used as a pre-installation stub to satisfy type hints throughout the
- * application without making any database queries. All methods return
- * safe "deny-all / empty" defaults.
+ * Used as a pre-installation / no-DB stub so the application can satisfy the
+ * RoleModuleAccessInterface type hint throughout the container WITHOUT making
+ * any database queries. Every method returns a safe "deny-all / empty" default
+ * so RBAC fails CLOSED before the system is installed.
  *
- * Extends the concrete RoleModuleAccessService so that PHP type checks
- * (e.g. ModuleController::__construct) are satisfied at boot time before
- * the application is fully installed and a real DB connection is available.
+ * This lives in aero-hrmac (the RBAC owner) — NOT in any consumer tier — so the
+ * fail-safe ships with the authority it stands in for. HRMAC is context-free:
+ * this class references no Aero\Core / Aero\Platform symbol.
  */
-class NullRoleModuleAccessService extends RoleModuleAccessService
+class NullRoleModuleAccessService implements RoleModuleAccessInterface
 {
     public function canAccessModule(mixed $role, int $moduleId): bool
     {
@@ -72,13 +73,14 @@ class NullRoleModuleAccessService extends RoleModuleAccessService
 
     public function syncRoleAccess(mixed $role, array $accessData): void
     {
-        // No-op before installation
+        // No-op before installation.
     }
 
     public function getRoleAccessTree(mixed $role): array
     {
         return [
             'modules' => [],
+            'explicit_modules' => [],
             'sub_modules' => [],
             'components' => [],
             'actions' => [],
@@ -87,12 +89,12 @@ class NullRoleModuleAccessService extends RoleModuleAccessService
 
     public function clearRoleCache(mixed $role): void
     {
-        // No-op before installation
+        // No-op before installation.
     }
 
     public function clearUserCache(mixed $user): void
     {
-        // No-op before installation
+        // No-op before installation.
     }
 
     public function getUsersWithSubModuleAccess(string $moduleCode, string $subModuleCode, ?string $actionCode = null): Collection

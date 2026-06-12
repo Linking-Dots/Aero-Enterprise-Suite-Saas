@@ -7,6 +7,7 @@ use Aero\Auth\Contracts\AuthContext;
 use Aero\Contracts\MailSenderInterface;
 use Aero\Contracts\PlanCatalogInterface;
 use Aero\Contracts\ProductAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Contracts\SmsGatewayInterface;
 use Aero\Contracts\TenantScopeInterface;
 use Aero\Contracts\TranslationDriverInterface;
@@ -14,6 +15,7 @@ use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\Core\ValueObjects\RequestContext;
 use Aero\Core\Traits\ParsesHostDomain;
+use Aero\HRMAC\Services\NullRoleModuleAccessService;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
 use Aero\I18n\Http\Middleware\SetLocale;
 use Aero\I18n\Services\TranslationService;
@@ -81,8 +83,6 @@ use Aero\Platform\Services\Billing\SslCommerzService;
 use Aero\Platform\Services\DownloadService;
 use Aero\Platform\Services\LicenseIssuer;
 use Aero\Platform\Services\Module\ModuleAccessService;
-use Aero\Platform\Services\Module\NullRoleModuleAccessService;
-use Aero\Platform\Services\Module\RoleModuleAccessService;
 use Aero\Platform\Services\Monitoring\Tenant\ErrorLogService;
 use Aero\Platform\Services\Notifications\PlatformMailContextResolver;
 use Aero\Platform\Services\Notifications\PlatformSmsContextResolver;
@@ -118,7 +118,6 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
-use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 
 /**
@@ -213,9 +212,10 @@ class AeroPlatformServiceProvider extends ServiceProvider
 
         // Register Module Access Services with fallback stubs for pre-install
         // These services are lazy-loaded to avoid DB queries before installation
-        $this->app->singleton(HRMACRoleModuleAccessService::class, function ($app) {
-            // Before installation: return a null-object stub that satisfies the
-            // RoleModuleAccessService type hint without making any DB queries.
+        // The RoleModuleAccessInterface (Aero\Contracts) is the single binding key
+        // for RBAC. Bind it to the HRMAC implementation, or to HRMAC's NULL impl
+        // before installation so RBAC fails CLOSED with no DB queries.
+        $this->app->singleton(RoleModuleAccessInterface::class, function ($app) {
             if (! InstallationState::isInstalled()) {
                 return new NullRoleModuleAccessService;
             }
@@ -227,8 +227,9 @@ class AeroPlatformServiceProvider extends ServiceProvider
             }
         });
 
-        // Alias Platform's RoleModuleAccessService to HRMAC's for backward compatibility
-        $this->app->alias(HRMACRoleModuleAccessService::class, RoleModuleAccessService::class);
+        // Concrete-class alias: callers that still type-hint the HRMAC concrete
+        // class resolve the same (gated) instance as the interface.
+        $this->app->alias(RoleModuleAccessInterface::class, HRMACRoleModuleAccessService::class);
 
         $this->app->singleton(ModuleAccessService::class, function ($app) {
             // Only instantiate if installed to avoid DB queries pre-install
@@ -243,7 +244,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
             }
 
             try {
-                return new ModuleAccessService($app->make(RoleModuleAccessService::class));
+                return new ModuleAccessService($app->make(RoleModuleAccessInterface::class));
             } catch (\Throwable $e) {
                 return new class
                 {
@@ -1108,7 +1109,8 @@ class AeroPlatformServiceProvider extends ServiceProvider
     {
         return [
             ModuleAccessService::class,
-            RoleModuleAccessService::class,
+            RoleModuleAccessInterface::class,
+            HRMACRoleModuleAccessService::class,
             PlatformSettingService::class,
             ErrorLogService::class,
             SslCommerzService::class,
