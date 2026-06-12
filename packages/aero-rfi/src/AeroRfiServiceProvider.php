@@ -2,9 +2,9 @@
 
 namespace Aero\Rfi;
 
+use Aero\Contracts\AeroMode;
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
 use Aero\Core\Services\DashboardRegistry;
-use Aero\Platform\AeroPlatformServiceProvider;
 use Aero\Rfi\Contracts\NcrBlockingServiceInterface;
 use Aero\Rfi\Providers\RfiModuleProvider;
 use Illuminate\Support\Facades\Route;
@@ -173,12 +173,7 @@ class AeroRfiServiceProvider extends ServiceProvider
      */
     protected function isPlatformActive(): bool
     {
-        // Use global helper if available
-        if (function_exists('isPlatformActive')) {
-            return isPlatformActive();
-        }
-
-        return class_exists(AeroPlatformServiceProvider::class);
+        return AeroMode::isSaas();
     }
 
     /**
