@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Encryption;
+namespace Aero\Kernel\Encryption;
 
 use Aero\Contracts\EncryptionDriverInterface;
 use Illuminate\Contracts\Encryption\Encrypter;

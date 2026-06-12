@@ -23,7 +23,7 @@ use Aero\Contracts\TenantScopeInterface;
 use Aero\Contracts\TranslationDriverInterface;
 use Aero\Contracts\UserInvitationServiceInterface;
 use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
-use Aero\Core\Encryption\LaravelEncryptionDriver;
+use Aero\Kernel\Encryption\LaravelEncryptionDriver;
 use Aero\Core\Exceptions\Handler;
 use Aero\Core\Hrmac\HrmacContextGuard;
 use Aero\Core\Http\Middleware\CheckModuleAccess;

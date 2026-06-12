@@ -1,6 +1,6 @@
 <?php
 
-namespace Aero\Core\ValueObjects;
+namespace Aero\Kernel\ValueObjects;
 
 final readonly class RequestContext
 {

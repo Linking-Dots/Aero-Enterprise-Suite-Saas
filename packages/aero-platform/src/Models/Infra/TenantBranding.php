@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Models\Infra;
 
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Aero\Core\Models\CentralModel;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;

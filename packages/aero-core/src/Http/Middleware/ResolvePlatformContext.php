@@ -2,7 +2,7 @@
 
 namespace Aero\Core\Http\Middleware;
 
-use Aero\Core\ValueObjects\RequestContext;
+use Aero\Kernel\ValueObjects\RequestContext;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

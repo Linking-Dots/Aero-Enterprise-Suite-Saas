@@ -7,7 +7,7 @@ namespace Aero\Core\Hrmac;
 use Aero\Contracts\AeroMode;
 use Aero\Contracts\HrmacModelGuardInterface;
 use Aero\Contracts\TenantScopeInterface;
-use Aero\Core\ValueObjects\RequestContext;
+use Aero\Kernel\ValueObjects\RequestContext;
 
 /**
  * Consumer-supplied isolation guard for HRMAC's context-free models.

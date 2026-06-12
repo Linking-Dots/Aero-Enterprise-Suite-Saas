@@ -2,7 +2,7 @@
 
 namespace Aero\Platform\Models;
 
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Aero\Platform\Database\Factories\TenantFactory;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;

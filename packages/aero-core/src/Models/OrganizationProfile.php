@@ -2,7 +2,7 @@
 
 namespace Aero\Core\Models;
 
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 
 class OrganizationProfile extends TenantModel
 {

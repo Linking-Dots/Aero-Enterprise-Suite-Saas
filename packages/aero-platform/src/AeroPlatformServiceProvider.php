@@ -13,7 +13,7 @@ use Aero\Contracts\TenantScopeInterface;
 use Aero\Contracts\TranslationDriverInterface;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
-use Aero\Core\ValueObjects\RequestContext;
+use Aero\Kernel\ValueObjects\RequestContext;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRMAC\Services\NullRoleModuleAccessService;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
