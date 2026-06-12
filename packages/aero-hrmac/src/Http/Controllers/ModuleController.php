@@ -10,7 +10,7 @@ use Aero\HRMAC\Models\ModuleComponentAction;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\RoleModuleAccess;
 use Aero\HRMAC\Models\SubModule;
-use Aero\HRMAC\Services\RoleModuleAccessService;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Kernel\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,9 +25,9 @@ use Inertia\Inertia;
  */
 class ModuleController extends Controller
 {
-    private RoleModuleAccessService $roleModuleAccessService;
+    private RoleModuleAccessInterface $roleModuleAccessService;
 
-    public function __construct(RoleModuleAccessService $roleModuleAccessService)
+    public function __construct(RoleModuleAccessInterface $roleModuleAccessService)
     {
         $this->roleModuleAccessService = $roleModuleAccessService;
     }

@@ -9,7 +9,7 @@ use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\Holiday;
 use Aero\HRM\Models\Leave;
 use Aero\HRM\Models\LeaveSetting;
-use Aero\HRMAC\Services\RoleModuleAccessService;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -27,11 +27,11 @@ class LeaveQueryService
     public function __construct(
         private EmployeeResolutionService $employeeResolver,
         private HRMAuthorizationService $authService,
-        private ?RoleModuleAccessService $moduleAccessService = null
+        private ?RoleModuleAccessInterface $moduleAccessService = null
     ) {
         // Resolve from container if not injected
         if ($this->moduleAccessService === null) {
-            $this->moduleAccessService = app(RoleModuleAccessService::class);
+            $this->moduleAccessService = app(RoleModuleAccessInterface::class);
         }
     }
 
