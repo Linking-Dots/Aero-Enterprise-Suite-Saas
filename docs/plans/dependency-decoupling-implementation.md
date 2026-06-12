@@ -105,3 +105,33 @@
 | 6 | — | Backend Eng | QC | opus / sonnet |
 
 **Principle:** opus on the four risk phases (2, 4, 5, and license/registry semantics in 3); sonnet for scans and mechanical edits; haiku only for bulk file verification. Orchestrator stays lean by delegating each chunk to a worktree-isolated sub-agent and reviewing diffs, not doing edits in the main thread.
+
+---
+
+## Deferred findings (2026-06-12 — surfaced during the placement scan, NOT regressions)
+
+### TICKET D-1 — platform module-access tangle (pre-existing, needs dedicated fix)
+- `packages/aero-platform/src/Http/Middleware/CheckModuleAccess.php` is REGISTERED (router aliases
+  `module` / `check.module` in AeroPlatformServiceProvider + Http/Kernel) but imports the
+  **non-existent** `Aero\Platform\Services\Shared\Module\ModuleAccessService` → the middleware is
+  un-constructable → **any platform route using it 500s**. Latent because those routes evidently
+  aren't exercised in dev.
+- `packages/aero-platform/src/Policies/Concerns/ChecksModuleAccess.php` is an **unused duplicate**
+  of core's healthy `Aero\Core\Policies\Concerns\ChecksModuleAccess` (which correctly uses
+  `Aero\Core\Services\ModuleAccessService`); platform's copy has the same broken import.
+- hrm policies (`CompetencyPolicy`, `BenefitPolicy`, `SkillPolicy`, `OnboardingPolicy`,
+  `OffboardingPolicy`) write `use ChecksModuleAccess` with **no visible import** of the trait →
+  suspect (would fatal if the policy class is loaded) — needs verification.
+- Semantics mismatch: the only real platform service `Aero\Platform\Services\Module\ModuleAccessService`
+  type-hints `LandlordUser`; the broken consumers type-hint core `User`.
+- **Recommended fix (own unit):** delete platform's unused dup trait; repoint the live middleware to
+  the real platform service and reconcile the `User`/`LandlordUser` typing (or split tenant vs
+  landlord paths); audit the hrm policies' trait resolution. Do NOT guess — verify each.
+
+### TICKET D-2 — Taggable trait (auth→core), blocked on Tag-model placement
+- `Aero\Core\Traits\Taggable` is used only by `aero-auth\Models\User`, but it depends on
+  `Aero\Core\Models\AuditLog` + `Aero\Core\Models\Tag` (core models), so it cannot move to kernel
+  without dragging core models. Resolving auth's last core coupling requires deciding whether `Tag`
+  (and tagging) is a sharable concern (→ move Tag + Taggable to a sharable) or stays core (→ auth
+  shouldn't use Taggable). Deferred pending that decision. (Searchable, the clean half, already
+  moved to kernel — commit eded4b746.)
