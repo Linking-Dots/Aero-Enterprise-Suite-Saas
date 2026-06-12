@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\HRM\Tests\Unit\Models;
 
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Aero\HRM\Exceptions\PayrollLockedException;
 use Aero\HRM\Models\Payslip;
 use PHPUnit\Framework\TestCase;
