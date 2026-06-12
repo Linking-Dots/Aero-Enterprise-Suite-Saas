@@ -39,3 +39,65 @@ Every package declares a **tier**; the install/provisioning picks the migration 
 
 ## Gate (every unit)
 aero-core oracle 121t/20e/5f baseline; hrmac 39t/147a; both hosts boot + `route:list` exit 0. Unit 5 adds: per-context table-presence assertions.
+
+---
+
+## Execution log (2026-06-12)
+
+| Unit | Commit | Watcher (opus) |
+|------|--------|----------------|
+| 1 — tier classification (39 pkgs) + `aero:verify-tiers` fail-closed gate | c6a26d73d (+7e2ea991c) | PASS |
+| 2 — central+standalone routing; `PackageTier` SSOT relocated to **aero-kernel** | 97e3e23cd | PASS |
+| 3 — tenant routing: core + ALL sharable + subscribed products | 565f6b988 | PASS |
+| 4 — raw `tenants:migrate` tier-safe (exclude platform from tenant DBs) | 0f15acdb6 | PASS |
+| 5 — E2E proof (this section) | — (proof; results below) | — |
+
+All four routing layers now derive from one resolver `Aero\Kernel\Migration\PackageTier`
+(pure leaf: `base_path`/`glob`/`json` only): wizard `MigrationStep`, platform landlord
+migrator override (central + tenant branches), and tenant provisioning `ProvisionTenant`.
+
+## Unit 5 — E2E table-routing proof (throwaway MySQL schemas)
+
+Method: for each context, take the **authoritative resolved path set** from `PackageTier`, then
+execute every migration's `up()` (de-duped by op-name keeping latest, tier-ordered — mirroring the
+real migrator) against a throwaway `aeos_e2e_*` schema; introspect `information_schema`; classify
+each landed table by its creator-package tier; assert no disallowed-tier table + sentinel boundaries.
+Throwaway schemas dropped after. (Run from the SaaS host, only `hrm` product installed, so
+standalone≡tenant here.)
+
+### Expectation vs. actual
+
+| Context | Expected tiers | Sentinel: platform (`tenants`) | Sentinel: core (`users`) | Sentinel: hrmac (`role_module_access`) | Sentinel: product (`employees`) | Disallowed-tier leaks |
+|---------|----------------|:--:|:--:|:--:|:--:|:--:|
+| **central** | platform + sharable | ✅ present | ✅ absent | ✅ absent¹ | ✅ absent | **0** |
+| **tenant** | core + sharable + subscribed | ✅ absent | ✅ present | ✅ present | ✅ present | **0** |
+| **standalone** | core + sharable + installed | ✅ absent | ✅ present | ✅ present | ✅ present | **0** |
+
+¹ hrmac is sharable so it *is* allowed in central; the central run did include it. Sentinel chosen
+per context for the clearest tier boundary.
+
+**Routing verdict: PROVEN.** Every context receives exactly its allowed tiers' tables; zero
+cross-tier leakage; all sentinel boundaries hold. Tables by tier — central: platform 52 / sharable 25
+/ core 0 / product 0. standalone≡tenant: core 50 / sharable 26 / product 195 / platform 0.
+
+### Findings surfaced by the E2E (NOT routing failures; out of Phase-4 scope)
+
+1. **[REAL, pre-existing] `auth` (sharable) FK-depends on `core.users`.** `aero-auth`'s
+   `create_user_sessions_table` / `create_user_devices_table` add an unconditional
+   `foreignId('user_id')->constrained()` to `users`, but `users` is created **only by aero-core**.
+   Central = platform+sharable excludes core ⇒ a real central migrate fails these FKs. Latent today
+   (the dev landlord DB has no `migrations` table — central was never migrated). Predates Phase-4
+   (auth was always in central's baseline). **Decision needed:** are auth's end-user session tables
+   actually central-relevant (landlord admins authenticate via platform's `landlord_users`)? Likely
+   auth is partly mis-tiered, or those FKs should be guarded. Tracked separately.
+2. **[pre-existing] Duplicate table ownership across packages** — `user_sessions` (core + auth),
+   `notification_logs` / `cache` / `jobs` / `sessions` (core + platform + notifications). The real
+   migrator de-dups by op-name so only one runs; still a zero-dup violation to reconcile.
+3. **[harness-scope, not a bug] central alter-before-create noise** — a handful of central ALTER
+   migrations (`domains`, `plans`, `tenants` columns) reference tables created by **stancl/host**
+   migrations, which the proof deliberately excluded (it ran only `aero-*` package paths). These run
+   fine in a real install where the full migration set + override are present.
+
+Net: **Phase-4 migration tier-routing is correct and proven end-to-end.** The one genuine
+correctness gap (auth→core `users` in central) is a pre-existing tier-definition question, filed for
+a follow-on; it is not introduced or worsened by this work.
