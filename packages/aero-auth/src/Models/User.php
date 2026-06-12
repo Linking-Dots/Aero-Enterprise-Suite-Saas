@@ -7,7 +7,7 @@ use Aero\Contracts\Searchable;
 use Aero\Contracts\UserContract;
 use Aero\Contracts\Models\Concerns\EnforcesTenantContext;
 use Aero\Kernel\Services\UserRelationshipRegistry;
-use Aero\Core\Traits\Searchable as SearchableTrait;
+use Aero\Kernel\Traits\Searchable as SearchableTrait;
 use Aero\Core\Traits\Taggable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;

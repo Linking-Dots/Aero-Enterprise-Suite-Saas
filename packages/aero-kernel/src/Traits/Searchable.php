@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Aero\Core\Traits;
+namespace Aero\Kernel\Traits;
 
 /**
  * Searchable Trait
@@ -39,7 +39,7 @@ trait Searchable
      */
     public function getSearchResultTitle(): string
     {
-        return $this->name ?? $this->title ?? $this->email ?? ('#' . $this->getKey());
+        return $this->name ?? $this->title ?? $this->email ?? ('#'.$this->getKey());
     }
 
     /**
