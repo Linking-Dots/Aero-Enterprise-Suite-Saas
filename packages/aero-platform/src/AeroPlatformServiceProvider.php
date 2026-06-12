@@ -1143,23 +1143,17 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function overrideMigratorForLandlord(): void
     {
-        // The central/landlord DB runs: aero-platform + the FOUNDATIONAL SHARED packages
-        // (auth, ui, i18n, notifications, hrmac — everything in baseline_modules EXCEPT
-        // core, which is tenant-only). These shared packages are pure, single-schema
-        // packages used identically by central and tenants — no per-context columns.
-        $allowedMigrationPaths = [realpath(__DIR__.'/../database/migrations')];
-        $sharedPackages = array_diff(
-            (array) config('hrmac.baseline_modules', ['core', 'auth', 'ui', 'i18n', 'notifications', 'hrmac']),
-            ['core']
-        );
-        foreach ($sharedPackages as $pkg) {
-            foreach ([base_path("vendor/aero/{$pkg}/database/migrations"), base_path("packages/aero-{$pkg}/database/migrations")] as $candidate) {
-                if (is_dir($candidate)) {
-                    $allowedMigrationPaths[] = realpath($candidate);
-                }
-            }
-        }
-        $allowedMigrationPaths = array_values(array_filter(array_unique($allowedMigrationPaths)));
+        // The central/landlord DB runs tier=platform + tier=sharable packages (NOT core,
+        // NOT product — those are tenant-only). Single source of truth: each package's
+        // extra.aero.tier (Phase 4 — see Aero\Kernel\Migration\PackageTier). This replaces the
+        // earlier hand-listed baseline_modules-minus-core set, which was missing
+        // aero-infrastructure (a sharable: installation_history/progress/module_pricing/
+        // system_health_logs). The sharable packages are pure single-schema packages used
+        // identically by central and tenants — no per-context columns.
+        $allowedMigrationPaths = array_values(array_filter(array_unique(array_merge(
+            [realpath(__DIR__.'/../database/migrations')],
+            \Aero\Kernel\Migration\PackageTier::migrationPathsForContext('central')
+        ))));
         $centralDatabase = config('tenancy.database.central_connection', config('database.default'));
 
         $this->app->extend('migrator', function ($migrator, $app) use ($allowedMigrationPaths, $centralDatabase) {

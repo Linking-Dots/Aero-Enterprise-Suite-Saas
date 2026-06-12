@@ -55,6 +55,16 @@ class MigrationStep extends BaseInstallationStep
         // Plan 09 T3 — refuse to destroy a dirty schema.
         $this->assertSchemaIsSafeToMigrate();
 
+        // Phase 4 — fail-closed: refuse to route migrations if any aero package is
+        // unclassified (no valid extra.aero.tier), which would otherwise be skipped and
+        // silently leave its tables out of every database.
+        if (Artisan::call('aero:verify-tiers') !== 0) {
+            throw new \RuntimeException(
+                'Migration aborted — one or more aero packages lack a valid extra.aero.tier. '
+                .trim(Artisan::output())
+            );
+        }
+
         $packageCodes = $this->getAvailablePackageCodes();
         
         $tier1 = []; // infrastructure
@@ -80,10 +90,9 @@ class MigrationStep extends BaseInstallationStep
             } elseif ($code === 'hrmac') {
                 $tier3[] = ['code' => $code, 'path' => $path];
             } else {
-                $category = $this->getPackageCategory($code);
                 if ($code === 'platform') {
                     $tier5[] = ['code' => $code, 'path' => $path];
-                } elseif ($category === 'product') {
+                } elseif (\Aero\Kernel\Migration\PackageTier::tierOf($code) === \Aero\Kernel\Migration\PackageTier::PRODUCT) {
                     $tier5[] = ['code' => $code, 'path' => $path];
                 } else {
                     $tier4[] = ['code' => $code, 'path' => $path];
@@ -191,21 +200,15 @@ class MigrationStep extends BaseInstallationStep
             return false;
         }
 
-        $category = $this->getPackageCategory($code);
+        // Phase 4 — route by tier (single source of truth: extra.aero.tier).
+        //   SaaS install targets the CENTRAL/landlord DB  -> platform + sharable only
+        //   Standalone targets the single DB              -> core + sharable + product
+        // So core + product are excluded from central; platform from standalone.
+        // Fail-closed: an unclassified package belongs to no context and is skipped
+        // (the aero:verify-tiers preflight already aborts install if that happens).
+        $context = $this->mode === 'saas' ? 'central' : 'standalone';
 
-        if ($this->mode === 'saas') {
-            // SaaS: Exclude product packages. Exclude anything categorized as product.
-            if ($category === 'product') {
-                return false;
-            }
-            return true;
-        } else {
-            // Standalone: Exclude platform.
-            if ($code === 'platform') {
-                return false;
-            }
-            return true;
-        }
+        return \Aero\Kernel\Migration\PackageTier::belongsIn($code, $context);
     }
 
     /**
