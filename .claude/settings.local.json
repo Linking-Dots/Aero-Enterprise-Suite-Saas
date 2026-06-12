@@ -8,10 +8,13 @@
       "Write(**)",
       "Write(//**)",
       "WebFetch(*)",
-      "mcp__filesystem__*"
+      "mcp__filesystem__*",
+      "Bash(cd /c/laragon/www/Aero-Enterprise-Suite-Saas *)"
     ],
     "additionalDirectories": [
-      "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils"
+      "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils",
+      "C:\\laragon\\www\\Aero-Enterprise-Suite-Saas\\.claude",
+      "c:\\laragon\\www\\Aero-Enterprise-Suite-Saas\\.claude"
     ]
   },
   "outputStyle": "default"
