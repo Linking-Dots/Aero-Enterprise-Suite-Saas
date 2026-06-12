@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Console\Commands;
 
+use Aero\Contracts\AeroMode;
 use Aero\Core\Models\SystemSetting;
 use Aero\Core\Models\User;
 use Aero\HRMAC\Console\Commands\SyncModuleHierarchy;
@@ -371,9 +372,9 @@ class InstallCommand extends Command
             // Check if HRMAC package is available (preferred)
             if (class_exists(SyncModuleHierarchy::class)) {
                 // Determine scope based on mode
-                // In standalone mode (no Platform package), sync ALL modules
-                // In SaaS mode with Platform, sync platform-scoped modules for central database
-                $scope = class_exists('Aero\\Platform\\AeroPlatformServiceProvider')
+                // In standalone mode, sync ALL modules
+                // In SaaS mode, sync platform-scoped modules for the central database
+                $scope = AeroMode::isSaas()
                     ? 'platform'  // SaaS mode - platform modules for central database
                     : 'all';      // Standalone mode - all modules
 

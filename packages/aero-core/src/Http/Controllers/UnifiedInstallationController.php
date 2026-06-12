@@ -83,9 +83,10 @@ class UnifiedInstallationController extends Controller
      */
     protected function getMode(): string
     {
-        // Check if Platform package is installed and SaaS mode is enabled
-        if (class_exists('\Aero\Platform\AeroPlatformServiceProvider')
-            && config('aero.mode', 'standalone') === 'saas') {
+        // During installation the canonical mode file may not exist yet, so the
+        // configured install mode is the authoritative signal here (not AeroMode,
+        // which reads the post-install mode file written by FinalizeStep).
+        if (config('aero.mode', 'standalone') === 'saas') {
             return 'saas';
         }
 
@@ -1243,10 +1244,10 @@ class UnifiedInstallationController extends Controller
         $user = $userClass::withTrashed()->where('email', $email)->first();
 
         $passwordHash = $adminConfig['password_hash'] ?? null;
-        if (!$passwordHash && env('ADMIN_PASSWORD')) {
+        if (! $passwordHash && env('ADMIN_PASSWORD')) {
             $passwordHash = Hash::make(env('ADMIN_PASSWORD'));
         }
-        if (!$passwordHash) {
+        if (! $passwordHash) {
             throw new \Exception('Admin password/hash not configured.');
         }
 

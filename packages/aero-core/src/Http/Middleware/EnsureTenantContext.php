@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Core\Http\Middleware;
 
+use Aero\Contracts\AeroMode;
 use Aero\Core\Traits\ParsesHostDomain;
 use Closure;
 use Illuminate\Http\Request;
@@ -52,10 +53,10 @@ class EnsureTenantContext
     }
 
     /**
-     * Check if aero-platform package is active (SaaS mode).
+     * Check if running in SaaS mode (multi-tenant).
      */
     protected function isPlatformActive(): bool
     {
-        return class_exists('Aero\\Platform\\AeroPlatformServiceProvider');
+        return AeroMode::isSaas();
     }
 }
