@@ -7,6 +7,7 @@ use Aero\HRMAC\Models\ModuleComponent;
 use Aero\HRMAC\Models\ModuleComponentAction;
 use Aero\HRMAC\Models\Role;
 use Aero\HRMAC\Models\SubModule;
+use Aero\Kernel\Migration\PackageTier;
 use Aero\Platform\Events\TenantProvisioningStepCompleted;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Models\Tenant;
@@ -509,7 +510,9 @@ class ProvisionTenant implements ShouldQueue
             $batch = 1;
 
             foreach ($migrationPaths as $path) {
-                $absolutePath = base_path($path);
+                // getTenantMigrationPaths() returns absolute realpaths (tier resolver +
+                // database_path); do NOT re-wrap in base_path().
+                $absolutePath = $path;
                 $this->logStep("   → Running migrations from: {$absolutePath}");
 
                 // Get all PHP files from the directory manually
@@ -601,12 +604,6 @@ class ProvisionTenant implements ShouldQueue
     }
 
     /**
-     * Modules that should be excluded from migration loading.
-     * These are either already included (core) or don't have migrations (dashboard).
-     */
-    private const EXCLUDED_MODULES = ['core', 'dashboard'];
-
-    /**
      * Module dependency map.
      * Each module can depend on other modules that must be included.
      * Core is always included automatically (in getTenantMigrationPaths).
@@ -662,61 +659,24 @@ class ProvisionTenant implements ShouldQueue
     }
 
     /**
-     * Get migration paths for tenant based on their plan's modules.
-     * Always includes core, plus any modules in the plan.
+     * Migration paths for a tenant DB, by the Phase-4 tier model
+     * (Aero\Kernel\Migration\PackageTier): core + ALL sharable packages (unconditional:
+     * core, auth, hrmac, i18n, infrastructure, notifications) + the tenant's SUBSCRIBED
+     * product packages (gated to the tenant_module pivot, dependencies resolved).
+     * Unknown/non-product subscription codes are skipped fail-closed. Returns absolute realpaths.
      *
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function getTenantMigrationPaths(): array
     {
-        $paths = [];
-        $searchedPaths = [];
+        // Core + every sharable — always present in a tenant DB (the single source of truth).
+        $paths = PackageTier::migrationPathsForTiers([PackageTier::CORE, PackageTier::SHARABLE]);
+        $this->logStep('   → Core + sharable migrations: '.count($paths).' path(s)', ['paths' => $paths]);
 
-        // Always include core migrations (users, roles, permissions, etc.)
-        $corePath = 'vendor/aero/core/database/migrations';
-        $searchedPaths[] = $corePath;
-
-        if (File::exists(base_path($corePath))) {
-            $paths[] = $corePath;
-            $this->logStep("   → Including core migrations: {$corePath}", []);
-        } else {
-            // Fallback: try packages directory (for development/non-composer installs)
-            $coreDevPath = 'packages/aero-core/database/migrations';
-            $searchedPaths[] = $coreDevPath;
-
-            if (File::exists(base_path($coreDevPath))) {
-                $paths[] = $coreDevPath;
-                $this->logStep("   → Including core migrations (dev): {$coreDevPath}", []);
-            } else {
-                $this->logStep("   ⚠️  Core migrations not found at {$corePath} or {$coreDevPath}", [], 'warning');
-            }
-        }
-
-        // Always include hrmac migrations (modules, sub_modules, role_module_access, etc.)
-        $hrmacPath = 'vendor/aero/hrmac/database/migrations';
-        $searchedPaths[] = $hrmacPath;
-
-        if (File::exists(base_path($hrmacPath))) {
-            $paths[] = $hrmacPath;
-            $this->logStep("   → Including hrmac migrations: {$hrmacPath}", []);
-        } else {
-            // Fallback: try packages directory
-            $hrmacDevPath = 'packages/aero-hrmac/database/migrations';
-            $searchedPaths[] = $hrmacDevPath;
-
-            if (File::exists(base_path($hrmacDevPath))) {
-                $paths[] = $hrmacDevPath;
-                $this->logStep("   → Including hrmac migrations (dev): {$hrmacDevPath}", []);
-            } else {
-                $this->logStep("   ⚠️  HRMAC migrations not found at {$hrmacPath} or {$hrmacDevPath}", [], 'warning');
-            }
-        }
-
-        // Get modules from tenant's subscriptions using tenant_module pivot table
+        // Subscribed PRODUCTS only (tier=product), with dependencies auto-resolved.
         $tenantModules = $this->tenant->getActiveModules()->all();
 
         if (! empty($tenantModules)) {
-            // Resolve dependencies to auto-include required modules
             $tenantModules = $this->resolveModuleDependencies($tenantModules);
 
             $this->logStep('   → Tenant modules (with dependencies): '.implode(', ', $tenantModules), [
@@ -725,46 +685,36 @@ class ProvisionTenant implements ShouldQueue
             ]);
 
             foreach ($tenantModules as $moduleCode) {
-                // Skip excluded modules
-                if (in_array($moduleCode, self::EXCLUDED_MODULES, true)) {
+                // core/sharable are already in; only product-tier subscriptions add paths here.
+                // Unknown/non-product codes (e.g. dashboard with no migrations) skip fail-closed.
+                if (PackageTier::tierOf($moduleCode) !== PackageTier::PRODUCT) {
                     continue;
                 }
 
-                // Try vendor path first (production with composer install)
-                $modulePath = "vendor/aero/{$moduleCode}/database/migrations";
-                if (File::exists(base_path($modulePath))) {
+                $modulePath = PackageTier::migrationPathForPackage($moduleCode);
+                if ($modulePath !== null) {
                     $paths[] = $modulePath;
-                    $this->logStep("   → Including {$moduleCode} migrations: {$modulePath}", []);
-
-                    continue;
+                    $this->logStep("   → Including subscribed product {$moduleCode}: {$modulePath}", []);
+                } else {
+                    $this->logStep("   ⚠️  Subscribed product {$moduleCode} has no migrations directory", [], 'warning');
                 }
-
-                // Fallback: try packages directory with aero- prefix (development)
-                $moduleDevPath = "packages/aero-{$moduleCode}/database/migrations";
-                if (File::exists(base_path($moduleDevPath))) {
-                    $paths[] = $moduleDevPath;
-                    $this->logStep("   → Including {$moduleCode} migrations (dev): {$moduleDevPath}", []);
-
-                    continue;
-                }
-
-                $this->logStep("   ⚠️  Module {$moduleCode} has no migrations at {$modulePath} or {$moduleDevPath}", [], 'warning');
             }
         } else {
-            $this->logStep('   ⚠️  No plan assigned to tenant, using core only', [], 'warning');
+            $this->logStep('   ⚠️  No plan assigned to tenant, using core + sharable only', [], 'warning');
         }
 
-        // Include app-level tenant migrations if they exist
-        $appTenantPath = database_path('migrations/tenant');
-        if (File::exists($appTenantPath)) {
-            $paths[] = $appTenantPath;
-            $this->logStep("   → Including app tenant migrations: {$appTenantPath}", []);
+        // Host-app tenant migration overrides, if present.
+        $appTenantPath = database_path('migrations'.DIRECTORY_SEPARATOR.'tenant');
+        if (File::exists($appTenantPath) && ($realApp = realpath($appTenantPath)) !== false) {
+            $paths[] = $realApp;
+            $this->logStep("   → Including app tenant migrations: {$realApp}", []);
         }
 
-        // Validate that we have at least core migrations
+        $paths = array_values(array_unique($paths));
+
+        // Validate that we resolved at least the core/sharable baseline.
         if (empty($paths)) {
-            $searchedPathsStr = implode(', ', $searchedPaths);
-            throw new \RuntimeException("No migration paths found. Searched: {$searchedPathsStr}. Cannot provision tenant without migrations.");
+            throw new \RuntimeException('No migration paths found (core/sharable tier resolver returned empty). Cannot provision tenant without migrations.');
         }
 
         return $paths;

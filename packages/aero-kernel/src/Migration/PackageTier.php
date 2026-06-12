@@ -87,8 +87,20 @@ final class PackageTier
      */
     public static function migrationPathsForContext(string $context): array
     {
-        $allowed = self::CONTEXT_TIERS[$context] ?? [];
+        return self::migrationPathsForTiers(self::CONTEXT_TIERS[$context] ?? []);
+    }
 
+    /**
+     * Absolute, real migration-directory paths of every installed package whose tier is in
+     * $tiers. Same scan/de-dupe as migrationPathsForContext but with an explicit tier set —
+     * lets callers take only PART of a context (e.g. tenant's UNCONDITIONAL core+sharable,
+     * leaving products to be subscription-gated one package at a time).
+     *
+     * @param  array<int, string>  $tiers
+     * @return array<int, string>
+     */
+    public static function migrationPathsForTiers(array $tiers): array
+    {
         // De-dupe by package short-name; packages/ (second glob) wins over vendor/aero.
         $byName = [];
         foreach ([base_path('vendor/aero/*'), base_path('packages/aero-*')] as $glob) {
@@ -99,15 +111,45 @@ final class PackageTier
 
         $paths = [];
         foreach ($byName as $name => $dir) {
-            if (! in_array(self::tierOf($name), $allowed, true)) {
+            if (! in_array(self::tierOf($name), $tiers, true)) {
                 continue;
             }
-            $mig = $dir.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations';
-            if (is_dir($mig) && ($real = realpath($mig)) !== false) {
+            if (($real = self::migrationDirOf($dir)) !== null) {
                 $paths[] = $real;
             }
         }
 
         return array_values(array_unique($paths));
+    }
+
+    /**
+     * The real migration-directory path of a SINGLE package by short name (e.g. 'hrm'),
+     * preferring packages/ over vendor/aero. Null when the package or its migrations dir is
+     * absent. Used to resolve subscription-gated product packages one at a time without
+     * re-implementing the vendor/packages fallback ladder at the call site.
+     */
+    public static function migrationPathForPackage(string $packageShortName): ?string
+    {
+        foreach ([
+            base_path("packages/aero-{$packageShortName}"),
+            base_path("vendor/aero/{$packageShortName}"),
+        ] as $dir) {
+            if (is_dir($dir) && ($real = self::migrationDirOf($dir)) !== null) {
+                return $real;
+            }
+        }
+
+        return null;
+    }
+
+    /** realpath of {$packageDir}/database/migrations, or null if it isn't a dir. */
+    private static function migrationDirOf(string $packageDir): ?string
+    {
+        $mig = $packageDir.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations';
+        if (is_dir($mig) && ($real = realpath($mig)) !== false) {
+            return $real;
+        }
+
+        return null;
     }
 }
