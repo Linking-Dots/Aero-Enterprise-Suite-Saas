@@ -13,6 +13,9 @@
             "providers": [
                 "Aero\\Forms\\Providers\\FormsServiceProvider"
             ]
+        },
+        "aero": {
+            "tier": "product"
         }
     },
     "require": {

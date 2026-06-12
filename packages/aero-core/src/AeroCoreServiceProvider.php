@@ -872,6 +872,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             Console\Commands\SeedCommand::class,
             Console\Commands\CleanupExpiredSessions::class,
             Console\Commands\ValidateManifests::class,
+            Console\Commands\VerifyTiersCommand::class,
             Console\Commands\PackageProduct::class,
         ]);
     }

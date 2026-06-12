@@ -24,7 +24,8 @@
         "aero": {
             "package": "kernel",
             "category": "foundation",
-            "description": "Shared runtime services consumed by core and platform"
+            "description": "Shared runtime services consumed by core and platform",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

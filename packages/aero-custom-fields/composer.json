@@ -13,6 +13,9 @@
             "providers": [
                 "Aero\\CustomFields\\Providers\\CustomFieldsServiceProvider"
             ]
+        },
+        "aero": {
+            "tier": "product"
         }
     },
     "require": {

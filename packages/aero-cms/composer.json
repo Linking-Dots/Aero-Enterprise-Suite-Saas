@@ -55,7 +55,8 @@
             "version": "1.0.0",
             "category": "product",
             "description": "Block-based CMS for building public pages with HeroUI components",
-            "has-assets": true
+            "has-assets": true,
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

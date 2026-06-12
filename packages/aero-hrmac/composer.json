@@ -36,7 +36,8 @@
             "package": "hrmac",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Hierarchical Role-Module Access Control for aeos365"
+            "description": "Hierarchical Role-Module Access Control for aeos365",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "stable"

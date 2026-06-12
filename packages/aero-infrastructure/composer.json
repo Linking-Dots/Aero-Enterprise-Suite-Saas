@@ -18,7 +18,8 @@
         "aero": {
             "package": "infrastructure",
             "category": "foundation",
-            "description": "Shared database infrastructure for aero-core and aero-platform"
+            "description": "Shared database infrastructure for aero-core and aero-platform",
+            "tier": "sharable"
         }
     }
 }

@@ -50,7 +50,8 @@
             "package": "rfi",
             "version": "1.0.0",
             "category": "product",
-            "description": "RFI management with daily works, objections, and work locations"
+            "description": "RFI management with daily works, objections, and work locations",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

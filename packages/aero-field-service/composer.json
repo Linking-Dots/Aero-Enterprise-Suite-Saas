@@ -52,7 +52,8 @@
             "package": "field-service",
             "version": "1.0.0",
             "category": "product",
-            "description": "Field service management with work order dispatch, mobile apps, technician management, and service agreements"
+            "description": "Field service management with work order dispatch, mobile apps, technician management, and service agreements",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

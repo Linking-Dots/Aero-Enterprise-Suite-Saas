@@ -52,7 +52,8 @@
             "package": "auth",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Unified authentication package for tenant and platform/landlord contexts"
+            "description": "Unified authentication package for tenant and platform/landlord contexts",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

@@ -1,4 +1,3 @@
-
 {
   "name": "aero/hrm",
   "version": "1.0.0",
@@ -50,7 +49,8 @@
       "package": "hrm",
       "version": "1.0.0",
       "category": "product",
-      "description": "Complete HR management system with employee records, attendance, leave, payroll, performance reviews, and recruitment"
+      "description": "Complete HR management system with employee records, attendance, leave, payroll, performance reviews, and recruitment",
+      "tier": "product"
     }
   },
   "minimum-stability": "dev",

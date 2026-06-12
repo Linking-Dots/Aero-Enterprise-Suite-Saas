@@ -24,7 +24,8 @@
             "package": "project",
             "version": "1.0.0",
             "category": "product",
-            "description": "Project management with tasks, milestones, time tracking, and Gantt charts"
+            "description": "Project management with tasks, milestones, time tracking, and Gantt charts",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

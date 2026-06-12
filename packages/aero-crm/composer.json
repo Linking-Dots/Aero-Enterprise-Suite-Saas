@@ -48,7 +48,8 @@
             "package": "crm",
             "version": "1.0.0",
             "category": "product",
-            "description": "Customer Relationship Management module with deals, opportunities, pipelines, and customer management"
+            "description": "Customer Relationship Management module with deals, opportunities, pipelines, and customer management",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

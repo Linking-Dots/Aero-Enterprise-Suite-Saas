@@ -18,7 +18,8 @@
         "aero": {
             "package": "license",
             "category": "foundation",
-            "description": "Shared license signing/checksum core (validator + issuer consume it)"
+            "description": "Shared license signing/checksum core (validator + issuer consume it)",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

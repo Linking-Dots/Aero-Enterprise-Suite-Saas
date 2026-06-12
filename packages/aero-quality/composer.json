@@ -23,7 +23,8 @@
             "package": "quality",
             "version": "1.0.0",
             "category": "product",
-            "description": "Quality assurance, inspections, and non-conformance tracking"
+            "description": "Quality assurance, inspections, and non-conformance tracking",
+            "tier": "product"
         }
     },
     "config": {

@@ -51,7 +51,8 @@
             "package": "manufacturing",
             "version": "1.0.0",
             "category": "product",
-            "description": "Manufacturing Execution System with work orders, BOM, production planning, shop floor control, and quality management"
+            "description": "Manufacturing Execution System with work orders, BOM, production planning, shop floor control, and quality management",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

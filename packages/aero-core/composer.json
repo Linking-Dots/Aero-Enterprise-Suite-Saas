@@ -72,7 +72,8 @@
             "package": "core",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Foundation package providing User, Auth, Roles, Permissions, Modules"
+            "description": "Foundation package providing User, Auth, Roles, Permissions, Modules",
+            "tier": "core"
         }
     },
     "minimum-stability": "dev",
@@ -82,5 +83,3 @@
         "optimize-autoloader": true
     }
 }
-
-

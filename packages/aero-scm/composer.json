@@ -24,7 +24,8 @@
             "package": "scm",
             "version": "1.0.0",
             "category": "product",
-            "description": "Supply chain management with procurement, logistics, production planning, and supplier management"
+            "description": "Supply chain management with procurement, logistics, production planning, and supplier management",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

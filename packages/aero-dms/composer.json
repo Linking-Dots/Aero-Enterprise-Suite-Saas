@@ -29,7 +29,8 @@
             "package": "dms",
             "version": "1.0.0",
             "category": "product",
-            "description": "Document Management System module for aeos365"
+            "description": "Document Management System module for aeos365",
+            "tier": "product"
         }
     },
     "config": {
