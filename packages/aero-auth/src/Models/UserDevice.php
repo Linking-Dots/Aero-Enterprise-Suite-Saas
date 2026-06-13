@@ -2,13 +2,26 @@
 
 namespace Aero\Auth\Models;
 
-use Aero\Contracts\Models\TenantModel;
+use Aero\Contracts\Models\Concerns\EnforcesTenantContext;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserDevice extends TenantModel
+/**
+ * Auth-identity unification (Unit 2D-step3): UserDevice is dual-context — central
+ * landlord devices AND tenant-user devices, all in one `user_devices` table per
+ * connection. It therefore follows the SAME pattern as {@see User}: a plain Model
+ * with the {@see EnforcesTenantContext} guard (which no-ops for instances on the
+ * 'central' connection) rather than {@see \Aero\Contracts\Models\TenantModel}
+ * (whose guard has no central escape and would throw for landlord/console queries).
+ * Eloquent relationship-connection inheritance routes $landlordUser->devices() onto
+ * the central connection, so the escape fires; tenant users keep the fail-closed guard.
+ * Replaces the former platform CentralModel duplicate.
+ */
+class UserDevice extends Model
 {
+    use EnforcesTenantContext;
     use HasFactory;
 
     protected $fillable = [
@@ -35,6 +48,17 @@ class UserDevice extends TenantModel
             'last_used_at' => 'datetime',
             'verified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Default audit label — mirrors the value previously inherited from
+     * TenantModel. AuditService::log() calls $subject->getAuditLabel(); since
+     * this model no longer extends TenantModel it must supply it directly
+     * (same pattern as {@see User}).
+     */
+    public function getAuditLabel(): ?string
+    {
+        return (string) $this->getKey();
     }
 
     /**

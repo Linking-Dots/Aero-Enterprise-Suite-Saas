@@ -2,7 +2,8 @@
 
 namespace Aero\Platform\Console\Commands;
 
-use Aero\Platform\Models\UserDevice;
+use Aero\Auth\Models\UserDevice;
+use Aero\Contracts\AeroMode;
 use Illuminate\Console\Command;
 
 class ResetDevicesForSecurityUpdate extends Command
@@ -33,12 +34,23 @@ class ResetDevicesForSecurityUpdate extends Command
 
         $this->info('Starting device reset for security update...');
 
+        // Auth-identity unification (2D-step3): UserDevice now lives in aero-auth and
+        // carries the EnforcesTenantContext guard. Landlord devices are in the CENTRAL
+        // user_devices table, so in SaaS this command targets the 'central' connection
+        // via ::on('central'). That both points the count()/distinct() queries at the
+        // right table AND satisfies the guard's central escape for them; truncate()
+        // bypasses Eloquent global scopes entirely, so it relies on the connection only.
+        // In standalone there is a single DB and the guard is a no-op (default connection).
+        $query = fn () => AeroMode::isSaas()
+            ? UserDevice::on('central')
+            : UserDevice::query();
+
         // Get count before deletion
-        $deviceCount = UserDevice::count();
-        $userCount = UserDevice::distinct('user_id')->count('user_id');
+        $deviceCount = $query()->count();
+        $userCount = $query()->distinct('user_id')->count('user_id');
 
         // Delete all devices
-        UserDevice::truncate();
+        $query()->truncate();
 
         $this->info("✓ Cleared {$deviceCount} devices for {$userCount} users");
         $this->info('✓ All users will be required to re-login from their devices');
