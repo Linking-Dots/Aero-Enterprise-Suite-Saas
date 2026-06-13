@@ -19,11 +19,15 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10="/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <!-- migrate:fresh/rollback drop every package's tables; cross-package FKs
-             make FK-enforced drops fail on ordering, aborting the migration. -->
-        <env name="DB_FOREIGN_KEYS" value="false"/>
+        <!-- Production-faithful: the platform suite runs on real MySQL (not SQLite)
+             so FK constraints, migration DDL and the central connection behave
+             exactly as in a live SaaS deployment. -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="aeos_platform_test"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value=""/>
         <env name="CACHE_STORE" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

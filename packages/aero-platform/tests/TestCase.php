@@ -19,12 +19,13 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
  * This base centralises the harness the platform suite needs (previously copied,
  * incorrectly, into each test):
  *
- *  1. CONNECTION SHARING (createApplication): platform-tier migrations are routed
- *     to the `central` connection by the tier migrator override. We point
- *     `central`/`mysql` at the same in-memory SQLite PDO as the default
- *     connection BEFORE the migrate trait runs, so the platform tables land in
- *     the one database every query can see. Done in createApplication() so it
- *     runs before migrate and is not shadowed by the DatabaseMigrations trait.
+ *  1. CENTRAL CONNECTION (createApplication): the platform suite runs on REAL
+ *     MySQL (the throwaway `aeos_platform_test` schema) — never SQLite — so FK
+ *     constraints, migration DDL and the central connection behave exactly as in
+ *     a live SaaS deployment. Platform-tier migrations are routed to the
+ *     `central` connection by the tier migrator override; we point `central` at
+ *     the same MySQL schema as the default connection BEFORE the migrate trait
+ *     runs, so every table lands in the one database every query can see.
  *
  *  2. PLATFORM REQUEST CONTEXT (setUp): HRMAC's context guard fail-closes unless
  *     a platform RequestContext is bound. HTTP requests get this from the
@@ -47,14 +48,14 @@ abstract class TestCase extends \Tests\TestCase
     {
         $app = parent::createApplication();
 
-        $this->shareSqliteAcrossConnections($app);
+        $this->bindCentralConnection($app);
 
         return $app;
     }
 
     /**
      * Migrate without the trait's teardown `migrate:rollback`. The suite runs on
-     * a throwaway in-memory database (rebuilt by migrate:fresh each test), so a
+     * a throwaway MySQL schema rebuilt by migrate:fresh each test, so a
      * reverse-order rollback is both pointless and broken — some cross-package
      * down() drops fail on FK/table ordering against the shared schema.
      */
@@ -100,37 +101,23 @@ abstract class TestCase extends \Tests\TestCase
     }
 
     /**
-     * Point the `central` and legacy `mysql` connections at the same in-memory
-     * SQLite PDO as the default connection, so tier-routed central migrations
-     * land in the one database every test query can see.
+     * Point the `central` connection at the same MySQL schema as the default
+     * connection, so tier-routed central migrations and central-bound landlord
+     * queries land in the one throwaway database (aeos_platform_test). Both are
+     * real MySQL connections to the same schema, so committed DDL/DML from
+     * migrate:fresh is visible across them — no PDO sharing required.
      */
-    protected function shareSqliteAcrossConnections($app = null): void
+    protected function bindCentralConnection($app = null): void
     {
         $app ??= $this->app;
 
-        // FK enforcement OFF: migrate:fresh between tests drops every package's
-        // tables, and cross-package FKs (e.g. HRM training_*) make a FK-enforced
-        // drop fail on ordering. The default connection also runs with FKs off in
-        // the host's phpunit, so this keeps the shared connections consistent.
-        $sqliteConfig = [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-            'foreign_key_constraints' => false,
-        ];
+        $mysql = config('database.connections.mysql');
 
         config([
-            'database.connections.mysql' => $sqliteConfig,
-            'database.connections.central' => $sqliteConfig,
-            'tenancy.database.central_connection' => 'sqlite',
+            'database.connections.central' => $mysql,
+            'tenancy.database.central_connection' => 'central',
         ]);
 
-        $db = $app['db'];
-        $db->purge('mysql');
-        $db->purge('central');
-
-        $pdo = $db->connection('sqlite')->getPdo();
-        $db->connection('mysql')->setPdo($pdo);
-        $db->connection('central')->setPdo($pdo);
+        $app['db']->purge('central');
     }
 }
