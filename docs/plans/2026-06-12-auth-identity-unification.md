@@ -38,6 +38,18 @@ databases (multi-tenancy already isolates them). `landlord_users` is **dropped**
 - **Outcome: SaaS central install unblocked** — central now creates `users` via auth.
 
 ### Phase 2 — models + code → auth
+
+> **Boss ruling 2026-06-13 (connection strategy = PROVIDER/GUARD-DRIVEN).** The unified `User` resolves
+> central vs tenant by *who loads it*: the `landlord` guard's provider binds `User` instances to the
+> `central` connection at retrieval; the web/tenant guard uses the default/tenant connection. One `User`
+> class. **Enabler:** `EnforcesTenantContext` must no-op when the instance is on the `central` connection
+> (landlord rows are tenant-agnostic) so the tenant guard never fires for landlords. Decomposed units:
+> **2A** core→auth identity services (mechanical); **2B** connection enabler (EnforcesTenantContext central
+> escape + auth LandlordUserProvider binds User→central); **2C** `LandlordUser→User` rewrite (348 refs) +
+> point landlord guard/provider at central `users` + move landlord-auth classes + AdminUserStep→users;
+> **2D** drop landlord_users migrations + consolidate UserDevice model + delete platform LandlordUser.
+> Sequencing: full Phase 2, THEN the live install (Boss ruling 2026-06-13).
+
 - Move core→auth: `UserInvitation` model + `UserInvitationService`, `UserService`,
   `Services/Auth/DeviceSessionService`, `Services/Auth/EncryptedSessionHandler`, `PasswordPolicyController`.
 - Move platform→auth: landlord auth (`LandlordAuthContext`, `LandlordUserProvider`, `LandlordUserService`,
