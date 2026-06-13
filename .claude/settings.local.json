@@ -9,7 +9,8 @@
       "Write(//**)",
       "WebFetch(*)",
       "mcp__filesystem__*",
-      "Bash(cd /c/laragon/www/Aero-Enterprise-Suite-Saas *)"
+      "Bash(cd /c/laragon/www/Aero-Enterprise-Suite-Saas *)",
+      "Bash(printf '[2026-06-12T00:00:00Z] DECISION=PROCEED REVERSIBLE=yes — auth-identity unification Phase 0+1 approach \\(0a safe core deletes, 0b platform repoint+deletes, 1a ordering-fix BEFORE 1b users-move; impersonations FK-free auth version canonical now\\) — Verified: 3 core dups byte-identical, impersonation differs \\(auth FK-free by design + unused by core tests\\), platform social_auth/UserDevice dups real, FK ordering is timestamp-driven so re-timestamping users to sort first in auth is correct; mission committed+Boss-authorized \\(d408dd96a\\) incl deletes; on feature branch. Guardrail: core UserRoleMorphStabilityTest must stay green through 1b.\\\\n' >> .claude/boss-decisions.log; echo logged)"
     ],
     "additionalDirectories": [
       "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils",
