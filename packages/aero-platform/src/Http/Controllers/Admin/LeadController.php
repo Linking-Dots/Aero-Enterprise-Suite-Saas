@@ -149,7 +149,7 @@ class LeadController extends Controller
     public function assign(Request $request, ProspectLead $lead): JsonResponse
     {
         $validated = $request->validate([
-            'user_id' => 'required|integer|exists:landlord_users,id',
+            'user_id' => 'required|integer|exists:central.users,id',
         ]);
 
         $this->leadService->assignLead($lead, $validated['user_id']);
@@ -169,7 +169,7 @@ class LeadController extends Controller
         $validated = $request->validate([
             'lead_ids' => 'required|array|min:1',
             'lead_ids.*' => 'integer|exists:prospect_leads,id',
-            'user_id' => 'required|integer|exists:landlord_users,id',
+            'user_id' => 'required|integer|exists:central.users,id',
         ]);
 
         $count = $this->leadService->bulkAssignLeads($validated['lead_ids'], $validated['user_id']);

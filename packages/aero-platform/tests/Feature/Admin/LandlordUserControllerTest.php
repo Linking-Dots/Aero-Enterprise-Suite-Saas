@@ -56,7 +56,7 @@ class LandlordUserControllerTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('landlord_users', [
+        $this->assertDatabaseHas('users', [
             'email' => 'jane@example.com',
             'name' => 'Jane Doe',
         ]);
@@ -108,7 +108,7 @@ class LandlordUserControllerTest extends TestCase
             ->delete(route('platform.admin.users.destroy', $user))
             ->assertRedirect();
 
-        $this->assertSoftDeleted('landlord_users', ['id' => $user->id]);
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
 
     public function test_store_assigns_roles_to_user(): void

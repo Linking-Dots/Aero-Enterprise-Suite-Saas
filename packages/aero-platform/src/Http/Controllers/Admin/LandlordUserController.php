@@ -40,7 +40,7 @@ class LandlordUserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
-            'email' => ['required', 'email', Rule::unique('central.landlord_users', 'email')],
+            'email' => ['required', 'email', Rule::unique('central.users', 'email')],
             'password' => ['required', 'string', 'min:8'],
             'active' => ['boolean'],
             'role_ids' => ['array'],
@@ -63,7 +63,7 @@ class LandlordUserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
-            'email' => ['required', 'email', Rule::unique('central.landlord_users', 'email')->ignore($user->id)],
+            'email' => ['required', 'email', Rule::unique('central.users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8'],
             'active' => ['boolean'],
             'role_ids' => ['array'],

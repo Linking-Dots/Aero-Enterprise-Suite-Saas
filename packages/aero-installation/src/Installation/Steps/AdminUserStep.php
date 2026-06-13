@@ -65,11 +65,15 @@ class AdminUserStep extends BaseInstallationStep
             throw new \Exception('Admin password not provided. Complete the Admin step in the installer before proceeding.');
         }
 
-        // In SaaS mode, use landlord_users table; in standalone, use users table
-        $userTable = $this->mode === 'saas' ? 'landlord_users' : 'users';
+        // Auth-identity unification (2C, mechanism B): landlords are now `users`
+        // rows in the CENTRAL database — same table as tenant/standalone users,
+        // different connection. SaaS writes the admin to central `users`;
+        // standalone to the default `users`.
+        $userTable = 'users';
+        $connection = $this->mode === 'saas' ? 'central' : null;
 
         // Check if admin already exists
-        $existingAdmin = $this->getUserByEmail($adminEmail, $userTable);
+        $existingAdmin = $this->getUserByEmail($adminEmail, $userTable, $connection);
         if ($existingAdmin) {
             $this->log("Admin user already exists: {$adminEmail} in table: {$userTable}");
 
@@ -83,7 +87,8 @@ class AdminUserStep extends BaseInstallationStep
 
         // Create admin user
         try {
-            $adminId = DB::table($userTable)->insertGetId([
+            $adminId = DB::connection($connection)->table($userTable)->insertGetId([
+                'user_name' => str($adminEmail)->before('@')->slug()->value() ?: 'admin',
                 'name' => $adminName,
                 'email' => $adminEmail,
                 'password' => $hashedPassword,
@@ -95,7 +100,7 @@ class AdminUserStep extends BaseInstallationStep
             $this->log("Admin user created: {$adminEmail} (ID: {$adminId}) in table: {$userTable}");
 
             // Assign admin role (if roles table exists)
-            $this->assignAdminRole($adminId, $userTable);
+            $this->assignAdminRole($adminId, $userTable, $connection);
 
             return [
                 'admin_created' => true,
@@ -124,10 +129,10 @@ class AdminUserStep extends BaseInstallationStep
     /**
      * Get user by email
      */
-    protected function getUserByEmail(string $email, string $table = 'users'): ?array
+    protected function getUserByEmail(string $email, string $table = 'users', ?string $connection = null): ?array
     {
         try {
-            $user = DB::table($table)
+            $user = DB::connection($connection)->table($table)
                 ->where('email', $email)
                 ->first();
 
@@ -142,29 +147,29 @@ class AdminUserStep extends BaseInstallationStep
      * Assign Super Administrator role to user
      * Super Administrator role bypasses all HRMAC checks
      */
-    protected function assignAdminRole(int $userId, string $userTable = 'users'): void
+    protected function assignAdminRole(int $userId, string $userTable = 'users', ?string $connection = null): void
     {
         try {
             // Check if roles table exists
-            if (! DB::table('roles')->exists()) {
+            if (! DB::connection($connection)->table('roles')->exists()) {
                 return;
             }
 
             // Look for Super Administrator role (bypasses HRMAC)
-            $superAdminRole = DB::table('roles')
+            $superAdminRole = DB::connection($connection)->table('roles')
                 ->where('name', 'Super Administrator')
                 ->first();
 
             if (! $superAdminRole) {
                 // Fallback to admin role if Super Administrator doesn't exist
-                $superAdminRole = DB::table('roles')
+                $superAdminRole = DB::connection($connection)->table('roles')
                     ->where('name', 'Super Admin')
                     ->first();
             }
 
             if (! $superAdminRole) {
                 // Create Super Administrator role if it doesn't exist
-                $superAdminRoleId = DB::table('roles')->insertGetId([
+                $superAdminRoleId = DB::connection($connection)->table('roles')->insertGetId([
                     'name' => 'Super Administrator',
                     'guard_name' => 'web',
                     'description' => 'Full system access - bypasses all HRMAC checks',
@@ -180,7 +185,7 @@ class AdminUserStep extends BaseInstallationStep
             // polymorphic morph key: the tenant User maps to the stable 'user' key
             // (Phase 2 decoupling); the central LandlordUser persists its class FQN.
             try {
-                DB::table('model_has_roles')->insert([
+                DB::connection($connection)->table('model_has_roles')->insert([
                     'role_id' => $superAdminRole->id,
                     'model_type' => $this->mode === 'saas' ? 'Aero\\Platform\\Models\\LandlordUser' : 'user',
                     'model_id' => $userId,
