@@ -670,8 +670,15 @@ class ProvisionTenant implements ShouldQueue
     protected function getTenantMigrationPaths(): array
     {
         // Core + every sharable — always present in a tenant DB (the single source of truth).
-        $paths = PackageTier::migrationPathsForTiers([PackageTier::CORE, PackageTier::SHARABLE]);
-        $this->logStep('   → Core + sharable migrations: '.count($paths).' path(s)', ['paths' => $paths]);
+        // ORDERING (Phase-1): aero-auth owns `users` + the identity tables that core/hrmac/etc FK,
+        // so its path MUST run FIRST. migrationPathsForTiers returns filesystem-glob order (auth not
+        // guaranteed first), so prepend auth explicitly; array_unique below keeps the first occurrence.
+        $authPath = PackageTier::migrationPathForPackage('auth');
+        $paths = array_merge(
+            $authPath !== null ? [$authPath] : [],
+            PackageTier::migrationPathsForTiers([PackageTier::CORE, PackageTier::SHARABLE])
+        );
+        $this->logStep('   → Auth-first core + sharable migrations: '.count($paths).' path(s)', ['paths' => $paths]);
 
         // Subscribed PRODUCTS only (tier=product), with dependencies auto-resolved.
         $tenantModules = $this->tenant->getActiveModules()->all();

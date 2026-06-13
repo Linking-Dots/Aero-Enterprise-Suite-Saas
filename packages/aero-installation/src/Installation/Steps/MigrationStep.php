@@ -68,6 +68,7 @@ class MigrationStep extends BaseInstallationStep
         $packageCodes = $this->getAvailablePackageCodes();
         
         $tier1 = []; // infrastructure
+        $tierAuth = []; // auth — identity foundation; MUST precede core (core/hrmac/etc FK `users`)
         $tier2 = []; // core
         $tier3 = []; // hrmac
         $tier4 = []; // other foundation
@@ -85,6 +86,10 @@ class MigrationStep extends BaseInstallationStep
 
             if ($code === 'infrastructure') {
                 $tier1[] = ['code' => $code, 'path' => $path];
+            } elseif ($code === 'auth') {
+                // auth owns `users` and the identity tables that nearly everything FKs,
+                // so it runs right after infrastructure and BEFORE core (Phase-1 ordering).
+                $tierAuth[] = ['code' => $code, 'path' => $path];
             } elseif ($code === 'core') {
                 $tier2[] = ['code' => $code, 'path' => $path];
             } elseif ($code === 'hrmac') {
@@ -100,7 +105,7 @@ class MigrationStep extends BaseInstallationStep
             }
         }
 
-        $migrationQueue = array_merge($tier1, $tier2, $tier3, $tier4, $tier5);
+        $migrationQueue = array_merge($tier1, $tierAuth, $tier2, $tier3, $tier4, $tier5);
 
         if (empty($migrationQueue)) {
             $this->log('No package migrations to run');
