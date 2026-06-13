@@ -66,6 +66,27 @@ databases (multi-tenancy already isolates them). `landlord_users` is **dropped**
   BOTH central landlord devices and tenant-user devices). Until then platform keeps its `UserDevice`.
 - Repoint every caller; keep aero-auth pure (contracts/kernel only — no Core/Platform).
 
+> **2C STATUS (paused 2026-06-13, Boss ruling: resume fresh with platform suite gated).** Done so far:
+> 2A-dedup (deleted core's 2 dead-dup session services), 2B (EnforcesTenantContext central escape +
+> test). 2C (the `LandlordUser→User` rewrite) is NOT started — Boss-Proxy ESCALATED it for these
+> verified reasons the fresh session MUST handle first:
+> - **Red gate:** the SaaS Feature suite is ~100 failed / 32 passed today — baseline/triage it before
+>   it can certify a 348-ref auth rewrite. Add it as a real gate for 2C.
+> - **Unwritten migration:** `LandlordUser` hand-rolls `model_has_roles` writes keyed on `static::class`
+>   (LandlordUser.php:162-257), and `2026_06_09_000001_normalize_user_morph_type` deliberately SKIPS
+>   landlord rows → any class-identity change orphans landlord role rows unless a dedicated landlord
+>   role-pivot **morph migration** ships with 2C.
+> - **Blast radius:** 348 refs / 102 files (91 platform), heavy in the platform Feature test suite
+>   (~50 files do `LandlordUser::factory()` + `actingAs(...,'landlord')`).
+> - **Guard wiring to change:** AeroPlatformServiceProvider::configureAuth() (lines ~691-712) —
+>   `auth.providers.landlord_users` model + the password broker; AdminUserStep must write central `users`.
+> - **Recommended mechanism (Boss-Proxy):** B — thin central-bound `LandlordUser extends Aero\Auth\Models\User`
+>   ($connection='central', table `users`, own factory + morph), guard/provider keep working, NO 348-ref
+>   rename; then a SEPARATE pass does the full rename once the suite is green. The full rename + morph
+>   migration is its own gated effort.
+> - **2B already shipped the enabler** the provider-driven landlord User needs (central-connection escape
+>   in EnforcesTenantContext). The landlord provider still needs the `setConnection('central')` binding.
+
 ### Phase 3 — verify all 3 contexts, then go live
 - Gate: core oracle baseline, hrmac, both hosts boot + verify-tiers.
 - Throwaway-DB proof (Unit-5 style) for central + tenant + standalone: assert `users` lands in ALL
