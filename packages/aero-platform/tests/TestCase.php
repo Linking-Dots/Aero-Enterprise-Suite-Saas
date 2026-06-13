@@ -105,7 +105,14 @@ abstract class TestCase extends \Tests\TestCase
      * connection, so tier-routed central migrations and central-bound landlord
      * queries land in the one throwaway database (aeos_platform_test). Both are
      * real MySQL connections to the same schema, so committed DDL/DML from
-     * migrate:fresh is visible across them — no PDO sharing required.
+     * migrate:fresh is visible across them.
+     *
+     * IMPORTANT: only PURGE central here — never pre-open it. An open, idle
+     * `central` connection holds table metadata locks that deadlock
+     * migrate:fresh's `db:wipe` DROP TABLE on the default connection (the DROP
+     * waits forever on the idle connection). Leaving central lazy means it only
+     * opens during migrate/queries, where each DDL/DML statement auto-commits
+     * and releases its locks immediately.
      */
     protected function bindCentralConnection($app = null): void
     {
@@ -118,6 +125,11 @@ abstract class TestCase extends \Tests\TestCase
             'tenancy.database.central_connection' => 'central',
         ]);
 
+        // Lazy: only purge so `central` re-resolves with the new config. Do NOT
+        // pre-open it here — an open idle `central` connection holds metadata
+        // locks that deadlock migrate:fresh's db:wipe DROP on the default
+        // connection. central opens lazily during migrate/queries (DDL/DML
+        // auto-commit, releasing locks immediately).
         $app['db']->purge('central');
     }
 }

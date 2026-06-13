@@ -28,6 +28,23 @@ $loader = require $vendorAutoload;
 $loader->addPsr4('Aero\\Platform\\Tests\\', __DIR__ . '/');
 
 // ---------------------------------------------------------------------------
+// Throwaway MySQL test schema (production-faithful — the suite never uses
+// SQLite). Auto-provision it so a fresh checkout / CI runner works without a
+// manual `CREATE DATABASE`. The connection is opened and CLOSED here (the PDO
+// handle is unset) so it does not linger for the life of the test process and
+// interfere with migrate:fresh's metadata locks. Never a host's real DB.
+// ---------------------------------------------------------------------------
+$testDb = 'aeos_platform_test';
+try {
+    $provisionPdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $provisionPdo->exec("CREATE DATABASE IF NOT EXISTS `{$testDb}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $provisionPdo = null;
+} catch (\Throwable $e) {
+    fwrite(STDERR, "Cannot provision MySQL test schema '{$testDb}' on root@127.0.0.1: {$e->getMessage()}\n");
+    exit(1);
+}
+
+// ---------------------------------------------------------------------------
 // SaaS install markers (boot-time gate).
 //
 // The platform provider only registers its routes/middleware when, AT BOOT,
