@@ -45,7 +45,13 @@ databases (multi-tenancy already isolates them). `landlord_users` is **dropped**
   `Public/SocialAuthController`, `Admin/SocialAuthController`, `CheckSessionExpiry`,
   `TenantImpersonationToken/Service`, `Mail/Auth/*`). **Rewrite `LandlordUser` → `User`** everywhere;
   point the `landlord` guard/provider at `users`.
-- Consolidate the dup `UserDevice` model (platform → auth).
+- Consolidate the dup `UserDevice` model (platform → auth). **DEFERRED HERE FROM PHASE 0**
+  (Boss-Proxy 2026-06-13): platform's `UserDevice` extends `CentralModel`; auth's extends `TenantModel`
+  whose `tenant_context_guard` THROWS on a no-tenant query. The sole consumer
+  `ResetDevicesForSecurityUpdate` (landlord console command) runs with no tenant context, so a naive
+  Phase-0 repoint would latently break it in SaaS. Resolve here once the central-vs-tenant identity
+  base-model strategy is decided (landlords are central `users`; the unified `UserDevice` must serve
+  BOTH central landlord devices and tenant-user devices). Until then platform keeps its `UserDevice`.
 - Repoint every caller; keep aero-auth pure (contracts/kernel only — no Core/Platform).
 
 ### Phase 3 — verify all 3 contexts, then go live
