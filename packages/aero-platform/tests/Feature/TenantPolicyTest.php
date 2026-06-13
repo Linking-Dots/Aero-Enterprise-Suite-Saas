@@ -8,16 +8,13 @@ use Aero\HRMAC\Models\Role;
 use Aero\Platform\Models\LandlordUser;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Policies\TenantPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Aero\Platform\Tests\TestCase;
 
 /**
  * @covers \Aero\Platform\Policies\TenantPolicy
  */
 class TenantPolicyTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected TenantPolicy $policy;
 
     protected LandlordUser $superAdmin;
