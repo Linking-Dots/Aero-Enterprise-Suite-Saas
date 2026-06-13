@@ -854,7 +854,6 @@ class AeroCoreServiceProvider extends ServiceProvider
     protected function registerCommands(): void
     {
         $this->commands([
-            Console\Commands\InstallCommand::class,
             // aero:sync-module is provided solely by aero-hrmac (one sync for both
             // modes, HRMAC models, nested parent_id support).
             Console\Commands\SyncModuleMigrations::class,
