@@ -182,12 +182,16 @@ class AdminUserStep extends BaseInstallationStep
             }
 
             // Assign role (if model_has_roles table exists). model_has_roles stores a
-            // polymorphic morph key: the tenant User maps to the stable 'user' key
-            // (Phase 2 decoupling); the central User persists its class FQN.
+            // polymorphic morph key. Auth-identity unification: landlords AND tenant
+            // users are the one Aero\Auth\Models\User, registered in the morph map as
+            // the stable 'user' key (AeroCoreServiceProvider::registerIdentityModelAliases)
+            // — in EVERY mode. (Pre-unification this wrote a class FQN for saas, which is
+            // now stale: there is no Aero\Platform\Models\User, and the central User
+            // morphs to 'user' like everywhere else.)
             try {
                 DB::connection($connection)->table('model_has_roles')->insert([
                     'role_id' => $superAdminRole->id,
-                    'model_type' => $this->mode === 'saas' ? 'Aero\\Platform\\Models\\User' : 'user',
+                    'model_type' => 'user',
                     'model_id' => $userId,
                 ]);
                 $this->log("Assigned Super Administrator role to user ID: {$userId} in table: {$userTable}");
