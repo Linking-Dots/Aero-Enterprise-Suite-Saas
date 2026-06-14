@@ -1,6 +1,6 @@
 <?php
 
-use Aero\Core\Http\Middleware\RedirectIfAuthenticated;
+use Aero\Auth\Http\Middleware\RedirectIfAuthenticated;
 use Aero\I18n\Http\Middleware\SetLocale;
 use Aero\Platform\Http\Middleware\ApiSecurityMiddleware;
 use Aero\Platform\Http\Middleware\Authenticate;

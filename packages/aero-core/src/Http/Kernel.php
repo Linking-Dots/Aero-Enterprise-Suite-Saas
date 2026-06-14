@@ -2,7 +2,7 @@
 
 namespace Aero\Core\Http;
 
-use Aero\Core\Http\Middleware\RedirectIfAuthenticated;
+use Aero\Auth\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\ApiSecurityMiddleware;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckMaintenanceMode;
