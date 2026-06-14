@@ -23,7 +23,6 @@ export default function UsersForm({ user, roles }) {
     name:     user?.name     ?? '',
     email:    user?.email    ?? '',
     password: '',
-    is_active: user?.active  ?? true,
     role_ids: user?.landlord_roles?.map(r => r.id) ?? [],
   });
 
@@ -106,12 +105,6 @@ export default function UsersForm({ user, roles }) {
                   error={form.errors.password}
                 />
               </Field>
-
-              <Toggle
-                label="Active — user can log in"
-                checked={form.data.is_active}
-                onChange={checked => form.setData('is_active', checked)}
-              />
             </VStack>
           </CardBody>
         </Card>

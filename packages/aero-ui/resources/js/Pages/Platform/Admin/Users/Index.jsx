@@ -122,8 +122,8 @@ export default function UsersIndex({ users, filters }) {
       key: 'status',
       label: 'Status',
       render: (row) => (
-        <Badge intent={row.active ? 'success' : 'neutral'}>
-          {row.active ? 'Active' : 'Inactive'}
+        <Badge intent={row.deleted_at ? 'neutral' : 'success'}>
+          {row.deleted_at ? 'Inactive' : 'Active'}
         </Badge>
       ),
     },
@@ -158,7 +158,7 @@ export default function UsersIndex({ users, filters }) {
               size="sm"
               onClick={() => setToggleTarget(row)}
             >
-              {row.active ? 'Deactivate' : 'Activate'}
+              {row.deleted_at ? 'Activate' : 'Deactivate'}
             </Button>
           )}
           {canDelete && (
@@ -236,19 +236,19 @@ export default function UsersIndex({ users, filters }) {
       <Modal
         open={!!toggleTarget}
         onClose={() => setToggleTarget(null)}
-        title={toggleTarget?.active ? 'Deactivate User' : 'Activate User'}
+        title={!toggleTarget?.deleted_at ? 'Deactivate User' : 'Activate User'}
         description={
-          toggleTarget?.active
+          !toggleTarget?.deleted_at
             ? `Deactivate "${toggleTarget?.name}"? They will no longer be able to log in.`
             : `Activate "${toggleTarget?.name}"? They will regain access to the platform.`
         }
         footer={
           <HStack gap={2}>
             <Button
-              intent={toggleTarget?.active ? 'danger' : 'primary'}
+              intent={!toggleTarget?.deleted_at ? 'danger' : 'primary'}
               onClick={confirmToggle}
             >
-              {toggleTarget?.active ? 'Deactivate' : 'Activate'}
+              {!toggleTarget?.deleted_at ? 'Deactivate' : 'Activate'}
             </Button>
             <Button intent="ghost" onClick={() => setToggleTarget(null)}>
               Cancel

@@ -7,7 +7,7 @@ namespace Aero\Platform\Http\Controllers\Admin;
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Auth\Models\User;
-use Aero\Platform\Services\LandlordUserService;
+use Aero\Auth\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,12 +25,18 @@ use Inertia\Response;
  */
 class LandlordUserController extends Controller
 {
-    public function __construct(private LandlordUserService $svc) {}
+    public function __construct(private UserService $svc) {}
 
     public function index(Request $request): Response
     {
+        // Active/inactive is managed via SoftDeletes (active = not trashed). Map the
+        // legacy q/active filter onto the unified search/status contract.
+        $status = $request->filled('active')
+            ? ($request->boolean('active') ? 'active' : 'inactive')
+            : 'all';
+
         return Inertia::render('Platform/Admin/Users/Index', [
-            'users' => $this->svc->list($request->only(['q', 'active'])),
+            'users' => $this->svc->list(['search' => $request->input('q'), 'status' => $status]),
             'roles' => Role::orderBy('name')->get(['id', 'name']),
             'filters' => $request->only(['q', 'active']),
         ]);

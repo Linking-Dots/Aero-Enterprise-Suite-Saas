@@ -64,7 +64,7 @@ class CoreUserControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * UserService::create now derives user_name automatically from name.
+     * Aero\Auth\Services\UserService::create derives user_name automatically from name.
      */
     public function test_store_creates_user_with_derived_user_name(): void
     {
@@ -129,10 +129,10 @@ class CoreUserControllerTest extends PackageTestCase
     // =========================================================================
 
     /**
-     * Route collision fixed: API routes now use /api/users/* prefix.
-     * DELETE /users/{user} correctly soft-deletes the user.
+     * Admin "delete" is PERMANENT (forceDelete) under the unified UserService —
+     * active/inactive is what SoftDeletes manages, so delete must hard-remove.
      */
-    public function test_destroy_soft_deletes_user(): void
+    public function test_destroy_permanently_deletes_user(): void
     {
         $admin  = $this->makeSuperAdmin();
         $target = User::factory()->create();
@@ -141,7 +141,7 @@ class CoreUserControllerTest extends PackageTestCase
             ->delete(route('core.users.destroy', $target))
             ->assertRedirect(route('core.users.index'));
 
-        $this->assertSoftDeleted('users', ['id' => $target->id]);
+        $this->assertDatabaseMissing('users', ['id' => $target->id]);
     }
 
     public function test_cannot_delete_own_account_direct_service(): void
@@ -166,28 +166,25 @@ class CoreUserControllerTest extends PackageTestCase
     public function test_toggle_status_deactivates_active_user(): void
     {
         $admin  = $this->makeSuperAdmin();
-        $target = User::factory()->create(['is_active' => true]);
+        $target = User::factory()->create();
 
         $this->actingAs($admin)
             ->post(route('core.users.toggle-status', $target));
 
-        $this->assertDatabaseHas('users', [
-            'id'        => $target->id,
-            'is_active' => false,
-        ]);
+        // Deactivate = soft delete (active = not trashed).
+        $this->assertSoftDeleted('users', ['id' => $target->id]);
     }
 
     public function test_toggle_status_activates_inactive_user(): void
     {
         $admin  = $this->makeSuperAdmin();
-        $target = User::factory()->create(['is_active' => false]);
+        $target = User::factory()->create();
+        $target->delete(); // inactive = soft-deleted
 
         $this->actingAs($admin)
             ->post(route('core.users.toggle-status', $target));
 
-        $this->assertDatabaseHas('users', [
-            'id'        => $target->id,
-            'is_active' => true,
-        ]);
+        // Reactivate = restore.
+        $this->assertNotSoftDeleted('users', ['id' => $target->id]);
     }
 }

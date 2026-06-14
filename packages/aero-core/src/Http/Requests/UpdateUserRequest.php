@@ -54,8 +54,8 @@ class UpdateUserRequest extends FormRequest
             'nationality' => ['nullable', 'string', 'max:100'],
             'religion' => ['nullable', 'string', 'max:100'],
             'marital_status' => ['nullable', 'in:single,married,divorced,widowed'],
-            'roles' => ['sometimes', 'array'],
-            'roles.*' => ['string', 'exists:roles,name'],
+            'role_ids' => ['sometimes', 'array'],
+            'role_ids.*' => ['integer', 'exists:roles,id'],
         ];
     }
 
@@ -78,8 +78,8 @@ class UpdateUserRequest extends FormRequest
             'department_id.exists' => 'The selected department does not exist.',
             'designation_id.exists' => 'The selected designation does not exist.',
             'report_to.exists' => 'The selected reporting manager does not exist.',
-            'roles.array' => 'Roles must be provided as an array.',
-            'roles.*.exists' => 'One or more selected roles do not exist.',
+            'role_ids.array' => 'Roles must be provided as an array.',
+            'role_ids.*.exists' => 'One or more selected roles do not exist.',
             'profile_image.image' => 'Profile picture must be an image file.',
             'profile_image.mimes' => 'Profile picture must be in JPEG, JPG, or PNG format.',
             'profile_image.max' => 'Profile picture size cannot exceed 2MB.',

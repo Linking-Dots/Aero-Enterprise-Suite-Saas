@@ -90,18 +90,19 @@ class LandlordUserControllerTest extends TestCase
         $this->assertEquals('New Name', $user->fresh()->name);
     }
 
-    public function test_toggle_status_flips_active_flag(): void
+    public function test_toggle_status_soft_deletes_user(): void
     {
-        $user = LandlordUserFactory::new()->create(['active' => true]);
+        $user = LandlordUserFactory::new()->create();
 
         $this->actingAs($this->admin, 'landlord')
             ->patch(route('platform.admin.users.toggle-status', $user))
             ->assertRedirect();
 
-        $this->assertFalse($user->fresh()->active);
+        // Active/inactive is managed via SoftDeletes: deactivate = soft delete.
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
 
-    public function test_destroy_deletes_user(): void
+    public function test_destroy_permanently_deletes_user(): void
     {
         $user = LandlordUserFactory::new()->create();
 
@@ -109,7 +110,8 @@ class LandlordUserControllerTest extends TestCase
             ->delete(route('platform.admin.users.destroy', $user))
             ->assertRedirect();
 
-        $this->assertSoftDeleted('users', ['id' => $user->id]);
+        // Admin "delete" is permanent (forceDelete) under the unified UserService.
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
 
     public function test_store_assigns_roles_to_user(): void

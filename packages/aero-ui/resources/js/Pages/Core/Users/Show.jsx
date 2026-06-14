@@ -19,7 +19,7 @@ export default function UsersShow({ user }) {
   const canEdit        = useHRMAC('core.user_management.users.edit');
   const canImpersonate = useHRMAC('core.user_management.users.impersonate');
 
-  const isActive = !user.deleted_at && user.active;
+  const isActive = !user.deleted_at; // active = not trashed (SoftDeletes)
 
   const toggleStatus = () => {
     const activate = !isActive;

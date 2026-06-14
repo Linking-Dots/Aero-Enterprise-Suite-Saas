@@ -139,8 +139,8 @@ export default function UsersIndex({ users, roles, filters, stats }) {
     {
       key: 'status', label: 'Status', width: '12%',
       render: row => (
-        <Badge intent={row.deleted_at ? 'danger' : row.active ? 'success' : 'warning'}>
-          {row.deleted_at ? 'Deleted' : row.active ? 'Active' : 'Inactive'}
+        <Badge intent={row.deleted_at ? 'warning' : 'success'}>
+          {row.deleted_at ? 'Inactive' : 'Active'}
         </Badge>
       ),
     },
@@ -148,7 +148,7 @@ export default function UsersIndex({ users, roles, filters, stats }) {
     {
       key: 'actions', label: '', width: '28%', align: 'right',
       render: row => {
-        const isActive = !row.deleted_at && row.active;
+        const isActive = !row.deleted_at; // active = not trashed (SoftDeletes)
         return (
           <HStack gap={2} justify="end">
             {canView && (

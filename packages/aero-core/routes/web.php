@@ -1162,20 +1162,27 @@ Route::middleware('auth:web')->group(function () {
             ->middleware('hrmac:core.user_management.users.bulk_assign_roles');
         Route::post('/stop-impersonating', [CoreUserController::class, 'stopImpersonating'])
             ->name('stop-impersonating');
+        // withTrashed(): active/inactive is managed via SoftDeletes, so these
+        // actions must resolve inactive (soft-deleted) users too.
         Route::get('/{user}', [CoreUserController::class, 'show'])
             ->name('show')
+            ->withTrashed()
             ->middleware('hrmac:core.user_management.users.view');
         Route::get('/{user}/edit', [CoreUserController::class, 'edit'])
             ->name('edit')
+            ->withTrashed()
             ->middleware('hrmac:core.user_management.users.edit');
         Route::put('/{user}', [CoreUserController::class, 'update'])
             ->name('update')
+            ->withTrashed()
             ->middleware('hrmac:core.user_management.users.edit');
         Route::delete('/{user}', [CoreUserController::class, 'destroy'])
             ->name('destroy')
+            ->withTrashed()
             ->middleware('hrmac:core.user_management.users.delete');
         Route::post('/{user}/toggle-status', [CoreUserController::class, 'toggleStatus'])
             ->name('toggle-status')
+            ->withTrashed()
             ->middleware('hrmac:core.user_management.users.activate');
         Route::post('/{user}/impersonate', [CoreUserController::class, 'impersonate'])
             ->name('impersonate')

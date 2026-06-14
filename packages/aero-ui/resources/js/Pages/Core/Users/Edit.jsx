@@ -25,8 +25,7 @@ export default function UsersEdit({ user, roles }) {
     phone:                 user.phone             || '',
     password:              '',
     password_confirmation: '',
-    roles:                 user.roles?.map(r => r.name) || [],
-    active:                user.active ?? true,
+    role_ids:              user.roles?.map(r => r.id) || [],
   });
 
   const handleSubmit = e => {
@@ -43,10 +42,10 @@ export default function UsersEdit({ user, roles }) {
     });
   };
 
-  const toggleRole = name => {
-    const current = form.data.roles;
-    form.setData('roles',
-      current.includes(name) ? current.filter(r => r !== name) : [...current, name]
+  const toggleRole = id => {
+    const current = form.data.role_ids;
+    form.setData('role_ids',
+      current.includes(id) ? current.filter(r => r !== id) : [...current, id]
     );
   };
 
@@ -122,23 +121,17 @@ export default function UsersEdit({ user, roles }) {
                     <Checkbox
                       key={r.id ?? r.name}
                       label={r.name}
-                      checked={form.data.roles.includes(r.name)}
-                      onChange={() => toggleRole(r.name)}
+                      checked={form.data.role_ids.includes(r.id)}
+                      onChange={() => toggleRole(r.id)}
                     />
                   ))}
                 </HStack>
               </CardContent>
             </Card>
-            {form.errors.roles && (
-              <Text tone="secondary" size="sm">{form.errors.roles}</Text>
+            {form.errors.role_ids && (
+              <Text tone="secondary" size="sm">{form.errors.role_ids}</Text>
             )}
           </VStack>
-
-          <Checkbox
-            label="Active"
-            checked={form.data.active}
-            onChange={e => form.setData('active', e.target.checked)}
-          />
 
           <HStack gap={3} className="pt-4">
             {canEdit && (

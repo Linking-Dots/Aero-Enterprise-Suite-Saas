@@ -1392,16 +1392,18 @@ Route::middleware('admin.domain')->group(function () {
         Route::prefix('users')->name('platform.admin.users.')->group(function () {
             Route::middleware('hrmac:platform-users.landlord-user-list.view')->group(function () {
                 Route::get('/', [LandlordUserController::class, 'index'])->name('index');
-                Route::get('/{user}', [LandlordUserController::class, 'show'])->name('show');
+                // withTrashed(): active/inactive is managed via SoftDeletes, so these
+                // actions must resolve inactive (soft-deleted) users too.
+                Route::get('/{user}', [LandlordUserController::class, 'show'])->name('show')->withTrashed();
             });
             Route::middleware('hrmac:platform-users.landlord-user-list.create')
                 ->post('/', [LandlordUserController::class, 'store'])->name('store');
             Route::middleware('hrmac:platform-users.landlord-user-list.edit')->group(function () {
-                Route::put('/{user}', [LandlordUserController::class, 'update'])->name('update');
-                Route::patch('/{user}/toggle-status', [LandlordUserController::class, 'toggleStatus'])->name('toggle-status');
+                Route::put('/{user}', [LandlordUserController::class, 'update'])->name('update')->withTrashed();
+                Route::patch('/{user}/toggle-status', [LandlordUserController::class, 'toggleStatus'])->name('toggle-status')->withTrashed();
             });
             Route::middleware('hrmac:platform-users.landlord-user-list.delete')
-                ->delete('/{user}', [LandlordUserController::class, 'destroy'])->name('destroy');
+                ->delete('/{user}', [LandlordUserController::class, 'destroy'])->name('destroy')->withTrashed();
         });
 
         // Platform roles — the SAME HRMAC RoleController the tenant side uses
