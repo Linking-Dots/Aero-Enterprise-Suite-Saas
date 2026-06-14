@@ -93,7 +93,7 @@ class RoleService
     /**
      * Assign a set of roles to a user (replaces the user's current role set).
      *
-     * Accepts any user model (tenant User or central LandlordUser) — the morph class
+     * Accepts any user model (tenant User or central User) — the morph class
      * + key come from the model, and model_has_roles is written on the default
      * connection (tenant or central, as the host context dictates).
      */

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
  *
  * There are two concrete implementations:
  *   - TenantAuthContext   → web guard, Aero\Auth\Models\User, tenant login
- *   - LandlordAuthContext → landlord guard, Aero\Platform\Models\LandlordUser, admin login
+ *   - LandlordAuthContext → landlord guard, Aero\Auth\Models\User, admin login
  *
  * Controllers and services consume this interface; they never branch on guard names
  * or model class strings directly.

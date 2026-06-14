@@ -68,7 +68,7 @@ use Aero\Platform\Listeners\ReactivateRoleAccessOnResubscribe;
 use Aero\Platform\Listeners\ResyncTenantModuleCatalog;
 use Aero\Platform\Listeners\SuspendUnsubscribedRoleAccess;
 use Aero\Platform\Listeners\TenantCreatedListener;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
@@ -696,10 +696,19 @@ class AeroPlatformServiceProvider extends ServiceProvider
             'provider' => 'landlord_users',
         ]);
 
-        // Add landlord_users provider
+        // Add landlord_users provider.
+        // Auth-identity unification (Unit 4): landlords are unified Aero\Auth\Models\User
+        // rows in the CENTRAL users table. A custom provider pins retrieval onto the
+        // central connection (User itself is connection-agnostic now that User
+        // is eliminated).
+        \Illuminate\Support\Facades\Auth::provider(
+            'landlord_central_eloquent',
+            fn ($app, array $config) => new \Aero\Auth\Providers\LandlordUserProvider($app['hash'], $config['model'])
+        );
+
         Config::set('auth.providers.landlord_users', [
-            'driver' => 'eloquent',
-            'model' => LandlordUser::class,
+            'driver' => 'landlord_central_eloquent',
+            'model' => \Aero\Auth\Models\User::class,
         ]);
 
         // Add password reset for landlord users

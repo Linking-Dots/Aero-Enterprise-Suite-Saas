@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Auth;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 use Aero\Platform\Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Safety-net for the auth-identity unification rename (LandlordUser -> User, Unit 4).
+ * Safety-net for the auth-identity unification rename (User -> User, Unit 4).
  *
  * The whole platform suite authenticates via actingAs($admin, 'landlord'), which
  * BYPASSES the user provider — so landlord LOGIN (the provider resolving a
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Hash;
  *      (retrieveByCredentials) from the CENTRAL connection, and
  *   2. validateCredentials checks the password hash correctly.
  *
- * After LandlordUser is renamed to Aero\Auth\Models\User and the landlord guard
+ * After User is renamed to Aero\Auth\Models\User and the landlord guard
  * is repointed at a central-binding provider, this test MUST still pass — that is
  * the guarantee that the rename did not silently break landlord login.
  */
@@ -35,7 +36,7 @@ class LandlordLoginProviderTest extends TestCase
 
     public function test_landlord_provider_resolves_credentials_on_central_connection(): void
     {
-        $landlord = LandlordUser::factory()->create([
+        $landlord = LandlordUserFactory::new()->create([
             'email' => 'landlord-login@example.com',
             'password' => Hash::make('secret-pass-123'),
         ]);
@@ -56,7 +57,7 @@ class LandlordLoginProviderTest extends TestCase
 
     public function test_landlord_provider_validates_password(): void
     {
-        LandlordUser::factory()->create([
+        LandlordUserFactory::new()->create([
             'email' => 'pw-check@example.com',
             'password' => Hash::make('right-password'),
         ]);
@@ -77,7 +78,7 @@ class LandlordLoginProviderTest extends TestCase
 
     public function test_landlord_persisted_in_central_users_table(): void
     {
-        $landlord = LandlordUser::factory()->create(['email' => 'table-check@example.com']);
+        $landlord = LandlordUserFactory::new()->create(['email' => 'table-check@example.com']);
 
         $this->assertDatabaseHas('users', ['email' => 'table-check@example.com']);
         $this->assertSame('central', $landlord->getConnectionName());

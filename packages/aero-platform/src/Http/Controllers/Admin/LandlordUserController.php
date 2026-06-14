@@ -6,7 +6,7 @@ namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Http\Controllers\Controller;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\LandlordUserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,14 +52,14 @@ class LandlordUserController extends Controller
         return back()->with('success', 'User created.');
     }
 
-    public function show(LandlordUser $user): Response
+    public function show(User $user): Response
     {
         return Inertia::render('Platform/Admin/Users/Show', [
             'user' => $user->load('roles:id,name'),
         ]);
     }
 
-    public function update(Request $request, LandlordUser $user): RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
@@ -75,14 +75,14 @@ class LandlordUserController extends Controller
         return back()->with('success', 'User updated.');
     }
 
-    public function destroy(LandlordUser $user): RedirectResponse
+    public function destroy(User $user): RedirectResponse
     {
         $this->svc->delete($user);
 
         return back()->with('success', 'User deleted.');
     }
 
-    public function toggleStatus(LandlordUser $user): RedirectResponse
+    public function toggleStatus(User $user): RedirectResponse
     {
         $this->svc->toggleStatus($user);
 

@@ -307,7 +307,7 @@ class ProcessSubscriptionRenewalsJob implements ShouldQueue
     /**
      * Resolve the owner / admin user for a tenant.
      *
-     * Tries the LandlordUser/User table with is_owner=true. Tenant-scoped
+     * Tries the User/User table with is_owner=true. Tenant-scoped
      * lookup so SaaS data isolation is preserved.
      */
     protected function resolveAdminUserForTenant(Tenant $tenant): ?object

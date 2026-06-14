@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -67,6 +68,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
     use SearchableTrait;
     use SoftDeletes;
     use Taggable;
+    use TwoFactorAuthenticatable;
 
     /**
      * Create a new factory instance for the model.
@@ -568,10 +570,56 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
 
     /**
      * Check if user is an admin.
+     *
+     * Includes the platform/landlord admin role set (merged from the former
+     * User during the auth-identity unification) so a central landlord
+     * is still recognised as an admin.
      */
     public function isAdmin(): bool
     {
-        return $this->hasAnyRole(['Super Administrator', 'Super Admin', 'Admin', 'Administrator']);
+        return $this->hasAnyRole([
+            'Super Administrator', 'Super Admin', 'Admin', 'Administrator',
+            // Platform/landlord admin roles (ex-User::isAdmin):
+            'Platform Admin', 'Super Platform Admin',
+        ]);
+    }
+
+    /**
+     * Check if the user is platform support staff (ex-User::isSupport).
+     */
+    public function isSupport(): bool
+    {
+        return $this->hasRole('Platform Support');
+    }
+
+    /**
+     * Super-admin accessor (`is_super_admin`) so the wildcard reaches the
+     * frontend HRMAC map (merged from User). Not appended — resolved
+     * only on explicit access.
+     */
+    public function getIsSuperAdminAttribute(): bool
+    {
+        return $this->isSuperAdmin();
+    }
+
+    /**
+     * Twill checks credentials with ['published' => 1]; map our `active` column
+     * to the `published` attribute it expects (merged from User).
+     */
+    public function getPublishedAttribute(): bool
+    {
+        return (bool) $this->active;
+    }
+
+    /**
+     * Record a login event (merged from User).
+     */
+    public function recordLogin(?string $ip = null): void
+    {
+        $this->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $ip,
+        ]);
     }
 
     /**

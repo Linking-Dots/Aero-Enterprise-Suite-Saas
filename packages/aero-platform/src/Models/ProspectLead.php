@@ -100,7 +100,7 @@ class ProspectLead extends CentralModel
      */
     public function assignee(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'assigned_to');
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
     /**

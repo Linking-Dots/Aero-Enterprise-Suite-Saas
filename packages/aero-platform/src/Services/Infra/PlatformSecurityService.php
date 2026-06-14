@@ -7,7 +7,7 @@ namespace Aero\Platform\Services\Infra;
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\Infra\StaffIpAllowlist;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +43,7 @@ class PlatformSecurityService
     }
 
     /** @return array<string, mixed> */
-    public function getMfaStatus(LandlordUser $user): array
+    public function getMfaStatus(User $user): array
     {
         return [
             'user_id' => $user->id,
@@ -52,7 +52,7 @@ class PlatformSecurityService
         ];
     }
 
-    public function enforceMfa(LandlordUser $user): void
+    public function enforceMfa(User $user): void
     {
         DB::transaction(function () use ($user): void {
             // Set a platform-level flag requiring MFA on next login
@@ -67,7 +67,7 @@ class PlatformSecurityService
         });
     }
 
-    public function resetMfa(LandlordUser $user): void
+    public function resetMfa(User $user): void
     {
         DB::transaction(function () use ($user): void {
             $user->update([

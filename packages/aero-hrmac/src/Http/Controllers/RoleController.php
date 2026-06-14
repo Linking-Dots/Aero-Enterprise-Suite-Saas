@@ -38,7 +38,7 @@ class RoleController extends Controller
 
         // users_count from the model_has_roles pivot directly — context-free (counts
         // assignments on the default connection regardless of the user model, so it
-        // works for tenant User and central LandlordUser alike, and never triggers a
+        // works for tenant User and central User alike, and never triggers a
         // tenant-scoped User query on the platform).
         $assignmentCounts = DB::table('model_has_roles')
             ->selectRaw('role_id, COUNT(*) as c')
@@ -120,7 +120,7 @@ class RoleController extends Controller
     private function isSuperAdmin($user): bool
     {
         // Any authenticated user model with a roles() relation (tenant User or central
-        // LandlordUser) — HRMAC does not assume a specific user class.
+        // User) — HRMAC does not assume a specific user class.
         return $user !== null
             && method_exists($user, 'roles')
             && $user->roles()->whereIn('name', self::SUPER_ADMIN_ROLES)->exists();

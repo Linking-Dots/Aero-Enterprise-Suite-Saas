@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Tests\Feature\Admin;
 
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Tests\TestCase;
 use Illuminate\Support\Facades\Gate;
 
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
  */
 class LandlordUserControllerTest extends TestCase
 {
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected function setUp(): void
     {
@@ -31,7 +31,7 @@ class LandlordUserControllerTest extends TestCase
 
     public function test_index_renders_users_list(): void
     {
-        LandlordUser::factory()->count(3)->create();
+        LandlordUserFactory::new()->count(3)->create();
 
         $this->actingAs($this->admin, 'landlord')
             ->get(route('platform.admin.users.index'))
@@ -64,7 +64,7 @@ class LandlordUserControllerTest extends TestCase
 
     public function test_store_fails_with_duplicate_email(): void
     {
-        LandlordUser::factory()->create(['email' => 'duplicate@example.com']);
+        LandlordUserFactory::new()->create(['email' => 'duplicate@example.com']);
 
         $this->actingAs($this->admin, 'landlord')
             ->post(route('platform.admin.users.store'), [
@@ -77,7 +77,7 @@ class LandlordUserControllerTest extends TestCase
 
     public function test_update_changes_user_data(): void
     {
-        $user = LandlordUser::factory()->create(['name' => 'Old Name']);
+        $user = LandlordUserFactory::new()->create(['name' => 'Old Name']);
 
         $this->actingAs($this->admin, 'landlord')
             ->put(route('platform.admin.users.update', $user), [
@@ -91,7 +91,7 @@ class LandlordUserControllerTest extends TestCase
 
     public function test_toggle_status_flips_active_flag(): void
     {
-        $user = LandlordUser::factory()->create(['active' => true]);
+        $user = LandlordUserFactory::new()->create(['active' => true]);
 
         $this->actingAs($this->admin, 'landlord')
             ->patch(route('platform.admin.users.toggle-status', $user))
@@ -102,7 +102,7 @@ class LandlordUserControllerTest extends TestCase
 
     public function test_destroy_deletes_user(): void
     {
-        $user = LandlordUser::factory()->create();
+        $user = LandlordUserFactory::new()->create();
 
         $this->actingAs($this->admin, 'landlord')
             ->delete(route('platform.admin.users.destroy', $user))
@@ -127,7 +127,7 @@ class LandlordUserControllerTest extends TestCase
             ])
             ->assertRedirect();
 
-        $user = LandlordUser::where('email', 'roleuser@example.com')->first();
+        $user = User::where('email', 'roleuser@example.com')->first();
         $this->assertNotNull($user);
         $this->assertTrue($user->roles()->where('id', $role->id)->exists());
     }

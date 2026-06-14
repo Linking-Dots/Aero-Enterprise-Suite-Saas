@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * This migration normalises any pre-existing rows that were written with a legacy User
  * FQN to the new 'user' morph key, in whichever context it runs (tenant / standalone /
- * central). It only ever touches User rows — LandlordUser and every other morph type
+ * central). It only ever touches User rows — User and every other morph type
  * are untouched — and is idempotent (safe to re-run).
  */
 return new class extends Migration

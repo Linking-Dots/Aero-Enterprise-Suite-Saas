@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Policies;
 
-use Aero\Core\Models\LandlordUser;
+use Aero\Core\Models\User;
 use Aero\Platform\Models\Plan;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -21,7 +21,7 @@ class PlanPolicy
     /**
      * Determine if the user can view any plans.
      */
-    public function viewAny(LandlordUser $user): bool
+    public function viewAny(User $user): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.view',
@@ -33,7 +33,7 @@ class PlanPolicy
     /**
      * Determine if the user can view the plan.
      */
-    public function view(LandlordUser $user, Plan $plan): bool
+    public function view(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.view',
@@ -45,7 +45,7 @@ class PlanPolicy
     /**
      * Determine if the user can create plans.
      */
-    public function create(LandlordUser $user): bool
+    public function create(User $user): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.create',
@@ -57,7 +57,7 @@ class PlanPolicy
     /**
      * Determine if the user can update the plan.
      */
-    public function update(LandlordUser $user, Plan $plan): bool
+    public function update(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.update',
@@ -71,7 +71,7 @@ class PlanPolicy
      *
      * Plans with active subscriptions cannot be deleted.
      */
-    public function delete(LandlordUser $user, Plan $plan): bool
+    public function delete(User $user, Plan $plan): bool
     {
         // Check permission first
         if (! $user->hasAnyPermission([
@@ -91,7 +91,7 @@ class PlanPolicy
     /**
      * Determine if the user can archive the plan.
      */
-    public function archive(LandlordUser $user, Plan $plan): bool
+    public function archive(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.update',
@@ -103,7 +103,7 @@ class PlanPolicy
     /**
      * Determine if the user can clone the plan.
      */
-    public function clone(LandlordUser $user, Plan $plan): bool
+    public function clone(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.create',
@@ -115,7 +115,7 @@ class PlanPolicy
     /**
      * Determine if the user can restore the plan.
      */
-    public function restore(LandlordUser $user, Plan $plan): bool
+    public function restore(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.manage',
@@ -126,7 +126,7 @@ class PlanPolicy
     /**
      * Determine if the user can permanently delete the plan.
      */
-    public function forceDelete(LandlordUser $user, Plan $plan): bool
+    public function forceDelete(User $user, Plan $plan): bool
     {
         // Only super admins can force delete
         return $user->hasPermission('platform.admin');
@@ -135,7 +135,7 @@ class PlanPolicy
     /**
      * Determine if the user can manage plan modules.
      */
-    public function manageModules(LandlordUser $user, Plan $plan): bool
+    public function manageModules(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.manage',
@@ -147,7 +147,7 @@ class PlanPolicy
     /**
      * Determine if the user can view plan statistics.
      */
-    public function viewStats(LandlordUser $user, Plan $plan): bool
+    public function viewStats(User $user, Plan $plan): bool
     {
         return $user->hasAnyPermission([
             'platform.plans.view',

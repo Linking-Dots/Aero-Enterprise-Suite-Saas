@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\PlatformAuditLog;
 use Aero\Platform\Tests\TestCase;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
  */
 class AuditLogControllerTest extends TestCase
 {
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected function setUp(): void
     {

@@ -6,7 +6,7 @@ namespace Aero\Platform\Tests\Feature\Admin\Infra;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Infra\BackupSchedule;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\Infra\BackupService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -19,7 +19,7 @@ class BackupServiceTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected BackupService $svc;
 
@@ -51,7 +51,7 @@ class BackupServiceTest extends TestCase
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
 
         $audit = $this->createMock(AuditServiceInterface::class);
         $this->svc = new BackupService($audit);

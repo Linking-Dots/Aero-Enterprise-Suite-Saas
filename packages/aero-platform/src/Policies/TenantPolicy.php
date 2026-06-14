@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Policies;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Policies\Concerns\ChecksLandlordModuleAccess;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -45,7 +45,7 @@ class TenantPolicy
     /**
      * Determine whether the user can view any tenants.
      */
-    public function viewAny(LandlordUser $user): bool
+    public function viewAny(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -58,7 +58,7 @@ class TenantPolicy
     /**
      * Determine whether the user can view the tenant.
      */
-    public function view(LandlordUser $user, Tenant $tenant): bool
+    public function view(User $user, Tenant $tenant): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -71,7 +71,7 @@ class TenantPolicy
     /**
      * Determine whether the user can create tenants.
      */
-    public function create(LandlordUser $user): bool
+    public function create(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -84,7 +84,7 @@ class TenantPolicy
     /**
      * Determine whether the user can update the tenant.
      */
-    public function update(LandlordUser $user, Tenant $tenant): bool
+    public function update(User $user, Tenant $tenant): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -97,7 +97,7 @@ class TenantPolicy
     /**
      * Determine whether the user can delete the tenant.
      */
-    public function delete(LandlordUser $user, Tenant $tenant): bool
+    public function delete(User $user, Tenant $tenant): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -110,7 +110,7 @@ class TenantPolicy
     /**
      * Determine whether the user can suspend the tenant.
      */
-    public function suspend(LandlordUser $user, Tenant $tenant): bool
+    public function suspend(User $user, Tenant $tenant): bool
     {
         // Cannot suspend already suspended or archived tenants
         if (in_array($tenant->status, [Tenant::STATUS_SUSPENDED, Tenant::STATUS_ARCHIVED])) {
@@ -128,7 +128,7 @@ class TenantPolicy
     /**
      * Determine whether the user can activate the tenant.
      */
-    public function activate(LandlordUser $user, Tenant $tenant): bool
+    public function activate(User $user, Tenant $tenant): bool
     {
         // Can only activate suspended or pending tenants
         if (! in_array($tenant->status, [Tenant::STATUS_SUSPENDED, Tenant::STATUS_PENDING])) {
@@ -146,7 +146,7 @@ class TenantPolicy
     /**
      * Determine whether the user can archive the tenant.
      */
-    public function archive(LandlordUser $user, Tenant $tenant): bool
+    public function archive(User $user, Tenant $tenant): bool
     {
         // Cannot archive already archived tenants
         if ($tenant->status === Tenant::STATUS_ARCHIVED) {
@@ -165,7 +165,7 @@ class TenantPolicy
     /**
      * Determine whether the user can restore the tenant.
      */
-    public function restore(LandlordUser $user, Tenant $tenant): bool
+    public function restore(User $user, Tenant $tenant): bool
     {
         // Restore requires edit permission
         return $this->canPerformPlatformAction(
@@ -179,7 +179,7 @@ class TenantPolicy
     /**
      * Determine whether the user can permanently delete the tenant.
      */
-    public function forceDelete(LandlordUser $user, Tenant $tenant): bool
+    public function forceDelete(User $user, Tenant $tenant): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -192,7 +192,7 @@ class TenantPolicy
     /**
      * Determine whether the user can impersonate the tenant.
      */
-    public function impersonate(LandlordUser $user, Tenant $tenant): bool
+    public function impersonate(User $user, Tenant $tenant): bool
     {
         // Cannot impersonate inactive tenants
         if (! in_array($tenant->status, [Tenant::STATUS_ACTIVE, Tenant::STATUS_PENDING])) {
@@ -210,7 +210,7 @@ class TenantPolicy
     /**
      * Determine whether the user can retry provisioning for a failed tenant.
      */
-    public function retryProvisioning(LandlordUser $user, Tenant $tenant): bool
+    public function retryProvisioning(User $user, Tenant $tenant): bool
     {
         // Can only retry provisioning for failed tenants
         if ($tenant->status !== Tenant::STATUS_FAILED) {
@@ -229,7 +229,7 @@ class TenantPolicy
     /**
      * Determine whether the user can view tenant domains.
      */
-    public function viewDomains(LandlordUser $user): bool
+    public function viewDomains(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -242,7 +242,7 @@ class TenantPolicy
     /**
      * Determine whether the user can manage tenant domains.
      */
-    public function manageDomains(LandlordUser $user): bool
+    public function manageDomains(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -255,7 +255,7 @@ class TenantPolicy
     /**
      * Determine whether the user can view tenant databases.
      */
-    public function viewDatabases(LandlordUser $user): bool
+    public function viewDatabases(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -268,7 +268,7 @@ class TenantPolicy
     /**
      * Determine whether the user can run tenant database migrations.
      */
-    public function migrateDatabases(LandlordUser $user): bool
+    public function migrateDatabases(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,
@@ -281,7 +281,7 @@ class TenantPolicy
     /**
      * Determine whether the user can backup tenant databases.
      */
-    public function backupDatabases(LandlordUser $user): bool
+    public function backupDatabases(User $user): bool
     {
         return $this->canPerformPlatformAction(
             $user,

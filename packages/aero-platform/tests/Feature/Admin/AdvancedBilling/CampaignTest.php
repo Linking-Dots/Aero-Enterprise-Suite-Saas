@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
 
 use Aero\Platform\Models\CouponCampaign;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -16,7 +16,7 @@ class CampaignTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -45,7 +45,7 @@ class CampaignTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_launch_flips_draft_to_active(): void

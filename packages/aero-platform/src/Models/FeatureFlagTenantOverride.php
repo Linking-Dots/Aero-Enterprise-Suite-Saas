@@ -38,6 +38,6 @@ class FeatureFlagTenantOverride extends CentralModel
 
     public function setBy(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'set_by');
+        return $this->belongsTo(User::class, 'set_by');
     }
 }

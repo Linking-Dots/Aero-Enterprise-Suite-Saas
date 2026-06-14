@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\UsageEvent;
 use Aero\Platform\Models\UsageMeter;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -17,7 +17,7 @@ class UsageMeterTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -46,7 +46,7 @@ class UsageMeterTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_usage_event_aggregation_respects_sum_mode(): void

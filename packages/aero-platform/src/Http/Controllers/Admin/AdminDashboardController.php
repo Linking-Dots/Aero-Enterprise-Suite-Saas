@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\PlatformWidgetRegistry;
@@ -260,8 +260,8 @@ class AdminDashboardController extends Controller
                 )
                 ->count();
 
-            $totalAdmins  = LandlordUser::count();
-            $activeAdmins = LandlordUser::where('active', true)->count();
+            $totalAdmins  = User::count();
+            $activeAdmins = User::where('active', true)->count();
 
             $activeSubscriptions = Subscription::where('status', Subscription::STATUS_ACTIVE)->count();
 

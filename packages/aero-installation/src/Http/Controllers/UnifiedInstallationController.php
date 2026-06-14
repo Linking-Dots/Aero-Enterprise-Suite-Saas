@@ -1373,8 +1373,8 @@ class UnifiedInstallationController extends Controller
         $adminConfig = $config['admin'] ?? [];
 
         if ($mode === 'saas') {
-            // Create LandlordUser with HRMAC Role model
-            $userClass = 'Aero\\Platform\\Models\\LandlordUser';
+            // Create User with HRMAC Role model
+            $userClass = 'Aero\\Platform\\Models\\User';
             $roleClass = 'Aero\\HRMAC\\Models\\Role';
         } else {
             // Create regular User

@@ -6,7 +6,7 @@ namespace Aero\Platform\Tests\Feature\Admin;
 
 use Aero\Platform\Models\FeatureFlag;
 use Aero\Platform\Models\FeatureFlagTenantOverride;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -24,7 +24,7 @@ class FeatureFlagTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -53,7 +53,7 @@ class FeatureFlagTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_tenant_override_takes_precedence_over_global_flag(): void

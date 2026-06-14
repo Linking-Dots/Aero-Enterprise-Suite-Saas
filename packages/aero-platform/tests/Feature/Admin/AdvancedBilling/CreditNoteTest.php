@@ -6,7 +6,7 @@ namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
 
 use Aero\Platform\Models\CreditNote;
 use Aero\Platform\Models\Invoice;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\AdvancedBilling\CreditNoteService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +19,7 @@ class CreditNoteTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -48,7 +48,7 @@ class CreditNoteTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     private function makeInvoice(): Invoice

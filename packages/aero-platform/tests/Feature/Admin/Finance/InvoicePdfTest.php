@@ -6,7 +6,7 @@ namespace Aero\Platform\Tests\Feature\Admin\Finance;
 
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Models\Invoice;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -17,7 +17,7 @@ class InvoicePdfTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -44,7 +44,7 @@ class InvoicePdfTest extends TestCase
         Gate::before(fn () => true);
 
         $role = Role::firstOrCreate(['name' => 'Super Administrator', 'guard_name' => 'landlord']);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
         $this->admin->assignRole($role);
     }
 

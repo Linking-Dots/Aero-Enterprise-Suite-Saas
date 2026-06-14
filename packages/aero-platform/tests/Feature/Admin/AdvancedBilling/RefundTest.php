@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Refund;
 use Aero\Platform\Services\AdvancedBilling\RefundService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -18,7 +18,7 @@ class RefundTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -47,7 +47,7 @@ class RefundTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_refund_cannot_be_processed_before_approved(): void

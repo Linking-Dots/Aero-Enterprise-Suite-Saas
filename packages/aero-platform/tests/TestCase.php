@@ -7,7 +7,7 @@ namespace Aero\Platform\Tests;
 use Aero\Contracts\AeroMode;
 use Aero\HRMAC\Models\Role as HrmacRole;
 use Aero\Kernel\ValueObjects\RequestContext;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 /**
@@ -85,7 +85,7 @@ abstract class TestCase extends \Tests\TestCase
      *
      * @param  array<string, mixed>  $attributes
      */
-    protected function superAdminLandlord(array $attributes = []): LandlordUser
+    protected function superAdminLandlord(array $attributes = []): User
     {
         AeroMode::withoutTenantContextGuard(function () {
             HrmacRole::firstOrCreate(
@@ -94,7 +94,7 @@ abstract class TestCase extends \Tests\TestCase
             );
         });
 
-        $user = LandlordUser::factory()->create($attributes);
+        $user = LandlordUserFactory::new()->create($attributes);
         $user->assignRole('Super Platform Admin');
 
         return $user;

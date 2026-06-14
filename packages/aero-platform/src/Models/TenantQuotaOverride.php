@@ -39,7 +39,7 @@ class TenantQuotaOverride extends CentralModel
 
     public function setter(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'set_by');
+        return $this->belongsTo(User::class, 'set_by');
     }
 
     public function isActive(): bool

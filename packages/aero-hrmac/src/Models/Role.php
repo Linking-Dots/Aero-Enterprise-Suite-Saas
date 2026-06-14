@@ -83,7 +83,7 @@ class Role extends HrmacModel
 
         // Filter by the user model's morph key (not its raw FQN) so role rows stay
         // resolvable when the User class moves package — Phase 2 decoupling. Falls back
-        // to the class name if the model has no morphMap entry (e.g. LandlordUser).
+        // to the class name if the model has no morphMap entry (e.g. User).
         $morphType = (new $userModel)->getMorphClass();
 
         return $this->belongsToMany(

@@ -7,7 +7,7 @@ namespace Aero\Platform\Tests\Feature\Admin;
 use Aero\Platform\Models\Affiliate;
 use Aero\Platform\Models\AffiliatePayout;
 use Aero\Platform\Models\AffiliateReferral;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ class AffiliateTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -54,7 +54,7 @@ class AffiliateTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     private function makeApprovedAffiliate(float $commissionRate = 20.0): Affiliate

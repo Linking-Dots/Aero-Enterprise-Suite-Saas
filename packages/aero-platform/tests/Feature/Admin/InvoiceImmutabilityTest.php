@@ -8,7 +8,7 @@ use Aero\Contracts\AeroMode;
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Exceptions\InvoiceFinalizedException;
 use Aero\Platform\Models\Invoice;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
@@ -29,7 +29,7 @@ class InvoiceImmutabilityTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected Tenant $tenant;
 
@@ -116,7 +116,7 @@ class InvoiceImmutabilityTest extends TestCase
             ['name' => 'Super Administrator', 'guard_name' => 'landlord'],
         );
 
-        $this->admin  = LandlordUser::factory()->create();
+        $this->admin  = LandlordUserFactory::new()->create();
         $this->admin->assignRole($role);
 
         $this->tenant = Tenant::factory()->active()->create();

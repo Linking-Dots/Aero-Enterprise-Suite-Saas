@@ -2,13 +2,13 @@
 
 namespace Aero\Platform\Database\Factories;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Aero\Platform\Models\LandlordUser>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Aero\Auth\Models\User>
  */
 class LandlordUserFactory extends Factory
 {
@@ -17,12 +17,22 @@ class LandlordUserFactory extends Factory
      *
      * @var class-string<\Illuminate\Database\Eloquent\Model>
      */
-    protected $model = LandlordUser::class;
+    protected $model = User::class;
 
     /**
      * The current password being used by the factory.
      */
     protected static ?string $password;
+
+    /**
+     * Landlords live in the CENTRAL users table. The unified User model is
+     * connection-agnostic (User eliminated, Unit 4), so pin every
+     * factory-built landlord onto the central connection.
+     */
+    public function newModel(array $attributes = [])
+    {
+        return parent::newModel($attributes)->setConnection('central');
+    }
 
     /**
      * Define the model's default state.
@@ -89,7 +99,7 @@ class LandlordUserFactory extends Factory
      */
     public function superAdmin(): static
     {
-        return $this->afterCreating(function (LandlordUser $user) {
+        return $this->afterCreating(function (User $user) {
             $user->assignRole('Platform Super Admin');
         });
     }
@@ -99,7 +109,7 @@ class LandlordUserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->afterCreating(function (LandlordUser $user) {
+        return $this->afterCreating(function (User $user) {
             $user->assignRole('Platform Admin');
         });
     }
@@ -109,7 +119,7 @@ class LandlordUserFactory extends Factory
      */
     public function support(): static
     {
-        return $this->afterCreating(function (LandlordUser $user) {
+        return $this->afterCreating(function (User $user) {
             $user->assignRole('Platform Support');
         });
     }

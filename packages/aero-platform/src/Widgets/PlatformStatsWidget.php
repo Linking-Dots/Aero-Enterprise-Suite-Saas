@@ -6,7 +6,7 @@ namespace Aero\Platform\Widgets;
 
 use Aero\Platform\Contracts\AbstractPlatformWidget;
 use Aero\Platform\Contracts\PlatformWidgetCategory;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Carbon\Carbon;
@@ -175,8 +175,8 @@ class PlatformStatsWidget extends AbstractPlatformWidget
     protected function getUserStats(): array
     {
         // Platform admin users
-        $adminUsers = LandlordUser::count();
-        $activeAdmins = LandlordUser::where('active', true)->count();
+        $adminUsers = User::count();
+        $activeAdmins = User::where('active', true)->count();
 
         return [
             'adminUsers' => $adminUsers,
