@@ -7,7 +7,6 @@ use Aero\Contracts\Searchable;
 use Aero\Contracts\UserContract;
 use Aero\Kernel\Services\UserRelationshipRegistry;
 use Aero\Kernel\Traits\Searchable as SearchableTrait;
-use Aero\Core\Traits\Taggable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -65,7 +64,6 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
     use Notifiable;
     use SearchableTrait;
     use SoftDeletes;
-    use Taggable;
     use TwoFactorAuthenticatable;
 
     /**
