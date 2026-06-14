@@ -14,12 +14,27 @@
 - **No duplication anywhere.**
 - Move-list (verified 2026-06-14): platform → auth: LandlordAuthContext, TenantImpersonationToken,
   SecurityEvent, LandlordUserService, TenantImpersonationService, Marketing/SocialAuthService,
-  Notification/PhoneVerificationService, Admin+Public/SocialAuthController, CheckSessionExpiry,
+  Admin+Public/SocialAuthController, CheckSessionExpiry,
   ApiSecurityMiddleware, SecurityHeaders, TrackSecurityActivity, AuthEventSubscriber. core → auth:
   Actions/Fortify/* (5), CheckForcePasswordReset, RequireTwoFactor, UserInvitation + Service + Mail,
   PasswordPolicyController. Plus: new `Tenant` contract; repoint routes + service-provider
   registrations; auth→hrmac for roles is allowed.
-- STATUS: NOT executed (it is ~25 cross-package moves + a contract + rewiring = a multi-unit program).
+- **RELOCATE = RELOCATE-AND-MERGE (Boss, 2026-06-14): "on relocating you should also merge".**
+  Do NOT create parallel copies in auth — MERGE the duplicate/parallel auth implementations that
+  exist across core+platform into ONE implementation per capability in aero-auth, so core (tenant)
+  and platform (landlord) get the SAME auth capabilities. Merge pairs:
+  - UserService (core) + LandlordUserService (platform) -> ONE auth user service
+  - auth UserController + LandlordUserController (platform) -> ONE user controller
+  - PhoneVerificationService: DELETED (orphan — only consumer died in Unit1; rebuild clean in auth if a live feature ever needs it; Boss-Proxy 2026-06-14)
+  - SocialAuthService + Admin/Public SocialAuthController (platform) -> ONE social capability in auth
+  - UserInvitation + UserInvitationService + Mail (core) -> auth (single)
+  - Fortify actions + password/2FA middleware (core) -> auth (single)
+  - devices/sessions services -> one each (dups already removed)
+  Merging = behavioral reconciliation of divergent impls (harder than git mv), then repoint ALL
+  consumers in core+platform. Roles/modules stay in hrmac.
+- DONE so far: auth made fully CONTEXT-FREE + CERTIFIED (commit 28a952b7f; platform gate 36/36,
+  core 121/17err/5fail, hrmac 39/147, hosts 2030/1316). The relocate-and-merge below is NOT executed.
+- STATUS: NOT executed (it is ~25 cross-package moves + behavioral MERGES + a contract + rewiring = a multi-unit program).
 
 
 **Decided by Boss (2026-06-14):** finish what mechanism B started. Identity *data* is unified
@@ -60,7 +75,7 @@ code violates this:
 ### DUPLICATES — collapse to one canonical in aero-auth (Unit 2)
 - `DeviceAuthMiddleware` — aero-core + aero-auth (auth canonical; repoint core consumers, delete core copy)
 - `RedirectIfAuthenticated` — aero-core + aero-auth (auth canonical)
-- `PhoneVerificationService` — aero-core + aero-platform (pick canonical → auth; verify both impls, merge)
+- `PhoneVerificationService` — DELETED as dead code (zero live consumers; Boss-Proxy ruling 2026-06-14)
 - `Mail/Auth/{PasswordChangedNotificationMail,SecurePasswordResetMail}` — aero-auth + aero-platform
   (**they DIVERGE** — reconcile into one before deleting either)
 - `SocialAuthController` — aero-auth (tenant) + platform Admin + platform Public (likely DIFFERENT
