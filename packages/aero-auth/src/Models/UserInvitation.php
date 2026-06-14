@@ -27,6 +27,18 @@ class UserInvitation extends Model
     ];
 
     /**
+     * Default audit label (mirrors the value previously inherited from TenantModel;
+     * auth is now context-free, so identity models are plain Models — same pattern
+     * as {@see User}/{@see UserDevice}/{@see TenantInvitation}). Required by
+     * AuditService::log(), which calls $subject->getAuditLabel() on the audit subject
+     * (e.g. InvitationController::accept() passes the invitation as subject).
+     */
+    public function getAuditLabel(): ?string
+    {
+        return (string) $this->getKey();
+    }
+
+    /**
      * Get the user who sent the invitation
      */
     public function inviter(): BelongsTo
