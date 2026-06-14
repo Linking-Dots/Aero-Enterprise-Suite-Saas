@@ -89,8 +89,7 @@ class CoreUserController extends Controller
     {
         $before = $user->only(['name', 'email']);
 
-        // Service refreshes $user in place (refresh() bypasses the SoftDeletes scope),
-        // so use $user directly — $user->fresh() would be null for an inactive user.
+        // Service refreshes $user in place, so use the instance directly as the subject.
         $this->userService->update($user, $request->validated(), $request->user());
 
         $this->audit->log(
