@@ -1,5 +1,27 @@
 # Auth Full Relocation — pull ALL auth/identity/security code into aero-auth
 
+## LOCKED ARCHITECTURE (Boss, 2026-06-14) — execute against THIS
+- **aero-auth** = the ONE shared identity + authentication + security capability for BOTH
+  platform (landlord) and core (tenant). Owns: User, sessions, devices, MFA, SSO, password,
+  social login, **impersonation** (Tenant abstracted behind an `Aero\Contracts` `Tenant`
+  contract — Boss: "do recommended … auth shared for same capabilities for platform and core"),
+  verification, **LandlordUserService** (Boss: into auth), **security middleware**
+  (SecurityHeaders/ApiSecurityMiddleware/TrackSecurityActivity — Boss: into auth), Fortify
+  actions, UserInvitation cluster, LandlordAuthContext, AuthEventSubscriber, SecurityEvent.
+- **aero-hrmac** = roles/modules/permissions (authorization). Roles/modules security NEVER in
+  auth. Auth may DEPEND on hrmac for role capability (LandlordUserService assigns roles via hrmac).
+- **platform/core** = CONSUMERS of auth + hrmac. No auth/identity/security code remains in them.
+- **No duplication anywhere.**
+- Move-list (verified 2026-06-14): platform → auth: LandlordAuthContext, TenantImpersonationToken,
+  SecurityEvent, LandlordUserService, TenantImpersonationService, Marketing/SocialAuthService,
+  Notification/PhoneVerificationService, Admin+Public/SocialAuthController, CheckSessionExpiry,
+  ApiSecurityMiddleware, SecurityHeaders, TrackSecurityActivity, AuthEventSubscriber. core → auth:
+  Actions/Fortify/* (5), CheckForcePasswordReset, RequireTwoFactor, UserInvitation + Service + Mail,
+  PasswordPolicyController. Plus: new `Tenant` contract; repoint routes + service-provider
+  registrations; auth→hrmac for roles is allowed.
+- STATUS: NOT executed (it is ~25 cross-package moves + a contract + rewiring = a multi-unit program).
+
+
 **Decided by Boss (2026-06-14):** finish what mechanism B started. Identity *data* is unified
 (one `users` table, `landlord_users` dropped, `User` in aero-auth). This plan unifies the
 *code*: every live auth/identity/security model, service, controller, middleware, mail, and
