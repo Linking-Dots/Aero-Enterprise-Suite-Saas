@@ -1,11 +1,11 @@
 <?php
 
-namespace Aero\Core\Services;
+namespace Aero\Auth\Services;
 
+use Aero\Auth\Mail\UserInvitationMail;
+use Aero\Auth\Models\User;
+use Aero\Auth\Models\UserInvitation;
 use Aero\Contracts\UserInvitationServiceInterface;
-use Aero\Core\Mail\UserInvitationMail;
-use Aero\Core\Models\User;
-use Aero\Core\Models\UserInvitation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;

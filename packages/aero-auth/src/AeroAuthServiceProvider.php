@@ -22,6 +22,8 @@ use Aero\Auth\Services\SessionManagementService;
 use Aero\Auth\Services\ThreatDetectionService;
 use Aero\Auth\Services\TwoFactorAuthService;
 use Aero\Auth\Services\UserImpersonationService;
+use Aero\Auth\Services\UserInvitationService;
+use Aero\Contracts\UserInvitationServiceInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
@@ -54,6 +56,12 @@ class AeroAuthServiceProvider extends ServiceProvider
         // Default context: tenant (web guard). aero-platform overrides this binding
         // with a domain-aware closure when running in SaaS mode.
         $this->app->bind(AuthContext::class, TenantAuthContext::class);
+
+        // User invitations — auth owns the identity-invitation capability. Consumers
+        // (auth's own InvitationController public-accept flow + core's admin surface)
+        // depend on the token-acceptance contract; the concrete service carries the
+        // richer admin surface (list/invite/resend/cancel).
+        $this->app->singleton(UserInvitationServiceInterface::class, UserInvitationService::class);
 
         // Auth services — singletons so they are instantiated once per request
         $this->app->singleton(ModernAuthenticationService::class);
@@ -113,6 +121,9 @@ class AeroAuthServiceProvider extends ServiceProvider
 
         // Auth-specific migrations (devices, sessions, impersonations, social auth, password reset tokens)
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        // Auth views (e.g. the user-invitation email markdown template).
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-auth');
 
         // Tenant auth routes — wrapped in the 'web' middleware group so that
         // HandleInertiaRequests, session, CSRF, and all web-group middleware run.

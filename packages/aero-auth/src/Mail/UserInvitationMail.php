@@ -1,8 +1,8 @@
 <?php
 
-namespace Aero\Core\Mail;
+namespace Aero\Auth\Mail;
 
-use Aero\Core\Models\UserInvitation;
+use Aero\Auth\Models\UserInvitation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -37,7 +37,7 @@ class UserInvitationMail extends Mailable implements ShouldQueue
         $this->invitation = $invitation;
         $this->acceptUrl = $this->generateAcceptUrl($invitation);
         $this->expiresAt = $invitation->expires_at->format('M j, Y \a\t g:i A T');
-        $this->invitedByName = $invitation->invitedBy?->name ?? 'System Administrator';
+        $this->invitedByName = $invitation->inviter?->name ?? 'System Administrator';
 
         // Set queue priority
         $this->onQueue('emails');
@@ -73,7 +73,7 @@ class UserInvitationMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'aero-core::emails.user-invitation',
+            markdown: 'aero-auth::emails.user-invitation',
             with: [
                 'invitation' => $this->invitation,
                 'acceptUrl' => $this->acceptUrl,

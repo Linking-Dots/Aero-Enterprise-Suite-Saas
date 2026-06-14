@@ -21,7 +21,6 @@ use Aero\Contracts\SmsContextResolverInterface;
 use Aero\Contracts\SystemSettingServiceInterface;
 use Aero\Contracts\TenantScopeInterface;
 use Aero\Contracts\TranslationDriverInterface;
-use Aero\Contracts\UserInvitationServiceInterface;
 use Aero\Core\Database\Seeders\CoreDatabaseSeeder;
 use Aero\Kernel\Encryption\LaravelEncryptionDriver;
 use Aero\Core\Exceptions\Handler;
@@ -59,7 +58,6 @@ use Aero\Core\Services\ProductManifestLoader;
 use Aero\Core\Services\RuntimeLoader;
 use Aero\Core\Services\StandaloneTenantScope;
 use Aero\Core\Services\SystemSettingService;
-use Aero\Core\Services\UserInvitationService;
 use Aero\Core\Services\UserRelationshipRegistry;
 use Aero\Core\Traits\ParsesHostDomain;
 use Aero\HRM\Services\EmployeeService;
@@ -174,9 +172,9 @@ class AeroCoreServiceProvider extends ServiceProvider
             // concrete core service (which owns the media-bearing SystemSetting model).
             $this->app->singleton(SystemSettingServiceInterface::class, SystemSettingService::class);
 
-            // User invitations — shared packages (auth) depend on the token-acceptance
-            // contract; the concrete core service keeps its richer admin surface.
-            $this->app->singleton(UserInvitationServiceInterface::class, UserInvitationService::class);
+            // User invitations — the capability now lives in aero-auth (auth owns
+            // identity). AeroAuthServiceProvider binds UserInvitationServiceInterface
+            // to the concrete Aero\Auth\Services\UserInvitationService.
 
             // Register Core Singletons
             $this->app->singleton(ModuleRegistry::class);

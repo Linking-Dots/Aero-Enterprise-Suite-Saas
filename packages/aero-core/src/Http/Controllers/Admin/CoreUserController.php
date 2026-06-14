@@ -7,7 +7,7 @@ use Aero\Core\Http\Controllers\Controller;
 use Aero\Core\Http\Requests\StoreUserRequest;
 use Aero\Core\Http\Requests\UpdateUserRequest;
 use Aero\Core\Models\User;
-use Aero\Core\Services\UserInvitationService;
+use Aero\Auth\Services\UserInvitationService;
 use Aero\Core\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
