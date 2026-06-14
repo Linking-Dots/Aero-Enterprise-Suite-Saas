@@ -5,7 +5,6 @@ namespace Aero\Auth\Models;
 use Aero\Auth\Database\Factories\UserFactory;
 use Aero\Contracts\Searchable;
 use Aero\Contracts\UserContract;
-use Aero\Contracts\Models\Concerns\EnforcesTenantContext;
 use Aero\Kernel\Services\UserRelationshipRegistry;
 use Aero\Kernel\Traits\Searchable as SearchableTrait;
 use Aero\Core\Traits\Taggable;
@@ -62,7 +61,6 @@ use Illuminate\Support\Facades\Log;
  */
 class User extends Authenticatable implements MustVerifyEmail, UserContract, Searchable
 {
-    use EnforcesTenantContext;
     use HasFactory;
     use Notifiable;
     use SearchableTrait;

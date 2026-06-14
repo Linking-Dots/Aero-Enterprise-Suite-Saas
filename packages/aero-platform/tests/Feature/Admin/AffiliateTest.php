@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Platform\Models\Affiliate;
 use Aero\Platform\Models\AffiliatePayout;

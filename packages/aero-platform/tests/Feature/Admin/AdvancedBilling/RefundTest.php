@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Auth\Models\User;
 use Aero\Platform\Models\Refund;

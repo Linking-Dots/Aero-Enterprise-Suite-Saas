@@ -348,6 +348,30 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 ->wherePivot('is_enabled', true);
         });
 
+        // Auth purity (auth-identity unification): the shared Aero\Auth\Models\User is a
+        // PURE identity model with no tenancy/connection knowledge. As the multi-tenant
+        // host, PLATFORM (the consumer) applies the tenant-isolation guard to User here —
+        // fail-closed for tenant-DB queries, with a no-op escape for central/landlord
+        // queries (resolved connection 'central'; the admin domain flips the default
+        // connection to central and the landlord provider binds central at retrieval).
+        // Standalone/core (no platform) consume the pure User with no guard (single DB).
+        User::addGlobalScope('tenant_context_guard', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            if (! \Aero\Contracts\AeroMode::isSaas()) {
+                return;
+            }
+            // Central/landlord rows are tenant-agnostic, so the guard is a no-op for them.
+            // Determine the effective connection name WITHOUT resolving the connection —
+            // calling $builder->getConnection() inside a global scope re-enters connection
+            // resolution and recurses. The model's explicit connection wins; otherwise the
+            // current default, which the admin domain flips to 'central'
+            // (SetDatabaseConnectionFromDomain; the test harness mirrors this).
+            $connection = $builder->getModel()->getConnectionName() ?? config('database.default');
+            if ($connection === 'central') {
+                return;
+            }
+            \Aero\Contracts\AeroMode::assertTenantContext(User::class);
+        });
+
         // Register audit observers
         Plan::observe(PlanAuditObserver::class);
         Subscription::observe(SubscriptionObserver::class);

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Auth\Models\SocialAuthAccount;
 use Aero\Auth\Models\User;

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\Infra;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Infra\StatusIncident;

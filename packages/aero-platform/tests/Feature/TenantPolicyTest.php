@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\HRMAC\Models\Role;
 use Aero\Auth\Models\User;
