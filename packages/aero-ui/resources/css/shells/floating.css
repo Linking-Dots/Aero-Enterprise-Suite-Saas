@@ -1,167 +1,260 @@
-/* ══════════════════════════════════════════════════════════════
-   aeos365 — Shell: Floating / Inset Sidebar (Phase 2)
-   The sidebar is a floating pill inset from the page edge.
-   Usage: <div data-aeos-shell="floating">
-            <nav class="aeos-shell-sidebar">
-              <a class="aeos-shell-sidebar-item active">...</a>
-            </nav>
-            <main class="aeos-shell-content">...</main>
-          </div>
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — Shell: Floating / Inset Sidebar  (Overhaul v2)
+   The sidebar is a glass pill inset from the viewport edge.
+   ══════════════════════════════════════════════════════════════════════════ */
 
 [data-aeos-shell="floating"] {
   display: flex;
-  min-height: 100vh;
-  padding: var(--aeos-space-4);
+  flex-direction: row;
+  align-items: flex-start;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  padding: var(--aeos-shell-floating-gutter);
+  gap: var(--aeos-shell-floating-gap);
   background: var(--aeos-shell-bg);
-  gap: var(--aeos-gap-card);
   font-family: var(--aeos-font-body);
   box-sizing: border-box;
 }
 
-/* ── Floating Sidebar Pill ───────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-sidebar {
-  width: var(--aeos-space-14);
-  background: var(--aeos-shell-floating-bg);
-  border: var(--aeos-border-width) solid var(--aeos-primary-tint);
-  border-radius: var(--aeos-r-xl);
+  width: var(--aeos-shell-floating-w);
+  flex-shrink: 0;
+  max-height: calc(100dvh - var(--aeos-shell-floating-gutter) * 2);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--aeos-space-3) 0;
-  gap: var(--aeos-gap-items);
-  flex-shrink: 0;
-  max-height: calc(100vh - var(--aeos-space-8));
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
   position: sticky;
-  top: var(--aeos-space-4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--aeos-shadow-elevated);
-  scrollbar-width: none;
-}
-
-[data-aeos-shell="floating"] .aeos-shell-sidebar::-webkit-scrollbar {
-  display: none;
-}
-
-/* ── Sidebar Items ───────────────────────────────────────────── */
-[data-aeos-shell="floating"] .aeos-shell-sidebar-item {
-  width: var(--aeos-space-8);
-  height: var(--aeos-space-8);
-  border-radius: var(--aeos-r-md);
-  background: var(--aeos-bg-tint);
-  border: var(--aeos-border-width) solid transparent;
-  cursor: pointer;
+  top: var(--aeos-shell-floating-gutter);
+  background: var(--aeos-shell-floating-bg);
+  border: var(--aeos-border-width) solid var(--aeos-primary-tint);
+  border-radius: var(--aeos-r-2xl);
+  backdrop-filter: blur(var(--aeos-floating-glass-blur, 20px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--aeos-floating-glass-blur, 20px)) saturate(180%);
+  box-shadow:
+    var(--aeos-shadow-elevated),
+    0 0 0 1px var(--aeos-primary-tint) inset,
+    0 0 32px -8px color-mix(in srgb, var(--aeos-primary) 12%, transparent);
+  padding: calc(var(--aeos-space-3) * var(--aeos-density-factor)) 0;
+  gap: calc(var(--aeos-gap-items) * var(--aeos-density-factor));
   transition:
-    background      var(--aeos-dur-fast) var(--aeos-ease-out),
-    border-color    var(--aeos-dur-fast) var(--aeos-ease-out),
-    color           var(--aeos-dur-fast) var(--aeos-ease-out);
+    width         var(--aeos-dur-base) var(--aeos-ease-out),
+    padding       var(--aeos-dur-base) var(--aeos-ease-out),
+    align-items   var(--aeos-dur-base) var(--aeos-ease-out),
+    border-radius var(--aeos-dur-base) var(--aeos-ease-out),
+    box-shadow    var(--aeos-dur-slow) var(--aeos-ease-out);
+  will-change: width;
+}
+
+[data-aeos-shell="floating"] .aeos-shell-sidebar-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex-shrink: 0;
+  padding: var(--aeos-space-2) 0 var(--aeos-space-3);
+  min-height: var(--aeos-shell-sidebar-brand-h);
+}
+
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item {
+  width:  calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  height: calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  border-radius: var(--aeos-r-md);
+  background: transparent;
+  border: var(--aeos-border-width) solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--aeos-text-secondary);
   text-decoration: none;
+  font-size: var(--aeos-text-sm);
+  font-weight: 500;
   flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background   var(--aeos-dur-fast) var(--aeos-ease-out),
+    border-color var(--aeos-dur-fast) var(--aeos-ease-out),
+    color        var(--aeos-dur-fast) var(--aeos-ease-out),
+    box-shadow   var(--aeos-dur-base) var(--aeos-ease-out),
+    width        var(--aeos-dur-base) var(--aeos-ease-out),
+    height       var(--aeos-dur-base) var(--aeos-ease-out),
+    padding      var(--aeos-dur-base) var(--aeos-ease-out),
+    justify-content var(--aeos-dur-base) var(--aeos-ease-out);
 }
-
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item:hover {
   background: var(--aeos-bg-hover);
   color: var(--aeos-text-primary);
+  border-color: var(--aeos-border-subtle);
 }
-
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item.active {
   background: var(--aeos-primary-bg);
   border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
-  box-shadow: 0 0 12px var(--aeos-primary-tint);
+  box-shadow:
+    0 0 0 1px var(--aeos-primary-tint) inset,
+    0 0 16px -4px color-mix(in srgb, var(--aeos-primary) 40%, transparent);
+}
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item.active:hover {
+  background: var(--aeos-primary-hover);
+  box-shadow:
+    0 0 0 1px var(--aeos-primary-border) inset,
+    0 0 24px -4px color-mix(in srgb, var(--aeos-primary) 55%, transparent);
 }
 
-/* Divider between groups */
+[data-aeos-shell="floating"] .aeos-nav-active-indicator {
+  position: absolute;
+  left: -1px;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  background: var(--aeos-primary);
+  border-radius: 0 var(--aeos-r-sm) var(--aeos-r-sm) 0;
+  box-shadow: 0 0 8px var(--aeos-primary-tint);
+}
+
 [data-aeos-shell="floating"] .aeos-shell-sidebar-divider {
-  width: var(--aeos-space-6);
-  height: 1px;
-  background: var(--aeos-divider);
+  width: calc(var(--aeos-space-6) * var(--aeos-density-factor));
+  height: var(--aeos-border-width);
+  min-height: 1px;
+  background: var(--aeos-primary-tint);
   flex-shrink: 0;
+  transition: width var(--aeos-dur-base) var(--aeos-ease-out);
 }
-
-/* Spacer */
 [data-aeos-shell="floating"] .aeos-shell-sidebar-spacer {
   flex: 1;
+  min-height: var(--aeos-space-4);
+}
+[data-aeos-shell="floating"] .aeos-shell-sidebar-label {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ── Floating Content Panel ──────────────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-content {
   flex: 1;
   min-height: 0;
+  max-height: calc(100dvh - var(--aeos-shell-floating-gutter) * 2);
   background: var(--aeos-shell-panel-bg);
   border: var(--aeos-border-width) solid var(--aeos-border-subtle);
   border-radius: var(--aeos-r-xl);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
   padding: var(--aeos-space-5);
   overflow-y: auto;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
 }
 
-/* ── Optional Topbar inside content ─────────────────────────── */
 [data-aeos-shell="floating"] .aeos-shell-topbar {
-  display: flex;
-  align-items: center;
+  position: static;
   height: var(--aeos-h-topbar);
-  padding: 0 4px var(--aeos-space-4);
+  padding: 0 var(--aeos-space-1) var(--aeos-space-4);
   border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
-  margin-bottom: var(--aeos-space-4);
-  gap: var(--aeos-space-3);
+  border-radius: 0;
+  margin: 0 0 var(--aeos-space-4);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Expanded floating sidebar (JS adds .sidebar-expanded)
-   ══════════════════════════════════════════════════════════════ */
+[data-aeos-shell="floating"] .aeos-shell-sidebar-children {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Expanded */
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar {
-  width: 200px;
+  width: var(--aeos-shell-floating-w-exp);
   align-items: flex-start;
-  padding: var(--aeos-space-4) 10px;
+  padding-inline: var(--aeos-space-3);
+  border-radius: var(--aeos-r-xl);
 }
-
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-brand {
+  justify-content: flex-start;
+  padding-inline: calc(var(--aeos-pad-nav-x) * 0.5);
+}
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item {
   width: 100%;
-  height: var(--aeos-h-nav-item);
+  height: calc(var(--aeos-h-nav-item) * var(--aeos-density-factor));
   justify-content: flex-start;
   padding: 0 var(--aeos-pad-nav-x);
   gap: var(--aeos-space-3);
-  font-size: var(--aeos-text-sm);
-  font-weight: 500;
 }
-
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-label {
   display: block;
-  white-space: nowrap;
   color: inherit;
 }
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-divider { width: 100%; }
 
-[data-aeos-shell="floating"] .aeos-shell-sidebar-label {
-  display: none;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   Responsive
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 640px) {
-  [data-aeos-shell="floating"] {
-    padding: var(--aeos-space-2);
-    gap: var(--aeos-space-2);
-  }
-
+/* Tablet */
+@media (max-width: 768px) {
+  [data-aeos-shell="floating"] { padding: var(--aeos-space-2); gap: var(--aeos-space-2); }
   [data-aeos-shell="floating"] .aeos-shell-sidebar {
     width: 44px;
-    padding: var(--aeos-space-2) 0;
-    gap: var(--aeos-space-1-5);
+    padding-inline: 0;
+    padding-block: var(--aeos-space-2);
+    gap: calc(var(--aeos-gap-items) * 0.8);
     top: var(--aeos-space-2);
-    max-height: calc(100vh - var(--aeos-space-4));
+    max-height: calc(100dvh - var(--aeos-space-4));
+    border-radius: var(--aeos-r-xl);
   }
-
+  [data-aeos-shell="floating"] .aeos-shell-sidebar-item {
+    width: calc(var(--aeos-space-8) * 0.85);
+    height: calc(var(--aeos-space-8) * 0.85);
+  }
   [data-aeos-shell="floating"] .aeos-shell-content {
-    padding: var(--aeos-space-4);
+    padding: var(--aeos-space-3);
+    border-radius: var(--aeos-r-lg);
+    max-height: calc(100dvh - var(--aeos-space-4));
   }
 }
+
+/* Mobile: bottom tab bar */
+@media (max-width: 480px) {
+  [data-aeos-shell="floating"] { flex-direction: column-reverse; padding: 0; gap: 0; }
+  [data-aeos-shell="floating"] .aeos-shell-sidebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0; top: auto;
+    width: 100%;
+    max-height: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    border-radius: var(--aeos-r-xl) var(--aeos-r-xl) 0 0;
+    border-top: var(--aeos-border-width) solid var(--aeos-primary-tint);
+    border-bottom: none; border-left: none; border-right: none;
+    padding: var(--aeos-space-2) var(--aeos-space-4);
+    padding-bottom: max(var(--aeos-space-2), env(safe-area-inset-bottom));
+    gap: var(--aeos-space-1);
+    z-index: var(--aeos-z-sidebar);
+  }
+  [data-aeos-shell="floating"] .aeos-shell-sidebar-brand,
+  [data-aeos-shell="floating"] .aeos-shell-sidebar-divider,
+  [data-aeos-shell="floating"] .aeos-shell-sidebar-spacer { display: none; }
+  [data-aeos-shell="floating"] .aeos-shell-content {
+    flex: 1;
+    max-height: none;
+    height: calc(100dvh - 68px);
+    border-radius: 0;
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding-bottom: 80px;
+  }
+}
+
+.aeos--no-blur [data-aeos-shell="floating"] .aeos-shell-sidebar {
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: var(--aeos-shell-floating-bg);
+}
+.aeos--no-blur [data-aeos-shell="floating"] .aeos-shell-content {
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.aeos--no-glow [data-aeos-shell="floating"] .aeos-shell-sidebar-item.active { box-shadow: none; }
+.aeos--no-glow [data-aeos-shell="floating"] .aeos-shell-sidebar { box-shadow: var(--aeos-shadow-elevated); }

@@ -23,7 +23,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function RegionsIndex({ regions, tenantAssignments, cdnConfig }) {
   const toast = useToast();
@@ -148,7 +148,7 @@ export default function RegionsIndex({ regions, tenantAssignments, cdnConfig }) 
     <IndexPageLayout
       title="Regions"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Regions' },
       ]}
       description="Manage deployment regions, tenant assignments, and CDN configuration."

@@ -4,8 +4,8 @@ namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Auth\Services\ModernAuthenticationService;
-use Aero\Core\Models\User;
-use Aero\Core\Support\SafeRedirect;
+use Aero\Auth\Models\User;
+use Aero\Kernel\Support\SafeRedirect;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

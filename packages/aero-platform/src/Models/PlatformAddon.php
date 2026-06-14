@@ -37,6 +37,6 @@ class PlatformAddon extends CentralModel
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

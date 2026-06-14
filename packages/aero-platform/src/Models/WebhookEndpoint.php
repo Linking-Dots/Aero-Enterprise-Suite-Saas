@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Models;
 
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;

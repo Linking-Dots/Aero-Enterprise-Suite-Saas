@@ -52,7 +52,8 @@
             "package": "commerce",
             "version": "1.0.0",
             "category": "product",
-            "description": "E-commerce platform with product catalog, shopping cart, order management, payment gateway integration, and multi-vendor marketplace support"
+            "description": "E-commerce platform with product catalog, shopping cart, order management, payment gateway integration, and multi-vendor marketplace support",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

@@ -16,7 +16,7 @@ import {
   Modal,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TYPE_INTENT   = { feature: 'primary', bug: 'danger', improvement: 'warning' };
 const STATUS_INTENT = { open: 'neutral', 'under-review': 'warning', planned: 'primary', done: 'success', declined: 'danger' };

@@ -26,7 +26,8 @@
             "package": "contracts",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Shared interface contracts for all Aero packages"
+            "description": "Shared interface contracts for all Aero packages",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

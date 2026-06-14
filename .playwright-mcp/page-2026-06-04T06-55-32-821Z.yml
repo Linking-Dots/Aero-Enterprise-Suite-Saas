@@ -1,0 +1,369 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e35]:
+      - complementary [ref=e36]:
+        - link "aeos365 home" [ref=e38] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e39]
+        - link "Admin Dashboard" [ref=e42] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e254]: Admin Dashboard
+        - link "HRM Dashboard" [ref=e43] [cursor=pointer]:
+          - /url: /hrm/dashboard
+          - generic [ref=e255]: HRM Dashboard
+        - link "Employee Dashboard" [ref=e44] [cursor=pointer]:
+          - /url: /hrm/employee/dashboard
+          - generic [ref=e256]: Employee Dashboard
+        - link "My Profile" [ref=e46] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e257]: My Profile
+        - link "My Notifications" [ref=e47] [cursor=pointer]:
+          - /url: /notifications
+          - generic [ref=e258]: My Notifications
+        - link "My Dashboard" [ref=e48] [cursor=pointer]:
+          - /url: /hrm/employee/dashboard
+          - generic [ref=e259]: My Dashboard
+        - link "My Attendance" [ref=e49] [cursor=pointer]:
+          - /url: /hrm/attendance-employee
+          - generic [ref=e260]: My Attendance
+        - link "My Leaves" [ref=e50] [cursor=pointer]:
+          - /url: /hrm/leaves-employee
+          - generic [ref=e261]: My Leaves
+        - link "My Time-Off" [ref=e51] [cursor=pointer]:
+          - /url: /hrm/self-service/time-off
+          - generic [ref=e262]: My Time-Off
+        - link "My Payslips" [ref=e52] [cursor=pointer]:
+          - /url: /hrm/self-service/payslips
+          - generic [ref=e263]: My Payslips
+        - link "My Expenses" [ref=e53] [cursor=pointer]:
+          - /url: /hrm/my-expenses
+          - generic [ref=e264]: My Expenses
+        - link "My Documents" [ref=e54] [cursor=pointer]:
+          - /url: /hrm/self-service/documents
+          - generic [ref=e265]: My Documents
+        - link "My Benefits" [ref=e55] [cursor=pointer]:
+          - /url: /hrm/self-service/benefits
+          - generic [ref=e266]: My Benefits
+        - link "My Trainings" [ref=e56] [cursor=pointer]:
+          - /url: /hrm/self-service/trainings
+          - generic [ref=e267]: My Trainings
+        - link "My Performance" [ref=e57] [cursor=pointer]:
+          - /url: /hrm/self-service/performance
+          - generic [ref=e268]: My Performance
+        - link "My Goals" [ref=e58] [cursor=pointer]:
+          - /url: /hrm/goals
+          - generic [ref=e269]: My Goals
+        - link "My Career Path" [ref=e59] [cursor=pointer]:
+          - /url: /hrm/self-service/career-path
+          - generic [ref=e270]: My Career Path
+        - link "My 360° Feedback" [ref=e60] [cursor=pointer]:
+          - /url: /hrm/feedback-360
+          - generic [ref=e271]: My 360° Feedback
+        - link "Subscription & Billing" [ref=e62] [cursor=pointer]:
+          - /url: /subscription
+          - generic [ref=e272]: Subscription & Billing
+        - link "User Management" [ref=e63] [cursor=pointer]:
+          - /url: /users
+          - generic [ref=e273]: User Management
+        - link "Roles & Module Access" [ref=e64] [cursor=pointer]:
+          - /url: /roles
+          - generic [ref=e274]: Roles & Module Access
+        - link "Audit & Activity Logs" [ref=e65] [cursor=pointer]:
+          - /url: /audit-logs
+          - generic [ref=e275]: Audit & Activity Logs
+        - link "Notifications" [ref=e66] [cursor=pointer]:
+          - /url: /notifications
+          - generic [ref=e276]: Notifications
+        - link "File Manager" [ref=e67] [cursor=pointer]:
+          - /url: /files
+          - generic [ref=e277]: File Manager
+        - link "Organization" [ref=e68] [cursor=pointer]:
+          - /url: /organization
+          - generic [ref=e278]: Organization
+        - link "Translations / i18n" [ref=e69] [cursor=pointer]:
+          - /url: /i18n/translations
+          - generic [ref=e279]: Translations / i18n
+        - link "Custom Fields" [ref=e70] [cursor=pointer]:
+          - /url: /custom-fields
+          - generic [ref=e280]: Custom Fields
+        - link "Tags & Labels" [ref=e71] [cursor=pointer]:
+          - /url: /tags
+          - generic [ref=e281]: Tags & Labels
+        - link "Saved Views & Filters" [ref=e72] [cursor=pointer]:
+          - /url: /saved-views
+          - generic [ref=e282]: Saved Views & Filters
+        - link "Form Builder" [ref=e73] [cursor=pointer]:
+          - /url: /forms
+          - generic [ref=e283]: Form Builder
+        - link "Global Search" [ref=e74] [cursor=pointer]:
+          - /url: /search
+          - generic [ref=e284]: Global Search
+        - link "API & Webhooks" [ref=e75] [cursor=pointer]:
+          - /url: /api
+          - generic [ref=e285]: API & Webhooks
+        - link "User Preferences" [ref=e76] [cursor=pointer]:
+          - /url: /preferences
+          - generic [ref=e286]: User Preferences
+        - link "Data Export/Import" [ref=e77] [cursor=pointer]:
+          - /url: /export-import
+          - generic [ref=e287]: Data Export/Import
+        - link "Retention Policies" [ref=e78] [cursor=pointer]:
+          - /url: /retention-policies
+          - generic [ref=e288]: Retention Policies
+        - link "Workflows & Automations" [ref=e79] [cursor=pointer]:
+          - /url: /workflows
+          - generic [ref=e289]: Workflows & Automations
+        - link "Email Engine" [ref=e80] [cursor=pointer]:
+          - /url: /email
+          - generic [ref=e290]: Email Engine
+        - link "System Health" [ref=e81] [cursor=pointer]:
+          - /url: /system-health
+          - generic [ref=e291]: System Health
+        - link "Mobile & PWA" [ref=e82] [cursor=pointer]:
+          - /url: /mobile-pwa
+          - generic [ref=e292]: Mobile & PWA
+        - link "Backup & Restore" [ref=e83] [cursor=pointer]:
+          - /url: /backup
+          - generic [ref=e293]: Backup & Restore
+        - link "License Management" [ref=e84] [cursor=pointer]:
+          - /url: /license
+          - generic [ref=e294]: License Management
+        - link "Document Numbering & Sequences" [ref=e85] [cursor=pointer]:
+          - /url: /numbering
+          - generic [ref=e295]: Document Numbering & Sequences
+        - link "Print & PDF Templates" [ref=e86] [cursor=pointer]:
+          - /url: /print-templates
+          - generic [ref=e296]: Print & PDF Templates
+        - link "Announcements & Banners" [ref=e87] [cursor=pointer]:
+          - /url: /announcements
+          - generic [ref=e297]: Announcements & Banners
+        - link "Maintenance Mode" [ref=e88] [cursor=pointer]:
+          - /url: /maintenance-mode
+          - generic [ref=e298]: Maintenance Mode
+        - link "Trash & Recycle Bin" [ref=e89] [cursor=pointer]:
+          - /url: /trash
+          - generic [ref=e299]: Trash & Recycle Bin
+        - link "Comments & Mentions" [ref=e90] [cursor=pointer]:
+          - /url: /comments
+          - generic [ref=e300]: Comments & Mentions
+        - link "Help & Support" [ref=e91] [cursor=pointer]:
+          - /url: /help
+          - generic [ref=e301]: Help & Support
+        - link "Settings" [ref=e92] [cursor=pointer]:
+          - /url: /settings/system
+          - generic [ref=e302]: Settings
+        - link "Employees" [ref=e94] [cursor=pointer]:
+          - /url: /hrm/employees
+          - generic [ref=e303]: Employees
+        - link "Attendance" [ref=e95] [cursor=pointer]:
+          - /url: /hrm/attendance
+          - generic [ref=e304]: Attendance
+        - link "Leaves" [ref=e96] [cursor=pointer]:
+          - /url: /hrm/leaves
+          - generic [ref=e305]: Leaves
+        - link "Payroll" [ref=e97] [cursor=pointer]:
+          - /url: /hrm/payroll
+          - generic [ref=e306]: Payroll
+        - link "Expenses & Claims" [ref=e98] [cursor=pointer]:
+          - /url: /hrm/expenses
+          - generic [ref=e307]: Expenses & Claims
+        - link "Assets Management" [ref=e99] [cursor=pointer]:
+          - /url: /hrm/assets
+          - generic [ref=e308]: Assets Management
+        - link "Disciplinary" [ref=e100] [cursor=pointer]:
+          - /url: /hrm/disciplinary
+          - generic [ref=e309]: Disciplinary
+        - link "Recruitment" [ref=e101] [cursor=pointer]:
+          - /url: /hrm/recruitment
+          - generic [ref=e310]: Recruitment
+        - link "Performance" [ref=e102] [cursor=pointer]:
+          - /url: /hrm/performance
+          - generic [ref=e311]: Performance
+        - link "Training" [ref=e103] [cursor=pointer]:
+          - /url: /hrm/training
+          - generic [ref=e312]: Training
+        - link "HR Analytics" [ref=e104] [cursor=pointer]:
+          - /url: /hrm/analytics
+          - generic [ref=e313]: HR Analytics
+        - link "Succession Planning" [ref=e105] [cursor=pointer]:
+          - /url: /hrm/succession-planning
+          - generic [ref=e314]: Succession Planning
+        - link "Career Pathing" [ref=e106] [cursor=pointer]:
+          - /url: /hrm/career-paths
+          - generic [ref=e315]: Career Pathing
+        - link "360° Feedback" [ref=e107] [cursor=pointer]:
+          - /url: /hrm/feedback-360
+          - generic [ref=e316]: 360° Feedback
+        - link "Compensation Planning" [ref=e108] [cursor=pointer]:
+          - /url: /hrm/compensation-planning
+          - generic [ref=e317]: Compensation Planning
+        - link "Workforce Planning" [ref=e109] [cursor=pointer]:
+          - /url: /hrm/workforce-planning
+          - generic [ref=e318]: Workforce Planning
+        - link "Overtime Management" [ref=e110] [cursor=pointer]:
+          - /url: /hrm/overtime
+          - generic [ref=e319]: Overtime Management
+        - link "Grievances & Complaints" [ref=e111] [cursor=pointer]:
+          - /url: /hrm/grievances
+          - generic [ref=e320]: Grievances & Complaints
+        - link "Exit Interviews" [ref=e112] [cursor=pointer]:
+          - /url: /hrm/exit-interviews
+          - generic [ref=e321]: Exit Interviews
+        - link "Pulse Surveys" [ref=e113] [cursor=pointer]:
+          - /url: /hrm/pulse-surveys
+          - generic [ref=e322]: Pulse Surveys
+        - link "Onboarding & Offboarding" [ref=e114] [cursor=pointer]:
+          - /url: /hrm/onboarding
+          - generic [ref=e323]: Onboarding & Offboarding
+        - link "Workplace Safety" [ref=e115] [cursor=pointer]:
+          - /url: /hrm/safety
+          - generic [ref=e324]: Workplace Safety
+        - link "HR Documents" [ref=e116] [cursor=pointer]:
+          - /url: /hrm/documents
+          - generic [ref=e325]: HR Documents
+        - link "AI Analytics" [ref=e117] [cursor=pointer]:
+          - /url: /hrm/ai-analytics
+          - generic [ref=e326]: AI Analytics
+        - link "Org Structure" [ref=e118] [cursor=pointer]:
+          - /url: /hrm/org-structure/departments
+          - generic [ref=e327]: Org Structure
+        - link "Benefits" [ref=e119] [cursor=pointer]:
+          - /url: /hrm/benefits
+          - generic [ref=e328]: Benefits
+        - link "Events & Announcements" [ref=e120] [cursor=pointer]:
+          - /url: /hrm/events
+          - generic [ref=e329]: Events & Announcements
+        - link "HR Settings" [ref=e121] [cursor=pointer]:
+          - /url: /hrm/settings
+          - generic [ref=e330]: HR Settings
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - button "Collapse sidebar" [ref=e331] [cursor=pointer]:
+            - img [ref=e125]
+          - generic [ref=e127]: Role Management
+          - generic [ref=e128]:
+            - button "Notifications" [ref=e129] [cursor=pointer]:
+              - img [ref=e131]
+            - generic [ref=e133]:
+              - generic [ref=e135]: "?"
+              - generic [ref=e136]:
+                - generic [ref=e137]: UAT Super Admin
+                - generic [ref=e138]: Super Administrator
+              - button "Sign out" [ref=e139] [cursor=pointer]:
+                - img [ref=e141]
+        - main [ref=e143]:
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - navigation "Breadcrumb" [ref=e147]:
+                - link "Dashboard" [ref=e149] [cursor=pointer]:
+                  - /url: https://aeos365-standalone.test/dashboard
+                - generic [ref=e150]:
+                  - img [ref=e152]
+                  - generic [ref=e154]: Roles
+              - generic [ref=e155]:
+                - generic [ref=e156]:
+                  - heading "Role Management" [level=1] [ref=e158]
+                  - paragraph [ref=e159]: Manage roles and assign them to users.
+                - button "Create Role" [active] [ref=e161] [cursor=pointer]:
+                  - generic [ref=e162]: Create Role
+            - table [ref=e165]:
+              - rowgroup [ref=e166]:
+                - row "Name Description Users Module Access Priority Scope" [ref=e167]:
+                  - columnheader "Name" [ref=e168]
+                  - columnheader "Description" [ref=e169]
+                  - columnheader "Users" [ref=e170]
+                  - columnheader "Module Access" [ref=e171]
+                  - columnheader "Priority" [ref=e172]
+                  - columnheader "Scope" [ref=e173]
+                  - columnheader [ref=e174]
+              - rowgroup [ref=e175]:
+                - row "Administrator — 0 73 grants 0 tenant Assign Edit Delete" [ref=e176]:
+                  - cell "Administrator" [ref=e177]:
+                    - paragraph [ref=e179]: Administrator
+                  - cell "—" [ref=e180]
+                  - cell "0" [ref=e181]
+                  - cell "73 grants" [ref=e182]:
+                    - generic [ref=e183]: 73 grants
+                  - cell "0" [ref=e184]
+                  - cell "tenant" [ref=e185]:
+                    - generic [ref=e186]: tenant
+                  - cell "Assign Edit Delete" [ref=e187]:
+                    - generic [ref=e188]:
+                      - button "Assign" [ref=e189] [cursor=pointer]:
+                        - generic [ref=e190]: Assign
+                      - button "Edit" [ref=e191] [cursor=pointer]:
+                        - generic [ref=e192]: Edit
+                      - button "Delete" [ref=e193] [cursor=pointer]:
+                        - generic [ref=e194]: Delete
+                - row "Employee — 1 4 grants 0 tenant Assign Edit Delete" [ref=e195]:
+                  - cell "Employee" [ref=e196]:
+                    - paragraph [ref=e198]: Employee
+                  - cell "—" [ref=e199]
+                  - cell "1" [ref=e200]
+                  - cell "4 grants" [ref=e201]:
+                    - generic [ref=e202]: 4 grants
+                  - cell "0" [ref=e203]
+                  - cell "tenant" [ref=e204]:
+                    - generic [ref=e205]: tenant
+                  - cell "Assign Edit Delete" [ref=e206]:
+                    - generic [ref=e207]:
+                      - button "Assign" [ref=e208] [cursor=pointer]:
+                        - generic [ref=e209]: Assign
+                      - button "Edit" [ref=e210] [cursor=pointer]:
+                        - generic [ref=e211]: Edit
+                      - button "Delete" [ref=e212] [cursor=pointer]:
+                        - generic [ref=e213]: Delete
+                - row "HR Manager — 1 73 grants 0 tenant Assign Edit Delete" [ref=e214]:
+                  - cell "HR Manager" [ref=e215]:
+                    - paragraph [ref=e217]: HR Manager
+                  - cell "—" [ref=e218]
+                  - cell "1" [ref=e219]
+                  - cell "73 grants" [ref=e220]:
+                    - generic [ref=e221]: 73 grants
+                  - cell "0" [ref=e222]
+                  - cell "tenant" [ref=e223]:
+                    - generic [ref=e224]: tenant
+                  - cell "Assign Edit Delete" [ref=e225]:
+                    - generic [ref=e226]:
+                      - button "Assign" [ref=e227] [cursor=pointer]:
+                        - generic [ref=e228]: Assign
+                      - button "Edit" [ref=e229] [cursor=pointer]:
+                        - generic [ref=e230]: Edit
+                      - button "Delete" [ref=e231] [cursor=pointer]:
+                        - generic [ref=e232]: Delete
+                - row "Super Administrator Protected — 1 73 grants 0 tenant Assign Edit" [ref=e233]:
+                  - cell "Super Administrator Protected" [ref=e234]:
+                    - generic [ref=e235]:
+                      - paragraph [ref=e236]: Super Administrator
+                      - generic [ref=e237]: Protected
+                  - cell "—" [ref=e238]
+                  - cell "1" [ref=e239]
+                  - cell "73 grants" [ref=e240]:
+                    - generic [ref=e241]: 73 grants
+                  - cell "0" [ref=e242]
+                  - cell "tenant" [ref=e243]:
+                    - generic [ref=e244]: tenant
+                  - cell "Assign Edit" [ref=e245]:
+                    - generic [ref=e246]:
+                      - button "Assign" [ref=e247] [cursor=pointer]:
+                        - generic [ref=e248]: Assign
+                      - button "Edit" [ref=e249] [cursor=pointer]:
+                        - generic [ref=e250]: Edit
+    - button "Open Theme Studio" [ref=e251] [cursor=pointer]:
+      - img [ref=e252]
+  - dialog "Create Role" [ref=e332]:
+    - generic [ref=e334]:
+      - generic [ref=e335]:
+        - heading "Create Role" [level=3] [ref=e337]
+        - button "Close modal" [ref=e338] [cursor=pointer]:
+          - img [ref=e339]
+      - generic [ref=e343]:
+        - textbox [ref=e344]
+        - textbox [ref=e345]
+        - textbox "e.g. core.dashboard" [ref=e346]
+        - spinbutton [ref=e347]: "0"
+      - generic [ref=e349]:
+        - button "Cancel" [ref=e350] [cursor=pointer]:
+          - generic [ref=e351]: Cancel
+        - button "Create Role" [ref=e352] [cursor=pointer]:
+          - generic [ref=e353]: Create Role

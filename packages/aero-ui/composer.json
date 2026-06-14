@@ -35,7 +35,8 @@
             "package": "ui",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Shared React component library for all Aero modules"
+            "description": "Shared React component library for all Aero modules",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "stable",

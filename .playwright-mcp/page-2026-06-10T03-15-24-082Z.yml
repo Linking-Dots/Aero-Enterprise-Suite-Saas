@@ -1,0 +1,109 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "aeos365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - generic [ref=e11]:
+      - generic [ref=e12]: SaaS Mode
+      - button "Switch to dark mode" [ref=e147] [cursor=pointer]:
+        - img [ref=e14]
+  - navigation "Installation progress" [ref=e17]:
+    - list [ref=e18]:
+      - listitem [ref=e19]:
+        - 'generic "Completed: Requirements" [ref=e324]':
+          - img [ref=e325]
+        - generic [ref=e22]: Requirements
+      - listitem [ref=e24]:
+        - 'generic "Current: Database" [ref=e327]':
+          - generic [ref=e26]: "2"
+        - generic [ref=e27]: Database
+      - listitem [ref=e29]:
+        - 'generic "Upcoming: Settings" [ref=e30]':
+          - generic [ref=e31]: "3"
+        - generic [ref=e32]: Settings
+      - listitem [ref=e34]:
+        - 'generic "Upcoming: Admin" [ref=e35]':
+          - generic [ref=e36]: "4"
+        - generic [ref=e37]: Admin
+      - listitem [ref=e39]:
+        - 'generic "Upcoming: Review" [ref=e40]':
+          - generic [ref=e41]: "5"
+        - generic [ref=e42]: Review
+      - listitem [ref=e44]:
+        - 'generic "Upcoming: Install" [ref=e45]':
+          - generic [ref=e46]: "6"
+        - generic [ref=e47]: Install
+      - listitem [ref=e49]:
+        - 'generic "Upcoming: Complete" [ref=e50]':
+          - generic [ref=e51]: "7"
+        - generic [ref=e52]: Complete
+    - paragraph [ref=e53]:
+      - text: Step 2 of 7
+      - generic [ref=e54]: · Database
+    - 'progressbar "Installation progress: 29%" [ref=e328]'
+  - main [ref=e57]:
+    - generic [ref=e329]:
+      - generic [ref=e330]:
+        - heading "Database Configuration" [level=1] [ref=e331]
+        - paragraph [ref=e332]: Configure the database connection for your aeos365 installation. This configures the landlord (platform) database. Tenant databases are created automatically during provisioning.
+      - generic [ref=e333]:
+        - img [ref=e335]
+        - generic [ref=e338]:
+          - text: A separate database will be created per tenant at provisioning time. This page configures the
+          - strong [ref=e339]: landlord database
+          - text: only.
+      - generic [ref=e340]:
+        - generic [ref=e341]: Database Driver *
+        - combobox "Database Driver *" [ref=e342] [cursor=pointer]:
+          - option "MySQL" [selected]
+          - option "PostgreSQL"
+          - option "SQLite"
+          - option "SQL Server"
+      - generic [ref=e343]:
+        - generic [ref=e344]:
+          - generic [ref=e345]: Host *
+          - generic [ref=e346]:
+            - generic:
+              - img
+            - textbox "Host *" [ref=e347]:
+              - /placeholder: 127.0.0.1
+              - text: 127.0.0.1
+        - generic [ref=e348]:
+          - generic [ref=e349]: Port *
+          - spinbutton "Port *" [ref=e350]: "3306"
+      - generic [ref=e351]:
+        - generic [ref=e352]: Database Name *
+        - generic [ref=e353]:
+          - generic [ref=e354]:
+            - generic:
+              - img
+            - textbox "Database Name *" [ref=e355]:
+              - /placeholder: aeos365
+          - button "Browse" [ref=e356] [cursor=pointer]:
+            - generic [ref=e357]: Browse
+      - generic [ref=e358]:
+        - generic [ref=e359]:
+          - generic [ref=e360]: Username *
+          - generic [ref=e361]:
+            - generic:
+              - img
+            - textbox "Username *" [ref=e362]: root
+        - generic [ref=e363]:
+          - generic [ref=e364]: Password
+          - generic [ref=e365]:
+            - generic:
+              - img
+            - textbox "Password" [ref=e366]:
+              - /placeholder: Leave blank if none
+      - button "Verify & Save" [ref=e368] [cursor=pointer]:
+        - generic [ref=e369]: Verify & Save
+      - generic [ref=e370]:
+        - button "Back" [ref=e371] [cursor=pointer]:
+          - img [ref=e373]
+          - generic [ref=e375]: Back
+        - button "Continue" [disabled]:
+          - generic: Continue
+          - generic:
+            - img
+  - contentinfo [ref=e146]: aeos365 · Setup Wizard

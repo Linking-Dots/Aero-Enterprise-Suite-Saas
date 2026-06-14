@@ -13,6 +13,8 @@
 
 use Aero\Core\Services\RuntimeLoader;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 if (! function_exists('aero_mode')) {
     /**
@@ -40,12 +42,12 @@ if (! function_exists('aero_mode')) {
 
         // Fallback: detect from DB structure — SaaS always has a 'tenants' table in central connection
         try {
-            if (\Illuminate\Support\Facades\Schema::connection('central')->hasTable('tenants')) {
-                \Illuminate\Support\Facades\Log::warning('aeos.mode file missing -- recovered as SaaS from DB schema');
+            if (Schema::connection('central')->hasTable('tenants')) {
+                Log::warning('aeos.mode file missing -- recovered as SaaS from DB schema');
 
                 return $mode = 'saas';
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Central connection unavailable — definitely not SaaS
         }
 
@@ -77,11 +79,11 @@ if (! function_exists('central_connection')) {
     /**
      * Resolve the connection name for central/landlord data (Axis B B2).
      *
-     * SaaS: 'central' — registered by AeroPlatformServiceProvider against the
-     *       landlord database. Tenant data lives in per-tenant databases; central
-     *       data (tenants, plans, subscriptions, platform_* tables) lives here.
+     * SaaS: 'central' — registered by the platform layer against the landlord
+     *       database. Tenant data lives in per-tenant databases; central data
+     *       (tenants, plans, subscriptions, platform_* tables) lives here.
      *
-     * Standalone: the DEFAULT connection. aero-platform is not installed, so the
+     * Standalone: the DEFAULT connection. No platform layer is present, so the
      *       'central' connection is never registered and there is exactly ONE
      *       database — "central" and "tenant" data coexist in it. Returning the
      *       default connection lets central-flavoured code (AuditService,

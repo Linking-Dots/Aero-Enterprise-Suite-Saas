@@ -15,7 +15,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const MODE_OPTIONS = [
   { value: 'dedicated', label: 'Dedicated (VPS / Cloud)' },
@@ -49,7 +49,7 @@ export default function Infrastructure({ hosting }) {
     <FormPageLayout
       title="Infrastructure"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'Infrastructure' },
       ]}

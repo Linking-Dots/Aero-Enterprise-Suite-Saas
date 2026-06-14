@@ -3,7 +3,7 @@
 namespace Aero\Platform\Database\Seeders;
 
 use Aero\Contracts\RoleModuleAccessInterface;
-use Aero\HRMAC\Models\Action as HrmacAction;
+use Aero\HRMAC\Models\ModuleComponentAction as HrmacAction;
 use Aero\HRMAC\Models\Module as HrmacModule;
 use Aero\HRMAC\Models\Role as HrmacRole;
 use Illuminate\Database\Seeder;
@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\Artisan;
 class PlatformHrmacSeeder extends Seeder
 {
     public function run(): void
+    {
+        // This seeds landlord HRMAC roles on the CENTRAL DB. The HRMAC Role/Module
+        // models are tenant-scoped (TenantModel) and their guard fails-closed off
+        // tenant context in SaaS. Central landlord seeding is legitimate (no tenant
+        // to leak between), so run with the guard disabled.
+        \Aero\Contracts\AeroMode::withoutTenantContextGuard(function () {
+            $this->seedLandlordRoles();
+        });
+    }
+
+    protected function seedLandlordRoles(): void
     {
         // Ensure all writes go to the central (landlord) DB
         \Illuminate\Support\Facades\DB::setDefaultConnection('central');

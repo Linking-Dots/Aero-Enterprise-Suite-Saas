@@ -18,7 +18,7 @@ import {
   useHRMAC,
   Stat,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const ACTION_INTENT   = { delete: 'danger', anonymize: 'warning' };
 const ENTITY_OPTIONS  = [

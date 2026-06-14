@@ -8,7 +8,6 @@ use Aero\HRM\Models\Designation;
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Http\Resources\UserCollection;
-use Aero\Platform\Models\LandlordUser;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +20,7 @@ use Inertia\Response;
  * Shared User Controller
  *
  * Handles user management for both:
- * - Platform Admin context (LandlordUser on central database)
+ * - Platform Admin context (User on central database)
  * - Tenant context (User on tenant database)
  *
  * The controller determines which model to use based on the context.
@@ -33,7 +32,7 @@ class UserController extends Controller
      */
     protected function getUserModel(string $context = 'tenant')
     {
-        return $context === 'admin' ? LandlordUser::class : User::class;
+        return $context === 'admin' ? User::class : User::class;
     }
 
     /**

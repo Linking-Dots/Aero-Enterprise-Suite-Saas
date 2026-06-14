@@ -14,7 +14,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const ADDRESS_TYPE_OPTIONS = [
   { value: 'billing',  label: 'Billing'  },

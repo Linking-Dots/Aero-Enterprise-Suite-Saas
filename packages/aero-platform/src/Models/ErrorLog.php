@@ -243,7 +243,7 @@ class ErrorLog extends CentralModel
      */
     public function resolver()
     {
-        return $this->belongsTo(LandlordUser::class, 'resolved_by');
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 
     /**
@@ -251,7 +251,7 @@ class ErrorLog extends CentralModel
      */
     public function user()
     {
-        // Could be either LandlordUser or Tenant User depending on context
-        return $this->belongsTo(LandlordUser::class, 'user_id');
+        // Could be either User or Tenant User depending on context
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

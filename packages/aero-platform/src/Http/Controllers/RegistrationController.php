@@ -394,8 +394,8 @@ class RegistrationController extends Controller
         // Update registration step
         $this->updateTenantRegistrationStep(Tenant::REG_STEP_PLAN);
 
-        // Payment is deferred; go straight to review page for now.
-        return to_route('platform.register.payment');
+        // Go to BYOC step before payment/review
+        return to_route('platform.register.byoc');
     }
 
     /**

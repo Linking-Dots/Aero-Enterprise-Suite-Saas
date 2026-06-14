@@ -23,7 +23,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   draft:     'neutral',
@@ -180,7 +180,7 @@ export default function Broadcasts({ broadcasts, tenants, filters }) {
     <IndexPageLayout
       title="Broadcasts"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tenant Comms' },
         { label: 'Broadcasts' },
       ]}

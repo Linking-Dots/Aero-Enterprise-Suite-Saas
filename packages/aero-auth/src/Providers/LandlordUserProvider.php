@@ -5,31 +5,28 @@ declare(strict_types=1);
 namespace Aero\Auth\Providers;
 
 use Illuminate\Auth\EloquentUserProvider;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
- * Custom user provider for Twill CMS authentication.
+ * Landlord user provider — resolves platform admins (landlords) from the unified
+ * {@see \Aero\Auth\Models\User} model on the CENTRAL connection.
  *
- * Twill's LoginController appends ['published' => 1] to credentials
- * (see A17\Twill\Http\Controllers\Admin\LoginController::credentials()).
- * Our landlord_users table uses `active` instead of `published`.
+ * Auth-identity unification (Unit 4): the former central-bound User
+ * subclass was eliminated, so the shared User model is connection-agnostic.
+ * Landlords are rows in the central `users` table, so this provider pins every
+ * retrieval (retrieveById / retrieveByCredentials / retrieveByToken — all of
+ * which build their query from createModel()) onto the 'central' connection.
  *
- * This provider intercepts the credential array before hitting the DB
- * and remaps `published` â†’ `active` so the query works correctly.
+ * User's EnforcesTenantContext guard no-ops for central-connection instances
+ * (Unit 2B), so a landlord query never trips tenant isolation. validateCredentials
+ * is a connection-agnostic hash check and needs no override.
  */
 class LandlordUserProvider extends EloquentUserProvider
 {
     /**
-     * Retrieve a user by the given credentials.
-     * Translates Twill's 'published' field to our 'active' field.
+     * {@inheritDoc}
      */
-    public function retrieveByCredentials(#[\SensitiveParameter] array $credentials): ?Authenticatable
+    public function createModel()
     {
-        if (array_key_exists('published', $credentials)) {
-            $credentials['active'] = $credentials['published'];
-            unset($credentials['published']);
-        }
-
-        return parent::retrieveByCredentials($credentials);
+        return parent::createModel()->setConnection('central');
     }
 }

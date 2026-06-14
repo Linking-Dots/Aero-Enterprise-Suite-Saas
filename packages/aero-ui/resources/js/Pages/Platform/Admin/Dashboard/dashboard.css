@@ -1,0 +1,173 @@
+/* ==========================================================================
+   Platform Admin Dashboard — Scoped Responsive Styles
+   Breakpoints mirror @aero/ui shell-dimensions.css:
+     xs  < 480px
+     sm  480px – 639px
+     md  640px – 767px
+     lg  768px – 1023px
+     xl  1024px – 1279px
+     2xl 1280px+
+   ========================================================================== */
+
+/* ── Root wrapper ────────────────────────────────────────────────────────── */
+.aeos-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--aeos-space-5);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* ── Command bar ─────────────────────────────────────────────────────────── */
+.aeos-dashboard__command-bar {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── KPI strip ───────────────────────────────────────────────────────────── */
+.aeos-dashboard__kpi-strip {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Generic 2-col grid (main + sidebar) ─────────────────────────────────── */
+.aeos-dashboard__grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;          /* stack on mobile */
+  gap: var(--aeos-space-5);
+  width: 100%;
+  min-width: 0;
+  align-items: start;
+}
+
+/* ── Row that pairs two equal-width cards ─────────────────────────────────── */
+.aeos-dashboard__grid-equal {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--aeos-space-5);
+  width: 100%;
+  min-width: 0;
+  align-items: start;
+}
+
+/* ── Full-width rows ─────────────────────────────────────────────────────── */
+.aeos-dashboard__full {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Bottom pair (activity + quick-actions) ───────────────────────────────── */
+.aeos-dashboard__grid-bottom {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--aeos-space-5);
+  width: 100%;
+  min-width: 0;
+  align-items: start;
+}
+
+/* ── Section label ───────────────────────────────────────────────────────── */
+.aeos-dashboard__section-label {
+  font-size: var(--aeos-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aeos-text-tertiary);
+  margin: 0 0 var(--aeos-space-2);
+}
+
+/* ── Module chart / list toggle ──────────────────────────────────────────── */
+.dash-module-chart { display: block; }
+.dash-module-list  { display: none;  }
+
+/* ==========================================================================
+   sm  ≥ 480px — 2-col KPI, equal grids still stacked
+   ========================================================================== */
+@media (min-width: 480px) {
+  /* KPI tiles: 2-per-row on xs→sm */
+  .aeos-dashboard__kpi-strip > div {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================================================
+   md  ≥ 640px — 3-col KPI, equal pairs become side-by-side
+   ========================================================================== */
+@media (min-width: 640px) {
+  .aeos-dashboard__kpi-strip > div {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .aeos-dashboard__grid-equal {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .aeos-dashboard__grid-bottom {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Module adoption — horizontal bar chart is readable */
+  .dash-module-chart { display: block; }
+  .dash-module-list  { display: none;  }
+}
+
+/* ==========================================================================
+   lg  ≥ 768px — 6-col KPI strip, 2-col main/sidebar layout
+   ========================================================================== */
+@media (min-width: 768px) {
+  .aeos-dashboard__kpi-strip > div {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .aeos-dashboard__grid-2 {
+    /* MRR trend takes ~60%, sidebar ~40% */
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+}
+
+/* ==========================================================================
+   xl  ≥ 1024px — fine-tune proportions for widescreen
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .aeos-dashboard {
+    gap: var(--aeos-space-6);
+  }
+
+  .aeos-dashboard__grid-2 {
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    gap: var(--aeos-space-6);
+  }
+
+  .aeos-dashboard__grid-equal {
+    gap: var(--aeos-space-6);
+  }
+
+  .aeos-dashboard__grid-bottom {
+    /* activity feed wider than quick actions */
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--aeos-space-6);
+  }
+}
+
+/* ==========================================================================
+   2xl  ≥ 1280px — max content width guard (set by shell, not needed here)
+   ========================================================================== */
+@media (min-width: 1280px) {
+  .aeos-dashboard__grid-2 {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
+}
+
+/* ==========================================================================
+   xs  < 480px — single column, narrow overrides
+   ========================================================================== */
+@media (max-width: 479px) {
+  .aeos-dashboard {
+    gap: var(--aeos-space-4);
+  }
+
+  /* On very narrow screens swap bar chart for progress-bar list */
+  .dash-module-chart { display: none;  }
+  .dash-module-list  { display: block; }
+}

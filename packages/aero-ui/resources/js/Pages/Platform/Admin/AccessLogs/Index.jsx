@@ -18,7 +18,7 @@ import {
   useHRMAC,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PII_FIELDS = [
   'account_number', 'routing_number', 'tax_id', 'national_id',
@@ -119,7 +119,7 @@ export default function AccessLogsIndex({ logs, filters, pii }) {
     <IndexPageLayout
       title={pii ? 'PII Access Logs' : 'Access Logs'}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Access Logs' },
       ]}
       description={pii

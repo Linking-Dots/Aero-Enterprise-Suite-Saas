@@ -2,8 +2,8 @@
 
 namespace Aero\Notifications\Http\Controllers\Admin;
 
-use Aero\Core\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Kernel\Http\Controllers\Controller;
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Notifications\Jobs\SendEmailJob;
 use Aero\Notifications\Models\NotificationLog;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +13,7 @@ use Inertia\Response;
 
 class EmailLogController extends Controller
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditServiceInterface $audit) {}
 
     public function index(Request $request): Response
     {

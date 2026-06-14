@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Auth\Models\SocialAuthAccount;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\PlatformAuditLog;
 use Aero\Platform\Models\PlatformSetting;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -25,7 +26,7 @@ class SocialAuthTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -54,7 +55,7 @@ class SocialAuthTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     /**
@@ -149,7 +150,7 @@ class SocialAuthTest extends TestCase
             'provider_user_id' => 'google-uid-123',
             'email' => 'user@google.com',
             'name' => 'Google User',
-            'authenticatable_type' => LandlordUser::class,
+            'authenticatable_type' => User::class,
             'authenticatable_id' => $this->admin->id,
         ]);
 
@@ -164,7 +165,7 @@ class SocialAuthTest extends TestCase
             'provider' => SocialAuthAccount::PROVIDER_GITHUB,
             'provider_user_id' => 'github-uid-456',
             'email' => 'dev@github.com',
-            'authenticatable_type' => LandlordUser::class,
+            'authenticatable_type' => User::class,
             'authenticatable_id' => $this->admin->id,
         ]);
 

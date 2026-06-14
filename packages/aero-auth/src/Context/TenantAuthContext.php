@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Aero\Auth\Context;
 
 use Aero\Auth\Contracts\AuthContext;
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Illuminate\Http\Request;
 
 /**
  * TenantAuthContext
  *
  * Drives authentication for tenant users (SaaS tenant subdomains + standalone mode).
- * Uses the default 'web' session guard backed by Aero\Core\Models\User.
+ * Uses the default 'web' session guard backed by Aero\Auth\Models\User.
  *
  * Registered by AeroCoreServiceProvider:
  *   $this->app->bind(AuthContext::class, TenantAuthContext::class);

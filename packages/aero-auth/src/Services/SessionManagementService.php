@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Services;
 
-use Aero\Core\Models\User;
-use Aero\Core\Models\UserSession;
-use Aero\Core\Services\AuditService;
+use Aero\Auth\Models\User;
+use Aero\Auth\Models\UserSession;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -52,11 +52,11 @@ class SessionManagementService
      */
     protected int $inactivityTimeout = 60;
 
-    public function __construct(protected ?AuditService $auditService = null)
+    public function __construct(protected ?AuditServiceInterface $auditService = null)
     {
         $this->maxSessions = config('auth.max_sessions', 5);
         $this->inactivityTimeout = config('auth.session_timeout', 60);
-        $this->auditService = $auditService ?? app(AuditService::class);
+        $this->auditService = $auditService ?? app(AuditServiceInterface::class);
     }
 
     /**

@@ -43,7 +43,7 @@ use Aero\Platform\Http\Controllers\Admin\Infra\SecurityCenterController;
 use Aero\Platform\Http\Controllers\Admin\Infra\StatusPageController;
 use Aero\Platform\Http\Controllers\Admin\Infra\WhiteLabelController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
-use Aero\Platform\Http\Controllers\Admin\LandlordRoleController;
+use Aero\HRMAC\Http\Controllers\RoleController;
 use Aero\Platform\Http\Controllers\Admin\LandlordUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\MaintenanceWindowController;
@@ -61,6 +61,7 @@ use Aero\Platform\Http\Controllers\Admin\RefundController;
 use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\SeoController;
 use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
+use Aero\Platform\Http\Controllers\Admin\QuotaController as P3QuotaController;
 use Aero\Platform\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantController;
 use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;
@@ -388,7 +389,7 @@ Route::middleware('admin.domain')->group(function () {
         // Billing & Invoices
         Route::middleware(['hrmac:subscriptions'])->prefix('billing')->name('admin.billing.')->group(function () {
             Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Billing/Index');
+                return Inertia::render('Platform/Admin/Billing/Dashboard');
             })->middleware(['hrmac:subscriptions.tenant-subscriptions'])->name('index');
 
             Route::get('/subscriptions', function () {
@@ -508,7 +509,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         Route::middleware(['hrmac:platform-analytics'])->prefix('analytics')->name('admin.analytics.')->group(function () {
             Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Analytics/Index');
+                return Inertia::render('Platform/Admin/Analytics/Revenue');
             })->middleware(['hrmac:platform-analytics.platform-overview'])->name('index');
 
             Route::get('/revenue', function () {
@@ -594,7 +595,7 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         Route::middleware(['hrmac:platform-integrations'])->prefix('integrations')->name('admin.integrations.')->group(function () {
             Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Integrations/Index');
+                return Inertia::render('Platform/Admin/Integrations/Connectors');
             })->middleware(['hrmac:platform-integrations.global-connectors'])->name('index');
 
             Route::get('/connectors', function () {
@@ -1403,19 +1404,22 @@ Route::middleware('admin.domain')->group(function () {
                 ->delete('/{user}', [LandlordUserController::class, 'destroy'])->name('destroy');
         });
 
-        // Landlord Roles (P-4)
-        Route::prefix('roles')->name('platform.admin.roles.')->group(function () {
-            Route::middleware('hrmac:platform-users.landlord-roles.view')
-                ->get('/', [LandlordRoleController::class, 'index'])->name('index');
-            Route::middleware('hrmac:platform-users.landlord-roles.manage')->group(function () {
-                Route::post('/', [LandlordRoleController::class, 'store'])->name('store');
-                Route::put('/{role}', [LandlordRoleController::class, 'update'])->name('update');
-                Route::delete('/{role}', [LandlordRoleController::class, 'destroy'])->name('destroy');
-                Route::post('/{role}/clone', [LandlordRoleController::class, 'clone'])->name('clone');
+        // Platform roles — the SAME HRMAC RoleController the tenant side uses
+        // (context-free; runs on the central connection in this platform context).
+        // The platform shell view is supplied via a route default. Module-access for
+        // a role is edited through the HRMAC module-access surface, not a JSON picker.
+        Route::prefix('roles')->name('platform.admin.roles.')
+            ->group(function () {
+                Route::middleware('hrmac:platform-users.landlord-roles.view')
+                    ->get('/', [RoleController::class, 'index'])
+                    ->defaults('hrmac_role_view', 'Platform/Admin/Roles/Index')
+                    ->name('index');
+                Route::middleware('hrmac:platform-users.landlord-roles.manage')->group(function () {
+                    Route::post('/', [RoleController::class, 'store'])->name('store');
+                    Route::put('/{role}', [RoleController::class, 'update'])->name('update');
+                    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+                });
             });
-            Route::middleware('hrmac:platform-users.module-access.manage')
-                ->patch('/{role}/permissions', [LandlordRoleController::class, 'updatePermissions'])->name('permissions');
-        });
 
         // Module Management (P-4)
         Route::prefix('modules')->name('platform.admin.modules.')->group(function () {

@@ -24,7 +24,8 @@
             "package": "pos",
             "version": "1.0.0",
             "category": "product",
-            "description": "Point of sale system with sales processing, inventory integration, and payment management"
+            "description": "Point of sale system with sales processing, inventory integration, and payment management",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

@@ -19,7 +19,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const CONNECTOR_META = {
   stripe: {
@@ -163,7 +163,7 @@ export default function Connectors({ connectors }) {
     <IndexPageLayout
       title="Connectors"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Integrations' },
         { label: 'Connectors' },
       ]}

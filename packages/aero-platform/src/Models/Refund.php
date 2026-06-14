@@ -54,17 +54,17 @@ class Refund extends CentralModel
 
     public function requester(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'requested_by');
+        return $this->belongsTo(User::class, 'requested_by');
     }
 
     public function approver(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'approved_by');
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function processor(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'processed_by');
+        return $this->belongsTo(User::class, 'processed_by');
     }
 
     public function isApproved(): bool

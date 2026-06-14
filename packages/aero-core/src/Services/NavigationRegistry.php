@@ -42,6 +42,14 @@ class NavigationRegistry implements NavigationRegistryInterface
     protected array $selfServiceItems = [];
 
     /**
+     * Cached set of registered GET route URIs (normalised with a leading slash),
+     * used to prune nav links whose route does not resolve. Null until built.
+     *
+     * @var string[]|null
+     */
+    protected ?array $registeredGetPathsCache = null;
+
+    /**
      * Cache key prefix.
      */
     protected const CACHE_KEY = 'aero.navigation';
@@ -218,22 +226,26 @@ class NavigationRegistry implements NavigationRegistryInterface
                 ));
             }
 
-            // Flatten dashboards: if multiple dashboards, add each as individual item with section
-            if (! empty($dashboardNav['children'])) {
-                // Multiple dashboards - flatten them
-                foreach ($dashboardNav['children'] as $dashboard) {
-                    $dashboard['section'] = 'dashboards';
-                    $navigationItems[] = $dashboard;
-                }
+            // Group dashboards: if multiple dashboards, add as a parent section
+            if (! empty($dashboardNav['children']) && count($dashboardNav['children']) > 1) {
+                $dashboardNav['section'] = 'dashboards';
+                $navigationItems[] = $dashboardNav;
+            } elseif (! empty($dashboardNav['children'])) {
+                // Single dashboard - pull the first child up and add as is with section
+                $singleDash = $dashboardNav['children'][0];
+                $singleDash['section'] = 'dashboards';
+                $navigationItems[] = $singleDash;
             } else {
-                // Single dashboard - add as is with section
+                // No children? Just add the parent
                 $dashboardNav['section'] = 'dashboards';
                 $navigationItems[] = $dashboardNav;
             }
         }
 
-        // 2. Add self-service navigation (priority 2) - "My Workspace" menu
-        $selfServiceNav = $this->getSelfServiceNavigation();
+        // 2. Add self-service navigation (priority 2) - "My Workspace" menu.
+        // Self-service ("My *") pages are an employee/tenant concept; they must
+        // never appear in the platform (landlord) admin nav.
+        $selfServiceNav = $scope === 'platform' ? null : $this->getSelfServiceNavigation();
         if ($selfServiceNav) {
             // Filter self-service children by subscription
             if ($subscribedModules !== null && ! empty($selfServiceNav['children'])) {
@@ -243,12 +255,10 @@ class NavigationRegistry implements NavigationRegistryInterface
                 ));
             }
 
-            // Flatten self-service items: add each as individual item with section
+            // Group self-service items into a single parent folder
             if (! empty($selfServiceNav['children'])) {
-                foreach ($selfServiceNav['children'] as $item) {
-                    $item['section'] = 'my-workspace';
-                    $navigationItems[] = $item;
-                }
+                $selfServiceNav['section'] = 'my-workspace';
+                $navigationItems[] = $selfServiceNav;
             }
         }
 
@@ -345,10 +355,113 @@ class NavigationRegistry implements NavigationRegistryInterface
             }
         }
 
+        // Drop dead links: embedded features (no standalone page) and any leaf
+        // whose path maps to no registered GET route — e.g. modules delegated to
+        // packages that aren't installed in this deployment. Items reappear
+        // automatically once their route is registered.
+        $navigationItems = $this->pruneUnnavigable($navigationItems);
+
         // Sort by priority
         usort($navigationItems, fn ($a, $b) => ($a['priority'] ?? 999) <=> ($b['priority'] ?? 999));
 
         return $navigationItems;
+    }
+
+    /**
+     * Recursively drop navigation items that don't lead to a real page:
+     *  - type === 'feature' with no children (embedded, no standalone route)
+     *  - a leaf whose non-empty path matches no registered GET route
+     * A parent is kept when it still has resolvable children even if its own
+     * path is a non-navigable group anchor.
+     *
+     * @param  array<int, array>  $items
+     * @return array<int, array>
+     */
+    protected function pruneUnnavigable(array $items): array
+    {
+        $kept = [];
+
+        foreach ($items as $item) {
+            if (! empty($item['children']) && is_array($item['children'])) {
+                $item['children'] = $this->pruneUnnavigable($item['children']);
+            }
+
+            $hasChildren = ! empty($item['children']);
+
+            if ($hasChildren) {
+                // Group anchor: if its own path is a dead link (e.g. the group has
+                // no index route, only sub-pages), retarget it to the first
+                // surviving child so the label never 404s.
+                if (! $this->pathResolves($item['path'] ?? null)) {
+                    $item['path'] = $item['children'][0]['path'] ?? ($item['path'] ?? null);
+                }
+
+                $kept[] = $item;
+
+                continue;
+            }
+
+            // Embedded features are surfaced inline on record pages, not as menu pages.
+            if (($item['type'] ?? 'page') === 'feature') {
+                continue;
+            }
+
+            // Leaf with an unresolvable path → dead link.
+            if (! $this->pathResolves($item['path'] ?? null)) {
+                continue;
+            }
+
+            $kept[] = $item;
+        }
+
+        return array_values($kept);
+    }
+
+    /**
+     * Whether a navigation path maps to a registered GET route. External URLs
+     * and parameterised paths can't be verified statically and are kept.
+     */
+    protected function pathResolves(?string $path): bool
+    {
+        if ($path === null || $path === '' || $path === '#') {
+            return false;
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            return true;
+        }
+
+        $normalized = '/'.ltrim((string) strtok($path, '?'), '/');
+
+        if (str_contains($normalized, '{')) {
+            return true;
+        }
+
+        return in_array($normalized, $this->registeredGetPaths(), true);
+    }
+
+    /**
+     * Cached set of registered GET route URIs, normalised with a leading slash.
+     *
+     * @return string[]
+     */
+    protected function registeredGetPaths(): array
+    {
+        if ($this->registeredGetPathsCache !== null) {
+            return $this->registeredGetPathsCache;
+        }
+
+        $paths = [];
+
+        foreach (Route::getRoutes()->getRoutes() as $route) {
+            if (! in_array('GET', $route->methods(), true)) {
+                continue;
+            }
+
+            $paths[] = '/'.ltrim($route->uri(), '/');
+        }
+
+        return $this->registeredGetPathsCache = array_values(array_unique($paths));
     }
 
     /**

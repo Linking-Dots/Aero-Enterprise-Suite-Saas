@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
-import App from '../../../App.jsx';
-import useHRMAC from '../../../../hooks/useHRMAC.js';
+import App from '@/Pages/App.jsx';
+import { useHRMAC } from '@/hooks/useHRMAC';
 import {
   IndexPageLayout, DataTable, Button, HStack, VStack,
   Field, Input, Select, Textarea, Pagination, Badge,

@@ -6,19 +6,23 @@ namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Platform\Models\LandlordUser;
+use Aero\HRMAC\Services\RoleService;
+use Aero\Auth\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class LandlordUserService
 {
-    public function __construct(private AuditServiceInterface $audit) {}
+    public function __construct(
+        private AuditServiceInterface $audit,
+        private RoleService $roles,
+    ) {}
 
     public function list(array $filters = []): LengthAwarePaginator
     {
-        return LandlordUser::query()
-            ->with('landlordRoles:id,name')
+        return User::query()
+            ->with('roles:id,name')
             ->when($filters['q'] ?? null, fn ($q, $v) => $q->where(function ($w) use ($v) {
                 $w->where('name', 'like', "%{$v}%")->orWhere('email', 'like', "%{$v}%");
             }))
@@ -28,10 +32,10 @@ class LandlordUserService
             ->withQueryString();
     }
 
-    public function create(array $data): LandlordUser
+    public function create(array $data): User
     {
         return DB::transaction(function () use ($data) {
-            $user = LandlordUser::create([
+            $user = User::create([
                 'user_name' => $data['user_name'] ?? str($data['email'])->before('@'),
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -41,7 +45,7 @@ class LandlordUserService
             ]);
 
             if (! empty($data['role_ids'])) {
-                $user->landlordRoles()->sync($data['role_ids']);
+                $this->roles->assignToUser($user, $data['role_ids']);
             }
 
             $this->audit->log(
@@ -55,7 +59,7 @@ class LandlordUserService
         });
     }
 
-    public function update(LandlordUser $user, array $data): LandlordUser
+    public function update(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
             $payload = collect($data)->only(['name', 'email', 'active', 'timezone'])->toArray();
@@ -67,7 +71,7 @@ class LandlordUserService
             $user->update($payload);
 
             if (array_key_exists('role_ids', $data)) {
-                $user->landlordRoles()->sync($data['role_ids'] ?? []);
+                $this->roles->assignToUser($user, $data['role_ids'] ?? []);
             }
 
             $this->audit->log(
@@ -81,7 +85,7 @@ class LandlordUserService
         });
     }
 
-    public function delete(LandlordUser $user): void
+    public function delete(User $user): void
     {
         DB::transaction(function () use ($user) {
             $email = $user->email;
@@ -96,7 +100,7 @@ class LandlordUserService
         });
     }
 
-    public function toggleStatus(LandlordUser $user): LandlordUser
+    public function toggleStatus(User $user): User
     {
         return DB::transaction(function () use ($user) {
             $user->update(['active' => ! $user->active]);

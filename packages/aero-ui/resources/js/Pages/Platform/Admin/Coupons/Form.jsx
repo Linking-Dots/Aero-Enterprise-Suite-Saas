@@ -10,7 +10,7 @@ import {
   Alert,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TYPE_OPTIONS = [
   { value: 'percent', label: 'Percent (%)' },
@@ -68,7 +68,7 @@ export default function CouponForm({ coupon }) {
     <IndexPageLayout
       title={isEdit ? 'Edit Coupon' : 'New Coupon'}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Coupons', href: route('platform.admin.coupons.index') },
         { label: isEdit ? 'Edit' : 'New' },
       ]}

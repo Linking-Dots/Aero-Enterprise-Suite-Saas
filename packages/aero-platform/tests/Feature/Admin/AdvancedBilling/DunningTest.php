@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Platform\Models\DunningRule;
 use Aero\Platform\Models\Invoice;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Services\AdvancedBilling\DunningService;
@@ -30,7 +31,7 @@ class DunningTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -59,7 +60,7 @@ class DunningTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_retry_returns_invoice_and_writes_audit(): void

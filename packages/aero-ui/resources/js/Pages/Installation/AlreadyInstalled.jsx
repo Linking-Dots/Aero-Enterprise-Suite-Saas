@@ -35,7 +35,7 @@ export default function AlreadyInstalled({ mode, appUrl, installedAt, version })
         {installedAt && <div className="il-review-row"><span className="il-review-key">Installed At</span><span className="il-review-val">{new Date(installedAt).toLocaleString()}</span></div>}
       </Box>
 
-      <a href={appUrl ?? '/login'} className="aeos-btn aeos-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <a href={route('login')} className="aeos-btn aeos-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
         Go to Application
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
           <path d="M4.5 12h15m0 0l-6.75 6.75M19.5 12l-6.75-6.75"/>

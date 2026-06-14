@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['web', 'tenant', 'auth', 'role:admin'])->group(function () {
+Route::middleware(['web', 'tenant', 'auth'])->group(function () {
     Route::prefix('admin/dms')->name('admin.dms.')->group(function () {
         // DMS settings
         Route::get('/settings', function () {

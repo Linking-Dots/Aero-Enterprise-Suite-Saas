@@ -26,7 +26,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const CATEGORY_OPTIONS = [
   { value: 'system',        label: 'System' },

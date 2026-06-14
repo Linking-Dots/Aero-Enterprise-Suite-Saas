@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: 'investigating', label: 'Investigating' },
@@ -213,7 +213,7 @@ export default function Incidents({ incidents, components }) {
     <IndexPageLayout
       title="Incidents"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Status & Incidents', href: route('platform.admin.status.index') },
         { label: 'Incidents' },
       ]}

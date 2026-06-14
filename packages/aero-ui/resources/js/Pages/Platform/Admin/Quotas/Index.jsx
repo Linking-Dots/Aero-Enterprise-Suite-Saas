@@ -22,7 +22,7 @@ import {
   useHRMAC,
   Pagination,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const RESOURCE_OPTIONS = [
   { value: 'storage_gb', label: 'storage_gb' },

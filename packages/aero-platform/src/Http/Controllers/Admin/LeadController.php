@@ -37,7 +37,7 @@ class LeadController extends Controller
         $leads = $this->leadService->getPaginatedLeads($filters, $perPage);
         $stats = $this->leadService->getLeadStats($request->input('period', 'month'));
 
-        return Inertia::render('Admin/Pages/Marketing/Leads/Index', [
+        return Inertia::render('Platform/Admin/Leads/Index', [
             'title' => 'Lead Management',
             'leads' => $leads,
             'stats' => $stats,
@@ -70,7 +70,7 @@ class LeadController extends Controller
     {
         $lead->load('assignee', 'tenant');
 
-        return Inertia::render('Admin/Pages/Marketing/Leads/Show', [
+        return Inertia::render('Platform/Admin/Leads/Show', [
             'title' => 'Lead Details',
             'lead' => $lead,
         ]);
@@ -149,7 +149,7 @@ class LeadController extends Controller
     public function assign(Request $request, ProspectLead $lead): JsonResponse
     {
         $validated = $request->validate([
-            'user_id' => 'required|integer|exists:landlord_users,id',
+            'user_id' => 'required|integer|exists:central.users,id',
         ]);
 
         $this->leadService->assignLead($lead, $validated['user_id']);
@@ -169,7 +169,7 @@ class LeadController extends Controller
         $validated = $request->validate([
             'lead_ids' => 'required|array|min:1',
             'lead_ids.*' => 'integer|exists:prospect_leads,id',
-            'user_id' => 'required|integer|exists:landlord_users,id',
+            'user_id' => 'required|integer|exists:central.users,id',
         ]);
 
         $count = $this->leadService->bulkAssignLeads($validated['lead_ids'], $validated['user_id']);

@@ -146,7 +146,7 @@ class AdminDashboardService
             return [
                 'total_users' => User::count(),
                 'active_users' => User::where('is_active', true)->count(),
-                'total_roles' => \Spatie\Permission\Models\Role::count(),
+                'total_roles' => \Aero\HRMAC\Models\Role::count(),
                 'modules_enabled' => Module::where('is_active', true)->count(),
             ];
         } catch (\Throwable $e) {

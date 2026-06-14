@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const EVENT_OPTIONS = [
   { value: '',                    label: 'All Security Events' },
@@ -167,7 +167,7 @@ export default function SecurityAudit({ logs, filters, eventTypes }) {
     <IndexPageLayout
       title="Security Audit Log"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Platform Security', href: route('platform.admin.security.dashboard') },
         { label: 'Audit Log' },
       ]}

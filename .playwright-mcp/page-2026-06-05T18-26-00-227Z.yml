@@ -1,0 +1,155 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "HRM Dashboard" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employee Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /dashboard
+      - link "My Profile" [ref=e14] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e15] [cursor=pointer]:
+        - /url: /notifications
+      - link "My Dashboard" [ref=e16] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Attendance" [ref=e17] [cursor=pointer]:
+        - /url: /hrm/attendance-employee
+      - link "My Leaves" [ref=e18] [cursor=pointer]:
+        - /url: /hrm/leaves-employee
+      - link "My Time-Off" [ref=e19] [cursor=pointer]:
+        - /url: /hrm/self-service/time-off
+      - link "My Payslips" [ref=e20] [cursor=pointer]:
+        - /url: /hrm/self-service/payslips
+      - link "My Expenses" [ref=e21] [cursor=pointer]:
+        - /url: /hrm/my-expenses
+      - link "My Documents" [ref=e22] [cursor=pointer]:
+        - /url: /hrm/self-service/documents
+      - link "My Benefits" [ref=e23] [cursor=pointer]:
+        - /url: /hrm/self-service/benefits
+      - link "My Trainings" [ref=e24] [cursor=pointer]:
+        - /url: /hrm/self-service/trainings
+      - link "My Performance" [ref=e25] [cursor=pointer]:
+        - /url: /hrm/self-service/performance
+      - link "My Goals" [ref=e26] [cursor=pointer]:
+        - /url: /hrm/goals
+      - link "My Career Path" [ref=e27] [cursor=pointer]:
+        - /url: /hrm/self-service/career-path
+      - link "My 360° Feedback" [ref=e28] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Tenants" [ref=e30] [cursor=pointer]:
+        - /url: /tenants
+      - link "Onboarding" [ref=e31] [cursor=pointer]:
+        - /url: /onboarding
+      - link "Plans" [ref=e32] [cursor=pointer]:
+        - /url: /plans
+      - link "Quota Management" [ref=e33] [cursor=pointer]:
+        - /url: /quotas
+      - link "Billing" [ref=e34] [cursor=pointer]:
+        - /url: /billing
+      - link "Modules" [ref=e35] [cursor=pointer]:
+        - /url: /modules
+      - link "Error Logs" [ref=e36] [cursor=pointer]:
+        - /url: /error-logs
+      - link "Platform Users" [ref=e37] [cursor=pointer]:
+        - /url: /users
+      - link "Integrations" [ref=e38] [cursor=pointer]:
+        - /url: /integrations
+      - link "Settings" [ref=e39] [cursor=pointer]:
+        - /url: /settings
+      - link "Developer" [ref=e40] [cursor=pointer]:
+        - /url: /developer
+      - link "Audit Logs" [ref=e41] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Access Logs" [ref=e42] [cursor=pointer]:
+        - /url: /access-logs
+      - link "Analytics" [ref=e43] [cursor=pointer]:
+        - /url: /analytics
+      - link "SEO" [ref=e44] [cursor=pointer]:
+        - /url: /seo
+      - link "Leads" [ref=e45] [cursor=pointer]:
+        - /url: /leads
+      - link "Newsletter" [ref=e46] [cursor=pointer]:
+        - /url: /newsletter
+      - link "Affiliates" [ref=e47] [cursor=pointer]:
+        - /url: /affiliates
+      - link "Social Login" [ref=e48] [cursor=pointer]:
+        - /url: /social-auth
+      - link "Reseller / Channel Partners" [ref=e49] [cursor=pointer]:
+        - /url: /partners
+      - link "White-Label per Tenant" [ref=e50] [cursor=pointer]:
+        - /url: /white-label/domains
+      - link "Feature Flags" [ref=e51] [cursor=pointer]:
+        - /url: /feature-flags
+      - link "White-Label" [ref=e52] [cursor=pointer]:
+        - /url: /white-label/domains
+      - link "Backup & Restore" [ref=e53] [cursor=pointer]:
+        - /url: /backup
+      - link "Status Page & Incidents" [ref=e54] [cursor=pointer]:
+        - /url: /status
+      - link "Status & Incidents" [ref=e55] [cursor=pointer]:
+        - /url: /status
+      - link "Customer Success" [ref=e56] [cursor=pointer]:
+        - /url: /customer-success/health
+      - link "Platform Security" [ref=e57] [cursor=pointer]:
+        - /url: /security/sessions
+      - link "Help Center" [ref=e58] [cursor=pointer]:
+        - /url: /help-center/articles
+      - link "Security Center" [ref=e59] [cursor=pointer]:
+        - /url: /security-center
+      - link "Security Center" [ref=e60] [cursor=pointer]:
+        - /url: /security-center
+      - link "API Gateway" [ref=e61] [cursor=pointer]:
+        - /url: /api-gateway/rate-limits
+      - link "Resource Provisioning" [ref=e62] [cursor=pointer]:
+        - /url: /provisioning
+      - link "Secrets Management" [ref=e63] [cursor=pointer]:
+        - /url: /secrets/kms
+      - link "Observability" [ref=e64] [cursor=pointer]:
+        - /url: /observability/apm
+      - link "Disaster Recovery" [ref=e65] [cursor=pointer]:
+        - /url: /disaster-recovery/runbooks
+      - link "Enterprise SCIM Provisioning" [ref=e66] [cursor=pointer]:
+        - /url: /enterprise-scim/endpoints
+      - link "Contract Management" [ref=e67] [cursor=pointer]:
+        - /url: /contracts
+      - link "Release Management" [ref=e68] [cursor=pointer]:
+        - /url: /releases
+      - link "License Management" [ref=e69] [cursor=pointer]:
+        - /url: /licenses
+      - link "Access Logs" [ref=e70] [cursor=pointer]:
+        - /url: /access-logs
+      - link "Product Analytics" [ref=e71] [cursor=pointer]:
+        - /url: /product-analytics/features
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - button "Expand sidebar" [ref=e74] [cursor=pointer]:
+          - img [ref=e75]
+        - generic [ref=e77]: Quota Management
+        - generic [ref=e78]:
+          - button "Notifications" [ref=e79] [cursor=pointer]:
+            - img [ref=e81]
+          - generic [ref=e83]:
+            - generic [ref=e85]: "?"
+            - generic [ref=e87]: UAT Landlord
+            - button "Sign out" [ref=e88] [cursor=pointer]:
+              - img [ref=e90]
+      - main [ref=e92]:
+        - generic [ref=e95]:
+          - navigation "Breadcrumb" [ref=e96]:
+            - link "Platform Admin" [ref=e98] [cursor=pointer]:
+              - /url: https://admin.aeos365.test/dashboard
+            - generic [ref=e99]:
+              - img [ref=e101]
+              - generic [ref=e103]: Quotas
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - heading "Quota Management" [level=1] [ref=e107]
+              - paragraph [ref=e108]: Per-tenant quota overrides and enforcement analytics.
+            - button "Enforcement Settings" [ref=e111] [cursor=pointer]:
+              - generic [ref=e112]: Enforcement Settings
+  - button "Open Theme Studio" [ref=e113] [cursor=pointer]:
+    - img [ref=e114]

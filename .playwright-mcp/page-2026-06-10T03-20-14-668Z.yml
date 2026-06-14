@@ -1,0 +1,107 @@
+- generic [active] [ref=e1]:
+  - iframe [ref=e115]:
+    - generic [active] [ref=f3e1]:
+      - text: All Inertia requests must receive a valid Inertia response, however a plain JSON response was received.
+      - separator [ref=f3e2]
+      - text: "{\"success\":true}"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - link "aeos365 home" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e7]
+        - generic [ref=e10]: aeos365
+      - generic [ref=e11]:
+        - generic [ref=e12]: SaaS Mode
+        - button "Switch to dark mode" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+    - navigation "Installation progress" [ref=e16]:
+      - list [ref=e17]:
+        - listitem [ref=e18]:
+          - 'generic "Completed: Requirements" [ref=e19]':
+            - img [ref=e20]
+          - generic [ref=e22]: Requirements
+        - listitem [ref=e24]:
+          - 'generic "Completed: Database" [ref=e25]':
+            - img [ref=e26]
+          - generic [ref=e28]: Database
+        - listitem [ref=e30]:
+          - 'generic "Completed: Settings" [ref=e31]':
+            - img [ref=e32]
+          - generic [ref=e34]: Settings
+        - listitem [ref=e36]:
+          - 'generic "Current: Admin" [ref=e37]':
+            - generic [ref=e38]: "4"
+          - generic [ref=e39]: Admin
+        - listitem [ref=e41]:
+          - 'generic "Upcoming: Review" [ref=e42]':
+            - generic [ref=e43]: "5"
+          - generic [ref=e44]: Review
+        - listitem [ref=e46]:
+          - 'generic "Upcoming: Install" [ref=e47]':
+            - generic [ref=e48]: "6"
+          - generic [ref=e49]: Install
+        - listitem [ref=e51]:
+          - 'generic "Upcoming: Complete" [ref=e52]':
+            - generic [ref=e53]: "7"
+          - generic [ref=e54]: Complete
+      - paragraph [ref=e55]:
+        - text: Step 4 of 7
+        - generic [ref=e56]: · Admin
+      - 'progressbar "Installation progress: 57%" [ref=e57]'
+    - main [ref=e59]:
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - heading "Administrator Account" [level=1] [ref=e63]
+          - paragraph [ref=e64]: Create the super-administrator account with full access to all system settings.
+        - generic [ref=e65]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: First Name *
+            - generic [ref=e69]:
+              - generic:
+                - img
+              - textbox "First Name *" [ref=e70]: Test
+          - generic [ref=e72]:
+            - generic [ref=e73]: Last Name *
+            - generic [ref=e74]:
+              - generic:
+                - img
+              - textbox "Last Name *" [ref=e75]: Admin
+        - generic [ref=e76]:
+          - generic [ref=e77]: Email Address *
+          - generic [ref=e78]:
+            - generic:
+              - img
+            - textbox "Email Address *" [ref=e79]:
+              - /placeholder: admin@company.com
+              - text: admin@aeos365.test
+        - generic [ref=e80]:
+          - generic [ref=e81]: Password *
+          - generic [ref=e82]:
+            - generic:
+              - img
+            - textbox "Password *" [ref=e83]: K3TPmKP@DpbP&PDAnhe2
+          - generic [ref=e84]: Min. 8 characters, mixed case, numbers, and symbols.
+        - generic [ref=e112]: "Password strength: Strong"
+        - generic [ref=e85]:
+          - button "Generate strong password" [ref=e86] [cursor=pointer]:
+            - img [ref=e88]
+            - generic [ref=e90]: Generate strong password
+          - button "Hide" [ref=e113] [cursor=pointer]:
+            - generic [ref=e92]: Hide
+        - generic [ref=e93]:
+          - generic [ref=e94]: Confirm Password *
+          - generic [ref=e95]:
+            - generic:
+              - img
+            - textbox "Confirm Password *" [ref=e96]: K3TPmKP@DpbP&PDAnhe2
+        - button "Save Account" [ref=e98] [cursor=pointer]:
+          - generic [ref=e99]: Save Account
+        - generic [ref=e100]:
+          - button "Back" [ref=e101] [cursor=pointer]:
+            - img [ref=e103]
+            - generic [ref=e105]: Back
+          - button "Continue" [disabled]:
+            - generic: Continue
+            - generic:
+              - img
+    - contentinfo [ref=e106]: aeos365 · Setup Wizard

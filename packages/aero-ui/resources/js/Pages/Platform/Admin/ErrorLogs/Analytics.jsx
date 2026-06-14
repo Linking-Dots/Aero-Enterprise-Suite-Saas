@@ -14,7 +14,7 @@ import {
   Eyebrow,
   KPI,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function ErrorLogAnalytics({ analytics }) {
   const openCount     = analytics?.open_count     ?? 0;
@@ -64,7 +64,7 @@ export default function ErrorLogAnalytics({ analytics }) {
     <IndexPageLayout
       title="Error Analytics"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Error Logs', href: route('platform.admin.error-logs.index') },
         { label: 'Analytics' },
       ]}

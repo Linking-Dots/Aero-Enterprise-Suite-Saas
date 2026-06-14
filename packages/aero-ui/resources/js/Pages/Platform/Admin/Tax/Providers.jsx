@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PROVIDER_META = {
   stripe_tax: {
@@ -167,7 +167,7 @@ export default function TaxProviders({ providers }) {
     <IndexPageLayout
       title="Tax Providers"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tax Rates', href: route('platform.admin.tax.rates.index') },
         { label: 'Providers' },
       ]}

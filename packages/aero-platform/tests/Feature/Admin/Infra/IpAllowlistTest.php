@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\Infra;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Infra\StaffIpAllowlist;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\Infra\PlatformSecurityService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +19,7 @@ class IpAllowlistTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected PlatformSecurityService $svc;
 
@@ -50,7 +51,7 @@ class IpAllowlistTest extends TestCase
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
 
         $audit = $this->createMock(AuditServiceInterface::class);
         $this->svc = new PlatformSecurityService($audit);

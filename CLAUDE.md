@@ -24,9 +24,10 @@ Phase 0 ✅ Done · Phase 1 ✅ Done (HRM H-1–H-18) · Phase 2 ✅ Done (P-1�
 | Transactions | All writes in `DB::transaction()` |
 | Frontend | All components from `@aero/ui` · No inline `style={}` · `useForm()` + `router.*` from Inertia v2 |
 | Dual-mode | Every feature works in SaaS + Standalone — no hardcoded central DB config in feature packages |
+| Doc currency | NEVER write version-sensitive framework code from memory. Resolve current API via **Context7 MCP** (`.mcp.json`), else `WebFetch` the canonical URL in `docs/standards/tech-versions.md`, else state the uncertainty. Pinned: Laravel **12.x** (NOT 13), React **18** (NOT 19), Inertia **v2** (`router.*`, not v1 `Inertia.*`), HeroUI (NOT NextUI), Tailwind **v4**, Zod **4**. |
 
 ## Standards
-`docs/standards/`: `inertia-standard.md` · `hrmac-convention.md` · `done-definition.md` · `test-standard.md` · `security-architecture.md` · `audit-standard.md`
+`docs/standards/`: `tech-versions.md` · `inertia-standard.md` · `hrmac-convention.md` · `done-definition.md` · `test-standard.md` · `security-architecture.md` · `audit-standard.md`
 
 ## Agents
 | Task | Agent |

@@ -15,7 +15,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const SCOPE_OPTIONS = [
   { value: 'openid',  label: 'openid'  },

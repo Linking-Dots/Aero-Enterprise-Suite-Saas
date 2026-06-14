@@ -1,0 +1,88 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — Shell Dimension Tokens  (Overhaul v2)
+   TOKEN_FROZEN — All values must reference base.css scale tokens.
+   No hardcoded px unless it is a root constant (e.g. 56px rail).
+
+   How to override:
+   ─────────────────
+   Theme files or data-density / data-radius attributes on <body> automatically
+   cascade. For per-shell overrides, scope to [data-aeos-shell="<variant>"].
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── Sidebar shell ────────────────────────────────────────────────────── */
+  --aeos-shell-sidebar-w:          56px;                    /* collapsed icon rail */
+  --aeos-shell-sidebar-w-exp:      240px;                   /* expanded labeled sidebar */
+  --aeos-shell-sidebar-brand-h:    var(--aeos-space-12);    /* 48px brand area */
+  --aeos-sidebar-glass-blur:       12px;                    /* backdrop blur strength */
+
+  /* ── Top nav shell ────────────────────────────────────────────────────── */
+  --aeos-shell-topnav-h:           var(--aeos-h-topbar);   /* density-aware: 48px default */
+
+  /* ── Floating / inset pill shell ──────────────────────────────────────── */
+  --aeos-shell-floating-w:         56px;                    /* collapsed pill width */
+  --aeos-shell-floating-w-exp:     220px;                   /* expanded floating sidebar */
+  --aeos-shell-floating-gutter:    var(--aeos-space-4);     /* all-around padding (16px) */
+  --aeos-shell-floating-gap:       var(--aeos-gap-card);    /* gap between pill and content */
+  --aeos-floating-glass-blur:      20px;                    /* pill backdrop blur strength */
+
+  /* ── Command (3-panel) shell ──────────────────────────────────────────── */
+  --aeos-shell-cmd-nav-w:          180px;                   /* left nav panel default */
+  --aeos-shell-cmd-nav-w-md:       160px;                   /* left nav at ≤900px breakpoint */
+  --aeos-shell-rail-w:             240px;                   /* right context rail default */
+  --aeos-shell-rail-w-min:         200px;                   /* minimum JS-resizable width */
+  --aeos-shell-rail-w-max:         480px;                   /* maximum JS-resizable width */
+
+  /* ── Shared topbar blur ───────────────────────────────────────────────── */
+  --aeos-shell-topbar-blur:        0px;                     /* default: off; shell sets per variant */
+
+  /* ── Page layout ──────────────────────────────────────────────────────── */
+  --aeos-page-max-w:               1400px;
+  --aeos-page-pad-y:               var(--aeos-space-6);    /* 24px */
+  --aeos-page-pad-x:               var(--aeos-space-6);    /* 24px */
+
+}
+
+/* ── Density: compact — shrink shell spacing by 0.85× ────────────────────── */
+body[data-density="compact"] {
+  --aeos-shell-sidebar-w:          48px;
+  --aeos-shell-sidebar-w-exp:      220px;
+  --aeos-shell-floating-w:         44px;
+  --aeos-shell-floating-gutter:    var(--aeos-space-3);    /* 12px */
+  --aeos-shell-cmd-nav-w:          160px;
+  --aeos-shell-rail-w:             220px;
+  --aeos-page-pad-y:               var(--aeos-space-4);    /* 16px */
+  --aeos-page-pad-x:               var(--aeos-space-4);
+}
+
+/* ── Density: spacious — expand shell spacing by 1.15× ───────────────────── */
+body[data-density="spacious"] {
+  --aeos-shell-sidebar-w:          64px;
+  --aeos-shell-sidebar-w-exp:      260px;
+  --aeos-shell-floating-w:         64px;
+  --aeos-shell-floating-gutter:    var(--aeos-space-6);    /* 24px */
+  --aeos-shell-floating-gap:       var(--aeos-space-6);
+  --aeos-shell-cmd-nav-w:          200px;
+  --aeos-shell-rail-w:             260px;
+  --aeos-page-pad-y:               var(--aeos-space-8);    /* 32px */
+  --aeos-page-pad-x:               var(--aeos-space-8);
+}
+
+/* ── Wide desktop (≥ 1600px): unlock wider expanded widths ───────────────── */
+@media (min-width: 1600px) {
+  :root {
+    --aeos-shell-sidebar-w-exp:    260px;
+    --aeos-shell-floating-w-exp:   240px;
+    --aeos-shell-cmd-nav-w:        200px;
+    --aeos-shell-rail-w:           280px;
+    --aeos-page-max-w:             1600px;
+  }
+}
+
+/* ── Ultra-wide (≥ 1920px): max-out page container ───────────────────────── */
+@media (min-width: 1920px) {
+  :root {
+    --aeos-page-max-w:             1800px;
+  }
+}

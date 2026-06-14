@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const SESSION_INTENT = {
   active:   'success',
@@ -241,7 +241,7 @@ export default function SecurityDashboard({
     <IndexPageLayout
       title="Security Dashboard"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Platform Security' },
         { label: 'Dashboard' },
       ]}

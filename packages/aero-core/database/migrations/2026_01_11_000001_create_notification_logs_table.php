@@ -14,6 +14,17 @@ class CreateNotificationLogsTable extends Migration
      */
     public function up(): void
     {
+        // The canonical notification_logs table is created by
+        // aero-notifications (2024_01_01_000000) — the only NotificationLog
+        // model (Aero\Notifications\Models\NotificationLog) uses that schema.
+        // This (unused) duplicate must defer when that table already exists,
+        // matching the guard aero-platform's create_notification_logs migration
+        // already uses. Without this guard `migrate:fresh` collides in any host
+        // that loads both aero-core and aero-notifications.
+        if (Schema::hasTable('notification_logs')) {
+            return;
+        }
+
         Schema::create('notification_logs', function (Blueprint $table) {
             $table->id();
 

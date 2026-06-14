@@ -26,10 +26,12 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('type')->default('page')->comment('page, widget, api');
             $table->string('route')->nullable();
+            $table->integer('priority')->default(100);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->unique(['module_id', 'sub_module_id', 'code']);
+            $table->index(['type', 'is_active']);
         });
     }
 

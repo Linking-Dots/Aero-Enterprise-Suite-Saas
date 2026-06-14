@@ -14,7 +14,7 @@ import {
   TextField,
   Switch,
 } from '@aero/ui';
-import App from '../../App';
+import App from '@/Pages/App.jsx';
 
 export default function RestoreIndex({ title, restore_points, filters }) {
   const { toast } = useToast();

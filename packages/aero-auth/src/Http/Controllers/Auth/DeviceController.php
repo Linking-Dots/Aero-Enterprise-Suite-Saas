@@ -4,8 +4,8 @@ namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
 use Aero\Auth\Services\DeviceAuthService;
-use Aero\Core\Models\User;
-use Aero\Core\Services\AuditService;
+use Aero\Auth\Models\User;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -14,7 +14,7 @@ class DeviceController extends Controller
 {
     public function __construct(
         protected DeviceAuthService $deviceAuthService,
-        protected AuditService $auditService
+        protected AuditServiceInterface $auditService
     ) {}
 
     /**

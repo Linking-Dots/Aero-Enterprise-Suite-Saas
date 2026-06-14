@@ -19,7 +19,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: '',          label: 'All Statuses' },
@@ -229,7 +229,7 @@ export default function AffiliatesIndex({ affiliates, filters }) {
     <IndexPageLayout
       title="Affiliates"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Affiliates' },
       ]}
       description="Manage affiliate accounts, commissions, and payout requests."

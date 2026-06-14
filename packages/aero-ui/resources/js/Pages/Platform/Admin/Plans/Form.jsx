@@ -12,7 +12,7 @@ import {
   CardBody,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function PlansForm({ plan }) {
   const toast   = useToast();
@@ -56,7 +56,7 @@ export default function PlansForm({ plan }) {
     <FormPageLayout
       title={isEdit ? `Edit Plan: ${plan.name}` : 'New Plan'}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Plans', href: route('platform.admin.plans.index') },
         { label: isEdit ? plan.name : 'New' },
       ]}

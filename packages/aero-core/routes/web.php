@@ -13,10 +13,10 @@ use Aero\Core\Http\Controllers\Admin\CoreUserController;
 use Aero\Core\Http\Controllers\Admin\ExportImportController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
 use Aero\Core\Http\Controllers\Admin\MentionsController;
-use Aero\Core\Http\Controllers\Admin\ModuleController;
+use Aero\HRMAC\Http\Controllers\ModuleController;
 use Aero\Core\Http\Controllers\Admin\RestoreController;
 use Aero\Core\Http\Controllers\Admin\RetentionPolicyController;
-use Aero\Core\Http\Controllers\Admin\RoleController;
+use Aero\HRMAC\Http\Controllers\RoleController;
 use Aero\Core\Http\Controllers\Admin\SavedViewController;
 use Aero\Core\Http\Controllers\Admin\SystemHealthController;
 use Aero\Core\Http\Controllers\Admin\TagController;
@@ -235,7 +235,7 @@ if (class_exists('Aero\Platform\Http\Controllers\TenantOnboardingController')) {
 // ============================================================================
 if (class_exists('Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionController')) {
     $subscriptionController = 'Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionController';
-    Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('subscription')->name('tenant.subscription.')->group(function () use ($subscriptionController) {
+    Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('subscription')->name('core.subscription.')->group(function () use ($subscriptionController) {
         Route::get('/', [$subscriptionController, 'index'])->name('index')->middleware('hrmac:core.subscription.plans.view');
         Route::get('/plans', [$subscriptionController, 'plans'])->name('plans')->middleware('hrmac:core.subscription.plans.view');
         Route::post('/change-plan', [$subscriptionController, 'changePlan'])->name('change-plan')->middleware('hrmac:core.subscription.plans.upgrade');
@@ -286,10 +286,10 @@ Route::middleware('auth:web')->group(function () {
     Route::middleware($dashboardMiddleware)->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('core.dashboard');
         Route::get('dashboard/stats', [DashboardController::class, 'stats'])->name('core.dashboard.stats');
+        // Widget data refresh — fetches a single widget payload by key (JSON)
         Route::get('dashboard/widget/{widgetKey}', [DashboardController::class, 'widgetData'])->name('core.dashboard.widget');
+        // Activity chart period switching — no page reload (JSON)
         Route::get('dashboard/user-activity', [DashboardController::class, 'userActivity'])->name('core.dashboard.user-activity');
-        Route::post('dashboard/announcements', [DashboardController::class, 'storeAnnouncement'])->name('core.dashboard.announcements.store');
-        Route::delete('dashboard/announcements/{announcement}', [DashboardController::class, 'destroyAnnouncement'])->name('core.dashboard.announcements.destroy');
         Route::post('dashboard/announcements/{announcement}/dismiss', [DashboardController::class, 'dismissAnnouncement'])->name('core.dashboard.announcements.dismiss');
     });
 
@@ -357,30 +357,6 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/impersonation/stop', [CoreUserController::class, 'stopImpersonation'])->name('core.impersonation.stop');
 
     // Device management routes are registered by AeroAuthServiceProvider.
-
-    // ========================================================================
-    // ROLE & PERMISSIONS MANAGEMENT
-    // ========================================================================
-    // CRITICAL: Authorization middleware added for security
-    // Only users with 'manage-roles' capability can access these routes
-    Route::prefix('api/roles')->name('core.api.roles.')->middleware('hrmac:core.roles_permissions.roles.view')->group(function () {
-        // View
-        Route::get('/', [RoleController::class, 'index'])->name('index');
-        Route::get('/export', [RoleController::class, 'exportRoles'])->name('export');
-        Route::get('/permissions', [RoleController::class, 'getRolesAndPermissions'])->name('permissions');
-        Route::get('/refresh', [RoleController::class, 'refreshData'])->name('refresh');
-
-        // Create
-        Route::post('/', [RoleController::class, 'storeRole'])->name('store');
-
-        // Update
-        Route::put('/{id}', [RoleController::class, 'updateRole'])->name('update');
-        Route::patch('/{id}/toggle-status', [RoleController::class, 'toggleRoleStatus'])->name('toggle-status');
-        Route::post('/assign-user', [RoleController::class, 'assignRolesToUser'])->name('assign-user');
-
-        // Delete
-        Route::delete('/{id}', [RoleController::class, 'deleteRole'])->name('delete');
-    });
 
     // ========================================================================
     // MODULE REGISTRY MANAGEMENT
@@ -931,17 +907,6 @@ Route::middleware('auth:web')->group(function () {
                 ->get());
         })->name('users.managers.list');
 
-        // Role Management API (Merged from api.php)
-        Route::prefix('roles')->name('roles.')->group(function () {
-            Route::get('/', [RoleController::class, 'index'])->name('index');
-            Route::post('/', [RoleController::class, 'storeRole'])->name('store');
-            Route::put('/{id}', [RoleController::class, 'updateRole'])->name('update');
-            Route::delete('/{id}', [RoleController::class, 'deleteRole'])->name('delete');
-            Route::get('/permissions', [RoleController::class, 'getRolesAndPermissions'])->name('permissions');
-            Route::post('/assign-user', [RoleController::class, 'assignRolesToUser'])->name('assign-user');
-            Route::get('/refresh', [RoleController::class, 'refreshData'])->name('refresh');
-            Route::get('/export', [RoleController::class, 'exportRoles'])->name('export');
-        });
     });
 
     // ========================================================================
@@ -1218,31 +1183,26 @@ Route::middleware('auth:web')->group(function () {
     });
 
     // ========================================================================
-    // ROLES — Inertia/RedirectResponse routes (CA-1)
-    // These complement the existing JSON API role routes above.
+    // ROLES — HRMAC role management (controller lives in aero-hrmac)
+    // Single canonical surface; create/edit/delete/assign happen inline from the
+    // index page. Authorization via HRMAC module-access middleware.
     // ========================================================================
     Route::prefix('roles')->name('core.roles.')->group(function () {
         Route::get('/', [RoleController::class, 'index'])
             ->name('index')
             ->middleware('hrmac:core.roles_permissions.roles.view');
-        Route::get('/create', [RoleController::class, 'create'])
-            ->name('create')
-            ->middleware('hrmac:core.roles_permissions.roles.create');
         Route::post('/', [RoleController::class, 'store'])
             ->name('store')
             ->middleware('hrmac:core.roles_permissions.roles.create');
-        Route::get('/{role}/edit', [RoleController::class, 'edit'])
-            ->name('edit')
-            ->middleware('hrmac:core.roles_permissions.roles.edit');
         Route::put('/{role}', [RoleController::class, 'update'])
             ->name('update')
             ->middleware('hrmac:core.roles_permissions.roles.edit');
         Route::delete('/{role}', [RoleController::class, 'destroy'])
             ->name('destroy')
             ->middleware('hrmac:core.roles_permissions.roles.delete');
-        Route::post('/{role}/sync-permissions', [RoleController::class, 'syncPermissions'])
-            ->name('sync-permissions')
-            ->middleware('hrmac:core.roles_permissions.roles.permissions');
+        Route::post('/assign-user', [RoleController::class, 'assignUser'])
+            ->name('assign-user')
+            ->middleware('hrmac:core.roles_permissions.roles.assign');
     });
 
     // ========================================================================

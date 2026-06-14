@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Aero\HRM\Database\Factories\EmployeeFactory;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;

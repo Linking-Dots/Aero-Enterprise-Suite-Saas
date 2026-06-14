@@ -1,201 +1,286 @@
-/* ══════════════════════════════════════════════════════════════
-   aeos365 — Shell: Classic Sidebar (Phase 2)
-   Default: 56px icon-only rail
-   Expanded: 240px with labels (add .sidebar-expanded to host)
-   Usage: <div data-aeos-shell="sidebar">
-            <div class="aeos-shell-sidebar">...</div>
-            <div class="aeos-shell-main">
-              <div class="aeos-shell-topbar">...</div>
-              <div class="aeos-shell-content">...</div>
-            </div>
-          </div>
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — Shell: Classic Sidebar  (Overhaul v2)
+   ──────────────────────────────────────────────────────────────────────────
+   Default:  56px icon-only sticky rail  →  [data-aeos-shell="sidebar"]
+   Expanded: 240px with labels           →  .sidebar-expanded on host
+   Mobile:   full overlay drawer         →  .mobile-open on host
 
+   USAGE
+   ─────
+   <div data-aeos-shell="sidebar" [class="sidebar-expanded"]>
+     <aside class="aeos-shell-sidebar" aria-label="Side navigation">
+       <div class="aeos-shell-sidebar-brand">…</div>
+       <!-- RecursiveNavItem renders .aeos-shell-sidebar-item -->
+     </aside>
+     <div class="aeos-shell-main">
+       <div class="aeos-shell-topbar">…</div>
+       <main class="aeos-shell-content">
+         <div class="aeos-page-container">…</div>
+       </main>
+       <footer class="aeos-shell-footer">…</footer>        <!-- optional -->
+     </div>
+   </div>
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Host grid ───────────────────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] {
   display: grid;
-  grid-template-columns: var(--aeos-shell-sidebar-w, 56px) 1fr;
-  min-height: 100vh;
+  grid-template-columns: var(--aeos-shell-sidebar-w) 1fr;
+  grid-template-rows: 1fr;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   background: var(--aeos-shell-bg);
   font-family: var(--aeos-font-body);
+  transition: grid-template-columns var(--aeos-dur-base) var(--aeos-ease-out);
 }
 
-/* ── Sidebar Rail ────────────────────────────────────────────── */
+[data-aeos-shell="sidebar"].sidebar-expanded {
+  grid-template-columns: var(--aeos-shell-sidebar-w-exp) 1fr;
+}
+
+/* ── Sidebar rail ────────────────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar {
-  background: var(--aeos-shell-sidebar-bg);
-  border-right: var(--aeos-border-width) solid var(--aeos-divider);
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--aeos-space-3) 0;
-  gap: var(--aeos-gap-items);
-  overflow-y: auto;
-  overflow-x: hidden;
-  transition: width var(--aeos-dur-base) var(--aeos-ease-out);
+  width: 100%;
+  height: 100dvh;
   position: sticky;
   top: 0;
-  height: 100vh;
-}
-
-/* Scrollbar */
-[data-aeos-shell="sidebar"] .aeos-shell-sidebar::-webkit-scrollbar {
-  width: 0;
-}
-
-/* ── Nav Items ───────────────────────────────────────────────── */
-[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item {
-  width: var(--aeos-space-8);
-  height: var(--aeos-space-8);
-  border-radius: var(--aeos-r-md);
-  background: var(--aeos-bg-tint);
-  border: var(--aeos-border-width) solid transparent;
-  cursor: pointer;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  background: var(--aeos-shell-sidebar-bg);
+  border-right: var(--aeos-border-width) solid var(--aeos-divider);
+  padding: calc(var(--aeos-space-3) * var(--aeos-density-factor)) 0;
+  gap: calc(var(--aeos-gap-items) * var(--aeos-density-factor));
+  backdrop-filter: blur(var(--aeos-sidebar-glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--aeos-sidebar-glass-blur, 12px));
   transition:
-    background      var(--aeos-dur-fast) var(--aeos-ease-out),
-    border-color    var(--aeos-dur-fast) var(--aeos-ease-out),
-    color           var(--aeos-dur-fast) var(--aeos-ease-out);
+    width         var(--aeos-dur-base) var(--aeos-ease-out),
+    padding       var(--aeos-dur-base) var(--aeos-ease-out),
+    align-items   var(--aeos-dur-base) var(--aeos-ease-out),
+    backdrop-filter var(--aeos-dur-slow) var(--aeos-ease-out);
+  will-change: width;
+}
+
+/* ── Brand area ──────────────────────────────────────────────────────────── */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-brand {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--aeos-text-secondary);
-  text-decoration: none;
+  width: 100%;
   flex-shrink: 0;
+  padding: calc(var(--aeos-space-2) * var(--aeos-density-factor)) 0;
+  min-height: var(--aeos-shell-sidebar-brand-h);
 }
 
+/* ── Nav items — icon-only (collapsed) ───────────────────────────────────── */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item {
+  width:  calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  height: calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: var(--aeos-border-width) solid transparent;
+  border-radius: var(--aeos-r-md);
+  color: var(--aeos-text-secondary);
+  text-decoration: none;
+  font-size: var(--aeos-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background   var(--aeos-dur-fast) var(--aeos-ease-out),
+    border-color var(--aeos-dur-fast) var(--aeos-ease-out),
+    color        var(--aeos-dur-fast) var(--aeos-ease-out),
+    box-shadow   var(--aeos-dur-fast) var(--aeos-ease-out),
+    width        var(--aeos-dur-base) var(--aeos-ease-out),
+    height       var(--aeos-dur-base) var(--aeos-ease-out),
+    padding      var(--aeos-dur-base) var(--aeos-ease-out),
+    border-radius var(--aeos-dur-base) var(--aeos-ease-out),
+    justify-content var(--aeos-dur-base) var(--aeos-ease-out);
+}
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-item:hover {
   background: var(--aeos-bg-hover);
   color: var(--aeos-text-primary);
+  border-color: var(--aeos-border-subtle);
 }
-
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active {
   background: var(--aeos-primary-bg);
   border-color: var(--aeos-primary-border);
   color: var(--aeos-primary);
+  box-shadow: 0 0 0 1px var(--aeos-primary-tint) inset;
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active:hover {
+  background: var(--aeos-primary-hover);
 }
 
-/* Divider between nav sections */
+/* Active indicator — left-edge glow bar */
+[data-aeos-shell="sidebar"] .aeos-nav-active-indicator {
+  position: absolute;
+  left: calc(-1 * var(--aeos-border-width));
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  min-width: 3px;
+  background: var(--aeos-primary);
+  border-radius: 0 var(--aeos-r-sm) var(--aeos-r-sm) 0;
+  box-shadow: 0 0 8px var(--aeos-primary-tint);
+}
+
+/* ── Labels (hidden in icon mode) ────────────────────────────────────────── */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-label {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Dividers & spacers ──────────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-divider {
-  width: var(--aeos-space-6);
-  height: 1px;
+  width: calc(var(--aeos-space-6) * var(--aeos-density-factor));
+  height: var(--aeos-border-width);
+  min-height: 1px;
   background: var(--aeos-divider);
   flex-shrink: 0;
+  transition: width var(--aeos-dur-base) var(--aeos-ease-out);
 }
-
-/* Spacer pushes bottom items down */
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-spacer {
   flex: 1;
+  min-height: var(--aeos-space-4);
 }
 
-/* ── Main Column ─────────────────────────────────────────────── */
+/* ── Children accordion ──────────────────────────────────────────────────── */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-children {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ── Main content column ─────────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-main {
+  grid-column: 2;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100dvh;
   overflow: hidden;
   width: 100%;
 }
-
-/* ── Topbar ──────────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-topbar {
-  display: flex;
-  align-items: center;
-  height: var(--aeos-shell-topnav-h, 48px);
-  padding: 0 var(--aeos-space-4);
-  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
-  background: var(--aeos-shell-topbar-bg);
-  gap: var(--aeos-space-3);
-  flex-shrink: 0;
+  --aeos-shell-topbar-blur: 8px;
 }
-
-/* ── Page Content Area ───────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--aeos-space-5);
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   background: var(--aeos-bg-page);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Expanded Mode — JS adds .sidebar-expanded to the host element
-   ══════════════════════════════════════════════════════════════ */
-[data-aeos-shell="sidebar"].sidebar-expanded {
-  grid-template-columns: var(--aeos-shell-sidebar-w-exp, 240px) 1fr;
-}
-
+/* ══════════════════════════════════════════════════════════════════════════
+   EXPANDED MODE  (.sidebar-expanded on host)
+   ══════════════════════════════════════════════════════════════════════════ */
 [data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar {
   align-items: flex-start;
-  padding: var(--aeos-space-4) var(--aeos-space-3);
+  padding-inline: var(--aeos-space-3);
 }
-
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-brand {
+  justify-content: flex-start;
+  padding-inline: calc(var(--aeos-pad-nav-x) * 0.5);
+}
 [data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item {
   width: 100%;
-  height: var(--aeos-h-nav-item);
+  height: calc(var(--aeos-h-nav-item) * var(--aeos-density-factor));
   justify-content: flex-start;
   padding: 0 var(--aeos-pad-nav-x);
   border-radius: var(--aeos-r-md);
   gap: var(--aeos-space-3);
-  font-size: var(--aeos-text-sm);
-  font-weight: 500;
 }
-
-[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item .aeos-shell-sidebar-label {
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-label {
   display: block;
   color: inherit;
-  white-space: nowrap;
 }
-
 [data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-divider {
   width: 100%;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Label visibility (icon-only mode hides labels)
-   ══════════════════════════════════════════════════════════════ */
-[data-aeos-shell="sidebar"] .aeos-shell-sidebar-label {
-  display: none;
-}
-
-[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-label {
-  display: block;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   Responsive: below 768px collapse to icon rail
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE OVERLAY  (≤ 768px)
+   ══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   [data-aeos-shell="sidebar"] {
     grid-template-columns: 1fr;
   }
-
+  [data-aeos-shell="sidebar"] .aeos-shell-main {
+    grid-column: 1;
+    max-height: 100dvh;
+  }
   [data-aeos-shell="sidebar"] .aeos-shell-sidebar {
     display: none;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: var(--aeos-z-sidebar);
+    width: min(var(--aeos-shell-sidebar-w-exp), 88vw);
+    max-width: 320px;
+    height: 100dvh;
+    align-items: flex-start;
+    padding-inline: var(--aeos-space-3);
+    animation: aeos-anim-slide-in-left var(--aeos-dur-base) var(--aeos-ease-out);
   }
-
+  [data-aeos-shell="sidebar"].mobile-open .aeos-shell-mobile-backdrop {
+    display: block;
+  }
   [data-aeos-shell="sidebar"].mobile-open .aeos-shell-sidebar {
     display: flex;
-    position: fixed;
-    inset: 0;
-    z-index: var(--aeos-z-sidebar);
-    width: var(--aeos-shell-sidebar-w-exp, 240px);
-    align-items: flex-start;
-    padding: var(--aeos-space-4) var(--aeos-space-3);
   }
-
-  .aeos-shell-mobile-backdrop {
+  [data-aeos-shell="sidebar"].mobile-open .aeos-shell-sidebar-item {
+    width: 100%;
+    height: calc(var(--aeos-h-nav-item) * var(--aeos-density-factor));
+    justify-content: flex-start;
+    padding: 0 var(--aeos-pad-nav-x);
+    gap: var(--aeos-space-3);
+  }
+  [data-aeos-shell="sidebar"].mobile-open .aeos-shell-sidebar-label {
     display: block;
-    position: fixed;
-    inset: 0;
-    background: var(--aeos-overlay-backdrop);
-    z-index: calc(var(--aeos-z-sidebar) - 1);
+    color: inherit;
+  }
+  [data-aeos-shell="sidebar"].mobile-open .aeos-shell-sidebar-divider {
+    width: 100%;
+  }
+  [data-aeos-shell="sidebar"] .aeos-shell-topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--aeos-z-sticky);
   }
 }
 
-.aeos-shell-mobile-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: var(--aeos-overlay-backdrop);
-  z-index: calc(var(--aeos-z-sidebar) - 1);
-  grid-column: 1 / -1;
-  grid-row: 1 / -1;
+/* ══════════════════════════════════════════════════════════════════════════
+   TABLET (769px – 1024px)
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  [data-aeos-shell="sidebar"]:not(.sidebar-expanded) {
+    grid-template-columns: var(--aeos-shell-sidebar-w) 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   WIDE DESKTOP (≥ 1600px)
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1600px) {
+  [data-aeos-shell="sidebar"].sidebar-expanded {
+    grid-template-columns: 260px 1fr;
+  }
+}
+
+/* ── No-blur override ────────────────────────────────────────────────────── */
+.aeos--no-blur [data-aeos-shell="sidebar"] .aeos-shell-sidebar {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--aeos-shell-sidebar-bg);
 }

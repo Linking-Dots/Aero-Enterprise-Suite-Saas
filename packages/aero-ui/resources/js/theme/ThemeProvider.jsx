@@ -174,9 +174,10 @@ function applyPrefs(p) {
   // We write a concrete pixel value so the token is not nested inside another calc
   s.setProperty('--aeos-card-radius', `calc(var(--aeos-r-xl) * ${radiusMult})`);
 
-  // Border width
+  // Border width — also driven by data-borders attr CSS selector, but inline property
+  // wins specificity, ensuring the selected value is always applied immediately.
   const borderW = BORDER_WIDTHS[p.borders] ?? '1px';
-  s.setProperty('--aeos-border-w', borderW);
+  s.setProperty('--aeos-border-width', borderW);
 
   // Motion preference — drives animation-duration multipliers in CSS
   // 'full' → remove override, 'reduced' / 'off' → set a data attr for CSS targeting

@@ -48,7 +48,7 @@ class EnterprisePlanRequest extends CentralModel
      */
     public function requestedBy(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'requested_by_user_id');
+        return $this->belongsTo(User::class, 'requested_by_user_id');
     }
 
     /**
@@ -56,7 +56,7 @@ class EnterprisePlanRequest extends CentralModel
      */
     public function reviewedBy(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'reviewed_by_admin_id');
+        return $this->belongsTo(User::class, 'reviewed_by_admin_id');
     }
 
     /**
@@ -94,7 +94,7 @@ class EnterprisePlanRequest extends CentralModel
     /**
      * Approve the request.
      */
-    public function approve(LandlordUser $admin, ?string $notes = null, ?int $planId = null): self
+    public function approve(User $admin, ?string $notes = null, ?int $planId = null): self
     {
         $this->update([
             'status' => 'approved',
@@ -110,7 +110,7 @@ class EnterprisePlanRequest extends CentralModel
     /**
      * Reject the request.
      */
-    public function reject(LandlordUser $admin, string $reason, ?string $notes = null): self
+    public function reject(User $admin, string $reason, ?string $notes = null): self
     {
         $this->update([
             'status' => 'rejected',

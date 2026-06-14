@@ -16,7 +16,7 @@ import {
   Badge,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const DAYS_OPTIONS = [
   { value: '7',  label: 'Last 7 days' },

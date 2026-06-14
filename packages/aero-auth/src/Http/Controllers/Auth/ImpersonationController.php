@@ -3,8 +3,8 @@
 namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Models\User;
-use Aero\Core\Support\SafeRedirect;
+use Aero\Auth\Models\User;
+use Aero\Kernel\Support\SafeRedirect;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantImpersonationToken;
 use Illuminate\Http\JsonResponse;

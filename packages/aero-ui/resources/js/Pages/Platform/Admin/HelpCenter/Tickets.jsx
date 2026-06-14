@@ -21,7 +21,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PRIORITY_INTENT = {
   urgent:  'danger',
@@ -189,7 +189,7 @@ export default function Tickets({ tickets, agents, filters }) {
     <IndexPageLayout
       title="Support Tickets"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Help Center' },
         { label: 'Tickets' },
       ]}

@@ -49,7 +49,8 @@
             "package": "finance",
             "version": "1.0.0",
             "category": "product",
-            "description": "Financial management system with chart of accounts, general ledger, AP/AR, and journal entries"
+            "description": "Financial management system with chart of accounts, general ledger, AP/AR, and journal entries",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

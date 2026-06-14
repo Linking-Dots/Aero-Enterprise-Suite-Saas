@@ -16,7 +16,7 @@ import {
   useHRMAC,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function statusIntent(status) {
   return status === 'resolved' ? 'success' : 'warning';
@@ -64,7 +64,7 @@ export default function ErrorLogShow({ log }) {
     <DetailPageLayout
       title={`Error #${log.id}`}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Error Logs', href: route('platform.admin.error-logs.index') },
         { label: `#${log.id}` },
       ]}

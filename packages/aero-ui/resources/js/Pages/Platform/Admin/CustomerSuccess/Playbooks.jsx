@@ -21,7 +21,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TRIGGER_OPTIONS = [
   { value: 'health_score_drop', label: 'Health Score Drop' },
@@ -198,7 +198,7 @@ export default function Playbooks({ playbooks, runHistory }) {
     <IndexPageLayout
       title="Success Playbooks"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Customer Success' },
         { label: 'Playbooks' },
       ]}

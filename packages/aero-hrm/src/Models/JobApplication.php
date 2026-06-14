@@ -3,7 +3,7 @@
 namespace Aero\HRM\Models;
 
 use Aero\Contracts\Models\TenantModel;
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Aero\Core\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -22,7 +22,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const ACTION_OPTIONS = [
   { value: 'retry',        label: 'Retry Payment' },
@@ -258,7 +258,7 @@ export default function DunningRules({ rules, recoveryEmails }) {
     <IndexPageLayout
       title="Dunning Rules"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Dunning', href: route('platform.admin.dunning.index') },
         { label: 'Rules' },
       ]}

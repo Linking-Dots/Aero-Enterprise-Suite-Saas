@@ -21,7 +21,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   pending:   'warning',
@@ -190,7 +190,7 @@ export default function PartnersShow({ partner, commissions, tenants, payoutSumm
     <DetailPageLayout
       title={partner.name}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Partners', href: route('platform.admin.partners.index') },
         { label: partner.name },
       ]}

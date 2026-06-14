@@ -2,14 +2,14 @@
 
 namespace Aero\Notifications\Http\Controllers\Admin;
 
-use Aero\Core\Http\Controllers\Controller;
-use Aero\Core\Services\SystemSettingService;
+use Aero\Contracts\SystemSettingServiceInterface;
+use Aero\Kernel\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DeliverabilityController extends Controller
 {
-    public function __construct(private SystemSettingService $settings) {}
+    public function __construct(private SystemSettingServiceInterface $settings) {}
 
     public function index(): Response
     {

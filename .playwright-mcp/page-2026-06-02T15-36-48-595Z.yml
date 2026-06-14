@@ -1,0 +1,209 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - generic [ref=e10]: Internal Server Error
+    - button "Copy as Markdown" [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: Copy as Markdown
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - heading "Illuminate\\Database\\QueryException" [level=1] [ref=e20]
+      - generic [ref=e22]: vendor\laravel\framework\src\Illuminate\Database\Connection.php:838
+      - paragraph [ref=e23]: "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'announcements.deleted_at' in 'where clause' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: aeos365_standalone_uat, SQL: select * from `announcements` where `published_at` is not null and (`expires_at` is null or `expires_at` > 2026-06-02 15:36:45) and (`published_at` is null or `published_at` <= 2026-06-02 15:36:45) and `announcements`.`deleted_at` is null order by `is_pinned` desc, `created_at` desc limit 5)"
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: LARAVEL
+          - generic [ref=e28]: 12.61.0
+        - generic [ref=e29]:
+          - generic [ref=e30]: PHP
+          - generic [ref=e31]: 8.3.30
+      - generic [ref=e32]:
+        - img [ref=e33]
+        - text: UNHANDLED
+      - generic [ref=e36]: CODE 42S22
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - img [ref=e40]
+        - text: "500"
+      - generic [ref=e43]:
+        - img [ref=e44]
+        - text: GET
+      - generic [ref=e47]: http://aeos365-standalone.test/dashboard
+      - button [ref=e48] [cursor=pointer]:
+        - img [ref=e49]
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]:
+        - img [ref=e57]
+        - heading "Exception trace" [level=3] [ref=e60]
+      - generic [ref=e61]:
+        - generic [ref=e63] [cursor=pointer]:
+          - img [ref=e64]
+          - generic [ref=e68]: 69 vendor frames
+          - button [ref=e69]:
+            - img [ref=e70]
+        - generic [ref=e74]:
+          - generic [ref=e75] [cursor=pointer]:
+            - generic [ref=e78]:
+              - code [ref=e82]:
+                - generic [ref=e83]: Illuminate\Foundation\Application->handleRequest(object(Illuminate\Http\Request))
+              - generic [ref=e85]: public\index.php:17
+            - button [ref=e87]:
+              - img [ref=e88]
+          - code [ref=e96]:
+            - generic [ref=e97]: 12require __DIR__.'/../vendor/autoload.php';
+            - generic [ref=e98]: "13"
+            - generic [ref=e99]: 14/** @var Application $app */
+            - generic [ref=e100]: 15$app = require_once __DIR__.'/../bootstrap/app.php';
+            - generic [ref=e101]: "16"
+            - generic [ref=e102]: 17$app->handleRequest(Request::capture());
+            - generic [ref=e103]: "18"
+    - generic [ref=e104]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - img [ref=e108]
+          - heading "Queries" [level=3] [ref=e110]
+        - generic [ref=e112]: 1-10 of 20
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - img [ref=e117]
+              - generic [ref=e119]: mysql
+            - code [ref=e123]:
+              - generic [ref=e124]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation')"
+          - generic [ref=e125]: 18.63ms
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - img [ref=e129]
+              - generic [ref=e131]: mysql
+            - code [ref=e135]:
+              - generic [ref=e136]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation.frontend', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation.frontend')"
+          - generic [ref=e137]: 0.82ms
+        - generic [ref=e138]:
+          - generic [ref=e139]:
+            - generic [ref=e140]:
+              - img [ref=e141]
+              - generic [ref=e143]: mysql
+            - code [ref=e147]:
+              - generic [ref=e148]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation')"
+          - generic [ref=e149]: 0.39ms
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e155]: mysql
+            - code [ref=e159]:
+              - generic [ref=e160]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation.frontend', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation.frontend')"
+          - generic [ref=e161]: 0.43ms
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - img [ref=e165]
+              - generic [ref=e167]: mysql
+            - code [ref=e171]:
+              - generic [ref=e172]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation')"
+          - generic [ref=e173]: 1.02ms
+        - generic [ref=e174]:
+          - generic [ref=e175]:
+            - generic [ref=e176]:
+              - img [ref=e177]
+              - generic [ref=e179]: mysql
+            - code [ref=e183]:
+              - generic [ref=e184]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation.frontend', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation.frontend')"
+          - generic [ref=e185]: 0.45ms
+        - generic [ref=e186]:
+          - generic [ref=e187]:
+            - generic [ref=e188]:
+              - img [ref=e189]
+              - generic [ref=e191]: mysql
+            - code [ref=e195]:
+              - generic [ref=e196]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation')"
+          - generic [ref=e197]: 0.74ms
+        - generic [ref=e198]:
+          - generic [ref=e199]:
+            - generic [ref=e200]:
+              - img [ref=e201]
+              - generic [ref=e203]: mysql
+            - code [ref=e207]:
+              - generic [ref=e208]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation.frontend', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation.frontend')"
+          - generic [ref=e209]: 0.35ms
+        - generic [ref=e210]:
+          - generic [ref=e211]:
+            - generic [ref=e212]:
+              - img [ref=e213]
+              - generic [ref=e215]: mysql
+            - code [ref=e219]:
+              - generic [ref=e220]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation')"
+          - generic [ref=e221]: 0.23ms
+        - generic [ref=e222]:
+          - generic [ref=e223]:
+            - generic [ref=e224]:
+              - img [ref=e225]
+              - generic [ref=e227]: mysql
+            - code [ref=e231]:
+              - generic [ref=e232]: "delete from `cache` where `key` in ('aero_hrm_suite_cache_global:aero.navigation.frontend', 'aero_hrm_suite_cache_illuminate:cache:flexible:created:global:aero.navigation.frontend')"
+          - generic [ref=e233]: 0.22ms
+      - generic [ref=e234]:
+        - button [disabled] [ref=e235]:
+          - img [ref=e236]
+        - button [disabled] [ref=e239]:
+          - img [ref=e240]
+        - button "1" [ref=e243] [cursor=pointer]
+        - button "2" [ref=e245] [cursor=pointer]
+        - button [ref=e246] [cursor=pointer]:
+          - img [ref=e247]
+        - button [ref=e249] [cursor=pointer]:
+          - img [ref=e250]
+  - generic [ref=e254]:
+    - generic [ref=e255]:
+      - heading "Headers" [level=2] [ref=e256]
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - generic [ref=e259]: host
+          - generic [ref=e261]: aeos365-standalone.test
+        - generic [ref=e262]:
+          - generic [ref=e263]: connection
+          - generic [ref=e265]: keep-alive
+        - generic [ref=e266]:
+          - generic [ref=e267]: upgrade-insecure-requests
+          - generic [ref=e269]: "1"
+        - generic [ref=e270]:
+          - generic [ref=e271]: user-agent
+          - generic [ref=e273]: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+        - generic [ref=e274]:
+          - generic [ref=e275]: accept
+          - generic [ref=e277]: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+        - generic [ref=e278]:
+          - generic [ref=e279]: accept-encoding
+          - generic [ref=e281]: gzip, deflate
+        - generic [ref=e282]:
+          - generic [ref=e283]: accept-language
+          - generic [ref=e285]: en-US,en;q=0.9
+        - generic [ref=e286]:
+          - generic [ref=e287]: cookie
+          - generic [ref=e289]: XSRF-TOKEN=eyJpdiI6IjhCVUNKVVRLQjB0RHBueGRlTDY3NVE9PSIsInZhbHVlIjoibSswSnRnMGtZZVpMWldiUTdVQ2tRM2dSVE5SaTZCWnUyakJ3dEFsNlhhRzFkL21QdVRPQlRVTzRRYWhPa0s3bFFqaXVKUW8yUHovdnFVQXZEOE45Ty81emQ0V3FVb1FFQ29JUnNVYkFhc0xFZ1pTM2FyaVJaRzFjbEVEbzBzejQiLCJtYWMiOiI2MGRmNTM5MjVlNmRlMTMyMjI0NmRmMTUyNTkzODg3ODdhMDY1YjlmMDY2MDIxY2UwNGJlMjc3YWE2NGQ4ZmVhIiwidGFnIjoiIn0%3D; aero_hrm_suite_session=eyJpdiI6Ing1dUlRT0xDc2hZOGt0OTZvOVZBUUE9PSIsInZhbHVlIjoiSFNoYjJ1TGtyaWFJZEdnK3c2dGpZQzMvM2dPZlpGcDA3NnBaZ0MyRkVaY0dITVBZUW1GUko4M3JUQ2JvMUdYeVZDd3hISko4WFZoekF3VHVDY0NBWHU4Q0FZZ0FUWE9aZGtOL3pBbHRNQ3JOdGFvbHB0TFZzenh1em90L1B1VXEiLCJtYWMiOiI0MzIyODI2ZTIxM2RkYTI2MThlYmI3NGVkNGViN2IwOTdhM2U5OTM4ZjkyYzg4ZjVhMWY4ZTI3MzljMWMyM2EwIiwidGFnIjoiIn0%3D
+    - generic [ref=e290]:
+      - heading "Body" [level=2] [ref=e291]
+      - generic [ref=e292]: // No request body
+    - generic [ref=e293]:
+      - heading "Routing" [level=2] [ref=e294]
+      - generic [ref=e295]:
+        - generic [ref=e296]:
+          - generic [ref=e297]: controller
+          - generic [ref=e299]: Aero\Core\Http\Controllers\DashboardController@index
+        - generic [ref=e300]:
+          - generic [ref=e301]: route name
+          - generic [ref=e303]: core.dashboard
+        - generic [ref=e304]:
+          - generic [ref=e305]: middleware
+          - generic [ref=e307]: web, auth:web, dashboard.redirect, role.access:core,dashboard
+    - generic [ref=e308]:
+      - heading "Routing parameters" [level=2] [ref=e309]
+      - generic [ref=e310]: // No routing parameters
+  - generic [ref=e313]:
+    - img [ref=e315]
+    - img [ref=e3353]

@@ -1,0 +1,33 @@
+{
+    "name": "aero/kernel",
+    "description": "Aero Kernel Package - shared runtime services (audit, module registry, license core) consumed by core and platform",
+    "type": "library",
+    "license": "proprietary",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.2",
+        "aero/contracts": "^1.0",
+        "aero/infrastructure": "^1.0",
+        "laravel/framework": "^11.0|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aero\\Kernel\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aero\\Kernel\\AeroKernelServiceProvider"
+            ]
+        },
+        "aero": {
+            "package": "kernel",
+            "category": "foundation",
+            "description": "Shared runtime services consumed by core and platform",
+            "tier": "sharable"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

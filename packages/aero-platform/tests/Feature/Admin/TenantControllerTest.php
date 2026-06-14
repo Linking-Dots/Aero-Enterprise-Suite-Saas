@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Models\Domain;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantAdminService;
@@ -27,7 +28,7 @@ class TenantControllerTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected Plan $plan;
 
@@ -62,7 +63,7 @@ class TenantControllerTest extends TestCase
             ['name' => 'Super Administrator', 'guard_name' => 'landlord'],
         );
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
         $this->admin->assignRole($role);
 
         $this->plan = Plan::factory()->create(['is_active' => true]);

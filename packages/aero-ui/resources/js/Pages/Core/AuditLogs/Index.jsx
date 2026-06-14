@@ -12,7 +12,7 @@ import {
   Text,
   Mono,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const EVENT_TYPE_OPTIONS = [
   { value: '',                  label: 'All Event Types' },

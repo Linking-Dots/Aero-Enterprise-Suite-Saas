@@ -12,7 +12,7 @@ import {
   Badge,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function FormsEdit({ form }) {
   const canDelete = useHRMAC('forms.forms.delete');

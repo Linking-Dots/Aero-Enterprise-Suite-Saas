@@ -177,37 +177,36 @@ class CheckRoleModuleAccess
     }
 
     /**
-     * Check if user is a super admin for the currently-active guard.
+     * Check if the given user holds a super-admin role.
      *
-     * Plan 04 T2 — guard-scoped super-admin check. The previous flat
-     * string match would have let a tenant user with a role literally
-     * named "Super Administrator" pass a landlord-guarded route.
+     * Context-free: HRMAC does NOT detect the active guard. The user's roles are
+     * resolved from the current (host-decided) connection, so a tenant user only
+     * carries tenant role rows and a platform user only carries central role rows.
+     * A single flat super_admin_roles list (the union of all contexts) is therefore
+     * safe — names that don't exist in the current DB simply never match.
+     *
+     * Accepts both the flat list format and the legacy guard-scoped assoc format
+     * (values are flattened) so transitional configs keep working.
      */
     protected function isSuperAdmin($user): bool
     {
-        $guard = $this->resolveActiveGuard();
         $rolesConfig = config('hrmac.super_admin_roles', []);
 
-        // Guard-scoped (new format: ['landlord' => [...], 'web' => [...]])
-        if (is_array($rolesConfig) && isset($rolesConfig[$guard])) {
-            $superAdminRoles = $rolesConfig[$guard];
-        } else {
-            // Legacy flat format fallback (deprecated — kept for transitional configs)
-            $superAdminRoles = is_array($rolesConfig) && array_is_list($rolesConfig)
-                ? $rolesConfig
-                : [];
-        }
+        $superAdminRoles = [];
+        array_walk_recursive($rolesConfig, function ($role) use (&$superAdminRoles) {
+            if (is_string($role) && $role !== '') {
+                $superAdminRoles[] = $role;
+            }
+        });
 
         if (empty($superAdminRoles)) {
             return false;
         }
 
-        // Prefer hasAnyRole (Spatie) — supports array
         if (method_exists($user, 'hasAnyRole')) {
             return $user->hasAnyRole($superAdminRoles);
         }
 
-        // Fallback per-role check
         if (method_exists($user, 'hasRole')) {
             foreach ($superAdminRoles as $role) {
                 if ($user->hasRole($role)) {
@@ -217,19 +216,6 @@ class CheckRoleModuleAccess
         }
 
         return false;
-    }
-
-    /**
-     * Resolve the auth guard the current request is authenticated against.
-     */
-    protected function resolveActiveGuard(): string
-    {
-        foreach (['landlord', 'web', 'api'] as $guard) {
-            if (Auth::guard($guard)->check()) {
-                return $guard;
-            }
-        }
-        return 'web';
     }
 
     /**

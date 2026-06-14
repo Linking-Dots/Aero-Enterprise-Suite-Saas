@@ -14,6 +14,10 @@
         "aero/contracts": "^1.0",
         "laravel/framework": "^11.0|^12.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "orchestra/testbench": "^9.0|^10.0"
+    },
     "autoload": {
         "psr-4": {
             "Aero\\HRMAC\\": "src/"
@@ -32,7 +36,8 @@
             "package": "hrmac",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Hierarchical Role-Module Access Control for aeos365"
+            "description": "Hierarchical Role-Module Access Control for aeos365",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "stable"

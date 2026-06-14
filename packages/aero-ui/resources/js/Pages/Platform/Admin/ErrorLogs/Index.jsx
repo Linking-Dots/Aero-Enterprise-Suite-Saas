@@ -20,7 +20,7 @@ import {
   useHRMAC,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
@@ -208,7 +208,7 @@ export default function ErrorLogsIndex({ logs, filters }) {
     <IndexPageLayout
       title="Error Logs"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Error Logs' },
       ]}
       description="Monitor and manage application errors across all tenants."

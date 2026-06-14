@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -39,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property string $status
  * @property Carbon|null $suspended_at
  */
-class RoleModuleAccess extends TenantModel
+class RoleModuleAccess extends HrmacModel
 {
     protected $table = 'role_module_access';
 
@@ -124,7 +123,7 @@ class RoleModuleAccess extends TenantModel
      */
     public function component(): BelongsTo
     {
-        return $this->belongsTo(Component::class, 'component_id');
+        return $this->belongsTo(ModuleComponent::class, 'component_id');
     }
 
     /**
@@ -132,7 +131,7 @@ class RoleModuleAccess extends TenantModel
      */
     public function action(): BelongsTo
     {
-        return $this->belongsTo(Action::class, 'action_id');
+        return $this->belongsTo(ModuleComponentAction::class, 'action_id');
     }
 
     /**

@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\Infra;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Infra\StatusIncident;
 use Aero\Platform\Models\Infra\StatusPageComponent;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\Infra\StatusPageService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +20,7 @@ class StatusPageServiceTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected StatusPageService $svc;
 
@@ -51,7 +52,7 @@ class StatusPageServiceTest extends TestCase
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
 
         $audit = $this->createMock(AuditServiceInterface::class);
         $this->svc = new StatusPageService($audit);

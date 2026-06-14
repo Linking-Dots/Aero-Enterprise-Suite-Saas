@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   failed:          'danger',
@@ -199,7 +199,7 @@ export default function DunningIndex({ stats, failedPayments, rules, filters }) 
     <IndexPageLayout
       title="Dunning"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Dunning' },
       ]}
       description="Monitor failed payments, manage retry rules, and recover revenue."

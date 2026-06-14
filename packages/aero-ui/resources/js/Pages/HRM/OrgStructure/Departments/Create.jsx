@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import {
   FormPageLayout, VStack, Field, Input, Select, Textarea, Button, HStack,
 } from '@aero/ui';

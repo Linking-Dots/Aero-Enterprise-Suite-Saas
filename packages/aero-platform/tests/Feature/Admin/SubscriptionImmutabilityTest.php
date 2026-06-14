@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AeroMode;
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Exceptions\SubscriptionFinalizedException;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
@@ -28,7 +29,7 @@ class SubscriptionImmutabilityTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected Plan $plan;
 
@@ -113,7 +114,7 @@ class SubscriptionImmutabilityTest extends TestCase
             ['name' => 'Super Administrator', 'guard_name' => 'landlord'],
         );
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
         $this->admin->assignRole($role);
 
         $this->plan   = Plan::factory()->create(['is_active' => true]);

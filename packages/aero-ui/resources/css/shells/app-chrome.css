@@ -1,73 +1,140 @@
-/* ══════════════════════════════════════════════════════════════
-   AEOS UI — App Chrome
-   Shared styles for the authenticated app shell chrome:
-   brand mark, topbar title, and user identity menu.
-   Applied across all shell variants (sidebar/topnav/floating/command).
-   All values use --aeos-* tokens.
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — App Chrome  (Overhaul v2)
+   Shared chrome styles: brand mark, topbar title, user pill, icon btn, search.
+   ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Logo SVG ────────────────────────────────────────────────── */
-.aeos-logo-svg {
-  display: block;
-  flex-shrink: 0;
-}
+.aeos-logo-svg { display: block; flex-shrink: 0; }
 
-/* ── App Brand (sidebar rail brand area) ─────────────────────── */
 .aeos-app-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: var(--aeos-space-2) 0;
-  text-decoration: none;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: var(--aeos-space-2) 0;
+  text-decoration: none; color: var(--aeos-text-primary);
   filter: drop-shadow(0 0 10px var(--aeos-primary-tint));
   transition: filter var(--aeos-dur-base) var(--aeos-ease-out);
 }
 .aeos-app-brand:hover {
-  filter: drop-shadow(0 0 16px var(--aeos-primary-glow));
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--aeos-primary) 45%, transparent));
 }
 
-/* ── Topbar page title ───────────────────────────────────────── */
 .aeos-app-topbar-title {
   font-family: var(--aeos-font-display);
   font-size: var(--aeos-text-base);
   font-weight: 600;
-  letter-spacing: -.01em;
+  letter-spacing: -0.015em;
   color: var(--aeos-text-primary);
-  white-space: nowrap;
-}
-
-/* ── User menu container ─────────────────────────────────────── */
-.aeos-app-user-menu {
-  flex-shrink: 0;
-}
-
-/* ── User pill (avatar + name + logout) ──────────────────────── */
-.aeos-app-user-pill {
-  border-radius: var(--aeos-r-lg);
-  padding: var(--aeos-space-1) var(--aeos-space-2);
-  transition: background var(--aeos-dur-fast) var(--aeos-ease-out);
-}
-.aeos-app-user-pill:hover {
-  background: var(--aeos-bg-hover);
-}
-
-/* ── User text (name + role) ─────────────────────────────────── */
-.aeos-app-user-info {
-  max-width: var(--aeos-space-32);
-}
-.aeos-app-user-info span {
-  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ── Flex spacer — pushes adjacent items apart ───────────────── */
-.aeos-shell-flex-spacer { flex: 1; }
+.aeos-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  height: calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-tint);
+  border: var(--aeos-border-width) solid transparent;
+  color: var(--aeos-text-secondary);
+  cursor: pointer; flex-shrink: 0;
+  transition:
+    background   var(--aeos-dur-fast) var(--aeos-ease-out),
+    border-color var(--aeos-dur-fast) var(--aeos-ease-out),
+    color        var(--aeos-dur-fast) var(--aeos-ease-out),
+    box-shadow   var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-icon-btn:hover {
+  background: var(--aeos-bg-hover);
+  border-color: var(--aeos-border-subtle);
+  color: var(--aeos-text-primary);
+}
+.aeos-icon-btn:active { background: var(--aeos-bg-active); transform: scale(0.95); }
+.aeos-icon-btn:focus-visible { outline: 2px solid var(--aeos-primary); outline-offset: 2px; }
 
-/* ── Ensure ThemeDrawer trigger visible in authenticated app ──── */
-/* Auth/install pages hide it; the app must show it explicitly.   */
-.aeos-app-chrome-active .aeos-theme-drawer-trigger {
-  display: flex !important;
+.aeos-icon-sm { width: var(--aeos-icon-sm); height: var(--aeos-icon-sm); }
+.aeos-icon-md { width: var(--aeos-icon-md); height: var(--aeos-icon-md); }
+
+.aeos-app-user-pill {
+  display: flex; align-items: center;
+  gap: var(--aeos-space-2);
+  padding: var(--aeos-space-1) var(--aeos-space-2);
+  border-radius: var(--aeos-r-lg);
+  cursor: pointer; flex-shrink: 0;
+  transition: background var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-app-user-pill:hover { background: var(--aeos-bg-hover); }
+
+.aeos-app-user-avatar {
+  width: var(--aeos-space-8); height: var(--aeos-space-8);
+  border-radius: var(--aeos-r-full);
+  background: var(--aeos-primary-bg);
+  border: var(--aeos-border-width) solid var(--aeos-primary-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--aeos-text-xs); font-weight: 700;
+  font-family: var(--aeos-font-mono); color: var(--aeos-primary);
+  flex-shrink: 0; overflow: hidden;
+}
+.aeos-app-user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+
+.aeos-app-user-info { display: flex; flex-direction: column; min-width: 0; max-width: 128px; }
+.aeos-app-user-name {
+  font-size: var(--aeos-text-sm); font-weight: 500; color: var(--aeos-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.aeos-app-user-role {
+  font-size: var(--aeos-text-2xs); color: var(--aeos-text-tertiary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--aeos-font-mono);
+}
+
+.aeos-icon-btn-wrap { position: relative; display: inline-flex; }
+.aeos-icon-btn-badge {
+  position: absolute; top: -3px; right: -3px;
+  min-width: 16px; height: 16px; padding: 0 3px;
+  border-radius: var(--aeos-r-full);
+  background: var(--aeos-destructive); color: #fff;
+  font-size: 9px; font-family: var(--aeos-font-mono); font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--aeos-bg-page); pointer-events: none;
+}
+
+.aeos-topbar-search {
+  display: flex; align-items: center; gap: var(--aeos-space-2);
+  height: calc(var(--aeos-space-8) * var(--aeos-density-factor));
+  padding: 0 var(--aeos-space-3);
+  background: var(--aeos-bg-tint);
+  border: var(--aeos-border-width) solid var(--aeos-border-subtle);
+  border-radius: var(--aeos-r-md);
+  min-width: 180px; max-width: 280px; cursor: text;
+  transition:
+    border-color var(--aeos-dur-fast) var(--aeos-ease-out),
+    background   var(--aeos-dur-fast) var(--aeos-ease-out),
+    box-shadow   var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-topbar-search:focus-within {
+  border-color: var(--aeos-primary-border);
+  background: var(--aeos-bg-input);
+  box-shadow: 0 0 0 3px var(--aeos-primary-tint);
+}
+.aeos-topbar-search-icon { width: var(--aeos-icon-sm); height: var(--aeos-icon-sm); color: var(--aeos-text-tertiary); flex-shrink: 0; }
+.aeos-topbar-search-input {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  font-family: var(--aeos-font-body); font-size: var(--aeos-text-sm);
+  color: var(--aeos-text-primary); caret-color: var(--aeos-primary);
+}
+.aeos-topbar-search-input::placeholder { color: var(--aeos-text-tertiary); }
+.aeos-topbar-search-kbd {
+  flex-shrink: 0; font-family: var(--aeos-font-mono); font-size: var(--aeos-text-2xs);
+  color: var(--aeos-text-tertiary); background: var(--aeos-bg-active);
+  border: var(--aeos-border-width) solid var(--aeos-border-subtle);
+  border-radius: var(--aeos-r-sm); padding: 1px 5px;
+}
+
+.aeos-shell-flex-spacer { flex: 1; min-width: 0; }
+
+.aeos-app-chrome-active .aeos-theme-drawer-trigger { display: flex !important; }
+
+@media (max-width: 640px) {
+  .aeos-app-user-info { display: none; }
+  .aeos-topbar-search { min-width: 120px; max-width: 160px; }
+  .aeos-topbar-search-kbd { display: none; }
 }

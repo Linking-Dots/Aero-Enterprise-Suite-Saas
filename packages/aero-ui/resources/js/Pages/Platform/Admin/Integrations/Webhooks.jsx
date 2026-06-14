@@ -25,7 +25,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function DeliveryLogRow({ log }) {
   const [expanded, setExpanded] = useState(false);
@@ -291,7 +291,7 @@ export default function Webhooks({ endpoints, filters }) {
     <IndexPageLayout
       title="Webhooks"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Integrations' },
         { label: 'Webhooks' },
       ]}

@@ -36,7 +36,7 @@ class NewsletterController extends Controller
         $stats = $this->newsletterService->getSubscriberStats();
         $settings = PlatformSetting::current()->getNewsletterSettings();
 
-        return Inertia::render('Admin/Pages/Marketing/Newsletter/Index', [
+        return Inertia::render('Platform/Admin/Newsletter/Index', [
             'title' => 'Newsletter Subscribers',
             'subscribers' => $subscribers,
             'stats' => $stats,
@@ -65,7 +65,7 @@ class NewsletterController extends Controller
      */
     public function show(NewsletterSubscriber $subscriber): Response
     {
-        return Inertia::render('Admin/Pages/Marketing/Newsletter/Show', [
+        return Inertia::render('Platform/Admin/Newsletter/Show', [
             'title' => 'Subscriber Details',
             'subscriber' => $subscriber,
         ]);

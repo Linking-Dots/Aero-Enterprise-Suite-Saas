@@ -16,7 +16,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TOGGLE_TOOLTIP = 'Disabling removes this module from the storefront. Existing tenant subscriptions are not affected.';
 
@@ -46,7 +46,7 @@ export default function ModulesIndex({ modules }) {
     <IndexPageLayout
       title="Module Management"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Modules' },
       ]}
       description="Manage the platform module catalog — active modules appear on the storefront."

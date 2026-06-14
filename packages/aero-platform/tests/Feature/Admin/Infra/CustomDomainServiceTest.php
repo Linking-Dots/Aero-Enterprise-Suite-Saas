@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\Infra;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Jobs\Infra\ProvisionSslJob;
 use Aero\Platform\Models\Infra\TenantCustomDomain;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\Infra\CustomDomainService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -20,7 +21,7 @@ class CustomDomainServiceTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected CustomDomainService $svc;
 
@@ -52,7 +53,7 @@ class CustomDomainServiceTest extends TestCase
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
 
         $audit = $this->createMock(AuditServiceInterface::class);
         $this->svc = new CustomDomainService($audit);

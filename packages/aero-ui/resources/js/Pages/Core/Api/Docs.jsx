@@ -10,7 +10,7 @@ import {
   Eyebrow,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Docs({ api_version, base_url, modules, openapi_url }) {
   const toast = useToast();

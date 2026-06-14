@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\AdvancedBilling;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Platform\Models\Coupon;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -22,7 +23,7 @@ class CouponTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -51,7 +52,7 @@ class CouponTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_coupon_code_uniqueness_is_enforced(): void

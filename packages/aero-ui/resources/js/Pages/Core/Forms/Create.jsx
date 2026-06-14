@@ -10,7 +10,7 @@ import {
   VStack,
   HStack,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function FormsCreate() {
   const form = useForm({

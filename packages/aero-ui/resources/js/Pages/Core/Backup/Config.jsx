@@ -13,7 +13,7 @@ import {
   TextField,
   Switch,
 } from '@aero/ui';
-import App from '../../App';
+import App from '@/Pages/App.jsx';
 
 export default function BackupConfig({ title, config }) {
   const { toast } = useToast();

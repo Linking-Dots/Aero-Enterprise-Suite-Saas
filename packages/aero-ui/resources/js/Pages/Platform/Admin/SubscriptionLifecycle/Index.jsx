@@ -21,7 +21,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TAB_OPTIONS = [
   { value: 'trials',        label: 'Trials' },
@@ -298,7 +298,7 @@ export default function SubscriptionLifecycleIndex({
     <IndexPageLayout
       title="Subscription Lifecycle"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Subscription Lifecycle' },
       ]}
       description="Manage trials, plan changes, paused subscriptions, and cancellation save flows. Covers both plan and product subscriptions."

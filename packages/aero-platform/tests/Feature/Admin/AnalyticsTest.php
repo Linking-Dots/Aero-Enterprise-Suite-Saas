@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\PlatformMetricDaily;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -60,7 +61,7 @@ class AnalyticsTest extends TestCase
             ]);
         }
 
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
 
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.analytics.revenue', ['bucket' => 'week']))
@@ -70,7 +71,7 @@ class AnalyticsTest extends TestCase
 
     public function test_cohort_analysis_returns_retention_rates(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
 
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.product-analytics.cohorts', ['months' => 3]))
@@ -83,17 +84,17 @@ class AnalyticsTest extends TestCase
 
     public function test_analytics_dashboard_renders_correct_component(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
 
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.analytics.index'))
             ->assertOk()
-            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/Index'));
+            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/Revenue'));
     }
 
     public function test_feature_usage_renders_correct_component(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
 
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.product-analytics.features'))

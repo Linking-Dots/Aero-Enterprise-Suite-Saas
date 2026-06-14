@@ -4,11 +4,14 @@ namespace Aero\Core\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Announcement extends TenantModel
 {
-    use SoftDeletes;
+    // NOTE: the live `announcements` table (created by aero-hrm) has no
+    // `deleted_at` column, so SoftDeletes is not applicable here. This model
+    // also predates the current schema (fillable lists body/status/audience
+    // that no longer exist) — full consolidation with Aero\HRM\Models\Announcement
+    // is tracked as cross-package finding C-4.
 
     protected $fillable = [
         'title',
@@ -47,7 +50,9 @@ class Announcement extends TenantModel
      */
     public function scopePublished($query)
     {
-        return $query->where('status', 'published')
+        // The live `announcements` table (created by aero-hrm) is published_at-
+        // based and has no `status` column. "Published" = has a publish date.
+        return $query->whereNotNull('published_at')
             ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             });

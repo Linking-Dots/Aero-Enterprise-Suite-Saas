@@ -99,6 +99,30 @@ class LicenseService implements LicenseServiceInterface
         return max(0, $gracePeriod - $elapsed);
     }
 
+    /**
+     * Current license summary for the License management UI.
+     * Shape matches Core/License/Index (key_preview, edition, status, expires_at,
+     * domain, activated_at). In SaaS the platform owns licensing, so this reports
+     * the managed 'saas' status with no local key.
+     */
+    public function getCurrent(): array
+    {
+        $status = $this->status();
+        $activation = $this->loadActivation();
+        $key = $activation['license_key'] ?? null;
+
+        return [
+            'status' => $status,
+            'is_active' => $this->isValid(),
+            'edition' => is_saas_mode() ? 'Cloud' : ($activation['product_id'] ?? null),
+            'key_preview' => $key ? substr($key, 0, 4).'••••••'.substr($key, -4) : null,
+            'expires_at' => null,
+            'domain' => request()?->getHost(),
+            'activated_at' => $activation['activated_at'] ?? null,
+            'grace_seconds_remaining' => $this->graceSecondsRemaining(),
+        ];
+    }
+
     private function performOnlineCheck(): string
     {
         $activation = $this->loadActivation();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Services;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;

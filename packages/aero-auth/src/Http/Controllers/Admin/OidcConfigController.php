@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Kernel\Audit\AuditEventType;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ use Inertia\Response;
 
 class OidcConfigController extends Controller
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditServiceInterface $audit) {}
 
     private function getConfig(): array
     {

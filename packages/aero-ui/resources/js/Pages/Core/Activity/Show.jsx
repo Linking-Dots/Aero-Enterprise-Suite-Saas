@@ -10,7 +10,7 @@ import {
   Button,
   Badge,
 } from '@aero/ui';
-import App from '../../App';
+import App from '@/Pages/App.jsx';
 
 export default function ActivityShow({ title, activity }) {
   const getActionColor = (action) => {

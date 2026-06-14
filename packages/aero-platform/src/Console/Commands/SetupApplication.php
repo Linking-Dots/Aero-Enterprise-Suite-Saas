@@ -91,7 +91,7 @@ class SetupApplication extends Command
             if (class_exists(SyncModuleHierarchy::class)) {
                 $this->line('   Using HRMAC sync (scope: platform)...');
 
-                Artisan::call('hrmac:sync-modules', [
+                Artisan::call('aero:sync-module', [
                     '--scope' => 'platform',  // Only platform-scoped modules
                     '--prune' => true,
                 ]);

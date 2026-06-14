@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import {
   VStack, HStack, Box, Text, Mono, Eyebrow, Badge, Button, Card, CardBody, DataTable,
 } from '@aero/ui';
@@ -114,8 +114,7 @@ export default function SelfServicePayslipShow({ payslip }) {
           />
 
           <div
-            className="flex flex-col gap-2 pt-4 mt-4 border-t"
-            className="aeos-border-divider"
+            className="flex flex-col gap-2 pt-4 mt-4 border-t aeos-border-divider"
           >
             <HStack gap={4} align="center">
               <Box grow />

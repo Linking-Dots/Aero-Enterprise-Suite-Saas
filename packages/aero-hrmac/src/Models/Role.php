@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Models;
 
-use Aero\Core\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -18,31 +17,32 @@ use Illuminate\Support\Collection;
  * @property int $id
  * @property string $name
  * @property string $guard_name
- * @property string|null $display_name
  * @property string|null $description
  * @property bool $is_protected
  * @property bool $is_active
  * @property string|null $scope
- * @property string|null $dashboard_route
+ * @property string|null $default_dashboard
+ * @property int $priority
  */
-class Role extends TenantModel
+class Role extends HrmacModel
 {
     protected $table = 'roles';
 
     protected $fillable = [
         'name',
         'guard_name',
-        'display_name',
         'description',
         'is_protected',
         'is_active',
         'scope',
-        'dashboard_route',
+        'default_dashboard',
+        'priority',
     ];
 
     protected $casts = [
         'is_protected' => 'boolean',
         'is_active' => 'boolean',
+        'priority' => 'integer',
     ];
 
     protected $attributes = [
@@ -50,6 +50,14 @@ class Role extends TenantModel
         'is_protected' => false,
         'is_active' => true,
     ];
+
+    /**
+     * Human-readable label for audit log subject lines (AuditService::log).
+     */
+    public function getAuditLabel(): string
+    {
+        return $this->name;
+    }
 
     /**
      * Boot the model.
@@ -71,14 +79,19 @@ class Role extends TenantModel
      */
     public function users(): BelongsToMany
     {
-        $userModel = config('hrmac.models.user', \Aero\Core\Models\User::class);
+        $userModel = config('hrmac.models.user') ?: config('auth.providers.users.model');
+
+        // Filter by the user model's morph key (not its raw FQN) so role rows stay
+        // resolvable when the User class moves package — Phase 2 decoupling. Falls back
+        // to the class name if the model has no morphMap entry (e.g. User).
+        $morphType = (new $userModel)->getMorphClass();
 
         return $this->belongsToMany(
             $userModel,
             'model_has_roles',
             'role_id',
             'model_id'
-        )->where('model_has_roles.model_type', $userModel);
+        )->where('model_has_roles.model_type', $morphType);
     }
 
     /**

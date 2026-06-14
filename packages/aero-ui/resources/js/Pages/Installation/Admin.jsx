@@ -7,6 +7,31 @@ import { VStack, HStack, Box, Field, Input, Button, Badge } from '@aero/ui';
 const STEPS_STANDALONE = ['License', 'Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
 const STEPS_SAAS       = ['Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
 
+const STRENGTH_LABELS = ['Very weak', 'Weak', 'Fair', 'Good', 'Strong'];
+const STRENGTH_TIERS  = ['', 'on-weak', 'on-fair', 'on-good', 'on-strong'];
+
+// Lightweight client-side strength heuristic (no external dependency).
+function scorePassword(pw) {
+  if (!pw) return 0;
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(score, 4);
+}
+
+function generatePassword() {
+  // Ambiguous characters (O/0, l/1) omitted for legibility.
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*?';
+  const out = new Uint32Array(20);
+  (window.crypto ?? window.msCrypto).getRandomValues(out);
+  let pw = '';
+  for (let i = 0; i < out.length; i++) pw += chars[out[i] % chars.length];
+  return pw;
+}
+
 export default function Admin({ mode, savedAdmin }) {
   const { errors: pageErrors } = usePage().props;
 
@@ -17,7 +42,17 @@ export default function Admin({ mode, savedAdmin }) {
     password:              '',
     password_confirmation: '',
   });
-  const [saved, setSaved] = useState(!!savedAdmin);
+  const [saved, setSaved]   = useState(!!savedAdmin);
+  const [showPw, setShowPw] = useState(false);
+
+  const pwScore = scorePassword(data.password);
+
+  function useGeneratedPassword() {
+    const pw = generatePassword();
+    setData(d => ({ ...d, password: pw, password_confirmation: pw }));
+    setShowPw(true);
+    setSaved(false);
+  }
 
   // Merge server errors from usePage().props with useForm errors
   const allErrors = { ...pageErrors, ...formErrors };
@@ -55,11 +90,27 @@ export default function Admin({ mode, savedAdmin }) {
       </Field>
 
       <Field label="Password" htmlFor="admin_pass" error={allErrors.password} hint="Min. 8 characters, mixed case, numbers, and symbols." required>
-        <Input id="admin_pass" type="password" value={data.password} onChange={e => setData('password', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!allErrors.password} />
+        <Input id="admin_pass" type={showPw ? 'text' : 'password'} value={data.password} onChange={e => setData('password', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!allErrors.password} />
       </Field>
 
+      {data.password && (
+        <Box className="aeos-mt-1">
+          <div className="il-strength-bar" role="presentation">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className={`il-strength-seg ${i < pwScore ? STRENGTH_TIERS[pwScore] : ''}`} />
+            ))}
+          </div>
+          <div className="il-strength-text">Password strength: {STRENGTH_LABELS[pwScore]}</div>
+        </Box>
+      )}
+
+      <HStack gap={2}>
+        <Button intent="ghost" size="sm" leftIcon="settings" onClick={useGeneratedPassword}>Generate strong password</Button>
+        <Button intent="ghost" size="sm" onClick={() => setShowPw(s => !s)}>{showPw ? 'Hide' : 'Show'}</Button>
+      </HStack>
+
       <Field label="Confirm Password" htmlFor="admin_pass2" error={allErrors.password_confirmation} required>
-        <Input id="admin_pass2" type="password" value={data.password_confirmation} onChange={e => setData('password_confirmation', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!allErrors.password_confirmation} />
+        <Input id="admin_pass2" type={showPw ? 'text' : 'password'} value={data.password_confirmation} onChange={e => setData('password_confirmation', e.target.value)} leftIcon="settings" autoComplete="new-password" error={!!allErrors.password_confirmation} />
       </Field>
 
       <HStack gap={2}>

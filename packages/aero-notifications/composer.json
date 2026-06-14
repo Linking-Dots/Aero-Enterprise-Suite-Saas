@@ -43,7 +43,8 @@
             "package": "notifications",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Unified notification engine supporting mail, SMS, push, broadcast, and database channels"
+            "description": "Unified notification engine supporting mail, SMS, push, broadcast, and database channels",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

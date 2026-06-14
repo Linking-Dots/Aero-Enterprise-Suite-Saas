@@ -1,0 +1,548 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "HRM Dashboard" [ref=e11] [cursor=pointer]:
+        - /url: /hrm/dashboard
+      - link "Employee Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Profile" [ref=e14] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e15] [cursor=pointer]:
+        - /url: /notifications
+      - link "My Dashboard" [ref=e16] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Attendance" [ref=e17] [cursor=pointer]:
+        - /url: /hrm/attendance-employee
+      - link "My Leaves" [ref=e18] [cursor=pointer]:
+        - /url: /hrm/leaves-employee
+      - link "My Time-Off" [ref=e19] [cursor=pointer]:
+        - /url: /hrm/self-service/time-off
+      - link "My Payslips" [ref=e20] [cursor=pointer]:
+        - /url: /hrm/self-service/payslips
+      - link "My Expenses" [ref=e21] [cursor=pointer]:
+        - /url: /hrm/my-expenses
+      - link "My Documents" [ref=e22] [cursor=pointer]:
+        - /url: /hrm/self-service/documents
+      - link "My Benefits" [ref=e23] [cursor=pointer]:
+        - /url: /hrm/self-service/benefits
+      - link "My Trainings" [ref=e24] [cursor=pointer]:
+        - /url: /hrm/self-service/trainings
+      - link "My Performance" [ref=e25] [cursor=pointer]:
+        - /url: /hrm/self-service/performance
+      - link "My Goals" [ref=e26] [cursor=pointer]:
+        - /url: /hrm/goals
+      - link "My Career Path" [ref=e27] [cursor=pointer]:
+        - /url: /hrm/self-service/career-path
+      - link "My 360° Feedback" [ref=e28] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Subscription & Billing" [ref=e30] [cursor=pointer]:
+        - /url: /subscription
+      - link "User Management" [ref=e31] [cursor=pointer]:
+        - /url: /users
+      - link "Roles & Module Access" [ref=e32] [cursor=pointer]:
+        - /url: /roles
+      - link "Audit & Activity Logs" [ref=e33] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Notifications" [ref=e34] [cursor=pointer]:
+        - /url: /notifications
+      - link "File Manager" [ref=e35] [cursor=pointer]:
+        - /url: /files
+      - link "Organization" [ref=e36] [cursor=pointer]:
+        - /url: /organization
+      - link "Translations / i18n" [ref=e37] [cursor=pointer]:
+        - /url: /i18n/translations
+      - link "Custom Fields" [ref=e38] [cursor=pointer]:
+        - /url: /custom-fields
+      - link "Tags & Labels" [ref=e39] [cursor=pointer]:
+        - /url: /tags
+      - link "Saved Views & Filters" [ref=e40] [cursor=pointer]:
+        - /url: /saved-views
+      - link "Form Builder" [ref=e41] [cursor=pointer]:
+        - /url: /forms
+      - link "Global Search" [ref=e42] [cursor=pointer]:
+        - /url: /search
+      - link "API & Webhooks" [ref=e43] [cursor=pointer]:
+        - /url: /api
+      - link "User Preferences" [ref=e44] [cursor=pointer]:
+        - /url: /preferences
+      - link "Data Export/Import" [ref=e45] [cursor=pointer]:
+        - /url: /export-import
+      - link "Retention Policies" [ref=e46] [cursor=pointer]:
+        - /url: /retention-policies
+      - link "Workflows & Automations" [ref=e47] [cursor=pointer]:
+        - /url: /workflows
+      - link "Email Engine" [ref=e48] [cursor=pointer]:
+        - /url: /email
+      - link "System Health" [ref=e49] [cursor=pointer]:
+        - /url: /system-health
+      - link "Mobile & PWA" [ref=e50] [cursor=pointer]:
+        - /url: /mobile-pwa
+      - link "Backup & Restore" [ref=e51] [cursor=pointer]:
+        - /url: /backup
+      - link "License Management" [ref=e52] [cursor=pointer]:
+        - /url: /license
+      - link "Document Numbering & Sequences" [ref=e53] [cursor=pointer]:
+        - /url: /numbering
+      - link "Print & PDF Templates" [ref=e54] [cursor=pointer]:
+        - /url: /print-templates
+      - link "Announcements & Banners" [ref=e55] [cursor=pointer]:
+        - /url: /announcements
+      - link "Maintenance Mode" [ref=e56] [cursor=pointer]:
+        - /url: /maintenance-mode
+      - link "Trash & Recycle Bin" [ref=e57] [cursor=pointer]:
+        - /url: /trash
+      - link "Comments & Mentions" [ref=e58] [cursor=pointer]:
+        - /url: /comments
+      - link "Help & Support" [ref=e59] [cursor=pointer]:
+        - /url: /help
+      - link "Settings" [ref=e60] [cursor=pointer]:
+        - /url: /settings/system
+      - link "Employees" [ref=e62] [cursor=pointer]:
+        - /url: /hrm/employees
+      - link "Attendance" [ref=e63] [cursor=pointer]:
+        - /url: /hrm/attendance
+      - link "Leaves" [ref=e64] [cursor=pointer]:
+        - /url: /hrm/leaves
+      - link "Payroll" [ref=e65] [cursor=pointer]:
+        - /url: /hrm/payroll
+      - link "Expenses & Claims" [ref=e66] [cursor=pointer]:
+        - /url: /hrm/expenses
+      - link "Assets Management" [ref=e67] [cursor=pointer]:
+        - /url: /hrm/assets
+      - link "Disciplinary" [ref=e68] [cursor=pointer]:
+        - /url: /hrm/disciplinary
+      - link "Recruitment" [ref=e69] [cursor=pointer]:
+        - /url: /hrm/recruitment
+      - link "Performance" [ref=e70] [cursor=pointer]:
+        - /url: /hrm/performance
+      - link "Training" [ref=e71] [cursor=pointer]:
+        - /url: /hrm/training
+      - link "HR Analytics" [ref=e72] [cursor=pointer]:
+        - /url: /hrm/analytics
+      - link "Succession Planning" [ref=e73] [cursor=pointer]:
+        - /url: /hrm/succession-planning
+      - link "Career Pathing" [ref=e74] [cursor=pointer]:
+        - /url: /hrm/career-paths
+      - link "360° Feedback" [ref=e75] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Compensation Planning" [ref=e76] [cursor=pointer]:
+        - /url: /hrm/compensation-planning
+      - link "Workforce Planning" [ref=e77] [cursor=pointer]:
+        - /url: /hrm/workforce-planning
+      - link "Overtime Management" [ref=e78] [cursor=pointer]:
+        - /url: /hrm/overtime
+      - link "Grievances & Complaints" [ref=e79] [cursor=pointer]:
+        - /url: /hrm/grievances
+      - link "Exit Interviews" [ref=e80] [cursor=pointer]:
+        - /url: /hrm/exit-interviews
+      - link "Pulse Surveys" [ref=e81] [cursor=pointer]:
+        - /url: /hrm/pulse-surveys
+      - link "Onboarding & Offboarding" [ref=e82] [cursor=pointer]:
+        - /url: /hrm/onboarding
+      - link "Workplace Safety" [ref=e83] [cursor=pointer]:
+        - /url: /hrm/safety
+      - link "HR Documents" [ref=e84] [cursor=pointer]:
+        - /url: /hrm/documents
+      - link "AI Analytics" [ref=e85] [cursor=pointer]:
+        - /url: /hrm/ai-analytics
+      - link "Org Structure" [ref=e86] [cursor=pointer]:
+        - /url: /hrm/org-structure/departments
+      - link "Benefits" [ref=e87] [cursor=pointer]:
+        - /url: /hrm/benefits
+      - link "Events & Announcements" [ref=e88] [cursor=pointer]:
+        - /url: /hrm/events
+      - link "HR Settings" [ref=e89] [cursor=pointer]:
+        - /url: /hrm/settings
+    - generic [ref=e90]:
+      - generic [ref=e91]:
+        - button "Expand sidebar" [ref=e92] [cursor=pointer]:
+          - img [ref=e93]
+        - generic [ref=e95]: Users
+        - generic [ref=e96]:
+          - button "Notifications" [ref=e97] [cursor=pointer]:
+            - img [ref=e99]
+          - generic [ref=e101]:
+            - generic [ref=e103]: "?"
+            - generic [ref=e104]:
+              - generic [ref=e105]: UAT Super Admin
+              - generic [ref=e106]: Super Administrator
+            - button "Sign out" [ref=e107] [cursor=pointer]:
+              - img [ref=e109]
+      - main [ref=e111]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - navigation "Breadcrumb" [ref=e115]:
+              - link "Dashboard" [ref=e117] [cursor=pointer]:
+                - /url: https://aeos365-standalone.test/dashboard
+              - generic [ref=e118]:
+                - img [ref=e120]
+                - generic [ref=e122]: Users
+            - generic [ref=e123]:
+              - generic [ref=e124]:
+                - heading "Users" [level=1] [ref=e126]
+                - paragraph [ref=e127]: Manage user accounts, roles, and permissions.
+              - button "Create User" [ref=e129] [cursor=pointer]:
+                - generic [ref=e130]: Create User
+          - generic [ref=e131]:
+            - generic [ref=e133]:
+              - heading "Total Users" [level=3] [ref=e136]
+              - generic [ref=e138]: "0"
+            - generic [ref=e140]:
+              - heading "Active" [level=3] [ref=e143]
+              - generic [ref=e145]: "0"
+            - generic [ref=e147]:
+              - heading "Inactive" [level=3] [ref=e150]
+              - generic [ref=e152]: "0"
+          - generic [ref=e154]:
+            - textbox "Search name, email, username…" [ref=e155]
+            - combobox [ref=e156] [cursor=pointer]:
+              - option "All Statuses" [selected]
+              - option "Active"
+              - option "Inactive"
+            - combobox [ref=e157] [cursor=pointer]:
+              - option "All Roles" [selected]
+              - option "Administrator"
+              - option "Employee"
+              - option "HR Manager"
+              - option "Super Administrator"
+            - button "Filter" [ref=e158] [cursor=pointer]:
+              - generic [ref=e159]: Filter
+            - button "Reset" [ref=e160] [cursor=pointer]:
+              - generic [ref=e161]: Reset
+            - button "Saved Views" [ref=e164] [cursor=pointer]:
+              - generic [ref=e165]:
+                - img [ref=e166]
+                - text: Saved Views
+          - table [ref=e171]:
+            - rowgroup [ref=e172]:
+              - row "Name Email Roles Status Joined" [ref=e173]:
+                - columnheader [ref=e174]
+                - columnheader "Name" [ref=e175]
+                - columnheader "Email" [ref=e176]
+                - columnheader "Roles" [ref=e177]
+                - columnheader "Status" [ref=e178]
+                - columnheader "Joined" [ref=e179]
+                - columnheader [ref=e180]
+            - rowgroup [ref=e181]:
+              - row "Susan Heaney MD @susan_heaney_md_8170 wtromp@example.net Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e182]:
+                - cell [ref=e183]:
+                  - checkbox [ref=e184] [cursor=pointer]
+                - cell "Susan Heaney MD @susan_heaney_md_8170" [ref=e185]:
+                  - paragraph [ref=e186]:
+                    - text: Susan Heaney MD
+                    - generic [ref=e187]: "@susan_heaney_md_8170"
+                - cell "wtromp@example.net" [ref=e188]
+                - cell [ref=e189]
+                - cell "Active" [ref=e190]:
+                  - generic [ref=e191]: Active
+                - cell "6/4/2026" [ref=e192]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e193]:
+                  - generic [ref=e194]:
+                    - button "View" [ref=e195] [cursor=pointer]:
+                      - generic [ref=e196]: View
+                    - button "Edit" [ref=e197] [cursor=pointer]:
+                      - generic [ref=e198]: Edit
+                    - button "Deactivate" [ref=e199] [cursor=pointer]:
+                      - generic [ref=e200]: Deactivate
+                    - button "Impersonate" [ref=e201] [cursor=pointer]:
+                      - generic [ref=e202]: Impersonate
+                    - button "Delete" [ref=e203] [cursor=pointer]:
+                      - generic [ref=e204]: Delete
+              - row "Samir Jacobi @samir_jacobi_8173 hailie70@example.net Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e205]:
+                - cell [ref=e206]:
+                  - checkbox [ref=e207] [cursor=pointer]
+                - cell "Samir Jacobi @samir_jacobi_8173" [ref=e208]:
+                  - paragraph [ref=e209]:
+                    - text: Samir Jacobi
+                    - generic [ref=e210]: "@samir_jacobi_8173"
+                - cell "hailie70@example.net" [ref=e211]
+                - cell [ref=e212]
+                - cell "Active" [ref=e213]:
+                  - generic [ref=e214]: Active
+                - cell "6/4/2026" [ref=e215]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e216]:
+                  - generic [ref=e217]:
+                    - button "View" [ref=e218] [cursor=pointer]:
+                      - generic [ref=e219]: View
+                    - button "Edit" [ref=e220] [cursor=pointer]:
+                      - generic [ref=e221]: Edit
+                    - button "Deactivate" [ref=e222] [cursor=pointer]:
+                      - generic [ref=e223]: Deactivate
+                    - button "Impersonate" [ref=e224] [cursor=pointer]:
+                      - generic [ref=e225]: Impersonate
+                    - button "Delete" [ref=e226] [cursor=pointer]:
+                      - generic [ref=e227]: Delete
+              - row "Jett Heathcote @jett_heathcote_8679 gwendolyn.kunde@example.com Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e228]:
+                - cell [ref=e229]:
+                  - checkbox [ref=e230] [cursor=pointer]
+                - cell "Jett Heathcote @jett_heathcote_8679" [ref=e231]:
+                  - paragraph [ref=e232]:
+                    - text: Jett Heathcote
+                    - generic [ref=e233]: "@jett_heathcote_8679"
+                - cell "gwendolyn.kunde@example.com" [ref=e234]
+                - cell [ref=e235]
+                - cell "Active" [ref=e236]:
+                  - generic [ref=e237]: Active
+                - cell "6/4/2026" [ref=e238]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e239]:
+                  - generic [ref=e240]:
+                    - button "View" [ref=e241] [cursor=pointer]:
+                      - generic [ref=e242]: View
+                    - button "Edit" [ref=e243] [cursor=pointer]:
+                      - generic [ref=e244]: Edit
+                    - button "Deactivate" [ref=e245] [cursor=pointer]:
+                      - generic [ref=e246]: Deactivate
+                    - button "Impersonate" [ref=e247] [cursor=pointer]:
+                      - generic [ref=e248]: Impersonate
+                    - button "Delete" [ref=e249] [cursor=pointer]:
+                      - generic [ref=e250]: Delete
+              - row "Ulises Toy @ulises_toy_8075 boyle.maiya@example.com Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e251]:
+                - cell [ref=e252]:
+                  - checkbox [ref=e253] [cursor=pointer]
+                - cell "Ulises Toy @ulises_toy_8075" [ref=e254]:
+                  - paragraph [ref=e255]:
+                    - text: Ulises Toy
+                    - generic [ref=e256]: "@ulises_toy_8075"
+                - cell "boyle.maiya@example.com" [ref=e257]
+                - cell [ref=e258]
+                - cell "Active" [ref=e259]:
+                  - generic [ref=e260]: Active
+                - cell "6/4/2026" [ref=e261]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e262]:
+                  - generic [ref=e263]:
+                    - button "View" [ref=e264] [cursor=pointer]:
+                      - generic [ref=e265]: View
+                    - button "Edit" [ref=e266] [cursor=pointer]:
+                      - generic [ref=e267]: Edit
+                    - button "Deactivate" [ref=e268] [cursor=pointer]:
+                      - generic [ref=e269]: Deactivate
+                    - button "Impersonate" [ref=e270] [cursor=pointer]:
+                      - generic [ref=e271]: Impersonate
+                    - button "Delete" [ref=e272] [cursor=pointer]:
+                      - generic [ref=e273]: Delete
+              - row "Prof. Thurman Lakin @prof_thurman_lakin_4020 erin.heller@example.com Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e274]:
+                - cell [ref=e275]:
+                  - checkbox [ref=e276] [cursor=pointer]
+                - cell "Prof. Thurman Lakin @prof_thurman_lakin_4020" [ref=e277]:
+                  - paragraph [ref=e278]:
+                    - text: Prof. Thurman Lakin
+                    - generic [ref=e279]: "@prof_thurman_lakin_4020"
+                - cell "erin.heller@example.com" [ref=e280]
+                - cell [ref=e281]
+                - cell "Active" [ref=e282]:
+                  - generic [ref=e283]: Active
+                - cell "6/4/2026" [ref=e284]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e285]:
+                  - generic [ref=e286]:
+                    - button "View" [ref=e287] [cursor=pointer]:
+                      - generic [ref=e288]: View
+                    - button "Edit" [ref=e289] [cursor=pointer]:
+                      - generic [ref=e290]: Edit
+                    - button "Deactivate" [ref=e291] [cursor=pointer]:
+                      - generic [ref=e292]: Deactivate
+                    - button "Impersonate" [ref=e293] [cursor=pointer]:
+                      - generic [ref=e294]: Impersonate
+                    - button "Delete" [ref=e295] [cursor=pointer]:
+                      - generic [ref=e296]: Delete
+              - row "Ms. Oleta Gaylord II @ms_oleta_gaylord_ii_1016 jcollier@example.net Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e297]:
+                - cell [ref=e298]:
+                  - checkbox [ref=e299] [cursor=pointer]
+                - cell "Ms. Oleta Gaylord II @ms_oleta_gaylord_ii_1016" [ref=e300]:
+                  - paragraph [ref=e301]:
+                    - text: Ms. Oleta Gaylord II
+                    - generic [ref=e302]: "@ms_oleta_gaylord_ii_1016"
+                - cell "jcollier@example.net" [ref=e303]
+                - cell [ref=e304]
+                - cell "Active" [ref=e305]:
+                  - generic [ref=e306]: Active
+                - cell "6/4/2026" [ref=e307]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e308]:
+                  - generic [ref=e309]:
+                    - button "View" [ref=e310] [cursor=pointer]:
+                      - generic [ref=e311]: View
+                    - button "Edit" [ref=e312] [cursor=pointer]:
+                      - generic [ref=e313]: Edit
+                    - button "Deactivate" [ref=e314] [cursor=pointer]:
+                      - generic [ref=e315]: Deactivate
+                    - button "Impersonate" [ref=e316] [cursor=pointer]:
+                      - generic [ref=e317]: Impersonate
+                    - button "Delete" [ref=e318] [cursor=pointer]:
+                      - generic [ref=e319]: Delete
+              - row "Johnpaul Veum @johnpaul_veum_1245 ahartmann@example.net Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e320]:
+                - cell [ref=e321]:
+                  - checkbox [ref=e322] [cursor=pointer]
+                - cell "Johnpaul Veum @johnpaul_veum_1245" [ref=e323]:
+                  - paragraph [ref=e324]:
+                    - text: Johnpaul Veum
+                    - generic [ref=e325]: "@johnpaul_veum_1245"
+                - cell "ahartmann@example.net" [ref=e326]
+                - cell [ref=e327]
+                - cell "Active" [ref=e328]:
+                  - generic [ref=e329]: Active
+                - cell "6/4/2026" [ref=e330]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e331]:
+                  - generic [ref=e332]:
+                    - button "View" [ref=e333] [cursor=pointer]:
+                      - generic [ref=e334]: View
+                    - button "Edit" [ref=e335] [cursor=pointer]:
+                      - generic [ref=e336]: Edit
+                    - button "Deactivate" [ref=e337] [cursor=pointer]:
+                      - generic [ref=e338]: Deactivate
+                    - button "Impersonate" [ref=e339] [cursor=pointer]:
+                      - generic [ref=e340]: Impersonate
+                    - button "Delete" [ref=e341] [cursor=pointer]:
+                      - generic [ref=e342]: Delete
+              - row "Ms. Ada Vandervort DDS @ms_ada_vandervort_dds_2913 dcummings@example.net Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e343]:
+                - cell [ref=e344]:
+                  - checkbox [ref=e345] [cursor=pointer]
+                - cell "Ms. Ada Vandervort DDS @ms_ada_vandervort_dds_2913" [ref=e346]:
+                  - paragraph [ref=e347]:
+                    - text: Ms. Ada Vandervort DDS
+                    - generic [ref=e348]: "@ms_ada_vandervort_dds_2913"
+                - cell "dcummings@example.net" [ref=e349]
+                - cell [ref=e350]
+                - cell "Active" [ref=e351]:
+                  - generic [ref=e352]: Active
+                - cell "6/4/2026" [ref=e353]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e354]:
+                  - generic [ref=e355]:
+                    - button "View" [ref=e356] [cursor=pointer]:
+                      - generic [ref=e357]: View
+                    - button "Edit" [ref=e358] [cursor=pointer]:
+                      - generic [ref=e359]: Edit
+                    - button "Deactivate" [ref=e360] [cursor=pointer]:
+                      - generic [ref=e361]: Deactivate
+                    - button "Impersonate" [ref=e362] [cursor=pointer]:
+                      - generic [ref=e363]: Impersonate
+                    - button "Delete" [ref=e364] [cursor=pointer]:
+                      - generic [ref=e365]: Delete
+              - row "Bert Marks @bert_marks_3088 elody.lemke@example.com Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e366]:
+                - cell [ref=e367]:
+                  - checkbox [ref=e368] [cursor=pointer]
+                - cell "Bert Marks @bert_marks_3088" [ref=e369]:
+                  - paragraph [ref=e370]:
+                    - text: Bert Marks
+                    - generic [ref=e371]: "@bert_marks_3088"
+                - cell "elody.lemke@example.com" [ref=e372]
+                - cell [ref=e373]
+                - cell "Active" [ref=e374]:
+                  - generic [ref=e375]: Active
+                - cell "6/4/2026" [ref=e376]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e377]:
+                  - generic [ref=e378]:
+                    - button "View" [ref=e379] [cursor=pointer]:
+                      - generic [ref=e380]: View
+                    - button "Edit" [ref=e381] [cursor=pointer]:
+                      - generic [ref=e382]: Edit
+                    - button "Deactivate" [ref=e383] [cursor=pointer]:
+                      - generic [ref=e384]: Deactivate
+                    - button "Impersonate" [ref=e385] [cursor=pointer]:
+                      - generic [ref=e386]: Impersonate
+                    - button "Delete" [ref=e387] [cursor=pointer]:
+                      - generic [ref=e388]: Delete
+              - row "UAT HR Manager @hr hr@uatco.test HR Manager Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e389]:
+                - cell [ref=e390]:
+                  - checkbox [ref=e391] [cursor=pointer]
+                - cell "UAT HR Manager @hr" [ref=e392]:
+                  - paragraph [ref=e393]:
+                    - text: UAT HR Manager
+                    - generic [ref=e394]: "@hr"
+                - cell "hr@uatco.test" [ref=e395]
+                - cell "HR Manager" [ref=e396]:
+                  - generic [ref=e398]: HR Manager
+                - cell "Active" [ref=e399]:
+                  - generic [ref=e400]: Active
+                - cell "6/4/2026" [ref=e401]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e402]:
+                  - generic [ref=e403]:
+                    - button "View" [ref=e404] [cursor=pointer]:
+                      - generic [ref=e405]: View
+                    - button "Edit" [ref=e406] [cursor=pointer]:
+                      - generic [ref=e407]: Edit
+                    - button "Deactivate" [ref=e408] [cursor=pointer]:
+                      - generic [ref=e409]: Deactivate
+                    - button "Impersonate" [ref=e410] [cursor=pointer]:
+                      - generic [ref=e411]: Impersonate
+                    - button "Delete" [ref=e412] [cursor=pointer]:
+                      - generic [ref=e413]: Delete
+              - row "UAT Employee @employee employee@uatco.test Employee Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e414]:
+                - cell [ref=e415]:
+                  - checkbox [ref=e416] [cursor=pointer]
+                - cell "UAT Employee @employee" [ref=e417]:
+                  - paragraph [ref=e418]:
+                    - text: UAT Employee
+                    - generic [ref=e419]: "@employee"
+                - cell "employee@uatco.test" [ref=e420]
+                - cell "Employee" [ref=e421]:
+                  - generic [ref=e423]: Employee
+                - cell "Active" [ref=e424]:
+                  - generic [ref=e425]: Active
+                - cell "6/4/2026" [ref=e426]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e427]:
+                  - generic [ref=e428]:
+                    - button "View" [ref=e429] [cursor=pointer]:
+                      - generic [ref=e430]: View
+                    - button "Edit" [ref=e431] [cursor=pointer]:
+                      - generic [ref=e432]: Edit
+                    - button "Deactivate" [ref=e433] [cursor=pointer]:
+                      - generic [ref=e434]: Deactivate
+                    - button "Impersonate" [ref=e435] [cursor=pointer]:
+                      - generic [ref=e436]: Impersonate
+                    - button "Delete" [ref=e437] [cursor=pointer]:
+                      - generic [ref=e438]: Delete
+              - row "Beatrice Rath @beatrice_rath_7218 arielle10@example.org Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e439]:
+                - cell [ref=e440]:
+                  - checkbox [ref=e441] [cursor=pointer]
+                - cell "Beatrice Rath @beatrice_rath_7218" [ref=e442]:
+                  - paragraph [ref=e443]:
+                    - text: Beatrice Rath
+                    - generic [ref=e444]: "@beatrice_rath_7218"
+                - cell "arielle10@example.org" [ref=e445]
+                - cell [ref=e446]
+                - cell "Active" [ref=e447]:
+                  - generic [ref=e448]: Active
+                - cell "6/4/2026" [ref=e449]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e450]:
+                  - generic [ref=e451]:
+                    - button "View" [ref=e452] [cursor=pointer]:
+                      - generic [ref=e453]: View
+                    - button "Edit" [ref=e454] [cursor=pointer]:
+                      - generic [ref=e455]: Edit
+                    - button "Deactivate" [ref=e456] [cursor=pointer]:
+                      - generic [ref=e457]: Deactivate
+                    - button "Impersonate" [ref=e458] [cursor=pointer]:
+                      - generic [ref=e459]: Impersonate
+                    - button "Delete" [ref=e460] [cursor=pointer]:
+                      - generic [ref=e461]: Delete
+              - row "UAT Super Admin @superadmin superadmin@uatco.test Super Administrator Active 6/4/2026 View Edit Deactivate Impersonate Delete" [ref=e462]:
+                - cell [ref=e463]:
+                  - checkbox [ref=e464] [cursor=pointer]
+                - cell "UAT Super Admin @superadmin" [ref=e465]:
+                  - paragraph [ref=e466]:
+                    - text: UAT Super Admin
+                    - generic [ref=e467]: "@superadmin"
+                - cell "superadmin@uatco.test" [ref=e468]
+                - cell "Super Administrator" [ref=e469]:
+                  - generic [ref=e471]: Super Administrator
+                - cell "Active" [ref=e472]:
+                  - generic [ref=e473]: Active
+                - cell "6/4/2026" [ref=e474]
+                - cell "View Edit Deactivate Impersonate Delete" [ref=e475]:
+                  - generic [ref=e476]:
+                    - button "View" [ref=e477] [cursor=pointer]:
+                      - generic [ref=e478]: View
+                    - button "Edit" [ref=e479] [cursor=pointer]:
+                      - generic [ref=e480]: Edit
+                    - button "Deactivate" [ref=e481] [cursor=pointer]:
+                      - generic [ref=e482]: Deactivate
+                    - button "Impersonate" [ref=e483] [cursor=pointer]:
+                      - generic [ref=e484]: Impersonate
+                    - button "Delete" [ref=e485] [cursor=pointer]:
+                      - generic [ref=e486]: Delete
+  - button "Open Theme Studio" [ref=e487] [cursor=pointer]:
+    - img [ref=e488]

@@ -7,12 +7,15 @@ use Aero\Auth\Contracts\AuthContext;
 use Aero\Contracts\MailSenderInterface;
 use Aero\Contracts\PlanCatalogInterface;
 use Aero\Contracts\ProductAccessInterface;
+use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Contracts\SmsGatewayInterface;
 use Aero\Contracts\TenantScopeInterface;
 use Aero\Contracts\TranslationDriverInterface;
 use Aero\Core\Services\InstallationState;
 use Aero\Core\Services\NavigationRegistry;
+use Aero\Kernel\ValueObjects\RequestContext;
 use Aero\Core\Traits\ParsesHostDomain;
+use Aero\HRMAC\Services\NullRoleModuleAccessService;
 use Aero\HRMAC\Services\RoleModuleAccessService as HRMACRoleModuleAccessService;
 use Aero\I18n\Http\Middleware\SetLocale;
 use Aero\I18n\Services\TranslationService;
@@ -65,7 +68,7 @@ use Aero\Platform\Listeners\ReactivateRoleAccessOnResubscribe;
 use Aero\Platform\Listeners\ResyncTenantModuleCatalog;
 use Aero\Platform\Listeners\SuspendUnsubscribedRoleAccess;
 use Aero\Platform\Listeners\TenantCreatedListener;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
@@ -80,8 +83,6 @@ use Aero\Platform\Services\Billing\SslCommerzService;
 use Aero\Platform\Services\DownloadService;
 use Aero\Platform\Services\LicenseIssuer;
 use Aero\Platform\Services\Module\ModuleAccessService;
-use Aero\Platform\Services\Module\NullRoleModuleAccessService;
-use Aero\Platform\Services\Module\RoleModuleAccessService;
 use Aero\Platform\Services\Monitoring\Tenant\ErrorLogService;
 use Aero\Platform\Services\Notifications\PlatformMailContextResolver;
 use Aero\Platform\Services\Notifications\PlatformSmsContextResolver;
@@ -117,7 +118,6 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
-use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 
 /**
@@ -149,12 +149,31 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 : new TenantAuthContext;
         });
 
+        // Host-aware DEFAULT RequestContext so the whole admin domain — including
+        // GUEST pages (login, forgot-password) that render shared HRMAC-backed nav —
+        // resolves as platform context. The ResolvePlatformContext/ResolveTenantContext
+        // route middleware still override this where present (authenticated routes).
+        // Without this, HRMAC's context guard fail-closes on admin guest pages.
+        $this->app->bind(RequestContext::class, function ($app) {
+            $host = $app->make('request')->getHost();
+            $adminHost = config('aero.admin_domain', 'admin.'.config('app.domain', parse_url(config('app.url', ''), PHP_URL_HOST)));
+
+            return str_starts_with($host, 'admin.') || $host === $adminHost
+                ? new RequestContext('platform', 'landlord')
+                : new RequestContext('tenant', 'web');
+        });
+
         // Register global BootstrapGuard middleware FIRST
         // This runs before route matching and handles:
         // 1. Installation status check
         // 2. Cross-domain redirect to platform /install if not installed
         $kernel = $this->app->make(Kernel::class);
         $kernel->pushMiddleware(BootstrapGuard::class);
+
+        // B-36: on the bare platform domain, redirect /login -> /signup before routing
+        // (the mode-agnostic aero-auth tenant login route is registered without a domain
+        // and would otherwise render a dead login form on the marketing domain).
+        $kernel->pushMiddleware(\Aero\Platform\Http\Middleware\RedirectCentralLoginToSignup::class);
 
         // CRITICAL: Only register tenancy if installed AND in SaaS mode
         // This prevents tenancy from being enabled during installation
@@ -183,11 +202,20 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Platform provides the SaaS implementation using stancl/tenancy
         $this->app->singleton(TenantScopeInterface::class, SaaSTenantScope::class);
 
+        // SaaS data-decision (Audit D15): tenant module syncs are gated to subscribed
+        // products. HRMAC's context-free sync command applies this filter only because
+        // the platform (the consumer) binds it here. Standalone never binds it.
+        $this->app->singleton(
+            \Aero\Contracts\ModuleSyncFilterInterface::class,
+            \Aero\Platform\Services\TenantSubscriptionModuleFilter::class
+        );
+
         // Register Module Access Services with fallback stubs for pre-install
         // These services are lazy-loaded to avoid DB queries before installation
-        $this->app->singleton(HRMACRoleModuleAccessService::class, function ($app) {
-            // Before installation: return a null-object stub that satisfies the
-            // RoleModuleAccessService type hint without making any DB queries.
+        // The RoleModuleAccessInterface (Aero\Contracts) is the single binding key
+        // for RBAC. Bind it to the HRMAC implementation, or to HRMAC's NULL impl
+        // before installation so RBAC fails CLOSED with no DB queries.
+        $this->app->singleton(RoleModuleAccessInterface::class, function ($app) {
             if (! InstallationState::isInstalled()) {
                 return new NullRoleModuleAccessService;
             }
@@ -199,8 +227,9 @@ class AeroPlatformServiceProvider extends ServiceProvider
             }
         });
 
-        // Alias Platform's RoleModuleAccessService to HRMAC's for backward compatibility
-        $this->app->alias(HRMACRoleModuleAccessService::class, RoleModuleAccessService::class);
+        // Concrete-class alias: callers that still type-hint the HRMAC concrete
+        // class resolve the same (gated) instance as the interface.
+        $this->app->alias(RoleModuleAccessInterface::class, HRMACRoleModuleAccessService::class);
 
         $this->app->singleton(ModuleAccessService::class, function ($app) {
             // Only instantiate if installed to avoid DB queries pre-install
@@ -215,7 +244,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
             }
 
             try {
-                return new ModuleAccessService($app->make(RoleModuleAccessService::class));
+                return new ModuleAccessService($app->make(RoleModuleAccessInterface::class));
             } catch (\Throwable $e) {
                 return new class
                 {
@@ -307,6 +336,25 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Decision 6 (module-model consolidation): the canonical hrmac Module is
+        // pure-shareable and must NOT reference the platform Plan model. Platform owns
+        // the module<->plan relationship, so it is registered dynamically on the canonical
+        // Module at boot (SaaS only). Preserves the pre-consolidation
+        // Aero\Platform\Models\Module::plans() behavior without coupling hrmac to platform.
+        \Aero\HRMAC\Models\Module::resolveRelationUsing('plans', function ($module) {
+            return $module->belongsToMany(Plan::class, 'plan_module')
+                ->withPivot('limits', 'is_enabled')
+                ->withTimestamps()
+                ->wherePivot('is_enabled', true);
+        });
+
+        // Auth purity (auth-identity unification): the shared Aero\Auth\Models\User is a
+        // PURE identity model with no tenancy/connection knowledge. As the multi-tenant
+        // host, PLATFORM (the consumer) applies the tenant-isolation guard to User here —
+        // fail-closed for tenant-DB queries, with a no-op escape for central/landlord
+        // queries (resolved connection 'central'; the admin domain flips the default
+        // connection to central and the landlord provider binds central at retrieval).
+        // Standalone/core (no platform) consume the pure User with no guard (single DB).
         // Register audit observers
         Plan::observe(PlanAuditObserver::class);
         Subscription::observe(SubscriptionObserver::class);
@@ -391,8 +439,6 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Publish assets
         $this->registerPublishing();
 
-        // Register views (for email templates, etc.)
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-platform');
 
         // NOTE: Vite configuration is handled by aero/ui package
         // All frontend code lives in aero/ui - this package is backend-only
@@ -421,6 +467,23 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Register Platform dashboard widgets
         // These appear on the Admin Dashboard following the Core pattern
         $this->registerPlatformDashboardWidgets();
+
+        // In testing environment, if default database is sqlite, redirect mysql and central connection resolution to the default connection to share the same :memory: database
+        if ($this->app->environment('testing') && config('database.default') === 'sqlite') {
+            $this->app->booted(function () {
+                try {
+                    $db = $this->app->make('db');
+                    $db->extend('central', function ($config, $name) use ($db) {
+                        return $db->connection('sqlite');
+                    });
+                    $db->extend('mysql', function ($config, $name) use ($db) {
+                        return $db->connection('sqlite');
+                    });
+                } catch (\Throwable $e) {
+                    // Silently ignore if DB is not accessible yet
+                }
+            });
+        }
     }
 
     /**
@@ -490,6 +553,13 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $submoduleNav = [];
         foreach ($config['submodules'] ?? [] as $submodule) {
             $submoduleCode = $submodule['code'] ?? '';
+
+            // Respect explicit nav suppression — used to hide features whose
+            // backend exists but whose admin UI is not built yet (no page),
+            // so the sidebar never links to a blank screen.
+            if (($submodule['show_in_nav'] ?? true) === false) {
+                continue;
+            }
 
             // Get submodule icon for fallback
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
@@ -633,10 +703,19 @@ class AeroPlatformServiceProvider extends ServiceProvider
             'provider' => 'landlord_users',
         ]);
 
-        // Add landlord_users provider
+        // Add landlord_users provider.
+        // Auth-identity unification (Unit 4): landlords are unified Aero\Auth\Models\User
+        // rows in the CENTRAL users table. A custom provider pins retrieval onto the
+        // central connection (User itself is connection-agnostic now that User
+        // is eliminated).
+        \Illuminate\Support\Facades\Auth::provider(
+            'landlord_central_eloquent',
+            fn ($app, array $config) => new \Aero\Auth\Providers\LandlordUserProvider($app['hash'], $config['model'])
+        );
+
         Config::set('auth.providers.landlord_users', [
-            'driver' => 'eloquent',
-            'model' => LandlordUser::class,
+            'driver' => 'landlord_central_eloquent',
+            'model' => \Aero\Auth\Models\User::class,
         ]);
 
         // Add password reset for landlord users
@@ -777,28 +856,53 @@ class AeroPlatformServiceProvider extends ServiceProvider
      * Resolve the database name from available sources.
      *
      * Priority:
-     * 1. .env DB_DATABASE (if set and non-empty)
-     * 2. installation_db_config.json (installation wizard stored config)
-     * 3. Fallback to 'eos365'
+     * 1. Config mysql database or .env DB_DATABASE (if set and non-empty)
+     * 2. framework/installation_config.json (new unified config file)
+     * 3. installation_db_config.json (legacy flat config file)
+     * 4. Fallback to 'aeos365'
      */
     protected function resolveDatabase(): string
     {
-        // Priority 1: Check .env
+        // Priority 1: Check config mysql database (handles cached config)
+        $configDatabase = config('database.connections.mysql.database');
+        if (! empty($configDatabase) && ! in_array($configDatabase, ['forge', 'laravel', 'database', 'eos365'])) {
+            return $configDatabase;
+        }
+
+        // Priority 1b: Check .env directly
         $envDatabase = env('DB_DATABASE');
         if (! empty($envDatabase)) {
             return $envDatabase;
         }
 
-        // Priority 2: Check installation config file
-        $configPath = storage_path('installation_db_config.json');
-        if (file_exists($configPath)) {
+        // Priority 2: Check new unified installation config file
+        $newConfigPath = storage_path('framework/installation_config.json');
+        if (file_exists($newConfigPath)) {
             try {
-                $config = json_decode(file_get_contents($configPath), true);
-                if (! empty($config['db_database'])) {
-                    // Also update host/port/user/pass from installation config
+                $config = json_decode(file_get_contents($newConfigPath), true);
+                if (isset($config['database']) && is_array($config['database'])) {
+                    $dbName = $config['database']['db_database'] ?? $config['database']['database'] ?? null;
+                    if (! empty($dbName)) {
+                        $this->applyInstallationDbConfig($config);
+
+                        return $dbName;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Silently ignore parse errors
+            }
+        }
+
+        // Priority 2b: Check legacy installation config file
+        $legacyConfigPath = storage_path('installation_db_config.json');
+        if (file_exists($legacyConfigPath)) {
+            try {
+                $config = json_decode(file_get_contents($legacyConfigPath), true);
+                $dbName = $config['db_database'] ?? $config['database'] ?? null;
+                if (! empty($dbName)) {
                     $this->applyInstallationDbConfig($config);
 
-                    return $config['db_database'];
+                    return $dbName;
                 }
             } catch (\Throwable $e) {
                 // Silently ignore parse errors
@@ -806,7 +910,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
         }
 
         // Priority 3: Fallback
-        return 'eos365';
+        return '';
     }
 
     /**
@@ -814,21 +918,32 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function applyInstallationDbConfig(array $config): void
     {
-        $mysqlConfig = config('database.connections.mysql', []);
+        // Support both old flat format (db_host, etc.) and new unified format (nested under 'database')
+        $dbConfig = $config;
+        if (isset($config['database']) && is_array($config['database'])) {
+            $dbConfig = $config['database'];
+        }
 
-        if (! empty($config['db_host'])) {
-            Config::set('database.connections.mysql.host', $config['db_host']);
+        $host = $dbConfig['db_host'] ?? $dbConfig['host'] ?? null;
+        if (! empty($host)) {
+            Config::set('database.connections.mysql.host', $host);
         }
-        if (! empty($config['db_port'])) {
-            Config::set('database.connections.mysql.port', $config['db_port']);
+
+        $port = $dbConfig['db_port'] ?? $dbConfig['port'] ?? null;
+        if (! empty($port)) {
+            Config::set('database.connections.mysql.port', $port);
         }
-        if (! empty($config['db_username'])) {
-            Config::set('database.connections.mysql.username', $config['db_username']);
+
+        $username = $dbConfig['db_username'] ?? $dbConfig['username'] ?? null;
+        if (! empty($username)) {
+            Config::set('database.connections.mysql.username', $username);
         }
-        if (isset($config['db_password'])) {
-            $password = $config['db_password'];
-            // Decrypt if encrypted
-            if (! empty($config['db_password_encrypted']) && ! empty($password)) {
+
+        $password = $dbConfig['db_password'] ?? $dbConfig['password'] ?? null;
+        if ($password !== null) {
+            // Decrypt if encrypted (only old format had db_password_encrypted, but handle it just in case)
+            $isEncrypted = ! empty($dbConfig['db_password_encrypted']) || ! empty($config['db_password_encrypted']);
+            if ($isEncrypted && ! empty($password)) {
                 try {
                     $password = Crypt::decryptString($password);
                 } catch (\Throwable $e) {
@@ -886,6 +1001,10 @@ class AeroPlatformServiceProvider extends ServiceProvider
             'middleware' => ['web'],
             'domain' => $adminDomain,
         ], function () {
+            // Landlord/admin AUTH routes (login/logout/root/session-check/impersonation).
+            // Moved out of aero-auth to keep that package mode-agnostic; loaded first
+            // so the guest login routes are available, then the protected admin routes.
+            $this->loadRoutesFrom(__DIR__.'/../routes/admin-auth.php');
             $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
         });
 
@@ -1006,7 +1125,8 @@ class AeroPlatformServiceProvider extends ServiceProvider
     {
         return [
             ModuleAccessService::class,
-            RoleModuleAccessService::class,
+            RoleModuleAccessInterface::class,
+            HRMACRoleModuleAccessService::class,
             PlatformSettingService::class,
             ErrorLogService::class,
             SslCommerzService::class,
@@ -1041,21 +1161,36 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function overrideMigratorForLandlord(): void
     {
-        $platformMigrationsPath = realpath(__DIR__.'/../database/migrations');
+        // The central/landlord DB runs tier=platform + tier=sharable packages (NOT core,
+        // NOT product — those are tenant-only). Single source of truth: each package's
+        // extra.aero.tier (Phase 4 — see Aero\Kernel\Migration\PackageTier). This replaces the
+        // earlier hand-listed baseline_modules-minus-core set, which was missing
+        // aero-infrastructure (a sharable: installation_history/progress/module_pricing/
+        // system_health_logs). The sharable packages are pure single-schema packages used
+        // identically by central and tenants — no per-context columns.
+        $platformMigrationPath = realpath(__DIR__.'/../database/migrations') ?: __DIR__.'/../database/migrations';
+        $allowedMigrationPaths = array_values(array_filter(array_unique(array_merge(
+            [$platformMigrationPath],
+            \Aero\Kernel\Migration\PackageTier::migrationPathsForContext('central')
+        ))));
         $centralDatabase = config('tenancy.database.central_connection', config('database.default'));
 
-        $this->app->extend('migrator', function ($migrator, $app) use ($platformMigrationsPath, $centralDatabase) {
-            return new class($app['migration.repository'], $app['db'], $app['files'], $app['events'], $platformMigrationsPath, $centralDatabase) extends Migrator
+        $this->app->extend('migrator', function ($migrator, $app) use ($allowedMigrationPaths, $centralDatabase, $platformMigrationPath) {
+            return new class($app['migration.repository'], $app['db'], $app['files'], $app['events'], $allowedMigrationPaths, $centralDatabase, $platformMigrationPath) extends Migrator
             {
-                protected string $platformMigrationsPath;
+                /** @var array<int, string> */
+                protected array $allowedMigrationPaths;
 
                 protected string $centralDatabase;
 
-                public function __construct($repository, $resolver, $files, $dispatcher, string $platformMigrationsPath, string $centralDatabase)
+                protected string $platformMigrationPath;
+
+                public function __construct($repository, $resolver, $files, $dispatcher, array $allowedMigrationPaths, string $centralDatabase, string $platformMigrationPath)
                 {
                     parent::__construct($repository, $resolver, $files, $dispatcher);
-                    $this->platformMigrationsPath = $platformMigrationsPath;
+                    $this->allowedMigrationPaths = $allowedMigrationPaths;
                     $this->centralDatabase = $centralDatabase;
+                    $this->platformMigrationPath = $platformMigrationPath;
                 }
 
                 public function getMigrationFiles($paths)
@@ -1063,10 +1198,27 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     // Get all migration files from all paths
                     $files = parent::getMigrationFiles($paths);
 
-                    // Check if we're on a tenant database (tenancy is initialized)
-                    // If tenancy is initialized, allow ALL package migrations
+                    // If running tests with sqlite connection, bypass connection filtering
+                    // and return all package migrations to build the complete single-database schema.
+                    if (app()->environment('testing') && config('database.default') === 'sqlite') {
+                        return collect($files)->unique(function ($path) {
+                            return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
+                        })->all();
+                    }
+
+                    // On a TENANT database (tenancy initialized): tenant tier = core + sharable
+                    // + product, which is EVERYTHING EXCEPT platform. Phase-4: exclude the
+                    // platform-tier migrations so a raw `tenants:migrate` (e.g. the admin
+                    // "re-migrate tenant DB" action, TenantDatabaseController) can never create
+                    // landlord/platform tables on a tenant DB. Deny-list (not allow-list) so any
+                    // legit app-level/non-package tenant migrations still pass through; no dedup
+                    // — a tenant must run all of its distinct package migrations.
                     if (function_exists('tenancy') && tenancy()->initialized) {
-                        return $files;
+                        return collect($files)->reject(function ($path) {
+                            $normalizedPath = realpath($path) ?: $path;
+
+                            return str_starts_with($normalizedPath, $this->platformMigrationPath);
+                        })->all();
                     }
 
                     // During installation (not yet installed), allow ALL package migrations.
@@ -1078,21 +1230,41 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     }
 
                     // On central/landlord database (production + testing):
-                    // ONLY run aero-platform migrations. Other packages (core, hrm, etc.)
-                    // are for tenant databases and cause SQLite-incompatibility in testing.
-                    // Platform migrations are self-sufficient for platform feature tests.
+                    // run aero-platform + the foundational shared packages (auth, ui,
+                    // i18n, notifications, hrmac). NOT core or product modules — those are
+                    // tenant-only. The shared packages carry the canonical roles/modules/
+                    // RBAC schema central needs.
                     $platformFiles = collect($files)->filter(function ($path, $name) {
                         $normalizedPath = realpath($path) ?: $path;
+                        foreach ($this->allowedMigrationPaths as $allowed) {
+                            if (str_starts_with($normalizedPath, $allowed)) {
+                                return true;
+                            }
+                        }
 
-                        return str_starts_with($normalizedPath, $this->platformMigrationsPath);
+                        return false;
                     });
 
-                    // Deduplicate within the platform-filtered set by operation name.
-                    // This removes any platform-internal duplicates (e.g. create_notification_logs_table
-                    // exists in both aero-platform and as a copy from another path).
-                    return $platformFiles->unique(function ($path) {
-                        return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
-                    })->all();
+                    // Determine the current connection the migrator is running on
+                    $currentConn = $this->connection ?: config('database.default');
+
+                    if ($currentConn === $this->centralDatabase) {
+                        // Deduplicate within the filtered set by operation name.
+                        // This removes any internal duplicates (e.g. create_notification_logs_table
+                        // exists in both aero-platform and as a copy from another path).
+                        return $platformFiles->unique(function ($path) {
+                            return preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', basename($path, '.php'));
+                        })->all();
+                    } else {
+                        // If we are migrating the default connection in a testing environment,
+                        // exclude the platform/landlord migrations (as they are run on central connection)
+                        // to avoid duplicate column/table definition conflicts on shared sqlite files.
+                        if (app()->environment('testing')) {
+                            $platformPaths = $platformFiles->keys()->toArray();
+                            return collect($files)->except($platformPaths)->all();
+                        }
+                        return $files;
+                    }
                 }
             };
         });

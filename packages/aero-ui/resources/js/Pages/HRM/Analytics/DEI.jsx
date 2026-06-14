@@ -1,5 +1,5 @@
-import App from '../../../App.jsx';
-import useHRMAC from '../../../hooks/useHRMAC.js';
+import App from '@/Pages/App.jsx';
+import { useHRMAC } from '@/hooks/useHRMAC';
 import {
   IndexPageLayout, DataTable, HStack, VStack,
   Text, Eyebrow, Alert,

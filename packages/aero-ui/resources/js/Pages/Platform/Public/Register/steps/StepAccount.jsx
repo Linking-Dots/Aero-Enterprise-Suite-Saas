@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { VStack, HStack, Card, Text } from '@aero/ui';
+import { VStack, HStack, Card, Text, Badge } from '@aero/ui';
 import { SR } from '../signupRoutes.js';
 
 function IconBuilding() {
@@ -21,13 +21,31 @@ function IconPerson() {
   return (
     <svg width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true">
       <circle cx="20" cy="13" r="7" stroke="currentColor" strokeWidth="1.8" fill="none" />
-      <path d="M6 36c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <path d="M6 36c0-7.732 6.268-14 14-14s14 6.268 14 14"
+        stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
 
+const ACCOUNT_TYPES = [
+  {
+    key:     'company',
+    icon:    <IconBuilding />,
+    label:   'Company',
+    desc:    'For teams and businesses. Includes multi-user access, roles, and team collaboration tools.',
+    badges:  ['Multi-user', 'Roles & permissions', 'Team workspace'],
+  },
+  {
+    key:     'individual',
+    icon:    <IconPerson />,
+    label:   'Individual',
+    desc:    'For freelancers and solo operators. Full platform access, single-user licence.',
+    badges:  ['Full platform access', 'Single user'],
+  },
+];
+
 export default function StepAccount({ trialDays = 14, savedData = {} }) {
-  const [selected, setSelected]     = useState(savedData?.account?.type ?? null);
+  const [selected,   setSelected]   = useState(savedData?.account?.type ?? null);
   const [submitting, setSubmitting] = useState(false);
 
   function choose(type) {
@@ -44,41 +62,36 @@ export default function StepAccount({ trialDays = 14, savedData = {} }) {
       </Text>
 
       <VStack gap={3}>
-        <Card
-          as="button"
-          interactive
-          type="button"
-          onClick={() => choose('company')}
-          disabled={submitting}
-          aria-pressed={selected === 'company'}
-          className={selected === 'company' ? 'rl-card-selected' : ''}
-        >
-          <HStack gap={3} align="center">
-            <span className="rl-type-icon"><IconBuilding /></span>
-            <VStack gap={1}>
-              <Text>Company</Text>
-              <Text tone="secondary" as="span">For teams and businesses. Includes multi-user access and roles.</Text>
-            </VStack>
-          </HStack>
-        </Card>
-
-        <Card
-          as="button"
-          interactive
-          type="button"
-          onClick={() => choose('individual')}
-          disabled={submitting}
-          aria-pressed={selected === 'individual'}
-          className={selected === 'individual' ? 'rl-card-selected' : ''}
-        >
-          <HStack gap={3} align="center">
-            <span className="rl-type-icon"><IconPerson /></span>
-            <VStack gap={1}>
-              <Text>Individual</Text>
-              <Text tone="secondary" as="span">For freelancers and solo operators. Full platform access.</Text>
-            </VStack>
-          </HStack>
-        </Card>
+        {ACCOUNT_TYPES.map(({ key, icon, label, desc, badges }) => (
+          <Card
+            key={key}
+            as="button"
+            interactive
+            type="button"
+            onClick={() => choose(key)}
+            disabled={submitting}
+            aria-pressed={selected === key}
+            className={selected === key ? 'rl-card-selected' : ''}
+            style={{ textAlign: 'left', width: '100%' }}
+          >
+            <HStack gap={3} align="flex-start">
+              <span className="rl-type-icon" style={{ flexShrink: 0, paddingTop: 2 }}>{icon}</span>
+              <VStack gap={2} align="stretch" style={{ flex: 1, minWidth: 0 }}>
+                <HStack gap={2} align="center">
+                  <Text weight="semibold" size="lg" as="span">{label}</Text>
+                  {selected === key && <Badge intent="success">Selected</Badge>}
+                </HStack>
+                <Text tone="secondary" as="span">{desc}</Text>
+                {/* Feature badges — always visible, not hidden behind expand */}
+                <HStack gap={2} align="center" style={{ flexWrap: 'wrap' }}>
+                  {badges.map(b => (
+                    <Badge key={b} intent="neutral">{b}</Badge>
+                  ))}
+                </HStack>
+              </VStack>
+            </HStack>
+          </Card>
+        ))}
       </VStack>
     </VStack>
   );

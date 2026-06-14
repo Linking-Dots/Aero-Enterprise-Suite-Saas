@@ -6,7 +6,7 @@ import {
   Text, Badge,
   Button,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TYPE_INTENT = { info: 'primary', warning: 'warning', success: 'success', danger: 'danger' };
 

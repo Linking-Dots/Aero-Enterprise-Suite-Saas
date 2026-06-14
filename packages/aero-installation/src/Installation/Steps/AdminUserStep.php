@@ -41,19 +41,39 @@ class AdminUserStep extends BaseInstallationStep
 
     public function execute(): array
     {
-        $adminEmail = env('ADMIN_EMAIL', 'admin@aeros.test');
-        $adminPassword = env('ADMIN_PASSWORD', 'Admin@12345');
-        $adminName = env('ADMIN_NAME', 'Administrator');
-
-        if (empty($adminEmail) || empty($adminPassword)) {
-            throw new \Exception('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required');
+        // Load persisted config if available
+        $configPath = storage_path('framework/installation_config.json');
+        $persistedConfig = [];
+        if (file_exists($configPath)) {
+            $persistedConfig = json_decode(file_get_contents($configPath), true) ?? [];
         }
 
-        // In SaaS mode, use landlord_users table; in standalone, use users table
-        $userTable = $this->mode === 'saas' ? 'landlord_users' : 'users';
+        $adminConfig = $persistedConfig['admin'] ?? [];
+
+        $adminEmail = $adminConfig['email'] ?? env('ADMIN_EMAIL');
+        $adminName = ($adminConfig['first_name'] ?? env('ADMIN_FIRST_NAME', 'Admin')).' '.($adminConfig['last_name'] ?? env('ADMIN_LAST_NAME', 'User'));
+
+        if (empty($adminEmail)) {
+            throw new \Exception('Admin email not provided. Complete the Admin step in the installer before proceeding.');
+        }
+
+        if (!empty($adminConfig['password_hash'])) {
+            $hashedPassword = $adminConfig['password_hash'];
+        } elseif (!empty(env('ADMIN_PASSWORD'))) {
+            $hashedPassword = Hash::make(env('ADMIN_PASSWORD'));
+        } else {
+            throw new \Exception('Admin password not provided. Complete the Admin step in the installer before proceeding.');
+        }
+
+        // Auth-identity unification (2C, mechanism B): landlords are now `users`
+        // rows in the CENTRAL database — same table as tenant/standalone users,
+        // different connection. SaaS writes the admin to central `users`;
+        // standalone to the default `users`.
+        $userTable = 'users';
+        $connection = $this->mode === 'saas' ? 'central' : null;
 
         // Check if admin already exists
-        $existingAdmin = $this->getUserByEmail($adminEmail, $userTable);
+        $existingAdmin = $this->getUserByEmail($adminEmail, $userTable, $connection);
         if ($existingAdmin) {
             $this->log("Admin user already exists: {$adminEmail} in table: {$userTable}");
 
@@ -67,10 +87,11 @@ class AdminUserStep extends BaseInstallationStep
 
         // Create admin user
         try {
-            $adminId = DB::table($userTable)->insertGetId([
+            $adminId = DB::connection($connection)->table($userTable)->insertGetId([
+                'user_name' => str($adminEmail)->before('@')->slug()->value() ?: 'admin',
                 'name' => $adminName,
                 'email' => $adminEmail,
-                'password' => Hash::make($adminPassword),
+                'password' => $hashedPassword,
                 'email_verified_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -79,7 +100,7 @@ class AdminUserStep extends BaseInstallationStep
             $this->log("Admin user created: {$adminEmail} (ID: {$adminId}) in table: {$userTable}");
 
             // Assign admin role (if roles table exists)
-            $this->assignAdminRole($adminId, $userTable);
+            $this->assignAdminRole($adminId, $userTable, $connection);
 
             return [
                 'admin_created' => true,
@@ -108,10 +129,10 @@ class AdminUserStep extends BaseInstallationStep
     /**
      * Get user by email
      */
-    protected function getUserByEmail(string $email, string $table = 'users'): ?array
+    protected function getUserByEmail(string $email, string $table = 'users', ?string $connection = null): ?array
     {
         try {
-            $user = DB::table($table)
+            $user = DB::connection($connection)->table($table)
                 ->where('email', $email)
                 ->first();
 
@@ -126,29 +147,29 @@ class AdminUserStep extends BaseInstallationStep
      * Assign Super Administrator role to user
      * Super Administrator role bypasses all HRMAC checks
      */
-    protected function assignAdminRole(int $userId, string $userTable = 'users'): void
+    protected function assignAdminRole(int $userId, string $userTable = 'users', ?string $connection = null): void
     {
         try {
             // Check if roles table exists
-            if (! DB::table('roles')->exists()) {
+            if (! DB::connection($connection)->table('roles')->exists()) {
                 return;
             }
 
             // Look for Super Administrator role (bypasses HRMAC)
-            $superAdminRole = DB::table('roles')
+            $superAdminRole = DB::connection($connection)->table('roles')
                 ->where('name', 'Super Administrator')
                 ->first();
 
             if (! $superAdminRole) {
                 // Fallback to admin role if Super Administrator doesn't exist
-                $superAdminRole = DB::table('roles')
+                $superAdminRole = DB::connection($connection)->table('roles')
                     ->where('name', 'Super Admin')
                     ->first();
             }
 
             if (! $superAdminRole) {
                 // Create Super Administrator role if it doesn't exist
-                $superAdminRoleId = DB::table('roles')->insertGetId([
+                $superAdminRoleId = DB::connection($connection)->table('roles')->insertGetId([
                     'name' => 'Super Administrator',
                     'guard_name' => 'web',
                     'description' => 'Full system access - bypasses all HRMAC checks',
@@ -160,11 +181,17 @@ class AdminUserStep extends BaseInstallationStep
                 $superAdminRole = (object) ['id' => $superAdminRoleId];
             }
 
-            // Assign role (if model_has_roles table exists)
+            // Assign role (if model_has_roles table exists). model_has_roles stores a
+            // polymorphic morph key. Auth-identity unification: landlords AND tenant
+            // users are the one Aero\Auth\Models\User, registered in the morph map as
+            // the stable 'user' key (AeroCoreServiceProvider::registerIdentityModelAliases)
+            // — in EVERY mode. (Pre-unification this wrote a class FQN for saas, which is
+            // now stale: there is no Aero\Platform\Models\User, and the central User
+            // morphs to 'user' like everywhere else.)
             try {
-                DB::table('model_has_roles')->insert([
+                DB::connection($connection)->table('model_has_roles')->insert([
                     'role_id' => $superAdminRole->id,
-                    'model_type' => 'App\Models\User',
+                    'model_type' => 'user',
                     'model_id' => $userId,
                 ]);
                 $this->log("Assigned Super Administrator role to user ID: {$userId} in table: {$userTable}");

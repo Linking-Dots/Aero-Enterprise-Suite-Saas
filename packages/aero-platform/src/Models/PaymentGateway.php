@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Models;
 
-use Aero\Core\Encryption\EncryptedField;
+use Aero\Kernel\Encryption\EncryptedField;
 use Aero\Core\Models\CentralModel;
 
 class PaymentGateway extends CentralModel

@@ -28,6 +28,11 @@ class AeroI18nServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // B-48: register the package migrations so the languages/translations tables are
+        // actually created. They were previously orphaned (not loaded, not published), so
+        // /i18n/languages 500'd with "Table 'languages' doesn't exist" in every install.
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
         $this->loadJsonTranslationsFrom(__DIR__ . '/../resources/lang');
 
         Route::middleware(['web'])

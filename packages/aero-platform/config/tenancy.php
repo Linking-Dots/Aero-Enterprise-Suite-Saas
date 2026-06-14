@@ -230,6 +230,11 @@ return [
 
     'filesystem' => [
         'suffix_base' => 'tenant',
+        // false: keep asset()/@vite pointing at the shared central /build assets.
+        // With the default (true), FilesystemTenancyBootstrapper rewrites asset()
+        // to the per-tenant /tenancy/assets route, 404-ing the shared Vite build on
+        // tenant subdomains. Tenant-uploaded files use Storage::url()/tenant_asset().
+        'asset_helper_tenancy' => false,
         'disks' => [
             'local',
             'public',

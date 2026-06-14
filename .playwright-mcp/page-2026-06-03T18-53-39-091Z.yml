@@ -1,0 +1,367 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "HRM Dashboard" [ref=e11] [cursor=pointer]:
+        - /url: /hrm/dashboard
+      - link "Employee Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Profile" [ref=e14] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e15] [cursor=pointer]:
+        - /url: /notifications
+      - link "My Dashboard" [ref=e16] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Attendance" [ref=e17] [cursor=pointer]:
+        - /url: /hrm/attendance-employee
+      - link "My Leaves" [ref=e18] [cursor=pointer]:
+        - /url: /hrm/leaves-employee
+      - link "My Time-Off" [ref=e19] [cursor=pointer]:
+        - /url: /hrm/self-service/time-off
+      - link "My Payslips" [ref=e20] [cursor=pointer]:
+        - /url: /hrm/self-service/payslips
+      - link "My Expenses" [ref=e21] [cursor=pointer]:
+        - /url: /hrm/my-expenses
+      - link "My Documents" [ref=e22] [cursor=pointer]:
+        - /url: /hrm/self-service/documents
+      - link "My Benefits" [ref=e23] [cursor=pointer]:
+        - /url: /hrm/self-service/benefits
+      - link "My Trainings" [ref=e24] [cursor=pointer]:
+        - /url: /hrm/self-service/trainings
+      - link "My Performance" [ref=e25] [cursor=pointer]:
+        - /url: /hrm/self-service/performance
+      - link "My Goals" [ref=e26] [cursor=pointer]:
+        - /url: /hrm/goals
+      - link "My Career Path" [ref=e27] [cursor=pointer]:
+        - /url: /hrm/self-service/career-path
+      - link "My 360° Feedback" [ref=e28] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Subscription & Billing" [ref=e30] [cursor=pointer]:
+        - /url: /subscription
+      - link "User Management" [ref=e31] [cursor=pointer]:
+        - /url: /users
+      - link "Roles & Module Access" [ref=e32] [cursor=pointer]:
+        - /url: /roles
+      - link "Audit & Activity Logs" [ref=e33] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Notifications" [ref=e34] [cursor=pointer]:
+        - /url: /notifications
+      - link "File Manager" [ref=e35] [cursor=pointer]:
+        - /url: /files
+      - link "Organization" [ref=e36] [cursor=pointer]:
+        - /url: /organization
+      - link "Translations / i18n" [ref=e37] [cursor=pointer]:
+        - /url: /i18n/translations
+      - link "Custom Fields" [ref=e38] [cursor=pointer]:
+        - /url: /custom-fields
+      - link "Tags & Labels" [ref=e39] [cursor=pointer]:
+        - /url: /tags
+      - link "Saved Views & Filters" [ref=e40] [cursor=pointer]:
+        - /url: /saved-views
+      - link "Form Builder" [ref=e41] [cursor=pointer]:
+        - /url: /forms
+      - link "Global Search" [ref=e42] [cursor=pointer]:
+        - /url: /search
+      - link "API & Webhooks" [ref=e43] [cursor=pointer]:
+        - /url: /api
+      - link "User Preferences" [ref=e44] [cursor=pointer]:
+        - /url: /preferences
+      - link "Data Export/Import" [ref=e45] [cursor=pointer]:
+        - /url: /export-import
+      - link "Retention Policies" [ref=e46] [cursor=pointer]:
+        - /url: /retention-policies
+      - link "Workflows & Automations" [ref=e47] [cursor=pointer]:
+        - /url: /workflows
+      - link "Email Engine" [ref=e48] [cursor=pointer]:
+        - /url: /email
+      - link "System Health" [ref=e49] [cursor=pointer]:
+        - /url: /system-health
+      - link "Mobile & PWA" [ref=e50] [cursor=pointer]:
+        - /url: /mobile-pwa
+      - link "Backup & Restore" [ref=e51] [cursor=pointer]:
+        - /url: /backup
+      - link "License Management" [ref=e52] [cursor=pointer]:
+        - /url: /license
+      - link "Document Numbering & Sequences" [ref=e53] [cursor=pointer]:
+        - /url: /numbering
+      - link "Print & PDF Templates" [ref=e54] [cursor=pointer]:
+        - /url: /print-templates
+      - link "Announcements & Banners" [ref=e55] [cursor=pointer]:
+        - /url: /announcements
+      - link "Maintenance Mode" [ref=e56] [cursor=pointer]:
+        - /url: /maintenance-mode
+      - link "Trash & Recycle Bin" [ref=e57] [cursor=pointer]:
+        - /url: /trash
+      - link "Comments & Mentions" [ref=e58] [cursor=pointer]:
+        - /url: /comments
+      - link "Help & Support" [ref=e59] [cursor=pointer]:
+        - /url: /help
+      - link "Settings" [ref=e60] [cursor=pointer]:
+        - /url: /settings/system
+      - link "Employees" [ref=e62] [cursor=pointer]:
+        - /url: /hrm/employees
+      - link "Attendance" [ref=e63] [cursor=pointer]:
+        - /url: /hrm/attendance
+      - link "Leaves" [ref=e64] [cursor=pointer]:
+        - /url: /hrm/leaves
+      - link "Payroll" [ref=e65] [cursor=pointer]:
+        - /url: /hrm/payroll
+      - link "Expenses & Claims" [ref=e66] [cursor=pointer]:
+        - /url: /hrm/expenses
+      - link "Assets Management" [ref=e67] [cursor=pointer]:
+        - /url: /hrm/assets
+      - link "Disciplinary" [ref=e68] [cursor=pointer]:
+        - /url: /hrm/disciplinary
+      - link "Recruitment" [ref=e69] [cursor=pointer]:
+        - /url: /hrm/recruitment
+      - link "Performance" [ref=e70] [cursor=pointer]:
+        - /url: /hrm/performance
+      - link "Training" [ref=e71] [cursor=pointer]:
+        - /url: /hrm/training
+      - link "HR Analytics" [ref=e72] [cursor=pointer]:
+        - /url: /hrm/analytics
+      - link "Succession Planning" [ref=e73] [cursor=pointer]:
+        - /url: /hrm/succession-planning
+      - link "Career Pathing" [ref=e74] [cursor=pointer]:
+        - /url: /hrm/career-paths
+      - link "360° Feedback" [ref=e75] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Compensation Planning" [ref=e76] [cursor=pointer]:
+        - /url: /hrm/compensation-planning
+      - link "Workforce Planning" [ref=e77] [cursor=pointer]:
+        - /url: /hrm/workforce-planning
+      - link "Overtime Management" [ref=e78] [cursor=pointer]:
+        - /url: /hrm/overtime
+      - link "Grievances & Complaints" [ref=e79] [cursor=pointer]:
+        - /url: /hrm/grievances
+      - link "Exit Interviews" [ref=e80] [cursor=pointer]:
+        - /url: /hrm/exit-interviews
+      - link "Pulse Surveys" [ref=e81] [cursor=pointer]:
+        - /url: /hrm/pulse-surveys
+      - link "Onboarding & Offboarding" [ref=e82] [cursor=pointer]:
+        - /url: /hrm/onboarding
+      - link "Workplace Safety" [ref=e83] [cursor=pointer]:
+        - /url: /hrm/safety
+      - link "HR Documents" [ref=e84] [cursor=pointer]:
+        - /url: /hrm/documents
+      - link "AI Analytics" [ref=e85] [cursor=pointer]:
+        - /url: /hrm/ai-analytics
+      - link "Org Structure" [ref=e86] [cursor=pointer]:
+        - /url: /hrm/org-structure/departments
+      - link "Benefits" [ref=e87] [cursor=pointer]:
+        - /url: /hrm/benefits
+      - link "Events & Announcements" [ref=e88] [cursor=pointer]:
+        - /url: /hrm/events
+      - link "HR Settings" [ref=e89] [cursor=pointer]:
+        - /url: /hrm/settings
+    - generic [ref=e90]:
+      - generic [ref=e91]:
+        - button "Expand sidebar" [ref=e92] [cursor=pointer]:
+          - img [ref=e93]
+        - generic [ref=e95]: Employees
+        - generic [ref=e96]:
+          - button "Notifications" [ref=e97] [cursor=pointer]:
+            - img [ref=e99]
+          - generic [ref=e101]:
+            - generic [ref=e103]: "?"
+            - generic [ref=e104]:
+              - generic [ref=e105]: UAT Super Admin
+              - generic [ref=e106]: Super Administrator
+            - button "Sign out" [ref=e107] [cursor=pointer]:
+              - img [ref=e109]
+      - main [ref=e111]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - navigation "Breadcrumb" [ref=e115]:
+              - generic [ref=e117]: HRM
+              - generic [ref=e118]:
+                - img [ref=e120]
+                - generic [ref=e122]: Employees
+            - generic [ref=e123]:
+              - heading "Employees" [level=1] [ref=e126]
+              - link "New Employee" [ref=e128] [cursor=pointer]:
+                - /url: https://aeos365-standalone.test/hrm/employees/create
+                - generic [ref=e129]: New Employee
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]: Search
+              - textbox "Name, code, email" [ref=e134]
+            - generic [ref=e135]:
+              - generic [ref=e136]: Department
+              - combobox [ref=e137] [cursor=pointer]:
+                - option "All departments" [selected]
+                - option "Administration"
+                - option "Customer Support"
+                - option "Engineering"
+                - option "Finance & Accounting"
+                - option "Human Resources"
+                - option "Legal"
+                - option "Marketing"
+                - option "Operations"
+                - option "Research & Development"
+                - option "Sales"
+            - generic [ref=e138]:
+              - generic [ref=e139]: Status
+              - combobox [ref=e140] [cursor=pointer]:
+                - option "All statuses" [selected]
+                - option "active"
+                - option "probation"
+                - option "on_leave"
+                - option "terminated"
+                - option "resigned"
+            - generic [ref=e141]:
+              - generic [ref=e142]: Type
+              - combobox [ref=e143] [cursor=pointer]:
+                - option "All types" [selected]
+                - option "full_time"
+                - option "part_time"
+                - option "contract"
+                - option "intern"
+          - table [ref=e146]:
+            - rowgroup [ref=e147]:
+              - row "Code Name Department Designation Type Status Joined" [ref=e148]:
+                - columnheader "Code" [ref=e149]
+                - columnheader "Name" [ref=e150]
+                - columnheader "Department" [ref=e151]
+                - columnheader "Designation" [ref=e152]
+                - columnheader "Type" [ref=e153]
+                - columnheader "Status" [ref=e154]
+                - columnheader "Joined" [ref=e155]
+                - columnheader [ref=e156]
+            - rowgroup [ref=e157]:
+              - row "EMP2769 Samir Jacobi Human Resources Senior Analyst intern active 2026-03-31 View" [ref=e158]:
+                - cell "EMP2769" [ref=e159]
+                - cell "Samir Jacobi" [ref=e160]
+                - cell "Human Resources" [ref=e161]
+                - cell "Senior Analyst" [ref=e162]
+                - cell "intern" [ref=e163]
+                - cell "active" [ref=e164]:
+                  - generic [ref=e165]: active
+                - cell "2026-03-31" [ref=e166]
+                - cell "View" [ref=e167]:
+                  - link "View" [ref=e168] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/10
+                    - generic [ref=e169]: View
+              - row "EMP6525 Susan Heaney MD Engineering Vice President contract active 2025-09-18 View" [ref=e170]:
+                - cell "EMP6525" [ref=e171]
+                - cell "Susan Heaney MD" [ref=e172]
+                - cell "Engineering" [ref=e173]
+                - cell "Vice President" [ref=e174]
+                - cell "contract" [ref=e175]
+                - cell "active" [ref=e176]:
+                  - generic [ref=e177]: active
+                - cell "2025-09-18" [ref=e178]
+                - cell "View" [ref=e179]:
+                  - link "View" [ref=e180] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/9
+                    - generic [ref=e181]: View
+              - row "EMP3373 Prof. Thurman Lakin Human Resources Engineer contract active 2025-07-22 View" [ref=e182]:
+                - cell "EMP3373" [ref=e183]
+                - cell "Prof. Thurman Lakin" [ref=e184]
+                - cell "Human Resources" [ref=e185]
+                - cell "Engineer" [ref=e186]
+                - cell "contract" [ref=e187]
+                - cell "active" [ref=e188]:
+                  - generic [ref=e189]: active
+                - cell "2025-07-22" [ref=e190]
+                - cell "View" [ref=e191]:
+                  - link "View" [ref=e192] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/8
+                    - generic [ref=e193]: View
+              - row "EMP4257 Ulises Toy Human Resources Senior Engineer part_time active 2025-10-13 View" [ref=e194]:
+                - cell "EMP4257" [ref=e195]
+                - cell "Ulises Toy" [ref=e196]
+                - cell "Human Resources" [ref=e197]
+                - cell "Senior Engineer" [ref=e198]
+                - cell "part_time" [ref=e199]
+                - cell "active" [ref=e200]:
+                  - generic [ref=e201]: active
+                - cell "2025-10-13" [ref=e202]
+                - cell "View" [ref=e203]:
+                  - link "View" [ref=e204] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/7
+                    - generic [ref=e205]: View
+              - row "EMP6165 Jett Heathcote Marketing Finance Manager full_time active 2025-11-02 View" [ref=e206]:
+                - cell "EMP6165" [ref=e207]
+                - cell "Jett Heathcote" [ref=e208]
+                - cell "Marketing" [ref=e209]
+                - cell "Finance Manager" [ref=e210]
+                - cell "full_time" [ref=e211]
+                - cell "active" [ref=e212]:
+                  - generic [ref=e213]: active
+                - cell "2025-11-02" [ref=e214]
+                - cell "View" [ref=e215]:
+                  - link "View" [ref=e216] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/6
+                    - generic [ref=e217]: View
+              - row "EMP3611 Bert Marks Finance & Accounting Sales Manager part_time active 2024-08-04 View" [ref=e218]:
+                - cell "EMP3611" [ref=e219]
+                - cell "Bert Marks" [ref=e220]
+                - cell "Finance & Accounting" [ref=e221]
+                - cell "Sales Manager" [ref=e222]
+                - cell "part_time" [ref=e223]
+                - cell "active" [ref=e224]:
+                  - generic [ref=e225]: active
+                - cell "2024-08-04" [ref=e226]
+                - cell "View" [ref=e227]:
+                  - link "View" [ref=e228] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/5
+                    - generic [ref=e229]: View
+              - row "EMP2479 Ms. Ada Vandervort DDS Marketing Senior Analyst full_time active 2026-02-25 View" [ref=e230]:
+                - cell "EMP2479" [ref=e231]
+                - cell "Ms. Ada Vandervort DDS" [ref=e232]
+                - cell "Marketing" [ref=e233]
+                - cell "Senior Analyst" [ref=e234]
+                - cell "full_time" [ref=e235]
+                - cell "active" [ref=e236]:
+                  - generic [ref=e237]: active
+                - cell "2026-02-25" [ref=e238]
+                - cell "View" [ref=e239]:
+                  - link "View" [ref=e240] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/4
+                    - generic [ref=e241]: View
+              - row "EMP8974 Johnpaul Veum Marketing Chief Executive Officer part_time active 2025-10-23 View" [ref=e242]:
+                - cell "EMP8974" [ref=e243]
+                - cell "Johnpaul Veum" [ref=e244]
+                - cell "Marketing" [ref=e245]
+                - cell "Chief Executive Officer" [ref=e246]
+                - cell "part_time" [ref=e247]
+                - cell "active" [ref=e248]:
+                  - generic [ref=e249]: active
+                - cell "2025-10-23" [ref=e250]
+                - cell "View" [ref=e251]:
+                  - link "View" [ref=e252] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/3
+                    - generic [ref=e253]: View
+              - row "EMP8071 Ms. Oleta Gaylord II Engineering Senior Engineer contract active 2025-02-28 View" [ref=e254]:
+                - cell "EMP8071" [ref=e255]
+                - cell "Ms. Oleta Gaylord II" [ref=e256]
+                - cell "Engineering" [ref=e257]
+                - cell "Senior Engineer" [ref=e258]
+                - cell "contract" [ref=e259]
+                - cell "active" [ref=e260]:
+                  - generic [ref=e261]: active
+                - cell "2025-02-28" [ref=e262]
+                - cell "View" [ref=e263]:
+                  - link "View" [ref=e264] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/2
+                    - generic [ref=e265]: View
+              - row "EMP5394 Beatrice Rath Administration Chief Technology Officer intern active 2024-10-05 View" [ref=e266]:
+                - cell "EMP5394" [ref=e267]
+                - cell "Beatrice Rath" [ref=e268]
+                - cell "Administration" [ref=e269]
+                - cell "Chief Technology Officer" [ref=e270]
+                - cell "intern" [ref=e271]
+                - cell "active" [ref=e272]:
+                  - generic [ref=e273]: active
+                - cell "2024-10-05" [ref=e274]
+                - cell "View" [ref=e275]:
+                  - link "View" [ref=e276] [cursor=pointer]:
+                    - /url: https://aeos365-standalone.test/hrm/employees/1
+                    - generic [ref=e277]: View
+  - button "Open Theme Studio" [ref=e278] [cursor=pointer]:
+    - img [ref=e279]

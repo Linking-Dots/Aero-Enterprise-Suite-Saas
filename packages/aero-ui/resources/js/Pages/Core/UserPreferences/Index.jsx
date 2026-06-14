@@ -14,7 +14,7 @@ import {
   Tab,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 import NotificationPreferences from './NotificationPreferences.jsx';
 import ThemePreferences from './ThemePreferences.jsx';
 import LocalePreferences from './LocalePreferences.jsx';
@@ -51,36 +51,19 @@ export default function UserPreferencesIndex({ preferences, activeTab }) {
     <DashboardLayout title="User Preferences">
       <Card>
         <CardContent>
-          <Tabs value={currentTab} onValueChange={handleTabChange}>
-            <Tabs.List>
-              <Tabs.Trigger value="notifications">
-                <HStack gap={2}>
-                  <Icon name="bell" className="w-4 h-4" />
-                  <Text>Notifications</Text>
-                </HStack>
-              </Tabs.Trigger>
-              <Tabs.Trigger value="theme">
-                <HStack gap={2}>
-                  <Icon name="paint-brush" className="w-4 h-4" />
-                  <Text>Theme & Appearance</Text>
-                </HStack>
-              </Tabs.Trigger>
-              <Tabs.Trigger value="locale">
-                <HStack gap={2}>
-                  <Icon name="globe" className="w-4 h-4" />
-                  <Text>Locale & Date</Text>
-                </HStack>
-              </Tabs.Trigger>
-              <Tabs.Trigger value="accessibility">
-                <HStack gap={2}>
-                  <Icon name="accessibility" className="w-4 h-4" />
-                  <Text>Accessibility</Text>
-                </HStack>
-              </Tabs.Trigger>
-            </Tabs.List>
-            <Tabs.Content value={currentTab}>
+          <Tabs
+            tabs={[
+              { value: 'notifications', label: 'Notifications' },
+              { value: 'theme', label: 'Theme & Appearance' },
+              { value: 'locale', label: 'Locale & Date' },
+              { value: 'accessibility', label: 'Accessibility' },
+            ]}
+            value={currentTab}
+            onChange={handleTabChange}
+          >
+            <VStack gap={4}>
               {renderTabContent()}
-            </Tabs.Content>
+            </VStack>
           </Tabs>
         </CardContent>
       </Card>

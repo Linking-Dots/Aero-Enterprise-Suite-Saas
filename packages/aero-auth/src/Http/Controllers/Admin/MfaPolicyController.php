@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Aero\Auth\Http\Controllers\Admin;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\Audit\AuditService;
+use Aero\Kernel\Audit\AuditEventType;
+use Aero\Contracts\AuditServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Permission\Models\Role;
+use Aero\HRMAC\Models\Role;
 
 class MfaPolicyController extends Controller
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditServiceInterface $audit) {}
 
     public function index(): Response
     {

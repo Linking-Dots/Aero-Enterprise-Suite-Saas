@@ -16,7 +16,7 @@ import {
   EmptyState,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 import { useHRMAC } from '../../../hooks/useHRMAC';
 
 const TAB_ALL = 'all';

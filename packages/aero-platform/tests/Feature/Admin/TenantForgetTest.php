@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantForgetService;
@@ -31,7 +32,7 @@ class TenantForgetTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     protected Plan $plan;
 
@@ -93,7 +94,7 @@ class TenantForgetTest extends TestCase
         // No Role assignment — tests use Gate::before to bypass HRMAC for happy
         // path; the "without permission" test stubs the Gate directly. The role
         // wiring is exercised separately in HRMAC tests.
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     // =========================================================================

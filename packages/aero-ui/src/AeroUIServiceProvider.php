@@ -27,6 +27,9 @@ class AeroUIServiceProvider extends ServiceProvider
     {
         // Register the views - this allows Inertia to use 'aero-ui::app'
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-ui');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-core');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-notifications');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-platform');
 
         // Ensure Vite configuration exists in host app (auto-install)
         $this->ensureViteConfiguration();

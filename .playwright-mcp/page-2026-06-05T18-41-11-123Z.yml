@@ -1,0 +1,207 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "HRM Dashboard" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employee Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Tenants" [ref=e14] [cursor=pointer]:
+        - /url: /tenants
+      - link "Onboarding" [ref=e15] [cursor=pointer]:
+        - /url: /onboarding
+      - link "Plans" [ref=e16] [cursor=pointer]:
+        - /url: /plans
+      - link "Quota Management" [ref=e17] [cursor=pointer]:
+        - /url: /quotas
+      - link "Billing" [ref=e18] [cursor=pointer]:
+        - /url: /billing
+      - link "Modules" [ref=e19] [cursor=pointer]:
+        - /url: /modules
+      - link "Error Logs" [ref=e20] [cursor=pointer]:
+        - /url: /error-logs
+      - link "Platform Users" [ref=e21] [cursor=pointer]:
+        - /url: /users
+      - link "Integrations" [ref=e22] [cursor=pointer]:
+        - /url: /integrations
+      - link "Settings" [ref=e23] [cursor=pointer]:
+        - /url: /settings
+      - link "Developer" [ref=e24] [cursor=pointer]:
+        - /url: /developer
+      - link "Audit Logs" [ref=e25] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Access Logs" [ref=e26] [cursor=pointer]:
+        - /url: /access-logs
+      - link "Analytics" [ref=e27] [cursor=pointer]:
+        - /url: /analytics
+      - link "SEO" [ref=e28] [cursor=pointer]:
+        - /url: /seo
+      - link "Leads" [ref=e29] [cursor=pointer]:
+        - /url: /leads
+      - link "Newsletter" [ref=e30] [cursor=pointer]:
+        - /url: /newsletter
+      - link "Affiliates" [ref=e31] [cursor=pointer]:
+        - /url: /affiliates
+      - link "Social Login" [ref=e32] [cursor=pointer]:
+        - /url: /social-auth
+      - link "Reseller / Channel Partners" [ref=e33] [cursor=pointer]:
+        - /url: /partners
+      - link "White-Label per Tenant" [ref=e34] [cursor=pointer]:
+        - /url: /white-label/domains
+      - link "Feature Flags" [ref=e35] [cursor=pointer]:
+        - /url: /feature-flags
+      - link "White-Label" [ref=e36] [cursor=pointer]:
+        - /url: /white-label/domains
+      - link "Backup & Restore" [ref=e37] [cursor=pointer]:
+        - /url: /backup
+      - link "Status Page & Incidents" [ref=e38] [cursor=pointer]:
+        - /url: /status
+      - link "Status & Incidents" [ref=e39] [cursor=pointer]:
+        - /url: /status
+      - link "Customer Success" [ref=e40] [cursor=pointer]:
+        - /url: /customer-success/health
+      - link "Platform Security" [ref=e41] [cursor=pointer]:
+        - /url: /security/sessions
+      - link "Help Center" [ref=e42] [cursor=pointer]:
+        - /url: /help-center/articles
+      - link "Security Center" [ref=e43] [cursor=pointer]:
+        - /url: /security-center
+      - link "Security Center" [ref=e44] [cursor=pointer]:
+        - /url: /security-center
+      - link "API Gateway" [ref=e45] [cursor=pointer]:
+        - /url: /api-gateway/rate-limits
+      - link "Resource Provisioning" [ref=e46] [cursor=pointer]:
+        - /url: /provisioning
+      - link "Secrets Management" [ref=e47] [cursor=pointer]:
+        - /url: /secrets/kms
+      - link "Observability" [ref=e48] [cursor=pointer]:
+        - /url: /observability/apm
+      - link "Disaster Recovery" [ref=e49] [cursor=pointer]:
+        - /url: /disaster-recovery/runbooks
+      - link "Enterprise SCIM Provisioning" [ref=e50] [cursor=pointer]:
+        - /url: /enterprise-scim/endpoints
+      - link "Contract Management" [ref=e51] [cursor=pointer]:
+        - /url: /contracts
+      - link "Release Management" [ref=e52] [cursor=pointer]:
+        - /url: /releases
+      - link "License Management" [ref=e53] [cursor=pointer]:
+        - /url: /licenses
+      - link "Access Logs" [ref=e54] [cursor=pointer]:
+        - /url: /access-logs
+      - link "Product Analytics" [ref=e55] [cursor=pointer]:
+        - /url: /product-analytics/features
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - button "Expand sidebar" [ref=e58] [cursor=pointer]:
+          - img [ref=e59]
+        - generic [ref=e61]: SEO Settings
+        - generic [ref=e62]:
+          - button "Notifications" [ref=e63] [cursor=pointer]:
+            - img [ref=e65]
+          - generic [ref=e67]:
+            - generic [ref=e69]: "?"
+            - generic [ref=e71]: UAT Landlord
+            - button "Sign out" [ref=e72] [cursor=pointer]:
+              - img [ref=e74]
+      - main [ref=e76]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - navigation "Breadcrumb" [ref=e81]:
+                - link "Platform Admin" [ref=e83] [cursor=pointer]:
+                  - /url: https://admin.aeos365.test/onboarding/dashboard
+                - generic [ref=e84]:
+                  - img [ref=e86]
+                  - generic [ref=e88]: SEO
+              - generic [ref=e90]:
+                - heading "SEO Settings" [level=1] [ref=e92]
+                - paragraph [ref=e93]: Global meta tags, Open Graph defaults, and sitemap configuration.
+            - generic [ref=e95]:
+              - generic [ref=e98]:
+                - generic [ref=e99]: Meta Tags
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Meta Title
+                  - textbox "Meta Title" [ref=e102]:
+                    - /placeholder: AEOS365 — Enterprise Made Simple
+                  - generic [ref=e103]: Default page title for search engines.
+                - generic [ref=e104]:
+                  - generic [ref=e105]: Meta Description
+                  - textbox "Meta Description" [ref=e106]:
+                    - /placeholder: The all-in-one enterprise SaaS platform…
+                  - generic [ref=e107]: 155–160 characters recommended.
+                - generic [ref=e108]:
+                  - generic [ref=e109]: Canonical URL
+                  - generic [ref=e110]:
+                    - generic: link
+                    - textbox "Canonical URL" [ref=e111]:
+                      - /placeholder: https://aeos365.com
+                - generic [ref=e112] [cursor=pointer]:
+                  - generic [ref=e113]:
+                    - switch "Mark site as noindex (disables search engine indexing)"
+                  - generic [ref=e115]: Mark site as noindex (disables search engine indexing)
+              - generic [ref=e118]:
+                - generic [ref=e119]: Open Graph
+                - generic [ref=e120]:
+                  - generic [ref=e121]: OG Title
+                  - textbox "OG Title" [ref=e122]:
+                    - /placeholder: AEOS365
+                  - generic [ref=e123]: Overrides meta title for social sharing.
+                - generic [ref=e124]:
+                  - generic [ref=e125]: OG Description
+                  - textbox "OG Description" [ref=e126]:
+                    - /placeholder: Enterprise made simple.
+                - generic [ref=e127]:
+                  - generic [ref=e128]: OG Image URL
+                  - generic [ref=e129]:
+                    - generic: photo
+                    - textbox "OG Image URL" [ref=e130]:
+                      - /placeholder: https://cdn.example.com/og.png
+                  - generic [ref=e131]: "Recommended size: 1200×630 px."
+              - generic [ref=e134]:
+                - generic [ref=e135]: Sitemap
+                - generic [ref=e136] [cursor=pointer]:
+                  - generic [ref=e137]:
+                    - switch "Enable XML sitemap" [checked]
+                  - generic [ref=e139]: Enable XML sitemap
+                - button "arrowPath Regenerate Sitemap Now" [ref=e140] [cursor=pointer]:
+                  - generic [ref=e141]: arrowPath
+                  - generic [ref=e142]: Regenerate Sitemap Now
+              - button "Save SEO Settings" [ref=e144] [cursor=pointer]:
+                - generic [ref=e145]: Save SEO Settings
+          - generic [ref=e146]:
+            - generic [ref=e149]:
+              - heading "Analytics Integrations" [level=1] [ref=e151]
+              - paragraph [ref=e152]: Connect Google Analytics, Google Tag Manager, Meta Pixel, and Hotjar.
+            - generic [ref=e154]:
+              - generic [ref=e157]:
+                - generic [ref=e158]: Google
+                - generic [ref=e159]:
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: GA4 Measurement ID
+                    - textbox "GA4 Measurement ID" [ref=e162]:
+                      - /placeholder: G-XXXXXXXXXX
+                    - generic [ref=e163]: "Format: G-XXXXXXXXXX"
+                  - generic [ref=e164]:
+                    - generic [ref=e165]: GTM Container ID
+                    - textbox "GTM Container ID" [ref=e166]:
+                      - /placeholder: GTM-XXXXXXX
+                    - generic [ref=e167]: "Format: GTM-XXXXXXX"
+              - generic [ref=e170]:
+                - generic [ref=e171]: Meta & Hotjar
+                - generic [ref=e172]:
+                  - generic [ref=e173]:
+                    - generic [ref=e174]: Meta Pixel ID
+                    - textbox "Meta Pixel ID" [ref=e175]:
+                      - /placeholder: "123456789012345"
+                  - generic [ref=e176]:
+                    - generic [ref=e177]: Hotjar Site ID
+                    - textbox "Hotjar Site ID" [ref=e178]:
+                      - /placeholder: "1234567"
+              - button "Save Analytics Settings" [ref=e180] [cursor=pointer]:
+                - generic [ref=e181]: Save Analytics Settings
+  - button "Open Theme Studio" [ref=e182] [cursor=pointer]:
+    - img [ref=e183]

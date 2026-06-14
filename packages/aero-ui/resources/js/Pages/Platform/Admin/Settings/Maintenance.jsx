@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Maintenance({ maintenance }) {
   const toast     = useToast();
@@ -50,7 +50,7 @@ export default function Maintenance({ maintenance }) {
     <IndexPageLayout
       title="Maintenance Mode"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'Maintenance' },
       ]}

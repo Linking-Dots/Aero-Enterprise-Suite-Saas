@@ -16,7 +16,7 @@ import {
   Modal,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PRIORITY_INTENT = { low: 'neutral', normal: 'primary', high: 'warning', urgent: 'danger' };
 const STATUS_INTENT   = { open: 'primary', pending: 'warning', resolved: 'success', closed: 'neutral' };

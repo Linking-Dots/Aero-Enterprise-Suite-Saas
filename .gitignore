@@ -27,3 +27,7 @@ logs/
 # Git worktrees
 .worktrees/
 .superpowers/
+
+# PHPUnit per-run result cache (machine-specific)
+*.phpunit.result.cache
+.phpunit.result.cache

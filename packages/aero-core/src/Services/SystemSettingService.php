@@ -2,12 +2,13 @@
 
 namespace Aero\Core\Services;
 
+use Aero\Contracts\SystemSettingServiceInterface;
 use Aero\Core\Models\SystemSetting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 
-class SystemSettingService
+class SystemSettingService implements SystemSettingServiceInterface
 {
     /**
      * Return all settings as a flat associative array suitable for Inertia props.

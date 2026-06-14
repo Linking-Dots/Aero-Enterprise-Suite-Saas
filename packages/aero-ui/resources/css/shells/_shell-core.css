@@ -1,0 +1,171 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — Shell Core  (Overhaul v2)
+   Shared structural foundation for all 4 shell variants.
+
+   RULES
+   ─────
+   • Zero hardcoded colors, spacing, or radii — every value is a token.
+   • Every layout dimension is density-aware via calc(* var(--aeos-density-factor)).
+   • All shells satisfy 100dvh full-viewport, no address-bar shift on mobile.
+   • Overflow/scroll is explicit on every axis at every level.
+   • WCAG 2.1 AA: focus-visible rings, skip-link, reduced-motion compliance.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Skip navigation link (accessibility) ────────────────────────────────── */
+.aeos-skip-link {
+  position: absolute;
+  top: var(--aeos-space-2);
+  left: var(--aeos-space-2);
+  z-index: var(--aeos-z-max);
+  padding: var(--aeos-space-2) var(--aeos-space-4);
+  background: var(--aeos-primary);
+  color: var(--aeos-bg-page);
+  border-radius: var(--aeos-r-md);
+  font-size: var(--aeos-text-sm);
+  font-weight: 600;
+  transform: translateY(-200%);
+  transition: transform var(--aeos-dur-fast) var(--aeos-ease-out);
+  text-decoration: none;
+}
+.aeos-skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* ── Global shell host body ──────────────────────────────────────────────── */
+/* D-01/D-02 override — ThemeProvider sets data-aeos-shell on <body>; keep it block */
+body[data-aeos-shell] {
+  display: block;
+  overflow: hidden; /* prevent double scrollbars; each shell manages its own */
+  height: 100dvh;
+}
+
+/* ── Page container — max-width centering inside content regions ─────────── */
+.aeos-page-container {
+  width: 100%;
+  max-width: var(--aeos-page-max-w, 1400px);
+  padding: var(--aeos-page-pad-y, var(--aeos-space-6)) var(--aeos-page-pad-x, var(--aeos-space-6));
+  box-sizing: border-box;
+}
+@media (max-width: 640px) {
+  .aeos-page-container {
+    padding: var(--aeos-space-4);
+  }
+}
+
+/* ── Topbar chrome (shared) ──────────────────────────────────────────────── */
+.aeos-shell-topbar {
+  display: flex;
+  align-items: center;
+  height: var(--aeos-shell-topnav-h);
+  padding: 0 var(--aeos-space-4);
+  gap: var(--aeos-space-3);
+  flex-shrink: 0;
+  z-index: var(--aeos-z-sticky);
+  background: var(--aeos-shell-topbar-bg);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+  /* Micro-blur for depth layering */
+  backdrop-filter: blur(var(--aeos-shell-topbar-blur, 0px));
+  -webkit-backdrop-filter: blur(var(--aeos-shell-topbar-blur, 0px));
+  /* Ensure crisp subpixel rendering */
+  will-change: backdrop-filter;
+  /* Prevent layout shift when sticky */
+  position: sticky;
+  top: 0;
+}
+
+/* ── Footer chrome (shared) ──────────────────────────────────────────────── */
+.aeos-shell-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: calc(var(--aeos-h-topbar) * 0.875);
+  padding: 0 var(--aeos-space-4);
+  gap: var(--aeos-space-3);
+  border-top: var(--aeos-border-width) solid var(--aeos-divider);
+  background: var(--aeos-shell-topbar-bg);
+  font-size: var(--aeos-text-xs);
+  color: var(--aeos-text-tertiary);
+}
+
+/* ── Shared flex spacer ──────────────────────────────────────────────────── */
+.aeos-shell-flex-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Scrollbar normalization — thin, token-colored, cross-browser ────────── */
+.aeos-shell-content,
+.aeos-shell-sidebar,
+.aeos-shell-left,
+.aeos-shell-right {
+  scrollbar-width: thin;
+  scrollbar-color: var(--aeos-bg-active) transparent;
+}
+.aeos-shell-content::-webkit-scrollbar,
+.aeos-shell-sidebar::-webkit-scrollbar,
+.aeos-shell-left::-webkit-scrollbar,
+.aeos-shell-right::-webkit-scrollbar {
+  width: 4px;
+}
+.aeos-shell-content::-webkit-scrollbar-track,
+.aeos-shell-sidebar::-webkit-scrollbar-track,
+.aeos-shell-left::-webkit-scrollbar-track,
+.aeos-shell-right::-webkit-scrollbar-track {
+  background: transparent;
+}
+.aeos-shell-content::-webkit-scrollbar-thumb,
+.aeos-shell-sidebar::-webkit-scrollbar-thumb,
+.aeos-shell-left::-webkit-scrollbar-thumb,
+.aeos-shell-right::-webkit-scrollbar-thumb {
+  background: var(--aeos-bg-active);
+  border-radius: var(--aeos-r-full);
+}
+.aeos-shell-content::-webkit-scrollbar-thumb:hover,
+.aeos-shell-sidebar::-webkit-scrollbar-thumb:hover,
+.aeos-shell-left::-webkit-scrollbar-thumb:hover,
+.aeos-shell-right::-webkit-scrollbar-thumb:hover {
+  background: var(--aeos-bg-wash);
+}
+
+/* ── Focus-visible ring (all interactive shell elements) ─────────────────── */
+.aeos-shell-sidebar-item:focus-visible,
+.aeos-shell-nav-item:focus-visible,
+.aeos-shell-cmd-item:focus-visible,
+.aeos-shell-topbar button:focus-visible,
+.aeos-icon-btn:focus-visible {
+  outline: 2px solid var(--aeos-primary);
+  outline-offset: 2px;
+  border-radius: var(--aeos-r-md);
+}
+
+/* ── Mobile backdrop ─────────────────────────────────────────────────────── */
+.aeos-shell-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--aeos-overlay-backdrop);
+  z-index: calc(var(--aeos-z-sidebar) - 1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: aeos-anim-fade-in var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+
+/* ── Reduced-motion: strip all shell animations ──────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .aeos-shell-sidebar,
+  .aeos-shell-topbar,
+  .aeos-shell-content,
+  .aeos-shell-left,
+  .aeos-shell-right,
+  .aeos-shell-floating,
+  .aeos-shell-mobile-backdrop,
+  [data-aeos-shell] * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+body[data-motion="off"] [data-aeos-shell] *,
+body[data-motion="reduced"] [data-aeos-shell] * {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}

@@ -18,7 +18,7 @@ import {
   Button,
   Input,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function Bounces({ bounces, top_bouncing_domains = [], filters }) {
   const [search, setSearch] = useState(filters?.search || '');
@@ -79,7 +79,7 @@ export default function Bounces({ bounces, top_bouncing_domains = [], filters })
       title="Bounces"
       breadcrumb={[
         { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Email Engine', href: route('core.email.index') },
+        { label: 'Email Engine', href: route('core.email.logs.index') },
         { label: 'Bounces' },
       ]}
       description="Permanently failed delivery attempts and bouncing domain analysis."

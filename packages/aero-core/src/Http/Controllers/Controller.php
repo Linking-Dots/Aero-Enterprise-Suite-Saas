@@ -2,37 +2,19 @@
 
 namespace Aero\Core\Http\Controllers;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
+use Aero\Kernel\Http\Controllers\Controller as KernelController;
 
 /**
- * Base Controller for Aero Core
+ * Backward-compatibility shim for the base Aero controller.
  *
- * All Aero Core controllers should extend this class.
- * This makes the package independent of the host application's base controller.
+ * The canonical base now lives in aero-kernel ({@see KernelController}) so that core
+ * (tenant/standalone), platform (central), and the shared packages can extend one base
+ * without any sibling depending on another. This thin subclass keeps the historical
+ * `Aero\Core\Http\Controllers\Controller` FQN resolving for the ~60 existing core
+ * controllers (and pure-unit tests that reflect on them) with zero edits. It carries no
+ * logic of its own and is removed in the final enforcement phase once all controllers
+ * import the kernel FQN directly.
  */
-class Controller extends BaseController
+class Controller extends KernelController
 {
-    use AuthorizesRequests;
-    use ValidatesRequests;
-
-    /**
-     * Resolve a safely-bounded `per_page` value from a paginated request.
-     *
-     * Phase 0 Task 10 of foundation 10/10 push — closes the unguarded
-     * `?per_page=999999` DOS vector identified in the architecture audit.
-     *
-     * Use in index controllers:
-     *
-     *   $items = Employee::query()->paginate($this->boundedPerPage($request));
-     *
-     * @param int $default  per-page count when the request omits the parameter
-     * @param int $max      hard upper bound (defaults to 100 — tune per resource)
-     */
-    protected function boundedPerPage(Request $request, int $default = 20, int $max = 100): int
-    {
-        return max(1, min((int) $request->input('per_page', $default), $max));
-    }
 }

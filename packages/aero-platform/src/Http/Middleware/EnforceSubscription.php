@@ -27,7 +27,7 @@ class EnforceSubscription
      */
     protected array $exemptRoutes = [
         'tenant.billing.*',
-        'tenant.subscription.*',
+        'core.subscription.*',
     ];
 
     /**

@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const EVENT_INTENT = {
   TENANT_CREATED:   'success',
@@ -149,7 +149,7 @@ export default function AuditLogsIndex({ logs, filters, eventTypes }) {
     <IndexPageLayout
       title="Audit Logs"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Audit Logs' },
       ]}
       description="Full audit trail of all operator and system actions."

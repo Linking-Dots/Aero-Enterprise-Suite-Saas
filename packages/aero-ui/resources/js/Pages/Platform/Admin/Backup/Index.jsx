@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   completed: 'success',
@@ -213,7 +213,7 @@ export default function BackupIndex({ schedules, recentBackups }) {
     <IndexPageLayout
       title="Backup Dashboard"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Backup & Restore' },
         { label: 'Dashboard' },
       ]}

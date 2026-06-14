@@ -16,6 +16,11 @@ return [
      * Multi-tenant cloud deployment
      */
     'saas' => [
+        'infrastructure:shared' => [
+            'step' => 0,
+            'description' => 'Shared infrastructure tables (installation_history, installation_progress, module_pricing, system_health_logs)',
+            'dependencies' => [],
+        ],
         'core:foundation' => [
             'step' => 1,
             'description' => 'Core app setup: keys, encryption',
@@ -63,6 +68,11 @@ return [
      * Single-tenant on-premise deployment
      */
     'standalone' => [
+        'infrastructure:shared' => [
+            'step' => 0,
+            'description' => 'Shared infrastructure tables (installation_history, installation_progress, module_pricing, system_health_logs)',
+            'dependencies' => [],
+        ],
         'core:foundation' => [
             'step' => 1,
             'description' => 'Core app setup: keys, encryption',
@@ -117,6 +127,7 @@ return [
      * Maps migration tags to their meanings and expected packages
      */
     'tag_taxonomy' => [
+        'infrastructure:shared' => 'Shared infrastructure tables (installation_history, installation_progress, module_pricing, system_health_logs)',
         'core:foundation' => 'Core framework and security setup',
         'core:auth' => 'User authentication and sessions',
         'core:license' => 'License validation',

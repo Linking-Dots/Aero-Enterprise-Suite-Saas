@@ -188,10 +188,6 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
 
             $this->loadRoutes();
 
-            $viewsPath = $this->getModulePath('resources/views');
-            if (is_dir($viewsPath)) {
-                $this->loadViewsFrom($viewsPath, $this->moduleCode);
-            }
 
             $this->publishAssets();
             $this->bootModule();
@@ -356,12 +352,6 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
             ], "{$moduleCode}-migrations");
         }
 
-        $viewsPath = $this->getModulePath('resources/views');
-        if (is_dir($viewsPath)) {
-            $this->publishes([
-                $viewsPath => resource_path("views/vendor/{$moduleCode}"),
-            ], "{$moduleCode}-views");
-        }
 
         $jsPath = $this->getModulePath('resources/js');
         if (is_dir($jsPath)) {

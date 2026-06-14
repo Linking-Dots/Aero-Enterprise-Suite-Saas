@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { XMarkIcon, SparklesIcon, ExclamationTriangleIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
+import { Icon } from '../icons/icons.jsx';
 
 /* ── Modal ────────────────────────────────────────────────────── */
 const MODAL_SIZE = { sm: 'aeos-modal-sm', md: 'aeos-modal-md', lg: 'aeos-modal-lg' };
@@ -136,8 +137,7 @@ export function Menu({ trigger, items = [] }) {
                   tabIndex={0}
                   onKeyDown={e => { if (e.key === 'Enter') { it.onClick?.(); close(); } }}
                 >
-                  {/* TODO: Update menu items to pass React icon components instead of icon names */}
-                  {/* {it.icon && <Icon name={it.icon} size={14} />} */}
+                  {it.icon && <Icon name={it.icon} size={14} />}
                   <span>{it.label}</span>
                   {it.shortcut && <kbd className="aeos-kbd">{it.shortcut}</kbd>}
                 </li>
@@ -167,7 +167,7 @@ export function Banner({ intent = 'info', icon, title, children, actions, onClos
     >
       <div className="aeos-banner-icon">
         {typeof iconComponent === 'string' ? (
-          <span className="aeos-banner-icon-string">{iconComponent}</span>
+          <Icon name={iconComponent} size={20} className="aeos-icon-md" />
         ) : (
           iconComponent
         )}

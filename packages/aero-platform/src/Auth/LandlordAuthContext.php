@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Aero\Platform\Auth;
 
 use Aero\Auth\Contracts\AuthContext;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Illuminate\Http\Request;
 
 /**
  * LandlordAuthContext
  *
  * Drives authentication for platform-admin (landlord) users.
- * Uses the 'landlord' session guard backed by Aero\Platform\Models\LandlordUser.
+ * Uses the 'landlord' session guard backed by Aero\Auth\Models\User.
  *
  * Registered by AeroPlatformServiceProvider using a domain-aware closure:
  *
@@ -31,12 +31,15 @@ class LandlordAuthContext implements AuthContext
 
     public function userModel(): string
     {
-        return LandlordUser::class;
+        return User::class;
     }
 
     public function dashboardRoute(): string
     {
-        return 'admin.dashboard';
+        // B-36: the platform admin dashboard route is named platform.admin.dashboard.
+        // The old 'admin.dashboard' is undefined, so post-login redirect fell back to
+        // core.dashboard (a {tenant} route) and 500'd.
+        return 'platform.admin.dashboard';
     }
 
     public function loginRoute(): string

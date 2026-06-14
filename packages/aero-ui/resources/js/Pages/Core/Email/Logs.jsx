@@ -22,7 +22,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: '',        label: 'All Statuses' },
@@ -143,7 +143,7 @@ export default function EmailLogs({ logs, filters, stats }) {
       title="Email Logs"
       breadcrumb={[
         { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Email Engine', href: route('core.email.index') },
+        { label: 'Email Engine', href: route('core.email.logs.index') },
         { label: 'Email Logs' },
       ]}
       description="View all outgoing email activity and delivery status."

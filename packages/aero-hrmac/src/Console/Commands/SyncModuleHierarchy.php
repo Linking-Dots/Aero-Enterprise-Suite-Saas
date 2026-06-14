@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Console\Commands;
 
-use Aero\HRMAC\Models\Action;
-use Aero\HRMAC\Models\Component;
+use Aero\Contracts\ModuleSyncFilterInterface;
+use Aero\HRMAC\Models\ModuleComponentAction;
+use Aero\HRMAC\Models\ModuleComponent;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Aero\HRMAC\Services\ModuleDiscoveryService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Stancl\Tenancy\Tenancy;
 
 /**
  * Sync Module Hierarchy Command
@@ -23,17 +23,17 @@ use Stancl\Tenancy\Tenancy;
  * - module_components (third level)
  * - module_component_actions (fourth level - leaf)
  *
- * Usage: php artisan hrmac:sync-modules
+ * Usage: php artisan aero:sync-module --scope=tenant|platform|all
  */
 class SyncModuleHierarchy extends Command
 {
-    protected $signature = 'hrmac:sync-modules
+    protected $signature = 'aero:sync-module
                           {--scope= : Override auto-detected scope (platform, tenant, or all)}
                           {--fresh : Clear all existing modules before syncing}
                           {--force : Force sync even if tables do not exist}
                           {--prune : Remove modules that are no longer installed}';
 
-    protected $description = 'Sync module hierarchy from package configs to database. Auto-detects context.';
+    protected $description = 'Sync module hierarchy from package configs to database. Scope is supplied via --scope (no context auto-detection).';
 
     protected ModuleDiscoveryService $moduleDiscovery;
 
@@ -74,7 +74,7 @@ class SyncModuleHierarchy extends Command
         // Plan 04 T5 — acquire advisory lock to serialize concurrent runs.
         // On MySQL this uses GET_LOCK; sqlite (tests) gracefully no-ops.
         if (! $this->acquireSyncLock()) {
-            $this->warn('⚠️  Another hrmac:sync-modules run is in progress. Aborting to avoid duplicate rows.');
+            $this->warn('⚠️  Another aero:sync-module run is in progress. Aborting to avoid duplicate rows.');
 
             return self::FAILURE;
         }
@@ -86,8 +86,8 @@ class SyncModuleHierarchy extends Command
                 return self::FAILURE;
             }
 
-            // Auto-detect scope
-            $scope = $this->option('scope') ?: $this->detectScope();
+            // Scope is supplied by the consumer (no context auto-detection in HRMAC).
+            $scope = $this->option('scope') ?: 'all';
             $fresh = $this->option('fresh');
             $prune = $this->option('prune');
 
@@ -104,14 +104,12 @@ class SyncModuleHierarchy extends Command
 
                 $modules = $this->moduleDiscovery->getModuleDefinitions();
 
-                // Audit D15 — when running inside a tenant context, filter discovered
-                // modules to only those the tenant has paid for (baseline ∪ subscribed).
-                if ($scope === 'tenant' && function_exists('tenancy') && tenancy()->initialized) {
-                    $tenantModel = tenant();
-                    if ($tenantModel !== null && method_exists($tenantModel, 'getSubscribedProductModulesAttribute')) {
-                        $allowed = $tenantModel->subscribed_product_modules;
-                        $modules = $modules->filter(fn (array $def) => in_array($def['code'] ?? null, $allowed, true))->values();
-                    }
+                // The consuming package decides which modules a given scope receives
+                // (e.g. the SaaS platform filters a tenant to its subscribed products —
+                // Audit D15). HRMAC stays context-free: if no filter is bound, every
+                // discovered module is synced.
+                if (app()->bound(ModuleSyncFilterInterface::class)) {
+                    $modules = app(ModuleSyncFilterInterface::class)->filter($modules, $scope);
                 }
 
                 if ($modules->isEmpty()) {
@@ -252,26 +250,6 @@ class SyncModuleHierarchy extends Command
     /**
      * Auto-detect scope based on context.
      */
-    protected function detectScope(): string
-    {
-        // Tenant context
-        if (function_exists('tenancy') && tenancy()->initialized) {
-            return 'tenant';
-        }
-
-        // Central database (has tenants table)
-        if (Schema::hasTable('tenants')) {
-            return 'platform';
-        }
-
-        // Standalone mode
-        if (! class_exists(Tenancy::class)) {
-            return 'all';
-        }
-
-        return 'tenant';
-    }
-
     /**
      * Sync a module and its hierarchy.
      */
@@ -348,7 +326,7 @@ class SyncModuleHierarchy extends Command
 
         // Convert each self-service item to a component
         foreach ($selfServiceItems as $item) {
-            $component = Component::updateOrCreate(
+            $component = ModuleComponent::updateOrCreate(
                 [
                     'module_id' => $module->id,
                     'sub_module_id' => $subModule->id,
@@ -376,7 +354,7 @@ class SyncModuleHierarchy extends Command
             ];
 
             foreach ($selfServiceActions as $actionDef) {
-                $action = Action::updateOrCreate(
+                $action = ModuleComponentAction::updateOrCreate(
                     [
                         'module_component_id' => $component->id,
                         'code' => $actionDef['code'],
@@ -400,7 +378,7 @@ class SyncModuleHierarchy extends Command
     /**
      * Sync submodules for a module.
      */
-    protected function syncSubModules(Module $module, array $subModules): void
+    protected function syncSubModules(Module $module, array $subModules, ?int $parentId = null): void
     {
         foreach ($subModules as $subModuleDef) {
             $subModule = SubModule::updateOrCreate(
@@ -409,6 +387,7 @@ class SyncModuleHierarchy extends Command
                     'code' => $subModuleDef['code'],
                 ],
                 [
+                    'parent_id' => $parentId,
                     'name' => $subModuleDef['name'],
                     'description' => $subModuleDef['description'] ?? null,
                     'icon' => $subModuleDef['icon'] ?? null,
@@ -428,6 +407,11 @@ class SyncModuleHierarchy extends Command
             if (isset($subModuleDef['components']) && is_array($subModuleDef['components'])) {
                 $this->syncComponents($module, $subModule, $subModuleDef['components']);
             }
+
+            // Nested sub-modules: recurse, linking children to this sub-module.
+            if (isset($subModuleDef['submodules']) && is_array($subModuleDef['submodules'])) {
+                $this->syncSubModules($module, $subModuleDef['submodules'], $subModule->id);
+            }
         }
     }
 
@@ -437,7 +421,7 @@ class SyncModuleHierarchy extends Command
     protected function syncComponents(Module $module, SubModule $subModule, array $components): void
     {
         foreach ($components as $componentDef) {
-            $component = Component::updateOrCreate(
+            $component = ModuleComponent::updateOrCreate(
                 [
                     'module_id' => $module->id,
                     'sub_module_id' => $subModule->id,
@@ -468,10 +452,10 @@ class SyncModuleHierarchy extends Command
     /**
      * Sync actions for a component.
      */
-    protected function syncActions(Component $component, array $actions): void
+    protected function syncActions(ModuleComponent $component, array $actions): void
     {
         foreach ($actions as $actionDef) {
-            $action = Action::updateOrCreate(
+            $action = ModuleComponentAction::updateOrCreate(
                 [
                     'module_component_id' => $component->id,
                     'code' => $actionDef['code'],
@@ -507,18 +491,18 @@ class SyncModuleHierarchy extends Command
 
         foreach ($modules as $module) {
             $submoduleCount = $module->subModules()->count();
-            $componentCount = Component::where('module_id', $module->id)->count();
-            $actionCount = Action::whereIn(
+            $componentCount = ModuleComponent::where('module_id', $module->id)->count();
+            $actionCount = ModuleComponentAction::whereIn(
                 'module_component_id',
-                Component::where('module_id', $module->id)->pluck('id')
+                ModuleComponent::where('module_id', $module->id)->pluck('id')
             )->count();
 
-            Action::whereIn(
+            ModuleComponentAction::whereIn(
                 'module_component_id',
-                Component::where('module_id', $module->id)->pluck('id')
+                ModuleComponent::where('module_id', $module->id)->pluck('id')
             )->delete();
 
-            Component::where('module_id', $module->id)->delete();
+            ModuleComponent::where('module_id', $module->id)->delete();
             $module->subModules()->delete();
             $module->delete();
 
@@ -553,18 +537,18 @@ class SyncModuleHierarchy extends Command
             $this->line("   - Removing: {$module->name} ({$module->code})");
 
             $submoduleCount = $module->subModules()->count();
-            $componentCount = Component::where('module_id', $module->id)->count();
-            $actionCount = Action::whereIn(
+            $componentCount = ModuleComponent::where('module_id', $module->id)->count();
+            $actionCount = ModuleComponentAction::whereIn(
                 'module_component_id',
-                Component::where('module_id', $module->id)->pluck('id')
+                ModuleComponent::where('module_id', $module->id)->pluck('id')
             )->count();
 
-            Action::whereIn(
+            ModuleComponentAction::whereIn(
                 'module_component_id',
-                Component::where('module_id', $module->id)->pluck('id')
+                ModuleComponent::where('module_id', $module->id)->pluck('id')
             )->delete();
 
-            Component::where('module_id', $module->id)->delete();
+            ModuleComponent::where('module_id', $module->id)->delete();
             $module->subModules()->delete();
             $module->delete();
 

@@ -2,7 +2,7 @@
 
 namespace Aero\Notifications\Http\Controllers\Admin;
 
-use Aero\Core\Http\Controllers\Controller;
+use Aero\Kernel\Http\Controllers\Controller;
 use Aero\Notifications\Models\NotificationLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

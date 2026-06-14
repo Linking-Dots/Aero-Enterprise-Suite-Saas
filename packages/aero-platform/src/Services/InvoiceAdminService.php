@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Invoice;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 class InvoiceAdminService
 {
     public function __construct(
-        private readonly AuditService $audit
+        private readonly AuditServiceInterface $audit
     ) {}
 
     /**
@@ -58,6 +58,7 @@ class InvoiceAdminService
 
             $this->audit->log(
                 'invoice.created',
+                'created',
                 $invoice,
                 "Invoice [{$invoice->reference}] created.",
                 null,
@@ -78,6 +79,7 @@ class InvoiceAdminService
 
             $this->audit->log(
                 AuditEventType::INVOICE_MARKED_PAID->value,
+                'marked_paid',
                 $invoice,
                 "Invoice [{$invoice->reference}] marked as paid."
             );
@@ -120,6 +122,7 @@ class InvoiceAdminService
 
             $this->audit->log(
                 AuditEventType::INVOICE_GENERATED->value,
+                'generated',
                 $invoice,
                 "Invoice [{$invoice->reference}] generated for subscription [{$sub->id}].",
                 null,
@@ -166,6 +169,7 @@ class InvoiceAdminService
 
             $this->audit->log(
                 AuditEventType::INVOICE_GENERATED->value,
+                'generated',
                 $invoice,
                 "Product invoice [{$ref}] generated for tenant [{$ps->tenant_id}].",
                 null,
@@ -190,6 +194,7 @@ class InvoiceAdminService
 
             $this->audit->log(
                 AuditEventType::INVOICE_SENT->value,
+                'sent',
                 $invoice,
                 "Invoice [{$invoice->reference}] sent (status set to issued)."
             );
@@ -208,6 +213,7 @@ class InvoiceAdminService
 
             $this->audit->log(
                 'invoice.voided',
+                'voided',
                 $invoice,
                 "Invoice [{$invoice->reference}] voided. Reason: {$reason}."
             );

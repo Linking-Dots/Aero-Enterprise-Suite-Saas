@@ -7,7 +7,7 @@ namespace Aero\Platform\Http\Controllers\Admin\Infra;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Http\Requests\Admin\Infra\AddIpAllowlistRequest;
 use Aero\Platform\Models\Infra\StaffIpAllowlist;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\Infra\PlatformSecurityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,23 +43,23 @@ class PlatformSecurityController extends Controller
 
     public function mfaStatus(): Response
     {
-        $users = LandlordUser::orderBy('name')->get(['id', 'name', 'email', 'two_factor_secret', 'two_factor_confirmed_at']);
+        $users = User::orderBy('name')->get(['id', 'name', 'email', 'two_factor_secret', 'two_factor_confirmed_at']);
 
         return Inertia::render('Platform/Admin/PlatformSecurity/Security', [
             'tab' => 'mfa',
-            'users' => $users->map(fn (LandlordUser $u) => $this->svc->getMfaStatus($u)),
+            'users' => $users->map(fn (User $u) => $this->svc->getMfaStatus($u)),
             'ipAllowlist' => $this->svc->getActiveIpAllowlist(),
         ]);
     }
 
-    public function enforceMfa(LandlordUser $user): RedirectResponse
+    public function enforceMfa(User $user): RedirectResponse
     {
         $this->svc->enforceMfa($user);
 
         return back()->with('success', 'MFA enforcement set.');
     }
 
-    public function resetMfa(LandlordUser $user): RedirectResponse
+    public function resetMfa(User $user): RedirectResponse
     {
         $this->svc->resetMfa($user);
 

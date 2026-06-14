@@ -24,7 +24,8 @@
             "package": "healthcare",
             "version": "1.0.0",
             "category": "product",
-            "description": "Healthcare Management System with Patient Records, HIPAA Compliance, and Medical Billing"
+            "description": "Healthcare Management System with Patient Records, HIPAA Compliance, and Medical Billing",
+            "tier": "product"
         }
     }
 }

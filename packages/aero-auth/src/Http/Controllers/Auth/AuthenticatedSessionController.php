@@ -2,8 +2,9 @@
 
 namespace Aero\Auth\Http\Controllers\Auth;
 
+use Aero\Auth\Contracts\AuthContext;
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Support\SafeRedirect;
+use Aero\Kernel\Support\SafeRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,14 +28,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AuthContext $context): RedirectResponse
     {
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        // Resolve guard + post-login target from the active AuthContext. aero-auth
+        // stays mode-agnostic: standalone/tenant binds TenantAuthContext (web ->
+        // core.dashboard); the SaaS host rebinds LandlordAuthContext on the admin
+        // domain (landlord -> admin.dashboard). No mode/guard branching here.
+        if (! Auth::guard($context->guard())->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
@@ -42,20 +47,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return SafeRedirect::intended('core.dashboard', true);
+        return SafeRedirect::intended($context->dashboardRoute(), true);
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, AuthContext $context): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::guard($context->guard())->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return SafeRedirect::toRoute('login', [], 'login');
+        return SafeRedirect::toRoute($context->loginRoute(), [], 'login');
     }
 }

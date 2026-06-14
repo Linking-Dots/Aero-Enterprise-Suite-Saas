@@ -2,7 +2,7 @@
 
 namespace Aero\Auth\Mail\Auth;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;

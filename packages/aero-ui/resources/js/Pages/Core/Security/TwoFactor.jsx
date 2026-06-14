@@ -10,7 +10,7 @@ import {
   Alert,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function TwoFactorPage({ two_factor_enabled, has_recovery_codes, confirmed_at }) {
   const toast = useToast();

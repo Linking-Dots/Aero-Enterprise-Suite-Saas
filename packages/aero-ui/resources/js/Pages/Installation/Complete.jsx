@@ -1,7 +1,9 @@
 import InstallLayout from './InstallLayout.jsx';
 import { VStack, HStack, Box, Badge, Text, Eyebrow } from '@aero/ui';
 
-export default function Complete({ mode, appUrl, adminEmail, licensedModules = [], installationKey }) {
+export default function Complete({ mode, appUrl, adminEmail, licensedModules = [], installationKey, actions = {} }) {
+  const dashboardUrl = actions.dashboard ?? appUrl ?? '/';
+  const settingsUrl  = actions.settings  ?? appUrl ?? '/';
   return (
     <VStack gap={5} align="center" className="aeos-text-center">
       {/* Success icon */}
@@ -53,21 +55,44 @@ export default function Complete({ mode, appUrl, adminEmail, licensedModules = [
         </Box>
       )}
 
-      {/* Next steps */}
-      <Box style={{
-        width: '100%', textAlign: 'left',
-        background: 'rgba(0,163,184,.04)', border: '1px solid rgba(0,163,184,.12)',
-        borderRadius: 'var(--aeos-r-lg)', padding: '1rem 1.25rem',
-      }}>
-        <Eyebrow tone="primary" className="aeos-mb-1">Next steps</Eyebrow>
-        <VStack gap={2}>
-          {['Sign in with your admin account', 'Configure tenant domains', 'Enable required modules', 'Set up email templates'].map((s, i) => (
-            <HStack key={i} gap={2}>
-              <span style={{ color: 'var(--aeos-primary)', flexShrink: 0 }}>→</span>
-              <Text size="sm" tone="secondary">{s}</Text>
-            </HStack>
-          ))}
-        </VStack>
+      {/* Quick actions — all open the app entry point (appUrl); the app routes
+          you to the right place after sign-in. Deep links are intentionally
+          avoided since post-install destinations are tenant/subdomain-scoped. */}
+      <Box style={{ width: '100%', textAlign: 'left' }}>
+        <Eyebrow tone="primary" className="aeos-mb-1">Quick actions</Eyebrow>
+        <div className="il-quick-grid">
+          <a href={dashboardUrl} className="il-quick-card">
+            <span className="il-quick-card-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>
+            </span>
+            <span className="il-quick-card-title">Go to dashboard</span>
+            <span className="il-quick-card-sub">Sign in with your admin account to reach the {mode === 'saas' ? 'platform' : 'admin'} dashboard.</span>
+          </a>
+          <a href={settingsUrl} className="il-quick-card">
+            <span className="il-quick-card-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </span>
+            <span className="il-quick-card-title">Enable modules</span>
+            <span className="il-quick-card-sub">Turn on the modules your team needs from Settings &rsaquo; Modules.</span>
+          </a>
+          <a href={settingsUrl} className="il-quick-card">
+            <span className="il-quick-card-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </span>
+            <span className="il-quick-card-title">Invite your team</span>
+            <span className="il-quick-card-sub">Add users and assign roles once you&rsquo;re signed in.</span>
+          </a>
+        </div>
+
+        {mode === 'saas' && (
+          <div className="il-advisory" style={{ marginTop: '.75rem' }}>
+            <span className="il-advisory-icon" aria-hidden="true">ⓘ</span>
+            <div>
+              Tenants are reached at their own subdomain — e.g. <code>tenant.yourdomain.com</code>.
+              Make sure wildcard DNS (or your local <code>hosts</code> file) routes subdomains to this server.
+            </div>
+          </div>
+        )}
       </Box>
 
       <a

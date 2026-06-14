@@ -18,7 +18,7 @@ import {
   Alert,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const CHECK_LABELS = {
   spf:   'SPF Record',
@@ -130,7 +130,7 @@ export default function Deliverability({ domain, checks = {}, score }) {
         title="Deliverability"
         breadcrumb={[
           { label: 'Dashboard', href: route('core.dashboard') },
-          { label: 'Email Engine', href: route('core.email.index') },
+          { label: 'Email Engine', href: route('core.email.logs.index') },
           { label: 'Deliverability' },
         ]}
         description="DNS health checks for your sending domain."

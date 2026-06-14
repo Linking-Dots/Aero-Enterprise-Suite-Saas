@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Services;
 
+use Aero\Contracts\UserInvitationServiceInterface;
 use Aero\Core\Mail\UserInvitationMail;
 use Aero\Core\Models\User;
 use Aero\Core\Models\UserInvitation;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
-class UserInvitationService
+class UserInvitationService implements UserInvitationServiceInterface
 {
     /**
      * Send a user invitation

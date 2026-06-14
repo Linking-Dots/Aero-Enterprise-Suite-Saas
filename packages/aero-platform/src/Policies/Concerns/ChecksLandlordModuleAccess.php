@@ -2,7 +2,7 @@
 
 namespace Aero\Platform\Policies\Concerns;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\Module\ModuleAccessService;
 
 /**
@@ -24,12 +24,12 @@ use Aero\Platform\Services\Module\ModuleAccessService;
  * ```php
  * use ChecksLandlordModuleAccess;
  *
- * public function viewAny(LandlordUser $user): bool
+ * public function viewAny(User $user): bool
  * {
  *     return $this->canAccessPlatformModule($user, 'tenant_management');
  * }
  *
- * public function create(LandlordUser $user): bool
+ * public function create(User $user): bool
  * {
  *     return $this->canPerformPlatformAction($user, 'tenant_management', 'tenant_list', 'create');
  * }
@@ -48,7 +48,7 @@ trait ChecksLandlordModuleAccess
     /**
      * Check if user is Super Administrator (bypasses all checks).
      */
-    protected function isSuperAdmin(LandlordUser $user): bool
+    protected function isSuperAdmin(User $user): bool
     {
         return $user->hasRole('Super Administrator');
     }
@@ -56,10 +56,10 @@ trait ChecksLandlordModuleAccess
     /**
      * Check if user can access a platform module.
      *
-     * @param  LandlordUser  $user  The landlord user to check
+     * @param  User  $user  The landlord user to check
      * @param  string  $moduleCode  The module code (e.g., 'tenant_management')
      */
-    protected function canAccessPlatformModule(LandlordUser $user, string $moduleCode): bool
+    protected function canAccessPlatformModule(User $user, string $moduleCode): bool
     {
         // Super Admins bypass all checks
         if ($this->isSuperAdmin($user)) {
@@ -77,11 +77,11 @@ trait ChecksLandlordModuleAccess
      * Platform modules have a flat structure: module → component → action
      * (no submodule level)
      *
-     * @param  LandlordUser  $user  The landlord user to check
+     * @param  User  $user  The landlord user to check
      * @param  string  $moduleCode  The module code (e.g., 'tenant_management')
      * @param  string  $componentCode  The component code (e.g., 'tenant_list')
      */
-    protected function canAccessPlatformComponent(LandlordUser $user, string $moduleCode, string $componentCode): bool
+    protected function canAccessPlatformComponent(User $user, string $moduleCode, string $componentCode): bool
     {
         // Super Admins bypass all checks
         if ($this->isSuperAdmin($user)) {
@@ -98,13 +98,13 @@ trait ChecksLandlordModuleAccess
     /**
      * Check if user can perform an action on a platform component.
      *
-     * @param  LandlordUser  $user  The landlord user to check
+     * @param  User  $user  The landlord user to check
      * @param  string  $moduleCode  The module code (e.g., 'tenant_management')
      * @param  string  $componentCode  The component code (e.g., 'tenant_list')
      * @param  string  $actionCode  The action code (e.g., 'create', 'view', 'edit', 'delete')
      */
     protected function canPerformPlatformAction(
-        LandlordUser $user,
+        User $user,
         string $moduleCode,
         string $componentCode,
         string $actionCode
@@ -134,13 +134,13 @@ trait ChecksLandlordModuleAccess
     /**
      * Check if user has any of the specified action permissions.
      *
-     * @param  LandlordUser  $user  The landlord user to check
+     * @param  User  $user  The landlord user to check
      * @param  string  $moduleCode  The module code
      * @param  string  $componentCode  The component code
      * @param  array  $actionCodes  Array of action codes to check (any match = true)
      */
     protected function canPerformAnyPlatformAction(
-        LandlordUser $user,
+        User $user,
         string $moduleCode,
         string $componentCode,
         array $actionCodes

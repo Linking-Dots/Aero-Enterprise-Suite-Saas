@@ -3,9 +3,9 @@
 namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Http\Requests\AcceptTeamInvitationRequest;
-use Aero\Core\Services\AuditService;
-use Aero\Core\Services\UserInvitationService;
+use Aero\Auth\Http\Requests\AcceptTeamInvitationRequest;
+use Aero\Contracts\AuditServiceInterface;
+use Aero\Contracts\UserInvitationServiceInterface;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,8 +18,8 @@ use Inertia\Response;
 class InvitationController extends Controller
 {
     public function __construct(
-        protected UserInvitationService $invitationService,
-        protected AuditService $auditService
+        protected UserInvitationServiceInterface $invitationService,
+        protected AuditServiceInterface $auditService
     ) {}
 
     /**
@@ -104,6 +104,7 @@ class InvitationController extends Controller
             // Log the acceptance
             $this->auditService->log(
                 'invitation_accepted',
+                'accepted',
                 $invitation,
                 "User {$user->name} ({$user->email}) accepted invitation and created account"
             );

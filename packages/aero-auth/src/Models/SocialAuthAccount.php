@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Models;
 
-use Aero\Core\Models\CentralModel;
+use Aero\Contracts\Models\CentralModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 

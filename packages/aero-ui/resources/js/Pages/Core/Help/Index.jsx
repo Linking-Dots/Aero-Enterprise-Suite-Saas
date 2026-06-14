@@ -11,7 +11,7 @@ import {
   Card, CardBody,
   useToast,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const QUICK_LINKS = [
   { label: 'Knowledge Base',   icon: 'bookOpen',    href: '/help/knowledge-base' },

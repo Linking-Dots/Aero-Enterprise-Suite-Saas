@@ -13,7 +13,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TIMEZONE_OPTIONS = [
   { value: 'UTC',            label: 'UTC' },
@@ -66,7 +66,7 @@ export default function General({ settings }) {
     <FormPageLayout
       title="General Settings"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'General' },
       ]}

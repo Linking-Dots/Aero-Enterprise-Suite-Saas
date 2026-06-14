@@ -45,7 +45,8 @@
             "package": "i18n",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Internationalisation: locale config, middleware, dictionaries, locale switching"
+            "description": "Internationalisation: locale config, middleware, dictionaries, locale switching",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

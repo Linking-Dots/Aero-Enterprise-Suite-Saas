@@ -3,7 +3,7 @@
 namespace Aero\Auth\Http\Controllers\Auth;
 
 use Aero\Auth\Http\Controllers\Controller;
-use Aero\Core\Support\SafeRedirect;
+use Aero\Kernel\Support\SafeRedirect;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

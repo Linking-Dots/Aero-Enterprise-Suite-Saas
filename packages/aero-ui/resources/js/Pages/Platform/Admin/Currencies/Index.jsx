@@ -22,7 +22,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TAB_OPTIONS = [
   { value: 'currencies',       label: 'Currencies' },
@@ -295,7 +295,7 @@ export default function CurrenciesIndex({ currencies, regionalPrices, plans, pro
     <IndexPageLayout
       title="Currencies"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Currencies' },
       ]}
       description="Manage active currencies, exchange rates, and regional pricing overrides."

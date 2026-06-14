@@ -14,11 +14,22 @@ use Illuminate\Database\Eloquent\Collection;
 class EmailTemplateService
 {
     /**
+     * Current tenant id, dual-mode-safe. In SaaS tenant context this is the active
+     * tenant; on central/admin or standalone (no stancl tenant() helper / no tenant)
+     * it is null — which correctly scopes to the single-tenant/global templates.
+     * B-49: the bare tenant('id') 500'd in standalone ("undefined function tenant()").
+     */
+    private function currentTenantId(): ?string
+    {
+        return function_exists('tenant') && tenant() ? tenant('id') : null;
+    }
+
+    /**
      * Get all email templates for the current tenant.
      */
     public function getTemplates(array $filters = []): Collection
     {
-        $query = EmailTemplate::where('tenant_id', tenant('id'));
+        $query = EmailTemplate::where('tenant_id', $this->currentTenantId());
 
         if (isset($filters['category'])) {
             $query->category($filters['category']);
@@ -40,7 +51,7 @@ class EmailTemplateService
      */
     public function getTemplate(int $id): ?EmailTemplate
     {
-        return EmailTemplate::where('tenant_id', tenant('id'))->findOrFail($id);
+        return EmailTemplate::where('tenant_id', $this->currentTenantId())->findOrFail($id);
     }
 
     /**
@@ -48,7 +59,7 @@ class EmailTemplateService
      */
     public function getTemplateByName(string $name): ?EmailTemplate
     {
-        return EmailTemplate::where('tenant_id', tenant('id'))
+        return EmailTemplate::where('tenant_id', $this->currentTenantId())
             ->where('name', $name)
             ->active()
             ->first();
@@ -60,7 +71,7 @@ class EmailTemplateService
     public function createTemplate(array $data): EmailTemplate
     {
         $template = EmailTemplate::create([
-            'tenant_id' => tenant('id'),
+            'tenant_id' => $this->currentTenantId(),
             'name' => $data['name'],
             'subject' => $data['subject'],
             'html_content' => $data['html_content'],

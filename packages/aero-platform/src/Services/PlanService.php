@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\Plan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class PlanService
 {
     public function __construct(
-        private readonly AuditService $audit
+        private readonly AuditServiceInterface $audit
     ) {}
 
     /**
@@ -65,6 +65,7 @@ class PlanService
 
             $this->audit->log(
                 AuditEventType::PLAN_CREATED->value,
+                'created',
                 $plan,
                 "Plan [{$plan->name}] created.",
                 null,
@@ -87,6 +88,7 @@ class PlanService
 
             $this->audit->log(
                 AuditEventType::PLAN_UPDATED->value,
+                'updated',
                 $plan,
                 "Plan [{$plan->name}] updated.",
                 $old,
@@ -111,7 +113,7 @@ class PlanService
                 );
             }
 
-            $this->audit->log(AuditEventType::PLAN_DELETED->value, $plan, "Plan [{$plan->name}] deleted.");
+            $this->audit->log(AuditEventType::PLAN_DELETED->value, 'deleted', $plan, "Plan [{$plan->name}] deleted.");
             $plan->delete();
         });
     }
@@ -124,7 +126,7 @@ class PlanService
         return DB::transaction(function () use ($plan) {
             $plan->update(['status' => 'archived', 'is_active' => false, 'is_public' => false]);
 
-            $this->audit->log(AuditEventType::PLAN_ARCHIVED->value, $plan, "Plan [{$plan->name}] archived.");
+            $this->audit->log(AuditEventType::PLAN_ARCHIVED->value, 'archived', $plan, "Plan [{$plan->name}] archived.");
 
             return $plan->fresh();
         });
@@ -169,6 +171,7 @@ class PlanService
 
             $this->audit->log(
                 AuditEventType::PLAN_CLONED->value,
+                'cloned',
                 $copy,
                 "Plan [{$plan->name}] cloned as [{$copy->name}].",
                 ['source_plan_id' => $plan->id],

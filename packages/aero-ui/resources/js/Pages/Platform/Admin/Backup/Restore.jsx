@@ -19,7 +19,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   completed: 'success',
@@ -149,7 +149,7 @@ export default function Restore({ restorePoints, tenants }) {
     <IndexPageLayout
       title="Restore"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Backup & Restore', href: route('platform.admin.backup.index') },
         { label: 'Restore' },
       ]}

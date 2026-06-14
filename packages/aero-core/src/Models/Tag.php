@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Aero\Core\Models;
 
 use Aero\Contracts\Searchable;
-use Aero\Core\Traits\Searchable as SearchableTrait;
+use Aero\Kernel\Traits\Searchable as SearchableTrait;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -83,17 +82,13 @@ class Tag extends TenantModel implements Searchable
     }
 
     /**
-     * Polymorphic relation to all tagged records.
+     * Rows in the `taggables` pivot for this tag (across all taggable types).
+     * Used for `withCount('records')`. A morphedByMany to the abstract base Model
+     * is not instantiable, so this maps to the pivot model instead.
      */
-    public function records(): MorphToMany
+    public function records(): HasMany
     {
-        return $this->morphedByMany(
-            Model::class,
-            'taggable',
-            'taggables',
-            'tag_id',
-            'taggable_id'
-        )->withPivot('taggable_type');
+        return $this->hasMany(Taggable::class, 'tag_id');
     }
 
     // =====================================================================

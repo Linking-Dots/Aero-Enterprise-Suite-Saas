@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\PlatformMetricDaily;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -58,7 +59,7 @@ class DashboardTest extends TestCase
             'total_revenue' => 12500,
         ]);
 
-        $user = LandlordUser::factory()->create();
+        $user = LandlordUserFactory::new()->create();
 
         $this->actingAs($user, 'landlord')
             ->get(route('platform.admin.dashboard'))
@@ -72,7 +73,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_stats_endpoint_returns_json(): void
     {
-        $user = LandlordUser::factory()->create();
+        $user = LandlordUserFactory::new()->create();
 
         $this->actingAs($user, 'landlord')
             ->getJson(route('platform.admin.dashboard.stats'))
@@ -82,7 +83,7 @@ class DashboardTest extends TestCase
 
     public function test_system_health_endpoint_returns_json(): void
     {
-        $user = LandlordUser::factory()->create();
+        $user = LandlordUserFactory::new()->create();
 
         $this->actingAs($user, 'landlord')
             ->getJson(route('platform.admin.dashboard.health'))

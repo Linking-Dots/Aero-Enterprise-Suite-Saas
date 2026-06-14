@@ -12,7 +12,7 @@ import {
   Badge,
   TextField,
 } from '@aero/ui';
-import App from '../../App';
+import App from '@/Pages/App.jsx';
 
 export default function ActivityIndex({ title, activities, stats, filters }) {
   const [searchQuery, setSearchQuery] = useState('');

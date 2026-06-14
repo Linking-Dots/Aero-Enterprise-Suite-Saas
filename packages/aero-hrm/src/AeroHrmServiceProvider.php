@@ -4,13 +4,13 @@ namespace Aero\HRM;
 
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
 use Aero\Core\Services\DashboardRegistry;
+use Aero\Contracts\AeroMode;
 use Aero\HRM\Providers\HRMServiceProvider;
 use Aero\HRM\Providers\HRMServiceProvider as ModuleServiceProvider;
 use Aero\HRM\Services\Attendance\AttendanceClockService;
 use Aero\HRM\Services\Attendance\OvertimeApprovalService;
 use Aero\HRM\Services\Attendance\ShiftSwapService;
 use Aero\HRM\Services\Attendance\TimesheetAggregator;
-use Aero\Platform\AeroPlatformServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -53,8 +53,6 @@ class AeroHrmServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        // Load views (if any)
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'hrm');
 
         // Register routes
         $this->registerRoutes();
@@ -120,11 +118,11 @@ class AeroHrmServiceProvider extends ServiceProvider
     }
 
     /**
-     * Check if aero-platform is active.
+     * Check if running in SaaS mode (multi-tenant).
      */
     protected function isPlatformActive(): bool
     {
-        return class_exists(AeroPlatformServiceProvider::class);
+        return AeroMode::isSaas();
     }
 
     /**

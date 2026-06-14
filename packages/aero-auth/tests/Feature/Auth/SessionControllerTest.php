@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Tests\Feature\Auth;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Orchestra\Testbench\TestCase;

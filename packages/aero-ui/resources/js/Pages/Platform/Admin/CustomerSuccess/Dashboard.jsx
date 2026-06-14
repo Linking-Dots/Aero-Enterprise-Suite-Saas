@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function healthScoreBadge(score) {
   if (score >= 80) return 'success';
@@ -164,7 +164,7 @@ export default function CustomerSuccessDashboard({
     <IndexPageLayout
       title="Customer Success"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Customer Success' },
       ]}
       description="Monitor tenant health, churn risks, and NPS scores."

@@ -10,7 +10,7 @@ import {
   VStack,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function TenantsCreate({ plans, products }) {
   const toast = useToast();
@@ -57,7 +57,7 @@ export default function TenantsCreate({ plans, products }) {
     <FormPageLayout
       title="Create Tenant"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tenants', href: route('platform.admin.tenants.index') },
         { label: 'Create' },
       ]}

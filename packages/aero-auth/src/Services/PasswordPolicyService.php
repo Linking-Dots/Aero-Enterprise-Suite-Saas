@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Services;
 
-use Aero\Core\Models\User;
-use Aero\Core\Support\TenantCache;
+use Aero\Auth\Models\User;
+use Aero\Kernel\Support\TenantCache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 

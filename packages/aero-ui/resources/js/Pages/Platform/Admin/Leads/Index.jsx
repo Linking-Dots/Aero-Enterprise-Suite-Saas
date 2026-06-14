@@ -19,7 +19,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: '',           label: 'All Statuses' },
@@ -216,7 +216,7 @@ export default function LeadsIndex({ leads, filters, users }) {
     <IndexPageLayout
       title="Lead Pipeline"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Leads' },
       ]}
       description="Track and manage prospects through the sales pipeline."

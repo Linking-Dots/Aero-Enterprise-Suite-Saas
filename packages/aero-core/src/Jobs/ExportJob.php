@@ -72,7 +72,7 @@ class ExportJob implements ShouldQueue
     {
         $models = [
             'users' => \App\Models\User::class,
-            'roles' => \Spatie\Permission\Models\Role::class,
+            'roles' => \Aero\HRMAC\Models\Role::class,
             'tags' => \Aero\Core\Models\Tag::class,
         ];
 

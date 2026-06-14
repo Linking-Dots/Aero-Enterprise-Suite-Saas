@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AeroMode;
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlanModule;
 use Aero\Platform\Models\Subscription;
@@ -27,7 +28,7 @@ class PlanControllerTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -119,7 +120,7 @@ class PlanControllerTest extends TestCase
             ['name' => 'Super Administrator', 'guard_name' => 'landlord'],
         );
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
         $this->admin->assignRole($role);
     }
 
@@ -136,7 +137,7 @@ class PlanControllerTest extends TestCase
             ->assertOk()
             ->assertInertia(
                 fn ($page) => $page
-                    ->component('Platform/Admin/Plans/P2/Index')
+                    ->component('Platform/Admin/Plans/Index')
                     ->has('plans')
                     ->has('filters')
             );

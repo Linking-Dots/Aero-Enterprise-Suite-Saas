@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Providers;
 
+use Aero\Contracts\AeroMode;
 use Aero\Core\Http\Middleware\InitializeTenancyIfNotCentral;
 use Composer\InstalledVersions;
 use Illuminate\Contracts\Foundation\Application;
@@ -221,8 +222,8 @@ class ModuleRouteServiceProvider extends ServiceProvider
      */
     protected function isPlatformActive(): bool
     {
-        // Method 1: Check if platform service provider is registered
-        if (class_exists('Aero\Platform\AeroPlatformServiceProvider')) {
+        // Method 1: Canonical mode detection (file-based via contracts API)
+        if (AeroMode::isSaas()) {
             return true;
         }
 

@@ -2,7 +2,7 @@
 
 namespace Aero\Auth\Http\Controllers\Auth;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Http\JsonResponse;

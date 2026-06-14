@@ -1,0 +1,110 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - link "aeos365 home" [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+      - link "Admin Dashboard" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard
+      - link "My Profile" [ref=e12] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e13] [cursor=pointer]:
+        - /url: /notifications
+      - link "Subscription & Billing" [ref=e15] [cursor=pointer]:
+        - /url: /subscription
+      - link "User Management" [ref=e16] [cursor=pointer]:
+        - /url: /users
+      - link "Roles & Module Access" [ref=e17] [cursor=pointer]:
+        - /url: /roles
+      - link "Audit & Activity Logs" [ref=e18] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Notifications" [ref=e19] [cursor=pointer]:
+        - /url: /notifications
+      - link "File Manager" [ref=e20] [cursor=pointer]:
+        - /url: /file-manager
+      - link "Organization" [ref=e21] [cursor=pointer]:
+        - /url: /organization/profile
+      - link "Translations / i18n" [ref=e22] [cursor=pointer]:
+        - /url: /i18n/translations
+      - link "Tags & Labels" [ref=e23] [cursor=pointer]:
+        - /url: /tags
+      - link "Saved Views & Filters" [ref=e24] [cursor=pointer]:
+        - /url: /saved-views
+      - link "Global Search" [ref=e25] [cursor=pointer]:
+        - /url: /search
+      - link "API & Webhooks" [ref=e26] [cursor=pointer]:
+        - /url: /api/keys
+      - link "Data Export/Import" [ref=e27] [cursor=pointer]:
+        - /url: /export-import/exports
+      - link "Retention Policies" [ref=e28] [cursor=pointer]:
+        - /url: /retention-policies
+      - link "Email Engine" [ref=e29] [cursor=pointer]:
+        - /url: /email/logs
+      - link "System Health" [ref=e30] [cursor=pointer]:
+        - /url: /system-health
+      - link "Mobile & PWA" [ref=e31] [cursor=pointer]:
+        - /url: /mobile-pwa
+      - link "Backup & Restore" [ref=e32] [cursor=pointer]:
+        - /url: /backup
+      - link "License Management" [ref=e33] [cursor=pointer]:
+        - /url: /license
+      - link "Document Numbering & Sequences" [ref=e34] [cursor=pointer]:
+        - /url: /numbering
+      - link "Print & PDF Templates" [ref=e35] [cursor=pointer]:
+        - /url: /print-templates
+      - link "Announcements & Banners" [ref=e36] [cursor=pointer]:
+        - /url: /announcements
+      - link "Maintenance Mode" [ref=e37] [cursor=pointer]:
+        - /url: /maintenance-mode
+      - link "Trash & Recycle Bin" [ref=e38] [cursor=pointer]:
+        - /url: /trash
+      - link "Help & Support" [ref=e39] [cursor=pointer]:
+        - /url: /help
+      - link "Settings" [ref=e40] [cursor=pointer]:
+        - /url: /settings/system
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - button "Expand sidebar" [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+        - generic [ref=e46]: Tags & Labels
+        - generic [ref=e47]:
+          - button "Notifications" [ref=e48] [cursor=pointer]:
+            - img [ref=e50]
+          - generic [ref=e52]:
+            - generic [ref=e54]: "?"
+            - generic [ref=e56]: UAT Super Admin
+            - button "Sign out" [ref=e57] [cursor=pointer]:
+              - img [ref=e59]
+      - main [ref=e61]:
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - navigation "Breadcrumb" [ref=e65]:
+              - link "Dashboard" [ref=e67] [cursor=pointer]:
+                - /url: https://uatco.aeos365.test/dashboard
+              - generic [ref=e68]:
+                - img [ref=e70]
+                - generic [ref=e72]: Tags & Labels
+            - generic [ref=e73]:
+              - generic [ref=e74]:
+                - heading "Tags & Labels" [level=1] [ref=e76]
+                - paragraph [ref=e77]: Manage tags used across entities.
+              - button "tag New Tag" [ref=e79] [cursor=pointer]:
+                - generic [ref=e80]: tag
+                - generic [ref=e81]: New Tag
+          - generic [ref=e84]:
+            - heading "Total Tags" [level=3] [ref=e87]
+            - generic [ref=e89]: "0"
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic: search
+              - textbox "Search tags…" [ref=e93]
+            - button "Filter" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]: Filter
+            - button "Reset" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: Reset
+          - generic [ref=e99]:
+            - generic [ref=e101]: inbox
+            - heading "No records" [level=3] [ref=e102]
+            - paragraph [ref=e103]: No tags found.
+  - button "Open Theme Studio" [ref=e104] [cursor=pointer]:
+    - img [ref=e105]

@@ -7,7 +7,7 @@ import {
   Button,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const IDENTITY_TABS = [
   { key: 'saml',             label: 'SAML 2.0',        route: 'core.identity.saml.index',             perm: 'auth.sso_identity.sso_saml.view' },

@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const CATEGORY_OPTIONS = [
   { value: 'getting-started', label: 'Getting Started' },
@@ -166,7 +166,7 @@ export default function Articles({ articles, filters }) {
     <IndexPageLayout
       title="KB Articles"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Help Center' },
         { label: 'Articles' },
       ]}

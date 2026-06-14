@@ -16,7 +16,7 @@ import {
   useHRMAC,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 function formatBytes(n) {
   if (n == null) return '—';
@@ -95,7 +95,7 @@ export default function DeveloperLogs({ files }) {
     <IndexPageLayout
       title="Log Files"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Developer Tools', href: route('platform.admin.developer.dashboard') },
         { label: 'Log Files' },
       ]}

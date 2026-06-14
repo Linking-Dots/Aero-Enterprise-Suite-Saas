@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace Aero\HRMAC\Tests\Feature\Console;
 
+use Aero\Contracts\ModuleSyncFilterInterface;
 use Aero\HRMAC\Console\Commands\SyncModuleHierarchy;
 use Aero\HRMAC\Services\ModuleDiscoveryService;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 /**
- * Audit D15 — SyncModuleHierarchy --scope=tenant filter regression pin.
+ * HRMAC is a context-free shared package (2026-06-04 redesign).
  *
- * Verifies that:
- * 1. The source code contains the tenant-scope guard block.
- * 2. The filter uses subscribed_product_modules accessor.
- * 3. The filter keys off $def['code'].
- * 4. The baseline_modules config key exists in hrmac.php.
+ * The tenant module-subscription filter (Audit D15) is NO LONGER in this command —
+ * it moved to the SaaS consumer (Aero\Platform\Services\TenantSubscriptionModuleFilter)
+ * and is applied via the ModuleSyncFilterInterface binding. These tests pin that the
+ * command contains no context detection and delegates the data-decision to the contract.
  *
- * Full integration tests (real tenant DB + product_subscriptions rows +
- * hrmac:sync-modules run + modules table assertions) are deferred to the
- * host suite as they require Stancl tenancy bootstrapping which is out of
- * scope for the package-level test harness.
+ * @see \Aero\Platform\Tests\... for the subscription-filter behavior tests.
  */
 class SyncModuleHierarchyTenantScopeTest extends TestCase
 {
@@ -57,69 +54,40 @@ class SyncModuleHierarchyTenantScopeTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // Source-code structural pins
+    // Context-free pins (HRMAC must NOT detect tenant/platform context)
     // -------------------------------------------------------------------------
 
-    public function test_handle_contains_tenant_scope_guard(): void
+    public function test_command_delegates_filtering_to_consumer_contract(): void
     {
         $this->assertStringContainsString(
-            "scope === 'tenant'",
+            'ModuleSyncFilterInterface',
             $this->source,
-            "handle() must contain a scope === 'tenant' guard for the D15 filter."
+            'The sync command must delegate module filtering to the consumer-bound '.
+            'ModuleSyncFilterInterface (no SaaS logic inside HRMAC).'
+        );
+        $this->assertTrue(
+            interface_exists(ModuleSyncFilterInterface::class),
+            'ModuleSyncFilterInterface contract must exist.'
         );
     }
 
-    public function test_filter_checks_tenancy_initialized(): void
+    public function test_command_contains_no_context_detection(): void
     {
-        $this->assertStringContainsString(
-            'tenancy()->initialized',
-            $this->source,
-            'The filter must check tenancy()->initialized before attempting to read the tenant.'
-        );
+        foreach (['tenancy()', 'detectScope', 'subscribed_product_modules', 'Stancl\\'] as $needle) {
+            $this->assertStringNotContainsString(
+                $needle,
+                $this->source,
+                "HRMAC sync command must be context-free — found '{$needle}'."
+            );
+        }
     }
 
-    public function test_filter_reads_subscribed_product_modules(): void
+    public function test_scope_defaults_to_all_without_detection(): void
     {
-        $this->assertStringContainsString(
-            'subscribed_product_modules',
-            $this->source,
-            "The filter must read the tenant's subscribed_product_modules accessor (Audit D15)."
-        );
-    }
-
-    public function test_filter_checks_module_definition_code_key(): void
-    {
-        // The filter expression must reference $def['code'] so it compares discovered
-        // module codes against the allowed list.
         $this->assertMatchesRegularExpression(
-            '/\$def\s*\[\s*[\'"]code[\'"]\s*\]/',
+            "/option\('scope'\)\s*\?:\s*'all'/",
             $this->source,
-            "The filter must compare discovered module \$def['code'] against the allowed list."
-        );
-    }
-
-    public function test_filter_uses_in_array_strict(): void
-    {
-        // Strict in_array prevents '0' == 'core' type-juggling surprises.
-        $this->assertStringContainsString(
-            'in_array(',
-            $this->source,
-            'The filter must use in_array() for the allowed-code check.'
-        );
-        $this->assertStringContainsString(
-            'true)',
-            $this->source,
-            'in_array() must be called with strict=true.'
-        );
-    }
-
-    public function test_filter_calls_get_subscribed_product_modules_attribute_method_guard(): void
-    {
-        $this->assertStringContainsString(
-            'getSubscribedProductModulesAttribute',
-            $this->source,
-            "The filter must guard with method_exists('getSubscribedProductModulesAttribute') ".
-            'before reading the accessor so standalone mode does not break.'
+            "Scope must default to 'all' (supplied by consumer), not auto-detected."
         );
     }
 

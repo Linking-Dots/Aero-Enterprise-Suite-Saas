@@ -19,7 +19,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const TYPE_OPTIONS = [
   { value: 'vat',         label: 'VAT' },
@@ -175,7 +175,7 @@ export default function TaxRates({ rates }) {
     <IndexPageLayout
       title="Tax Rates"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tax Rates' },
       ]}
       description="Regional tax rates applied to invoices by country and type."

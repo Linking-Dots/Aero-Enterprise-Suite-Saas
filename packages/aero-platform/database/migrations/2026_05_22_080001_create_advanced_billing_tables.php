@@ -34,7 +34,7 @@ return new class extends Migration
                 $t->enum('status', ['draft', 'active', 'ended'])->default('draft');
                 $t->timestamp('starts_at')->nullable();
                 $t->timestamp('ends_at')->nullable();
-                $t->foreignId('created_by')->constrained('users');
+                $t->foreignId('created_by')->constrained('landlord_users');
                 $t->timestamps();
             });
         }
@@ -57,7 +57,7 @@ return new class extends Migration
                 $t->timestamp('expires_at')->nullable();
                 $t->enum('status', ['active', 'archived'])->default('active');
                 $t->foreignId('campaign_id')->nullable()->constrained('coupon_campaigns')->nullOnDelete();
-                $t->foreignId('created_by')->constrained('users');
+                $t->foreignId('created_by')->constrained('landlord_users');
                 $t->timestamps();
                 $t->index(['status', 'expires_at']);
             });
@@ -91,7 +91,7 @@ return new class extends Migration
                 $t->decimal('price', 10, 2)->default(0);
                 $t->string('billing_period', 24)->default('monthly');
                 $t->enum('status', ['active', 'archived'])->default('active');
-                $t->foreignId('created_by')->constrained('users');
+                $t->foreignId('created_by')->constrained('landlord_users');
                 $t->timestamps();
             });
         }
@@ -143,9 +143,9 @@ return new class extends Migration
                 $t->text('reason');
                 $t->enum('status', ['pending', 'approved', 'processed', 'failed'])->default('pending');
                 $t->string('gateway_refund_id')->nullable();
-                $t->foreignId('requested_by')->constrained('users');
-                $t->foreignId('approved_by')->nullable()->constrained('users');
-                $t->foreignId('processed_by')->nullable()->constrained('users');
+                $t->foreignId('requested_by')->constrained('landlord_users');
+                $t->foreignId('approved_by')->nullable()->constrained('landlord_users');
+                $t->foreignId('processed_by')->nullable()->constrained('landlord_users');
                 $t->timestamp('approved_at')->nullable();
                 $t->timestamp('processed_at')->nullable();
                 $t->timestamps();
@@ -165,7 +165,7 @@ return new class extends Migration
                 $t->text('reason');
                 $t->decimal('amount_used', 12, 2)->default(0);
                 $t->enum('status', ['open', 'partially_applied', 'fully_applied', 'voided'])->default('open');
-                $t->foreignId('created_by')->constrained('users');
+                $t->foreignId('created_by')->constrained('landlord_users');
                 $t->timestamps();
             });
         }

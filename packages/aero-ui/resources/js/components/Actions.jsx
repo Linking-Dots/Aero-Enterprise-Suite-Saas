@@ -9,7 +9,17 @@
  */
 
 import { forwardRef } from 'react';
+import { Link as InertiaLink } from '@inertiajs/react';
 import { cx } from './Primitives.jsx';
+import { Icon } from '../icons/icons.jsx';
+
+const renderIcon = (ico, sizeValue) => {
+  if (!ico) return null;
+  if (typeof ico === 'string') {
+    return <Icon name={ico} size={sizeValue} />;
+  }
+  return ico;
+};
 
 /* ── Intent → CSS class maps ──────────────────────────────────────────── */
 
@@ -70,7 +80,8 @@ export const Button = forwardRef(function Button(
   ref
 ) {
   // Determine element type
-  const Element = Tag ?? (href ? 'a' : 'button');
+  const isInternal = href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//') && !href.startsWith('mailto:') && !href.startsWith('tel:');
+  const Element = Tag ?? (href ? (isInternal ? InertiaLink : 'a') : 'button');
 
   const intentClass = BUTTON_INTENT_CLASS[intent] ?? 'aeos-btn-primary';
   const sizeClass   = BUTTON_SIZE_CLASS[size] ?? 'aeos-btn-md';
@@ -104,13 +115,13 @@ export const Button = forwardRef(function Button(
       )}
       {!loading && leftIcon && (
         <span className="aeos-btn-icon-left" style={{ fontSize: iconSize, lineHeight: 1 }}>
-          {leftIcon}
+          {renderIcon(leftIcon, iconSize)}
         </span>
       )}
       {children && <span className="aeos-btn-label">{children}</span>}
       {!loading && rightIcon && (
         <span className="aeos-btn-icon-right" style={{ fontSize: iconSize, lineHeight: 1 }}>
-          {rightIcon}
+          {renderIcon(rightIcon, iconSize)}
         </span>
       )}
     </Element>
@@ -242,8 +253,11 @@ export const Link = forwardRef(function Link(
   const intentClass    = LINK_INTENT_CLASS[intent] ?? 'aeos-link-primary';
   const underlineClass = LINK_UNDERLINE_CLASS[underline] ?? 'aeos-link-underline-hover';
 
+  const isInternal = href && !external && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//') && !href.startsWith('mailto:') && !href.startsWith('tel:');
+  const Element = isInternal ? InertiaLink : 'a';
+
   return (
-    <a
+    <Element
       ref={ref}
       href={href}
       className={cx('aeos-link', intentClass, underlineClass, className)}
@@ -253,7 +267,7 @@ export const Link = forwardRef(function Link(
       })}
       {...rest}
     >
-      {leftIcon && <span className="aeos-link-icon">{leftIcon}</span>}
+      {leftIcon && <span className="aeos-link-icon">{renderIcon(leftIcon, 14)}</span>}
       {children}
       {external && !rightIcon && (
         <span className="aeos-link-icon aeos-link-icon-external">
@@ -262,7 +276,7 @@ export const Link = forwardRef(function Link(
           </svg>
         </span>
       )}
-      {rightIcon && <span className="aeos-link-icon">{rightIcon}</span>}
-    </a>
+      {rightIcon && <span className="aeos-link-icon">{renderIcon(rightIcon, 14)}</span>}
+    </Element>
   );
 });

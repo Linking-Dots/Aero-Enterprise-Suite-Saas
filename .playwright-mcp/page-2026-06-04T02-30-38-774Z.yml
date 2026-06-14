@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "aeos365 home" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e10]: aeos365
+    - button "Switch to light mode" [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+  - main [ref=e15]:
+    - generic [ref=e16]:
+      - heading "Sign in to your account" [level=1] [ref=e18]
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]: Email address *
+          - textbox "Email address *" [active] [ref=e22]:
+            - /placeholder: you@company.com
+        - generic [ref=e23]:
+          - generic [ref=e24]: Password *
+          - textbox "Password *" [ref=e25]:
+            - /placeholder: ••••••••
+        - generic [ref=e26]:
+          - generic [ref=e27] [cursor=pointer]:
+            - generic [ref=e28]:
+              - switch "Remember me"
+            - generic [ref=e30]: Remember me
+          - link "Forgot password?" [ref=e31] [cursor=pointer]:
+            - /url: https://admin.aeos365.test/forgot-password
+        - button "Sign in" [ref=e32] [cursor=pointer]:
+          - generic [ref=e33]: Sign in
+  - contentinfo [ref=e34]:
+    - generic [ref=e35]: © 2026 aeos365

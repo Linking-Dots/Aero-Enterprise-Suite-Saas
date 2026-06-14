@@ -13,7 +13,7 @@ import {
   Text,
   useToast,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function UsersForm({ user, roles }) {
   const toast  = useToast();
@@ -54,7 +54,7 @@ export default function UsersForm({ user, roles }) {
     <FormPageLayout
       title={isEdit ? 'Edit User' : 'Invite User'}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Users', href: route('platform.admin.users.index') },
         { label: isEdit ? 'Edit' : 'Invite' },
       ]}

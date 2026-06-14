@@ -22,8 +22,6 @@ class IoTServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 
-        // Load views
-        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'iot');
 
         // Register publishable assets
         if ($this->app->runningInConsole()) {

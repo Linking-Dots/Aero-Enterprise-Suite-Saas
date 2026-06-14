@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Core\Services\AuditService;
 use Aero\Platform\Models\PaymentGateway;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class PaymentGatewayService
 {
     public function __construct(
-        private readonly AuditService $audit
+        private readonly AuditServiceInterface $audit
     ) {}
 
     /**
@@ -38,6 +38,7 @@ class PaymentGatewayService
 
             $this->audit->log(
                 'payment_gateway.created',
+                'created',
                 $gw,
                 "Payment gateway [{$gw->code}] created."
             );
@@ -59,6 +60,7 @@ class PaymentGatewayService
 
             $this->audit->log(
                 AuditEventType::PAYMENT_GATEWAY_UPDATED->value,
+                'updated',
                 $gw,
                 "Payment gateway [{$gw->code}] updated.",
                 $old,
@@ -81,6 +83,7 @@ class PaymentGatewayService
 
             $this->audit->log(
                 'payment_gateway.config_updated',
+                'config_updated',
                 $gw,
                 "Payment gateway [{$gw->code}] config updated."
             );
@@ -108,6 +111,7 @@ class PaymentGatewayService
 
             $this->audit->log(
                 'payment_gateway.set_default',
+                'set_default',
                 $gw,
                 "Payment gateway [{$gw->code}] set as default."
             );
@@ -124,6 +128,7 @@ class PaymentGatewayService
         DB::transaction(function () use ($gw) {
             $this->audit->log(
                 'payment_gateway.deleted',
+                'deleted',
                 $gw,
                 "Payment gateway [{$gw->code}] deleted."
             );

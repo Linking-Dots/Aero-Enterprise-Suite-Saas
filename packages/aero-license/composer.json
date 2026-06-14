@@ -1,0 +1,27 @@
+{
+    "name": "aero/license",
+    "description": "Aero License Package - single-source license key signing/checksum core shared by the core validator and the platform issuer",
+    "type": "library",
+    "license": "proprietary",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.2",
+        "aero/contracts": "^1.0",
+        "laravel/framework": "^11.0|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aero\\License\\": "src/"
+        }
+    },
+    "extra": {
+        "aero": {
+            "package": "license",
+            "category": "foundation",
+            "description": "Shared license signing/checksum core (validator + issuer consume it)",
+            "tier": "sharable"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

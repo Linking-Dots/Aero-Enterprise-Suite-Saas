@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PROVIDER_META = {
   google:   { label: 'Google',   description: 'Sign in with a Google account via OAuth 2.0.' },
@@ -99,7 +99,7 @@ export default function SocialAuthIndex({ providers }) {
     <IndexPageLayout
       title="Social Auth Providers"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Social Auth' },
       ]}
       description="Configure OAuth providers for social login. Set client credentials and manage linked accounts."

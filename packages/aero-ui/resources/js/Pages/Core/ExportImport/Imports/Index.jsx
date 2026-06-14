@@ -16,7 +16,7 @@ import {
   useHRMAC,
   Stat,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = { completed: 'success', failed: 'danger', processing: 'warning', pending: 'neutral' };
 

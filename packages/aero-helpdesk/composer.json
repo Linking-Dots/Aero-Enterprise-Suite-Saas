@@ -13,6 +13,9 @@
             "providers": [
                 "Aero\\Helpdesk\\Providers\\HelpdeskServiceProvider"
             ]
+        },
+        "aero": {
+            "tier": "product"
         }
     },
     "require": {

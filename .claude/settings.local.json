@@ -8,11 +8,26 @@
       "Write(**)",
       "Write(//**)",
       "WebFetch(*)",
-      "mcp__*"
+      "mcp__filesystem__*",
+      "Bash(cd /c/laragon/www/Aero-Enterprise-Suite-Saas *)",
+      "Bash(printf '[2026-06-12T00:00:00Z] DECISION=PROCEED REVERSIBLE=yes — auth-identity unification Phase 0+1 approach \\(0a safe core deletes, 0b platform repoint+deletes, 1a ordering-fix BEFORE 1b users-move; impersonations FK-free auth version canonical now\\) — Verified: 3 core dups byte-identical, impersonation differs \\(auth FK-free by design + unused by core tests\\), platform social_auth/UserDevice dups real, FK ordering is timestamp-driven so re-timestamping users to sort first in auth is correct; mission committed+Boss-authorized \\(d408dd96a\\) incl deletes; on feature branch. Guardrail: core UserRoleMorphStabilityTest must stay green through 1b.\\\\n' >> .claude/boss-decisions.log; echo logged)",
+      "Bash(printf '%s\\\\n' \"[2026-06-13T00:00:00Z] DECISION=PROCEED REVERSIBLE=yes — Auth-identity unification: MERGE Unit 1a+1b into one atomic Unit 1 \\(FK coupling: user_sessions/user_devices constrain users, which lives in core; neither unit is individually green\\). Q2: DEFER landlord_users migration drop to Phase 2 to land with LandlordUser->User code rewrite — avoids broken intermediate \\(guard+AdminUserStep still write landlord_users; throwaway proof wouldn't catch it\\). — Verified FKs at user_sessions:16/user_devices:20, users in aero-core, landlord_users is central-only per TenantMigrationPaths.\" >> \"c:/laragon/www/Aero-Enterprise-Suite-Saas/.claude/boss-decisions.log\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(cat >> *)",
+      "Bash(echo \"[2026-06-13T00:00:00Z] DECISION=REJECT REVERSIBLE=yes — Auth-unification 2D step1 FK repoint via edit-in-place of committed platform create-migrations — REJECTED: 'never ran anywhere' claim is FALSE; standalone host is installed \\(storage/app/aeos.installed exists\\) and the migrator override \\(AeroPlatformServiceProvider line 1208-1214\\) runs ALL package migrations during install into the single standalone DB, so the constrained\\('landlord_users'\\) FKs are already baked into a live installed schema. Editing create-migrations in place would diverge committed source from standalone's real schema. Require forward repoint migration instead.\" >> \"c:/laragon/www/Aero-Enterprise-Suite-Saas/.claude/boss-decisions.log\" *)",
+      "Bash(cd c:/laragon/www/Aero-Enterprise-Suite-Saas && echo \"[2026-06-14T00:00:00Z] DECISION=PROCEED REVERSIBLE=yes — 2D-step2 drop landlord_users \\(forward migration, INSERT IGNORE move + dropIfExists, keep reset-tokens, down=recreate empty bigint\\) — verified: active AdminUserStep writes central users \\(\\\\$userTable='users'\\), FinalizeStep reads under Schema::hasTable guard, 16 FKs repointed by 000001, table empty in all real DBs so data-move is 0-row no-op, auth provider/broker config + reset-tokens untouched. Structural cleanup of empty fully-dereferenced table, not a real-data migration.\" >> .claude/boss-decisions.log && echo logged)",
+      "Bash(printf '[2026-06-14T00:00:00Z] DECISION=PROCEED REVERSIBLE=yes — Unit-1 dead-code delete \\(6 files: platform UserDeviceController/VerificationController/PhoneVerificationController, platform AuthSecurityAudit dup, platform ResetDevicesForSecurityUpdate, both LandlordUserProvider classes\\) — verified zero live refs/routes/registrations; landlord guard uses eloquent driver not custom provider; ResetDevices is unregistered dead, drop per standing pref.\\\\n[2026-06-14T00:00:01Z] DECISION=PROCEED REVERSIBLE=yes — Ratify auth-full-relocation plan sequencing \\(Units 1-5, purity-before-move\\) — sound, each unit independently green; deferred items \\(TenantImpersonation, platform security mw, PasswordPolicyController, SocialAuth split\\) correctly routed to per-item Boss-Proxy.\\\\n' >> \"c:\\\\\\\\laragon\\\\\\\\www\\\\\\\\Aero-Enterprise-Suite-Saas\\\\\\\\.claude\\\\\\\\boss-decisions.log\")"
     ],
     "additionalDirectories": [
-      "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils"
+      "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils",
+      "C:\\laragon\\www\\Aero-Enterprise-Suite-Saas\\.claude",
+      "c:\\laragon\\www\\Aero-Enterprise-Suite-Saas\\.claude"
     ]
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ],
   "outputStyle": "default"
 }

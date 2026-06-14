@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const SSL_INTENT = {
   active:        'success',
@@ -169,7 +169,7 @@ export default function Domains({ domains }) {
     <IndexPageLayout
       title="Custom Domains"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'White Label' },
         { label: 'Custom Domains' },
       ]}

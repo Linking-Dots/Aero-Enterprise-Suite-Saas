@@ -10,7 +10,7 @@ import {
   Text, Eyebrow,
   Badge,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function LicenseFeatures({ features = [], edition = '' }) {
   const rows = Array.isArray(features) ? features : [];

@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\Finance;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
@@ -21,7 +22,7 @@ class TrialExtensionTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -48,7 +49,7 @@ class TrialExtensionTest extends TestCase
         Gate::before(fn () => true);
 
         $role = Role::firstOrCreate(['name' => 'Super Administrator', 'guard_name' => 'landlord']);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
         $this->admin->assignRole($role);
     }
 

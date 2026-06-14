@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\WebhookDeliveryLog;
 use Aero\Platform\Models\WebhookEndpoint;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -24,7 +25,7 @@ class WebhookTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -53,7 +54,7 @@ class WebhookTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_test_endpoint_records_delivery_log_with_response_code(): void

@@ -57,7 +57,7 @@ class SystemHealthService
                 'connection_status' => 'connected',
                 'last_check' => now()->toIso8601String(),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Database health check failed', ['error' => $e->getMessage()]);
             return [
                 'status' => 'unhealthy',
@@ -90,7 +90,7 @@ class SystemHealthService
                 'queues' => $queues,
                 'last_check' => now()->toIso8601String(),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Queue health check failed', ['error' => $e->getMessage()]);
             return [
                 'status' => 'unhealthy',
@@ -132,7 +132,7 @@ class SystemHealthService
                 'connectivity' => 'connected',
                 'last_check' => now()->toIso8601String(),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Cache health check failed', ['error' => $e->getMessage()]);
             return [
                 'status' => 'unhealthy',
@@ -159,7 +159,7 @@ class SystemHealthService
                 'status' => 'healthy',
                 'response_time' => $this->measureResponseTime(fn() => Redis::ping()),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $services['redis'] = [
                 'name' => 'Redis',
                 'status' => 'unhealthy',
@@ -176,7 +176,7 @@ class SystemHealthService
                 'status' => 'healthy',
                 'response_time' => $this->measureResponseTime(fn() => Storage::disk('local')->put('test.txt', 'ok')),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $services['storage'] = [
                 'name' => 'Local Storage',
                 'status' => 'unhealthy',
@@ -231,16 +231,27 @@ class SystemHealthService
      */
     protected function getCpuUsage(): float
     {
-        if (PHP_OS_FAMILY === 'Windows') {
-            // Windows CPU check
-            $wmi = new \COM('winmgmts://');
-            $cpu = $wmi->Get('%ProcessorLoad');
-            return (float) $cpu;
+        // Windows CPU check via WMI — only if the com_dotnet extension provides COM
+        // (absent on most dev boxes and all Linux). Guard so the page doesn't 500.
+        if (PHP_OS_FAMILY === 'Windows' && class_exists('COM')) {
+            try {
+                $wmi = new \COM('winmgmts://');
+                $cpu = $wmi->Get('%ProcessorLoad');
+
+                return (float) $cpu;
+            } catch (\Throwable) {
+                return 0.0;
+            }
         }
 
-        // Unix/Linux CPU check
-        $load = sys_getloadavg();
-        return (float) ($load[0] * 100);
+        // Unix/Linux CPU check (sys_getloadavg is unavailable on Windows).
+        if (function_exists('sys_getloadavg')) {
+            $load = sys_getloadavg();
+
+            return (float) (($load[0] ?? 0) * 100);
+        }
+
+        return 0.0;
     }
 
     /**
@@ -263,15 +274,18 @@ class SystemHealthService
      */
     protected function getDiskUsage(): array
     {
-        $totalDisk = disk_total_space('/');
-        $freeDisk = disk_free_space('/');
-        $usedDisk = $totalDisk - $freeDisk;
+        // '/' is not a valid path on Windows (returns false); use the app root,
+        // which resolves correctly on every platform.
+        $path = base_path();
+        $totalDisk = (float) (disk_total_space($path) ?: 0);
+        $freeDisk = (float) (disk_free_space($path) ?: 0);
+        $usedDisk = max(0.0, $totalDisk - $freeDisk);
 
         return [
             'total' => $this->formatBytes($totalDisk),
             'used' => $this->formatBytes($usedDisk),
             'free' => $this->formatBytes($freeDisk),
-            'percentage' => round(($usedDisk / $totalDisk) * 100, 2),
+            'percentage' => $totalDisk > 0 ? round(($usedDisk / $totalDisk) * 100, 2) : 0.0,
         ];
     }
 
@@ -281,12 +295,14 @@ class SystemHealthService
     protected function getSystemUptime(): string
     {
         if (PHP_OS_FAMILY === 'Windows') {
-            $uptime = shell_exec('net statistics workstation | find "Statistics since"');
-            return trim($uptime) ?? 'Unknown';
+            $uptime = @shell_exec('net statistics workstation | find "Statistics since"');
+
+            return trim($uptime ?? '') ?: 'Unknown';
         }
 
-        $uptime = shell_exec('uptime -s');
-        return trim($uptime) ?? 'Unknown';
+        $uptime = @shell_exec('uptime -s');
+
+        return trim($uptime ?? '') ?: 'Unknown';
     }
 
     /**
@@ -322,7 +338,7 @@ class SystemHealthService
                 'response_time' => round($responseTime, 2),
                 'url' => $service['url'],
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [
                 'name' => $service['name'],
                 'status' => 'unhealthy',
@@ -399,7 +415,7 @@ class SystemHealthService
     /**
      * Format bytes to human readable format.
      */
-    protected function formatBytes(int $bytes): string
+    protected function formatBytes(int|float $bytes): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $bytes = max($bytes, 0);

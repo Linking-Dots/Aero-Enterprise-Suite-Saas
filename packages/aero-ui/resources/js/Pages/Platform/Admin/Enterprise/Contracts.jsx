@@ -24,7 +24,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const PRODUCT_OPTIONS = [
   { value: 'hrm',     label: 'HRM' },
@@ -204,7 +204,7 @@ export default function Contracts({ orderForms, plans }) {
     <IndexPageLayout
       title="Contracts"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Enterprise' },
         { label: 'Contracts' },
       ]}

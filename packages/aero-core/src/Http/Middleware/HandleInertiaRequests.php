@@ -7,8 +7,8 @@ use Aero\Contracts\RoleModuleAccessInterface;
 use Aero\Core\Http\Resources\SystemSettingResource;
 use Aero\Core\Models\SystemSetting;
 use Aero\Core\Services\NavigationRegistry;
-use Aero\HRMAC\Models\Action;
-use Aero\HRMAC\Models\Component;
+use Aero\HRMAC\Models\ModuleComponentAction;
+use Aero\HRMAC\Models\ModuleComponent;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Illuminate\Database\QueryException;
@@ -264,7 +264,7 @@ class HandleInertiaRequests extends Middleware
                 'accessible_modules' => $accessibleModules,
                 'modules_lookup' => $modulesLookup,
                 'sub_modules_lookup' => $subModulesLookup,
-                'permissions_map' => $permissionsMap,
+                'hrmac_access' => $permissionsMap,
             ],
             'isAuthenticated' => true,
             'sessionValid' => true,
@@ -493,11 +493,11 @@ class HandleInertiaRequests extends Middleware
             return [];
         }
 
-        $cacheKey = "user_permissions_map:{$user->id}";
+        $cacheKey = "user_hrmac_access:{$user->id}";
 
         return Cache::remember($cacheKey, 600, function () use ($user) {
             try {
-                if (! class_exists(Action::class) || ! class_exists(Component::class)) {
+                if (! class_exists(ModuleComponentAction::class) || ! class_exists(ModuleComponent::class)) {
                     return [];
                 }
 
@@ -513,7 +513,7 @@ class HandleInertiaRequests extends Middleware
                     return [];
                 }
 
-                $actions = Action::with('component.subModule.module')
+                $actions = ModuleComponentAction::with('component.subModule.module')
                     ->whereIn('id', $actionIds)
                     ->get();
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Http\Controllers\Admin;
 
+use Aero\HRMAC\Models\Role;
 use Aero\Platform\Http\Controllers\Controller;
-use Aero\Platform\Models\LandlordRole;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Services\LandlordUserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +31,7 @@ class LandlordUserController extends Controller
     {
         return Inertia::render('Platform/Admin/Users/Index', [
             'users' => $this->svc->list($request->only(['q', 'active'])),
-            'roles' => LandlordRole::orderBy('name')->get(['id', 'name']),
+            'roles' => Role::orderBy('name')->get(['id', 'name']),
             'filters' => $request->only(['q', 'active']),
         ]);
     }
@@ -40,11 +40,11 @@ class LandlordUserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
-            'email' => ['required', 'email', Rule::unique('central.landlord_users', 'email')],
+            'email' => ['required', 'email', Rule::unique('central.users', 'email')],
             'password' => ['required', 'string', 'min:8'],
             'active' => ['boolean'],
             'role_ids' => ['array'],
-            'role_ids.*' => ['integer', 'exists:central.landlord_roles,id'],
+            'role_ids.*' => ['integer', 'exists:central.roles,id'],
         ]);
 
         $this->svc->create($data);
@@ -52,22 +52,22 @@ class LandlordUserController extends Controller
         return back()->with('success', 'User created.');
     }
 
-    public function show(LandlordUser $user): Response
+    public function show(User $user): Response
     {
         return Inertia::render('Platform/Admin/Users/Show', [
-            'user' => $user->load('landlordRoles:id,name'),
+            'user' => $user->load('roles:id,name'),
         ]);
     }
 
-    public function update(Request $request, LandlordUser $user): RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
-            'email' => ['required', 'email', Rule::unique('central.landlord_users', 'email')->ignore($user->id)],
+            'email' => ['required', 'email', Rule::unique('central.users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8'],
             'active' => ['boolean'],
             'role_ids' => ['array'],
-            'role_ids.*' => ['integer', 'exists:central.landlord_roles,id'],
+            'role_ids.*' => ['integer', 'exists:central.roles,id'],
         ]);
 
         $this->svc->update($user, $data);
@@ -75,14 +75,14 @@ class LandlordUserController extends Controller
         return back()->with('success', 'User updated.');
     }
 
-    public function destroy(LandlordUser $user): RedirectResponse
+    public function destroy(User $user): RedirectResponse
     {
         $this->svc->delete($user);
 
         return back()->with('success', 'User deleted.');
     }
 
-    public function toggleStatus(LandlordUser $user): RedirectResponse
+    public function toggleStatus(User $user): RedirectResponse
     {
         $this->svc->toggleStatus($user);
 

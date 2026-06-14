@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('user_impersonations', function (Blueprint $table) {
             $table->id();
             $table->string('token', 64)->unique();
-            $table->foreignId('impersonator_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('target_id')->constrained('users')->onDelete('cascade');
+            // Plain indexed columns (no hard FK to users): aero-auth is a foundational
+            // shared package — central uses landlord_users, tenant/standalone use users.
+            $table->unsignedBigInteger('impersonator_id')->index();
+            $table->unsignedBigInteger('target_id')->index();
             $table->text('reason')->nullable();
             $table->integer('max_duration_minutes')->default(60);
             $table->timestamp('started_at');

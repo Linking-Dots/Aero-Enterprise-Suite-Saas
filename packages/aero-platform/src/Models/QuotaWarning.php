@@ -42,7 +42,7 @@ class QuotaWarning extends CentralModel
      */
     public function dismissedBy(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'dismissed_by_user_id');
+        return $this->belongsTo(User::class, 'dismissed_by_user_id');
     }
 
     /**

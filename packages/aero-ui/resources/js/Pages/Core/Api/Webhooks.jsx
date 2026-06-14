@@ -16,7 +16,7 @@ import {
   useHRMAC,
   Pagination,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const ALL_EVENTS = [
   { value: 'user.created',      label: 'user.created' },

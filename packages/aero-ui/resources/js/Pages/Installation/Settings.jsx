@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import InstallLayout from './InstallLayout.jsx';
 import { IR } from './installRoutes.js';
-import { VStack, HStack, Box, Field, Input, Select, Button, Badge, Eyebrow } from '@aero/ui';
+import { VStack, HStack, Box, Field, Input, Select, Button, Badge, Eyebrow, Text } from '@aero/ui';
 
 const STEPS_STANDALONE = ['License', 'Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
 const STEPS_SAAS       = ['Requirements', 'Database', 'Settings', 'Admin', 'Review', 'Install', 'Complete'];
@@ -32,8 +33,31 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved]   = useState(!!savedSettings);
+  const [testState, setTestState] = useState({ status: 'idle', message: '' }); // idle | sending | ok | fail
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })); setSaved(false); }
+
+  async function sendTestEmail() {
+    setTestState({ status: 'sending', message: '' });
+    try {
+      const { data } = await axios.post(IR.testEmail, {
+        mail_host:         form.mail_host,
+        mail_port:         form.mail_port,
+        mail_username:     form.mail_username,
+        mail_password:     form.mail_password,
+        mail_encryption:   form.mail_encryption,
+        mail_from_name:    form.mail_from_name || form[nameKey],
+        mail_from_address: form.support_email,
+        test_email:        form.support_email,
+      });
+      setTestState({ status: 'ok', message: data?.message ?? 'Test email sent.' });
+    } catch (err) {
+      setTestState({
+        status: 'fail',
+        message: err?.response?.data?.message ?? 'Failed to send test email. Check the SMTP settings above.',
+      });
+    }
+  }
 
   function save() {
     setSaving(true);
@@ -112,6 +136,18 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
       {mode !== 'saas' && (
         <VStack gap={3}>
           <Eyebrow tone="primary">Email (SMTP)</Eyebrow>
+
+          {!form.mail_host && (
+            <div className="il-advisory">
+              <span className="il-advisory-icon" aria-hidden="true">⚠</span>
+              <div>
+                No SMTP host set — aeos365 will fall back to the <code>log</code> mail driver.
+                Outgoing mail (including admin OTPs and password resets) will be written to{' '}
+                <code>storage/logs/laravel.log</code> instead of being delivered. Add SMTP details below to send real email.
+              </div>
+            </div>
+          )}
+
           <HStack gap={3} align="flex-end">
             <Box grow className="aeos-flex-1">
               <Field label="SMTP Host" htmlFor="mail_host">
@@ -135,6 +171,24 @@ export default function Settings({ mode, savedSettings, timezones = [] }) {
                 <Input id="mail_pass" type="password" value={form.mail_password} onChange={e => set('mail_password', e.target.value)} leftIcon="settings" />
               </Field>
             </Box>
+          </HStack>
+
+          <HStack gap={2} align="center">
+            <Button
+              intent="ghost"
+              size="sm"
+              leftIcon="mail"
+              loading={testState.status === 'sending'}
+              disabled={!form.mail_host || !form.support_email}
+              onClick={sendTestEmail}
+            >
+              Send test email
+            </Button>
+            {testState.status === 'ok'   && <Badge intent="success">{testState.message}</Badge>}
+            {testState.status === 'fail' && <Text size="sm" tone="danger">{testState.message}</Text>}
+            {form.support_email && testState.status === 'idle' && (
+              <Text size="xs" tone="tertiary">Sends to {form.support_email}</Text>
+            )}
           </HStack>
         </VStack>
       )}

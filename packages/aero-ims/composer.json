@@ -24,7 +24,8 @@
             "package": "ims",
             "version": "1.0.0",
             "category": "product",
-            "description": "Inventory management system with stock tracking, item management, and warehouse operations"
+            "description": "Inventory management system with stock tracking, item management, and warehouse operations",
+            "tier": "product"
         }
     },
     "minimum-stability": "dev",

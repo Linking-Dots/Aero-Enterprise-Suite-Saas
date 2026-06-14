@@ -16,7 +16,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const ENCRYPTION_OPTIONS = [
   { value: '',    label: 'None' },
@@ -70,7 +70,7 @@ export default function Email({ settings, testResult }) {
     <FormPageLayout
       title="Email Settings"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'Email / SMTP' },
       ]}

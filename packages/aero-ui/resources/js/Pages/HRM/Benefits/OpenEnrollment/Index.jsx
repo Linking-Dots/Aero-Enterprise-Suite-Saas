@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
-import App from '../../../App.jsx';
-import useHRMAC from '../../../../hooks/useHRMAC.js';
+import App from '@/Pages/App.jsx';
+import { useHRMAC } from '@/hooks/useHRMAC';
 import {
   IndexPageLayout, Card, CardHeader, CardBody,
   VStack, HStack, Text, Button, Badge, Field, Input, Textarea, Radio,

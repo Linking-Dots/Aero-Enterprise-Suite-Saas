@@ -2,9 +2,9 @@
 
 namespace Aero\Notifications\Http\Controllers;
 
-use Aero\Core\Http\Controllers\Controller;
-use Aero\Core\Http\Requests\StoreEmailTemplateRequest;
-use Aero\Core\Http\Requests\UpdateEmailTemplateRequest;
+use Aero\Kernel\Http\Controllers\Controller;
+use Aero\Notifications\Http\Requests\StoreEmailTemplateRequest;
+use Aero\Notifications\Http\Requests\UpdateEmailTemplateRequest;
 use Aero\Notifications\Services\EmailTemplateService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

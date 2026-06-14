@@ -66,6 +66,13 @@ class AeroNotificationsServiceProvider extends ServiceProvider
         $this->app->singleton(MailService::class);
         $this->app->singleton(SmsService::class);
         $this->app->singleton(SmsGatewayService::class);
+        // Bind the channel contracts to their canonical impls HERE (the package that owns
+        // them), not only in aero-platform — otherwise standalone (no platform) leaves them
+        // unbound and any consumer that injects them (e.g. core SystemSettingController)
+        // is non-instantiable. aero-platform may still override with mode-specific impls.
+        // Dual-mode (CLAUDE.md).
+        $this->app->singleton(\Aero\Contracts\MailSenderInterface::class, MailService::class);
+        $this->app->singleton(\Aero\Contracts\SmsGatewayInterface::class, SmsGatewayService::class);
 
         // Push is only registered if Firebase is available
         if (class_exists(\Kreait\Firebase\Factory::class)) {
@@ -78,7 +85,6 @@ class AeroNotificationsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-notifications');
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 

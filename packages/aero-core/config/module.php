@@ -140,7 +140,7 @@ return [
             'icon' => 'CreditCardIcon',
             'route' => '/subscription',
             'priority' => 2,
-            'show_in_nav' => false,
+            'show_in_nav' => true, // Real tenant self-service page; no other nav home
             'plan' => 'saas',
 
             'components' => [
@@ -466,7 +466,7 @@ return [
             'name' => 'File Manager',
             'description' => 'Manage file storage and media library',
             'icon' => 'FolderOpenIcon',
-            'route' => '/files',
+            'route' => '/file-manager',
             'priority' => 8,
 
             'components' => [
@@ -631,7 +631,7 @@ return [
             'name' => 'Organization',
             'description' => 'Organization profile, identity, fiscal year, addresses, contacts',
             'icon' => 'BuildingOffice2Icon',
-            'route' => '/organization',
+            'route' => '/organization/profile',
             'priority' => 9,
             'components' => [
                 [
@@ -733,7 +733,7 @@ return [
             'name' => 'API & Webhooks',
             'description' => 'API keys, personal access tokens, OAuth apps, outbound webhooks, rate limits',
             'icon' => 'CommandLineIcon',
-            'route' => '/api',
+            'route' => '/api/keys',
             'priority' => 17,
             'components' => [
                 [
@@ -977,7 +977,7 @@ return [
             'name' => 'Data Export/Import',
             'description' => 'Export and import data across entities with support for multiple formats, export history, and scheduling',
             'icon' => 'ArrowPathIcon',
-            'route' => '/export-import',
+            'route' => '/export-import/exports',
             'priority' => 19,
             'components' => [
                 [
@@ -1063,6 +1063,9 @@ return [
             'icon' => 'AdjustmentsVerticalIcon',
             'route' => '/preferences',
             'priority' => 18,
+            // Hidden until rebuilt: the page set (Core/UserPreferences/*) targets a
+            // Radix-style API (Select.Trigger/.Content/.Item, Switch onCheckedChange,
+            // Tabs.*) that @aero/ui does not implement, so it renders blank (React #130).
             'show_in_nav' => false,
             'components' => [
                 [

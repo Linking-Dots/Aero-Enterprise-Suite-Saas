@@ -9,60 +9,45 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 /**
- * Plan 04 (aero-hrmac) Task 2 — guard-scoped super-admin check.
+ * Context-free super-admin check (2026-06-04 HRMAC redesign).
  *
- * Phase 1 audit found the previous flat super_admin_roles array would let
- * a tenant role literally named "Super Administrator" satisfy the same
- * check as a landlord-scoped one. The fix nests the config by guard.
- *
- * Full HTTP-level guard tests live in the host repo's feature suite
- * (they require Auth::guard()->login() against real user models). This
- * file pins the structural contracts:
- *   - isSuperAdmin() method exists
- *   - resolveActiveGuard() helper exists
- *   - the config shape is guard-scoped
+ * HRMAC no longer detects the active guard. super_admin_roles is a FLAT union list;
+ * a user's roles resolve from the host-decided connection (tenant DB for tenant
+ * requests, central DB for platform requests), so role names that don't exist in the
+ * current DB can never match. These pins guard against regressing back to guard-scoped
+ * context detection inside the package.
  */
 class SuperAdminGuardScopingTest extends TestCase
 {
-    public function test_check_role_module_access_exposes_resolve_active_guard(): void
+    public function test_isSuperAdmin_exists_and_guard_probing_is_gone(): void
     {
         $r = new ReflectionClass(CheckRoleModuleAccess::class);
 
-        $this->assertTrue($r->hasMethod('resolveActiveGuard'),
-            'CheckRoleModuleAccess::resolveActiveGuard() must exist (Plan 04 T2).');
         $this->assertTrue($r->hasMethod('isSuperAdmin'),
             'CheckRoleModuleAccess::isSuperAdmin() must exist.');
+        $this->assertFalse($r->hasMethod('resolveActiveGuard'),
+            'resolveActiveGuard() must be GONE — HRMAC does not detect the active guard.');
     }
 
-    public function test_config_super_admin_roles_is_guard_scoped(): void
+    public function test_config_super_admin_roles_is_a_flat_list(): void
     {
-        $configPath = dirname(__DIR__, 3).'/config/hrmac.php';
-        $this->assertFileExists($configPath);
-
-        $config = require $configPath;
+        $config = require dirname(__DIR__, 3).'/config/hrmac.php';
 
         $this->assertIsArray($config['super_admin_roles']);
-        $this->assertArrayHasKey('landlord', $config['super_admin_roles'],
-            "config('hrmac.super_admin_roles.landlord') must be defined for Platform Admin scope.");
-        $this->assertArrayHasKey('web', $config['super_admin_roles'],
-            "config('hrmac.super_admin_roles.web') must be defined for Tenant Admin scope.");
+        $this->assertTrue(array_is_list($config['super_admin_roles']),
+            'super_admin_roles must be a flat list (no guard-scoped keys) — context-free.');
     }
 
-    public function test_landlord_super_admin_roles_are_separate_from_tenant(): void
+    public function test_flat_list_contains_both_platform_and_tenant_super_admins(): void
     {
-        $configPath = dirname(__DIR__, 3).'/config/hrmac.php';
-        $config = require $configPath;
+        $config = require dirname(__DIR__, 3).'/config/hrmac.php';
+        $roles = $config['super_admin_roles'];
 
-        $landlordRoles = $config['super_admin_roles']['landlord'];
-        $webRoles = $config['super_admin_roles']['web'];
-
-        // The CANONICAL landlord role must NOT appear in the web (tenant) guard.
-        // A tenant user accidentally creating "Platform Super Administrator"
-        // would otherwise gain landlord-equivalent privileges.
-        $this->assertNotContains('Platform Super Administrator', $webRoles,
-            "'Platform Super Administrator' must NOT appear under the 'web' guard — ".
-            "that's the role-name string match risk identified in Phase 1.");
-        $this->assertContains('Platform Super Administrator', $landlordRoles,
-            "'Platform Super Administrator' must appear under the 'landlord' guard.");
+        // The union is intentional and safe: each name only matches against the
+        // current connection's role rows.
+        $this->assertContains('Platform Super Administrator', $roles,
+            'Platform super-admin name must be present in the flat union list.');
+        $this->assertContains('Tenant Super Administrator', $roles,
+            'Tenant super-admin name must be present in the flat union list.');
     }
 }

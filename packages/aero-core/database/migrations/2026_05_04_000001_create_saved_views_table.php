@@ -26,7 +26,8 @@ return new class extends Migration
             $table->json('shared_with')->nullable(); // array of user IDs or role IDs this view is shared with
             $table->boolean('is_system')->default(false); // system-wide view created by admin (not user-specific)
             $table->timestamps();
-            
+            $table->softDeletes(); // SavedView model uses SoftDeletes
+
             $table->index(['user_id', 'module_code']);
             $table->index(['module_code', 'route']);
             $table->index('is_default');

@@ -6,14 +6,12 @@ use Aero\Core\Models\User;
 use Aero\Core\Support\TenantCache;
 use Aero\HRMAC\Models\Role;
 use Aero\Platform\Http\Controllers\Controller;
-use Aero\Platform\Models\LandlordUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
-use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Shared Admin Role Controller
@@ -62,7 +60,7 @@ class RoleController extends Controller
         $user = $this->getCurrentUser();
 
         if ($this->isPlatformContext()) {
-            return $user instanceof LandlordUser && $user->isSuperAdmin();
+            return $user instanceof User && $user->isSuperAdmin();
         }
 
         return $user?->hasRole('Super Administrator') ?? false;
@@ -102,7 +100,7 @@ class RoleController extends Controller
             // Get users with their roles
             $users = collect([]);
             if ($isPlatform) {
-                $users = LandlordUser::with('roles')
+                $users = User::with('roles')
                     ->select(['id', 'name', 'email'])
                     ->orderBy('name')
                     ->get()
@@ -387,7 +385,7 @@ class RoleController extends Controller
             $isPlatform = $this->isPlatformContext();
 
             if ($isPlatform) {
-                $user = LandlordUser::findOrFail($request->user_id);
+                $user = User::findOrFail($request->user_id);
             } else {
                 $user = User::findOrFail($request->user_id);
             }
@@ -438,7 +436,7 @@ class RoleController extends Controller
         try {
             TenantCache::forget('roles_list');
             TenantCache::forget('roles_with_users');
-            app()[PermissionRegistrar::class]->forgetCachedPermissions();
+            // HRMAC role-access cache self-invalidates (versioned); no Spatie cache.
         } catch (\Exception $e) {
             Log::warning('Cache clear failed: '.$e->getMessage());
         }

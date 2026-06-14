@@ -9,7 +9,7 @@ import {
   Text, Eyebrow, Mono,
   Badge, Alert,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 export default function LicenseUpdates({
   current_version = '',

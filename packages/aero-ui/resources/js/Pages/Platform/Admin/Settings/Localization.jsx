@@ -14,7 +14,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const LOCALE_OPTIONS = [
   { value: 'en',    label: 'English (en)' },
@@ -91,7 +91,7 @@ export default function Localization({ localization }) {
     <FormPageLayout
       title="Localization"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Settings' },
         { label: 'Localization' },
       ]}

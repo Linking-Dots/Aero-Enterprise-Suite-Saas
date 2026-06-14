@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Gate;
@@ -43,7 +44,7 @@ class QuotaTest extends TestCase
 
     public function test_can_set_quota_override(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
         $tenant = Tenant::factory()->create();
 
         $this->actingAs($admin, 'landlord')
@@ -63,7 +64,7 @@ class QuotaTest extends TestCase
 
     public function test_cannot_set_override_below_current_usage(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
         $tenant = Tenant::factory()->create();
 
         \DB::connection('central')->table('tenant_stats')->insert([
@@ -84,7 +85,7 @@ class QuotaTest extends TestCase
 
     public function test_quota_index_renders_correct_component(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
 
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.quotas.index'))
@@ -98,7 +99,7 @@ class QuotaTest extends TestCase
 
     public function test_quota_settings_renders_correct_component(): void
     {
-        $admin = LandlordUser::factory()->create();
+        $admin = LandlordUserFactory::new()->create();
 
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.quotas.settings'))

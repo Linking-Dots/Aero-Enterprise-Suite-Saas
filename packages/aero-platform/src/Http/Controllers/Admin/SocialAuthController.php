@@ -47,7 +47,7 @@ class SocialAuthController extends Controller
 
         $stats = $this->getSocialAuthStats();
 
-        return Inertia::render('Admin/Pages/Marketing/SocialAuth/Index', [
+        return Inertia::render('Platform/Admin/SocialAuth/Index', [
             'title' => 'Social Authentication',
             'providers' => $providers,
             'settings' => $settings,
@@ -70,7 +70,7 @@ class SocialAuthController extends Controller
         $providerSettings = $settings['providers'][$provider] ?? [];
         $providerConfig = $supportedProviders[$provider];
 
-        return Inertia::render('Admin/Pages/Marketing/SocialAuth/Provider', [
+        return Inertia::render('Platform/Admin/SocialAuth/Provider', [
             'title' => $providerConfig['name'].' Configuration',
             'provider' => $provider,
             'providerConfig' => $providerConfig,
@@ -184,7 +184,7 @@ class SocialAuthController extends Controller
 
         $accounts = $query->orderByDesc('created_at')->paginate($perPage);
 
-        return Inertia::render('Admin/Pages/Marketing/SocialAuth/Accounts', [
+        return Inertia::render('Platform/Admin/SocialAuth/Accounts', [
             'title' => 'Linked Social Accounts',
             'accounts' => $accounts,
             'filters' => $filters,

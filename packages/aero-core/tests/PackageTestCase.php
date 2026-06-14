@@ -34,9 +34,24 @@ abstract class PackageTestCase extends TestCase
     {
         return [
             InertiaServiceProvider::class,
+            \Aero\Kernel\AeroKernelServiceProvider::class,
             AeroCoreServiceProvider::class,
             HRMACServiceProvider::class,
         ];
+    }
+
+    /**
+     * Load aero-auth's migrations into the test schema.
+     *
+     * Auth is now core's identity foundation: it owns the `user_sessions`,
+     * `user_devices`, `user_impersonations` (etc.) tables that core models relate to
+     * (e.g. User::devices()/sessions(), eager-loaded by CoreUserController::show()).
+     * Auth's ServiceProvider is intentionally NOT registered here — core tests only need
+     * the tables, not auth's runtime bindings/routes — so we load just its migration path.
+     */
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(dirname(__DIR__, 2).'/aero-auth/database/migrations');
     }
 
     protected function getEnvironmentSetUp($app): void
@@ -253,7 +268,7 @@ abstract class PackageTestCase extends TestCase
 
         DB::table('model_has_roles')->insertOrIgnore([
             'role_id'    => $roleId,
-            'model_type' => User::class,
+            'model_type' => $user->getMorphClass(),
             'model_id'   => $user->id,
         ]);
 

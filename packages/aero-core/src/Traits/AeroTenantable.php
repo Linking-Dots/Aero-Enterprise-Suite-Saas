@@ -2,6 +2,7 @@
 
 namespace Aero\Core\Traits;
 
+use Aero\Contracts\AeroMode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -108,12 +109,11 @@ trait AeroTenantable
     }
 
     /**
-     * Check if aero-platform is active.
+     * Check if running in SaaS mode (formerly: "is aero-platform active").
      */
     protected static function isPlatformActive(): bool
     {
-        return class_exists('Aero\Platform\AeroPlatformServiceProvider') &&
-               config('platform.enabled', false);
+        return AeroMode::isSaas();
     }
 
     /**

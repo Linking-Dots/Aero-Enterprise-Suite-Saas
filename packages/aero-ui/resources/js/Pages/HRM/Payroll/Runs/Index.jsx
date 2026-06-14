@@ -1,9 +1,9 @@
 import { router, usePage } from '@inertiajs/react';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import {
   IndexPageLayout, DataTable, Button, HStack, Badge, Select, Pagination, Text, Mono,
 } from '@aero/ui';
-import useHRMAC from '../../../../hooks/useHRMAC.js';
+import { useHRMAC } from '@/hooks/useHRMAC';
 
 const STATUS_OPTIONS = [
   { value: '',         label: 'All Statuses' },

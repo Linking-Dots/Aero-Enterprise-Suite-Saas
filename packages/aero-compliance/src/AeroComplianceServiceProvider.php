@@ -39,8 +39,6 @@ class AeroComplianceServiceProvider extends ServiceProvider
         // Load migrations
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        // Load views (if any - for email templates, PDFs, etc.)
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'compliance');
 
         // Register routes
         $this->registerRoutes();

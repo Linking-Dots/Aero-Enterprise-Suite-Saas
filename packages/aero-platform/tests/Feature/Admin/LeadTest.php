@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\ProspectLead;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -24,7 +25,7 @@ class LeadTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -53,7 +54,7 @@ class LeadTest extends TestCase
         parent::setUp();
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_index_renders_inertia_component(): void
@@ -96,7 +97,7 @@ class LeadTest extends TestCase
             'status' => ProspectLead::STATUS_NEW,
         ]);
 
-        $assignee = LandlordUser::factory()->create();
+        $assignee = LandlordUserFactory::new()->create();
 
         $this->actingAs($this->admin, 'landlord')
             ->postJson(route('admin.leads.assign', $lead), [

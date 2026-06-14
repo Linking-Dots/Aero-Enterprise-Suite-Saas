@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   active:      'success',
@@ -148,7 +148,7 @@ export default function TenantsShow({ tenant }) {
     <DetailPageLayout
       title={tenant.name}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Tenants', href: route('platform.admin.tenants.index') },
         { label: tenant.name },
       ]}

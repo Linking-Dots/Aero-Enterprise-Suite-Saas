@@ -1,4 +1,4 @@
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import { VStack, Text, Eyebrow, Card, CardBody } from '@aero/ui';
 import SelfServiceSidebar from './components/SelfServiceSidebar.jsx';
 

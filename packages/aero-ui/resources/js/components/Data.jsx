@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import { ArrowUpIcon, ArrowDownIcon, ArrowTrendingUpIcon as TrendingUpIcon, InboxIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
 import { Skeleton } from './Display.jsx';
+import { Icon } from '../icons/icons.jsx';
 
 const STAT_ICON_CLASS = {
   cyan: '', default: '',
@@ -76,8 +77,7 @@ export const Stat = forwardRef(function Stat(
   return (
     <div ref={ref} className={cx('aeos-stat-card', className)} {...rest}>
       <div className={cx('aeos-stat-icon', STAT_ICON_CLASS[iconTone])}>
-        {/* TODO: Update Stat component to accept React icon component instead of icon name */}
-        {/* {icon && <Icon name={icon} size={20} />} */}
+        {icon && <Icon name={icon} size={20} />}
       </div>
       <div className="aeos-stat-body">
         <h3>{title}</h3>
@@ -95,8 +95,7 @@ export const Stat = forwardRef(function Stat(
 export function MetricChip({ icon, intent = 'primary', children, className }) {
   return (
     <span className={cx('aeos-metric-chip', intent === 'amber' && 'aeos-metric-chip-amber', className)}>
-      {/* TODO: Update MetricChip component to accept React icon component instead of icon name */}
-      {/* {icon && <Icon name={icon} size={12} />} */}
+      {icon && <Icon name={icon} size={12} />}
       {children}
     </span>
   );
@@ -201,7 +200,7 @@ export function EmptyState({ icon = <InboxIcon className="aeos-icon-xl" />, titl
     <div className={cx('aeos-empty-state', className)}>
       <div className="aeos-empty-icon">
         {typeof icon === 'string' ? (
-          <span className="aeos-empty-icon-string">{icon}</span>
+          <Icon name={icon} size={40} className="aeos-icon-xl" />
         ) : (
           icon
         )}

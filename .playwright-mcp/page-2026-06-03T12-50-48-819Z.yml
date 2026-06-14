@@ -1,0 +1,204 @@
+- generic [ref=e2]:
+  - generic [ref=e36]:
+    - complementary [ref=e37]:
+      - link "aeos365 home" [ref=e39] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e40]
+      - link "Admin Dashboard" [ref=e43] [cursor=pointer]:
+        - /url: /dashboard
+      - link "HRM Dashboard" [ref=e44] [cursor=pointer]:
+        - /url: /hrm/dashboard
+      - link "Employee Dashboard" [ref=e45] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Profile" [ref=e47] [cursor=pointer]:
+        - /url: /profile
+      - link "My Notifications" [ref=e48] [cursor=pointer]:
+        - /url: /notifications
+      - link "My Dashboard" [ref=e49] [cursor=pointer]:
+        - /url: /hrm/employee/dashboard
+      - link "My Attendance" [ref=e50] [cursor=pointer]:
+        - /url: /hrm/attendance-employee
+      - link "My Leaves" [ref=e51] [cursor=pointer]:
+        - /url: /hrm/leaves-employee
+      - link "My Time-Off" [ref=e52] [cursor=pointer]:
+        - /url: /hrm/self-service/time-off
+      - link "My Payslips" [ref=e53] [cursor=pointer]:
+        - /url: /hrm/self-service/payslips
+      - link "My Expenses" [ref=e54] [cursor=pointer]:
+        - /url: /hrm/my-expenses
+      - link "My Documents" [ref=e55] [cursor=pointer]:
+        - /url: /hrm/self-service/documents
+      - link "My Benefits" [ref=e56] [cursor=pointer]:
+        - /url: /hrm/self-service/benefits
+      - link "My Trainings" [ref=e57] [cursor=pointer]:
+        - /url: /hrm/self-service/trainings
+      - link "My Performance" [ref=e58] [cursor=pointer]:
+        - /url: /hrm/self-service/performance
+      - link "My Goals" [ref=e59] [cursor=pointer]:
+        - /url: /hrm/goals
+      - link "My Career Path" [ref=e60] [cursor=pointer]:
+        - /url: /hrm/self-service/career-path
+      - link "My 360° Feedback" [ref=e61] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Subscription & Billing" [ref=e63] [cursor=pointer]:
+        - /url: /subscription
+      - link "User Management" [ref=e64] [cursor=pointer]:
+        - /url: /users
+      - link "Roles & Module Access" [ref=e65] [cursor=pointer]:
+        - /url: /roles
+      - link "Audit & Activity Logs" [ref=e66] [cursor=pointer]:
+        - /url: /audit-logs
+      - link "Notifications" [ref=e67] [cursor=pointer]:
+        - /url: /notifications
+      - link "File Manager" [ref=e68] [cursor=pointer]:
+        - /url: /files
+      - link "Organization" [ref=e69] [cursor=pointer]:
+        - /url: /organization
+      - link "Translations / i18n" [ref=e70] [cursor=pointer]:
+        - /url: /i18n/translations
+      - link "Custom Fields" [ref=e71] [cursor=pointer]:
+        - /url: /custom-fields
+      - link "Tags & Labels" [ref=e72] [cursor=pointer]:
+        - /url: /tags
+      - link "Saved Views & Filters" [ref=e73] [cursor=pointer]:
+        - /url: /saved-views
+      - link "Form Builder" [ref=e74] [cursor=pointer]:
+        - /url: /forms
+      - link "Global Search" [ref=e75] [cursor=pointer]:
+        - /url: /search
+      - link "API & Webhooks" [ref=e76] [cursor=pointer]:
+        - /url: /api
+      - link "User Preferences" [ref=e77] [cursor=pointer]:
+        - /url: /preferences
+      - link "Data Export/Import" [ref=e78] [cursor=pointer]:
+        - /url: /export-import
+      - link "Retention Policies" [ref=e79] [cursor=pointer]:
+        - /url: /retention-policies
+      - link "Workflows & Automations" [ref=e80] [cursor=pointer]:
+        - /url: /workflows
+      - link "Email Engine" [ref=e81] [cursor=pointer]:
+        - /url: /email
+      - link "System Health" [ref=e82] [cursor=pointer]:
+        - /url: /system-health
+      - link "Mobile & PWA" [ref=e83] [cursor=pointer]:
+        - /url: /mobile-pwa
+      - link "Backup & Restore" [ref=e84] [cursor=pointer]:
+        - /url: /backup
+      - link "License Management" [ref=e85] [cursor=pointer]:
+        - /url: /license
+      - link "Document Numbering & Sequences" [ref=e86] [cursor=pointer]:
+        - /url: /numbering
+      - link "Print & PDF Templates" [ref=e87] [cursor=pointer]:
+        - /url: /print-templates
+      - link "Announcements & Banners" [ref=e88] [cursor=pointer]:
+        - /url: /announcements
+      - link "Maintenance Mode" [ref=e89] [cursor=pointer]:
+        - /url: /maintenance-mode
+      - link "Trash & Recycle Bin" [ref=e90] [cursor=pointer]:
+        - /url: /trash
+      - link "Comments & Mentions" [ref=e91] [cursor=pointer]:
+        - /url: /comments
+      - link "Help & Support" [ref=e92] [cursor=pointer]:
+        - /url: /help
+      - link "Settings" [ref=e93] [cursor=pointer]:
+        - /url: /settings/system
+      - link "Employees" [ref=e95] [cursor=pointer]:
+        - /url: /hrm/employees
+      - link "Attendance" [ref=e96] [cursor=pointer]:
+        - /url: /hrm/attendance
+      - link "Leaves" [ref=e97] [cursor=pointer]:
+        - /url: /hrm/leaves
+      - link "Payroll" [ref=e98] [cursor=pointer]:
+        - /url: /hrm/payroll
+      - link "Expenses & Claims" [ref=e99] [cursor=pointer]:
+        - /url: /hrm/expenses
+      - link "Assets Management" [ref=e100] [cursor=pointer]:
+        - /url: /hrm/assets
+      - link "Disciplinary" [ref=e101] [cursor=pointer]:
+        - /url: /hrm/disciplinary
+      - link "Recruitment" [ref=e102] [cursor=pointer]:
+        - /url: /hrm/recruitment
+      - link "Performance" [ref=e103] [cursor=pointer]:
+        - /url: /hrm/performance
+      - link "Training" [ref=e104] [cursor=pointer]:
+        - /url: /hrm/training
+      - link "HR Analytics" [ref=e105] [cursor=pointer]:
+        - /url: /hrm/analytics
+      - link "Succession Planning" [ref=e106] [cursor=pointer]:
+        - /url: /hrm/succession-planning
+      - link "Career Pathing" [ref=e107] [cursor=pointer]:
+        - /url: /hrm/career-paths
+      - link "360° Feedback" [ref=e108] [cursor=pointer]:
+        - /url: /hrm/feedback-360
+      - link "Compensation Planning" [ref=e109] [cursor=pointer]:
+        - /url: /hrm/compensation-planning
+      - link "Workforce Planning" [ref=e110] [cursor=pointer]:
+        - /url: /hrm/workforce-planning
+      - link "Overtime Management" [ref=e111] [cursor=pointer]:
+        - /url: /hrm/overtime
+      - link "Grievances & Complaints" [ref=e112] [cursor=pointer]:
+        - /url: /hrm/grievances
+      - link "Exit Interviews" [ref=e113] [cursor=pointer]:
+        - /url: /hrm/exit-interviews
+      - link "Pulse Surveys" [ref=e114] [cursor=pointer]:
+        - /url: /hrm/pulse-surveys
+      - link "Onboarding & Offboarding" [ref=e115] [cursor=pointer]:
+        - /url: /hrm/onboarding
+      - link "Workplace Safety" [ref=e116] [cursor=pointer]:
+        - /url: /hrm/safety
+      - link "HR Documents" [ref=e117] [cursor=pointer]:
+        - /url: /hrm/documents
+      - link "AI Analytics" [ref=e118] [cursor=pointer]:
+        - /url: /hrm/ai-analytics
+      - link "Org Structure" [ref=e119] [cursor=pointer]:
+        - /url: /hrm/org-structure/departments
+      - link "Benefits" [ref=e120] [cursor=pointer]:
+        - /url: /hrm/benefits
+      - link "Events & Announcements" [ref=e121] [cursor=pointer]:
+        - /url: /hrm/events
+      - link "HR Settings" [ref=e122] [cursor=pointer]:
+        - /url: /hrm/settings
+    - generic [ref=e123]:
+      - generic [ref=e124]:
+        - button "Expand sidebar" [ref=e125] [cursor=pointer]:
+          - img [ref=e126]
+        - generic [ref=e128]: Dashboard
+        - generic [ref=e129]:
+          - button "Notifications" [ref=e130] [cursor=pointer]:
+            - img [ref=e132]
+          - generic [ref=e134]:
+            - generic [ref=e136]: "?"
+            - generic [ref=e137]:
+              - generic [ref=e138]: UAT Super Admin
+              - generic [ref=e139]: Super Administrator
+            - button "Sign out" [ref=e140] [cursor=pointer]:
+              - img [ref=e142]
+      - main [ref=e144]:
+        - generic [ref=e146]:
+          - generic [ref=e147]:
+            - navigation "Breadcrumb" [ref=e148]:
+              - generic [ref=e150]: Dashboard
+            - heading "Dashboard" [level=1] [ref=e154]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e158]:
+                - heading "Total Users" [level=3] [ref=e159]
+                - paragraph [ref=e160]: All registered accounts
+              - generic [ref=e162]: "13"
+            - generic [ref=e163]:
+              - generic [ref=e165]:
+                - heading "Active Users" [level=3] [ref=e166]
+                - paragraph [ref=e167]: Currently enabled
+              - generic [ref=e169]: "13"
+            - generic [ref=e170]:
+              - generic [ref=e172]:
+                - heading "Roles" [level=3] [ref=e173]
+                - paragraph [ref=e174]: Configured roles
+              - generic [ref=e176]: "4"
+            - generic [ref=e177]:
+              - generic [ref=e179]:
+                - heading "Modules Enabled" [level=3] [ref=e180]
+                - paragraph [ref=e181]: Active feature modules
+              - generic [ref=e183]: "5"
+  - button "Open Theme Studio" [ref=e184] [cursor=pointer]:
+    - img [ref=e185]

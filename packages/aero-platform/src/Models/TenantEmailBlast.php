@@ -46,7 +46,7 @@ class TenantEmailBlast extends CentralModel
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(LandlordUser::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function getAuditLabel(): string

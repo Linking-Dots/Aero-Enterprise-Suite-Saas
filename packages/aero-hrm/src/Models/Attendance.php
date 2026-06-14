@@ -72,7 +72,7 @@ class Attendance extends TenantModel implements HasMedia
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'date:Y-m-d',
         'punchin' => 'datetime',
         'punchout' => 'datetime',
         'work_hours' => 'decimal:2',

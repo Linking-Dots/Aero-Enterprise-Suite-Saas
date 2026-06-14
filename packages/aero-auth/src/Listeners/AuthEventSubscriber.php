@@ -2,7 +2,7 @@
 
 namespace Aero\Auth\Listeners;
 
-use Aero\Core\Models\User;
+use Aero\Auth\Models\User;
 use Aero\Notifications\Models\UserNotificationPreference;
 use Illuminate\Auth\Events\Attempting;
 use Illuminate\Auth\Events\Authenticated;

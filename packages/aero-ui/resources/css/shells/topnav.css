@@ -1,31 +1,21 @@
-/* ══════════════════════════════════════════════════════════════
-   aeos365 — Shell: Top Navigation (Phase 2)
-   Full-width nav bar + scrollable content area.
-   Usage: <div data-aeos-shell="topnav">
-            <div class="aeos-shell-topbar">
-              <div class="aeos-shell-brand">...</div>
-              <nav class="aeos-shell-nav">
-                <a class="aeos-shell-nav-item active">Home</a>
-              </nav>
-              <div class="aeos-shell-actions">...</div>
-            </div>
-            <main class="aeos-shell-content">...</main>
-          </div>
-   ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   AEOS UI — Shell: Top Navigation  (Overhaul v2)
+   ══════════════════════════════════════════════════════════════════════════ */
 
 [data-aeos-shell="topnav"] {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   background: var(--aeos-shell-bg);
   font-family: var(--aeos-font-body);
 }
 
-/* ── Topbar ──────────────────────────────────────────────────── */
 [data-aeos-shell="topnav"] .aeos-shell-topbar {
   display: flex;
   align-items: center;
-  height: var(--aeos-shell-topnav-h, 48px);
+  height: var(--aeos-shell-topnav-h);
   padding: 0 var(--aeos-space-5);
   background: var(--aeos-shell-topbar-bg);
   border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
@@ -34,77 +24,88 @@
   position: sticky;
   top: 0;
   z-index: var(--aeos-z-sticky);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  will-change: backdrop-filter;
 }
 
-/* Brand / Logo slot */
 [data-aeos-shell="topnav"] .aeos-shell-brand {
   display: flex;
   align-items: center;
-  gap: var(--aeos-space-3);
+  gap: var(--aeos-space-2);
   flex-shrink: 0;
   text-decoration: none;
   color: var(--aeos-text-primary);
+  font-family: var(--aeos-font-display);
   font-weight: 700;
   font-size: var(--aeos-text-base);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  filter: drop-shadow(0 0 8px var(--aeos-primary-tint));
+  transition: filter var(--aeos-dur-base) var(--aeos-ease-out);
+}
+[data-aeos-shell="topnav"] .aeos-shell-brand:hover {
+  filter: drop-shadow(0 0 14px var(--aeos-primary-glow));
 }
 
-/* ── Nav Links ───────────────────────────────────────────────── */
 [data-aeos-shell="topnav"] .aeos-shell-nav {
   display: flex;
-  gap: var(--aeos-space-6);
-  flex: 1;
-  padding-left: var(--aeos-space-4);
-  height: 100%;
   align-items: stretch;
+  height: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+  gap: 0;
+  padding-left: var(--aeos-space-4);
+  border-left: var(--aeos-border-width) solid var(--aeos-divider);
+  margin-left: var(--aeos-space-2);
 }
-
-[data-aeos-shell="topnav"] .aeos-shell-nav::-webkit-scrollbar {
-  display: none;
-}
+[data-aeos-shell="topnav"] .aeos-shell-nav::-webkit-scrollbar { display: none; }
 
 [data-aeos-shell="topnav"] .aeos-shell-nav-item {
-  height: 100%;
   display: inline-flex;
   align-items: center;
+  gap: var(--aeos-space-1-5);
+  height: 100%;
+  padding: 0 calc(var(--aeos-space-4) * var(--aeos-density-factor));
+  font-family: var(--aeos-font-body);
   font-size: var(--aeos-text-sm);
+  font-weight: 500;
   color: var(--aeos-text-secondary);
-  cursor: pointer;
-  position: relative;
-  transition: color var(--aeos-dur-fast) var(--aeos-ease-out);
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
   border: none;
   background: none;
-  padding: 0;
-  font-family: var(--aeos-font-body);
-  font-weight: 500;
+  position: relative;
+  transition:
+    color      var(--aeos-dur-fast) var(--aeos-ease-out),
+    background var(--aeos-dur-fast) var(--aeos-ease-out);
 }
-
-[data-aeos-shell="topnav"] .aeos-shell-nav-item:hover {
-  color: var(--aeos-text-primary);
-}
-
-[data-aeos-shell="topnav"] .aeos-shell-nav-item.active {
-  color: var(--aeos-primary);
-}
-
-/* Cyan underline indicator on active item */
-[data-aeos-shell="topnav"] .aeos-shell-nav-item.active::after {
+[data-aeos-shell="topnav"] .aeos-shell-nav-item::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: calc(var(--aeos-space-4) * var(--aeos-density-factor));
+  right: calc(var(--aeos-space-4) * var(--aeos-density-factor));
   height: 2px;
   background: var(--aeos-primary);
-  border-radius: 1px 1px 0 0;
+  border-radius: 2px 2px 0 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+[data-aeos-shell="topnav"] .aeos-shell-nav-item:hover {
+  color: var(--aeos-text-primary);
+  background: var(--aeos-bg-hover);
+}
+[data-aeos-shell="topnav"] .aeos-shell-nav-item.active { color: var(--aeos-primary); }
+[data-aeos-shell="topnav"] .aeos-shell-nav-item.active::after { transform: scaleX(1); }
+[data-aeos-shell="topnav"] .aeos-shell-nav-item .aeos-tab-count {
+  font-size: var(--aeos-text-2xs);
+  font-family: var(--aeos-font-mono);
 }
 
-/* ── Actions Slot (right side: avatar, notifications, etc.) ─── */
 [data-aeos-shell="topnav"] .aeos-shell-actions {
   display: flex;
   align-items: center;
@@ -113,7 +114,6 @@
   flex-shrink: 0;
 }
 
-/* ── Sub-topbar (secondary row, e.g. breadcrumb + filters) ──── */
 [data-aeos-shell="topnav"] .aeos-shell-subbar {
   display: flex;
   align-items: center;
@@ -121,39 +121,67 @@
   padding: 0 var(--aeos-space-5);
   gap: var(--aeos-space-3);
   font-size: var(--aeos-text-xs);
+  color: var(--aeos-text-secondary);
   background: var(--aeos-shell-panel-bg);
   border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   flex-shrink: 0;
-  color: var(--aeos-text-secondary);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+[data-aeos-shell="topnav"] .aeos-shell-subbar::-webkit-scrollbar { display: none; }
 
-/* ── Page Content Area ───────────────────────────────────────── */
 [data-aeos-shell="topnav"] .aeos-shell-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--aeos-space-5);
+  overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Responsive: stack nav below brand on small screens
-   ══════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
   [data-aeos-shell="topnav"] .aeos-shell-topbar {
     flex-wrap: wrap;
     height: auto;
+    min-height: var(--aeos-shell-topnav-h);
     padding: var(--aeos-space-3) var(--aeos-space-4);
+    gap: var(--aeos-space-2);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
-
+  [data-aeos-shell="topnav"] .aeos-shell-brand { flex: 1; }
   [data-aeos-shell="topnav"] .aeos-shell-nav {
-    padding-left: 0;
-    gap: var(--aeos-space-4);
     order: 3;
     width: 100%;
+    padding-left: 0;
+    border-left: none;
+    margin-left: 0;
+    border-top: var(--aeos-border-width) solid var(--aeos-divider);
+    padding-top: var(--aeos-space-1);
     padding-bottom: var(--aeos-space-1);
+    gap: var(--aeos-space-1);
   }
+  [data-aeos-shell="topnav"] .aeos-shell-nav-item {
+    padding: 0 var(--aeos-space-3);
+    height: 36px;
+    font-size: var(--aeos-text-xs);
+    border-radius: var(--aeos-r-md);
+  }
+  [data-aeos-shell="topnav"] .aeos-shell-nav-item.active {
+    background: var(--aeos-primary-bg);
+    border-radius: var(--aeos-r-md);
+  }
+  [data-aeos-shell="topnav"] .aeos-shell-nav-item::after { display: none; }
+  [data-aeos-shell="topnav"] .aeos-shell-actions { margin-left: 0; }
+}
 
-  [data-aeos-shell="topnav"] .aeos-shell-actions {
-    margin-left: auto;
+@media (min-width: 641px) and (max-width: 1024px) {
+  [data-aeos-shell="topnav"] .aeos-shell-nav-item {
+    padding: 0 calc(var(--aeos-space-3) * var(--aeos-density-factor));
   }
+}
+
+.aeos--no-blur [data-aeos-shell="topnav"] .aeos-shell-topbar {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--aeos-shell-topbar-bg);
 }

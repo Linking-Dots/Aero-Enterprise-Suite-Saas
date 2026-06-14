@@ -18,10 +18,11 @@
     ],
     "require": {
         "php": "^8.2",
-        "aero/core": "^1.0",
         "aero/contracts": "^1.0",
-        "laravel/framework": "^11.0|^12.0",
+        "aero/core": "^1.0",
+        "aero/kernel": "@dev",
         "inertiajs/inertia-laravel": "^2.0",
+        "laravel/framework": "^11.0|^12.0",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
@@ -49,7 +50,8 @@
             "package": "installation",
             "version": "1.0.0",
             "category": "foundation",
-            "description": "Installation wizard for SaaS and standalone modes"
+            "description": "Installation wizard for SaaS and standalone modes",
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",

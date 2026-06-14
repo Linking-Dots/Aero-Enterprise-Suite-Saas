@@ -18,7 +18,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_OPTIONS = [
   { value: 'new',       label: 'New' },
@@ -132,7 +132,7 @@ export default function LeadsShow({ lead, activities, users }) {
     <DetailPageLayout
       title={lead.name}
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Leads', href: route('platform.admin.leads.index') },
         { label: lead.name },
       ]}

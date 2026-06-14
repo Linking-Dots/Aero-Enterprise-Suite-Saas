@@ -20,7 +20,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const AGGREGATION_OPTIONS = [
   { value: 'count', label: 'Count' },
@@ -174,7 +174,7 @@ export default function Meters({ meters, filters }) {
     <IndexPageLayout
       title="Usage Meters"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Add-ons', href: route('platform.admin.addons.index') },
         { label: 'Usage Meters' },
       ]}

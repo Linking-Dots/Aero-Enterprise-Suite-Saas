@@ -16,7 +16,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const STATUS_INTENT = {
   true: 'success',
@@ -179,7 +179,7 @@ export default function UsersIndex({ users, filters }) {
     <IndexPageLayout
       title="Platform Users"
       breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.p1.dashboard') },
+        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
         { label: 'Users' },
       ]}
       description="Manage landlord users and their role assignments."

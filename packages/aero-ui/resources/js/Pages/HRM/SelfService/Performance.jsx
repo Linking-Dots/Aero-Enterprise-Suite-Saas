@@ -1,4 +1,4 @@
-import App from '../../../App.jsx';
+import App from '@/Pages/App.jsx';
 import {
   VStack, HStack, Box, Text, Mono, Eyebrow, Badge, Card, CardBody, DataTable, Progress,
 } from '@aero/ui';

@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Admin\Infra;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantImpersonationService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -19,7 +20,7 @@ class ImpersonationAuditTest extends TestCase
         runDatabaseMigrations as baseRunDatabaseMigrations;
     }
 
-    protected LandlordUser $admin;
+    protected User $admin;
 
     public function runDatabaseMigrations(): void
     {
@@ -49,7 +50,7 @@ class ImpersonationAuditTest extends TestCase
         $this->shareSqliteAcrossConnections();
         Gate::before(fn () => true);
 
-        $this->admin = LandlordUser::factory()->create();
+        $this->admin = LandlordUserFactory::new()->create();
     }
 
     public function test_logs_complete_audit_trail_for_start_and_end(): void

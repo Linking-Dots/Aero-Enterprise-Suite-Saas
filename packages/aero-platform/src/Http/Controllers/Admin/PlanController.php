@@ -23,7 +23,7 @@ class PlanController extends Controller
 
     public function index(Request $request): Response
     {
-        return Inertia::render('Platform/Admin/Plans/P2/Index', [
+        return Inertia::render('Platform/Admin/Plans/Index', [
             'plans' => $this->svc->list($request->only(['status', 'search'])),
             'filters' => $request->only(['status', 'search']),
         ]);

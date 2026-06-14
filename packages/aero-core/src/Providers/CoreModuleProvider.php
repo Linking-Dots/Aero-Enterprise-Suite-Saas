@@ -2,14 +2,11 @@
 
 namespace Aero\Core\Providers;
 
-use Aero\Core\Console\Commands\InstallationCommand;
-use Aero\Core\Console\Commands\InstallCommand;
 use Aero\Core\Console\Commands\SeedCommand;
 use Aero\Core\Console\Commands\SyncModuleHierarchy;
 use Aero\Core\Console\Commands\SyncModuleMigrations;
 use Aero\Core\Console\Commands\SyncModuleRegistryCommand;
 use Aero\Core\Console\Commands\TagMigrationsCommand;
-use Aero\Core\Console\Commands\VerifyInstallationCommand;
 use Aero\Core\Console\Commands\VerifyModulesCommand;
 use Aero\Core\Http\Middleware\BootstrapGuard;
 use Aero\Core\Http\Middleware\DashboardRedirectMiddleware;
@@ -311,18 +308,14 @@ class CoreModuleProvider extends AbstractModuleProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                SyncModuleHierarchy::class,
+                // aero:sync-module provided solely by aero-hrmac now.
                 SyncModuleMigrations::class,
                 SeedCommand::class,
-                InstallCommand::class,
                 // Phase 1: Installation metadata & tagging
                 TagMigrationsCommand::class,
-                VerifyInstallationCommand::class,
                 // Phase 2: Module verification & registry
                 VerifyModulesCommand::class,
                 SyncModuleRegistryCommand::class,
-                // Phase 3: Installation orchestrator
-                InstallationCommand::class,
             ]);
         }
     }

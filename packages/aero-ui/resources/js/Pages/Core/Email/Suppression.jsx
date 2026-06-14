@@ -22,7 +22,7 @@ import {
   useToast,
   useHRMAC,
 } from '@aero/ui';
-import App from '../../App.jsx';
+import App from '@/Pages/App.jsx';
 
 const REASON_OPTIONS = [
   { value: 'manual',      label: 'Manual' },
@@ -147,7 +147,7 @@ export default function Suppression({ entries, filters }) {
         title="Suppression List"
         breadcrumb={[
           { label: 'Dashboard', href: route('core.dashboard') },
-          { label: 'Email Engine', href: route('core.email.index') },
+          { label: 'Email Engine', href: route('core.email.logs.index') },
           { label: 'Suppression' },
         ]}
         description="Email addresses that will never receive outgoing mail."

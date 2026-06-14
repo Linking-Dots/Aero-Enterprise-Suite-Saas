@@ -3,28 +3,26 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Policies\TenantPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Aero\Platform\Tests\TestCase;
 
 /**
  * @covers \Aero\Platform\Policies\TenantPolicy
  */
 class TenantPolicyTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected TenantPolicy $policy;
 
-    protected LandlordUser $superAdmin;
+    protected User $superAdmin;
 
-    protected LandlordUser $adminUser;
+    protected User $adminUser;
 
-    protected LandlordUser $regularUser;
+    protected User $regularUser;
 
     protected Tenant $tenant;
 
@@ -64,13 +62,13 @@ class TenantPolicyTest extends TestCase
         ]);
 
         // Create users with roles
-        $this->superAdmin = LandlordUser::factory()->create();
+        $this->superAdmin = LandlordUserFactory::new()->create();
         $this->superAdmin->assignRole($superAdminRole);
 
-        $this->adminUser = LandlordUser::factory()->create();
+        $this->adminUser = LandlordUserFactory::new()->create();
         $this->adminUser->assignRole($platformAdminRole);
 
-        $this->regularUser = LandlordUser::factory()->create();
+        $this->regularUser = LandlordUserFactory::new()->create();
         $this->regularUser->assignRole($regularRole);
     }
 

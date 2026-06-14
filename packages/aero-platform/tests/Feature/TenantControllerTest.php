@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature;
+use Aero\Platform\Database\Factories\LandlordUserFactory;
 
 use Aero\HRMAC\Models\Role;
-use Aero\Platform\Models\LandlordUser;
+use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\Monitoring\Tenant\TenantProvisioner;
@@ -20,11 +21,11 @@ class TenantControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected LandlordUser $superAdmin;
+    protected User $superAdmin;
 
-    protected LandlordUser $platformAdmin;
+    protected User $platformAdmin;
 
-    protected LandlordUser $regularUser;
+    protected User $regularUser;
 
     protected Plan $plan;
 
@@ -57,13 +58,13 @@ class TenantControllerTest extends TestCase
         ]);
 
         // Create users
-        $this->superAdmin = LandlordUser::factory()->create();
+        $this->superAdmin = LandlordUserFactory::new()->create();
         $this->superAdmin->assignRole($superAdminRole);
 
-        $this->platformAdmin = LandlordUser::factory()->create();
+        $this->platformAdmin = LandlordUserFactory::new()->create();
         $this->platformAdmin->assignRole($platformAdminRole);
 
-        $this->regularUser = LandlordUser::factory()->create();
+        $this->regularUser = LandlordUserFactory::new()->create();
         $this->regularUser->assignRole($regularRole);
     }
 

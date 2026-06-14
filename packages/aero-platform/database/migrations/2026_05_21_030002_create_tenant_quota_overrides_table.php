@@ -26,8 +26,10 @@ return new class extends Migration
             $table->bigInteger('limit_value');
             $table->text('reason')->nullable();
             $table->timestamp('expires_at')->nullable();
-            // landlord_users.id is a UUID; foreignUuid matches it (foreignId = bigint did not).
-            $table->foreignUuid('set_by')->constrained('landlord_users');
+            // landlord_users.id is bigint (update_landlord_users_table_to_match_users_structure
+            // migrated it from UUID → bigint), so set_by must be a bigint FK. The previous
+            // foreignUuid produced char(36) and failed with an FK type/collation mismatch.
+            $table->foreignId('set_by')->nullable()->constrained('landlord_users');
             $table->timestamps();
             $table->unique(['tenant_id', 'resource']);
             $table->index('expires_at');
