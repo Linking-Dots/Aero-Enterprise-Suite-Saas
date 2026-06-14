@@ -25,16 +25,6 @@ class LandlordUserFactory extends Factory
     protected static ?string $password;
 
     /**
-     * Landlords live in the CENTRAL users table. The unified User model is
-     * connection-agnostic (User eliminated, Unit 4), so pin every
-     * factory-built landlord onto the central connection.
-     */
-    public function newModel(array $attributes = [])
-    {
-        return parent::newModel($attributes)->setConnection('central');
-    }
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>

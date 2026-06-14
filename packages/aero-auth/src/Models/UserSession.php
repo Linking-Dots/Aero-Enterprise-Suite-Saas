@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Models;
 
-use Aero\Contracts\Models\TenantModel;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -28,8 +28,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class UserSession extends TenantModel
+class UserSession extends Model
 {
+    /**
+     * Default audit label (mirrors the value previously inherited from TenantModel;
+     * auth is now context-free, so identity models are plain Models — same pattern
+     * as {@see User}/{@see UserDevice}).
+     */
+    public function getAuditLabel(): ?string
+    {
+        return (string) $this->getKey();
+    }
+
     protected $fillable = [
         'user_id',
         'session_token',

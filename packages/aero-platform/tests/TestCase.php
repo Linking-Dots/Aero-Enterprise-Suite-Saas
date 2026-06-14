@@ -78,15 +78,6 @@ abstract class TestCase extends \Tests\TestCase
         // Inertia page assertions check the component NAME, not the built JS
         // bundle; the React page files are not present in the test runner.
         config(['inertia.testing.ensure_pages_exist' => false]);
-
-        // Mirror the production admin/landlord context: SetDatabaseConnectionFromDomain
-        // flips the DEFAULT connection to 'central' on admin domains, so landlord
-        // User/model queries resolve on central (where platform's tenant-context guard
-        // escape fires). Migrations already ran on the default (mysql) schema above;
-        // 'central' points at the same throwaway schema, so flipping the default now is
-        // safe and makes the suite faithful to how landlord requests run in production.
-        config(['database.default' => 'central']);
-        \Illuminate\Support\Facades\DB::setDefaultConnection('central');
     }
 
     /**

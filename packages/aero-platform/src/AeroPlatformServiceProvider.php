@@ -703,18 +703,14 @@ class AeroPlatformServiceProvider extends ServiceProvider
             'provider' => 'landlord_users',
         ]);
 
-        // Add landlord_users provider.
-        // Auth-identity unification (Unit 4): landlords are unified Aero\Auth\Models\User
-        // rows in the CENTRAL users table. A custom provider pins retrieval onto the
-        // central connection (User itself is connection-agnostic now that User
-        // is eliminated).
-        \Illuminate\Support\Facades\Auth::provider(
-            'landlord_central_eloquent',
-            fn ($app, array $config) => new \Aero\Auth\Providers\LandlordUserProvider($app['hash'], $config['model'])
-        );
-
+        // Add landlord_users provider — plain eloquent over the unified
+        // Aero\Auth\Models\User. Auth is context-free and carries NO connection logic:
+        // the landlord guard authenticates `users` on whatever connection is ACTIVE
+        // (on the admin domain SetDatabaseConnectionFromDomain makes that the central DB;
+        // on a tenant domain the tenancy layer makes it the tenant DB). Multi-tenancy
+        // isolation is the infrastructure's concern, not auth's.
         Config::set('auth.providers.landlord_users', [
-            'driver' => 'landlord_central_eloquent',
+            'driver' => 'eloquent',
             'model' => \Aero\Auth\Models\User::class,
         ]);
 

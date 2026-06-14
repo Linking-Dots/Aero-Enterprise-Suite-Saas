@@ -2,8 +2,8 @@
 
 namespace Aero\Auth\Models;
 
-use Aero\Contracts\Models\TenantModel;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
  * @property-read bool $is_accepted
  * @property-read bool $is_cancelled
  */
-class TenantInvitation extends TenantModel
+class TenantInvitation extends Model
 {
     use HasFactory, Notifiable;
 
@@ -41,6 +41,16 @@ class TenantInvitation extends TenantModel
      * Default invitation validity period in days.
      */
     public const EXPIRY_DAYS = 7;
+
+    /**
+     * Default audit label (mirrors the value previously inherited from TenantModel;
+     * auth is now context-free, so identity models are plain Models — same pattern
+     * as {@see User}/{@see UserDevice}).
+     */
+    public function getAuditLabel(): ?string
+    {
+        return (string) $this->getKey();
+    }
 
     /**
      * The attributes that are mass assignable.

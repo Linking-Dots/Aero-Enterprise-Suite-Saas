@@ -4,27 +4,23 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Tests\Feature\Auth;
 
-use Aero\Auth\Models\User;
 use Aero\Platform\Database\Factories\LandlordUserFactory;
 use Aero\Platform\Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Safety-net for the auth-identity unification rename (User -> User, Unit 4).
+ * Safety-net for landlord LOGIN under the unified, context-free auth.
  *
  * The whole platform suite authenticates via actingAs($admin, 'landlord'), which
- * BYPASSES the user provider — so landlord LOGIN (the provider resolving a
- * credential set against the central `users` table) is otherwise untested. This
- * pins the real behavior the rename must preserve:
+ * BYPASSES the user provider — so landlord login (the provider resolving a credential
+ * set and validating the password) is otherwise untested.
  *
- *   1. the `landlord` guard's provider resolves a landlord by email
- *      (retrieveByCredentials) from the CENTRAL connection, and
- *   2. validateCredentials checks the password hash correctly.
- *
- * After User is renamed to Aero\Auth\Models\User and the landlord guard
- * is repointed at a central-binding provider, this test MUST still pass — that is
- * the guarantee that the rename did not silently break landlord login.
+ * Auth is context-free: the `landlord` guard is plain eloquent over the unified
+ * Aero\Auth\Models\User on whatever connection is ACTIVE. There is no landlord/central
+ * binding in auth — in production the admin domain's active connection is the central
+ * DB; isolation is the infrastructure's concern. This pins that login resolves a
+ * landlord by email and validates the password.
  */
 class LandlordLoginProviderTest extends TestCase
 {
@@ -34,7 +30,7 @@ class LandlordLoginProviderTest extends TestCase
         return Auth::guard('landlord')->getProvider();
     }
 
-    public function test_landlord_provider_resolves_credentials_on_central_connection(): void
+    public function test_landlord_provider_resolves_credentials(): void
     {
         $landlord = LandlordUserFactory::new()->create([
             'email' => 'landlord-login@example.com',
@@ -48,11 +44,6 @@ class LandlordLoginProviderTest extends TestCase
 
         $this->assertNotNull($retrieved, 'landlord provider must resolve the landlord by email');
         $this->assertSame($landlord->getKey(), $retrieved->getAuthIdentifier());
-        $this->assertSame(
-            'central',
-            $retrieved->getConnectionName(),
-            'landlord identity must resolve on the central connection'
-        );
     }
 
     public function test_landlord_provider_validates_password(): void
@@ -76,11 +67,10 @@ class LandlordLoginProviderTest extends TestCase
         );
     }
 
-    public function test_landlord_persisted_in_central_users_table(): void
+    public function test_landlord_persisted_in_users_table(): void
     {
-        $landlord = LandlordUserFactory::new()->create(['email' => 'table-check@example.com']);
+        LandlordUserFactory::new()->create(['email' => 'table-check@example.com']);
 
         $this->assertDatabaseHas('users', ['email' => 'table-check@example.com']);
-        $this->assertSame('central', $landlord->getConnectionName());
     }
 }

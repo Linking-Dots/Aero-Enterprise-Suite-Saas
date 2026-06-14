@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Auth\Models;
 
-use Aero\Contracts\Models\CentralModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
@@ -13,11 +13,13 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  *
  * Stores OAuth provider links for social login.
  */
-class SocialAuthAccount extends CentralModel
+class SocialAuthAccount extends Model
 {
     use HasFactory;
 
-    protected $connection = 'central';
+    // Context-free: no hardcoded connection. Social-auth accounts live on whatever
+    // connection is active (admin domain -> central, tenant domain -> tenant), like
+    // the unified User. Multi-tenancy isolation is the infrastructure's concern.
 
     public const PROVIDER_GOOGLE = 'google';
 
