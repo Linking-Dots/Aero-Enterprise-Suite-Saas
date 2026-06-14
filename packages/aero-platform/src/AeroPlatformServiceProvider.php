@@ -355,22 +355,24 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // queries (resolved connection 'central'; the admin domain flips the default
         // connection to central and the landlord provider binds central at retrieval).
         // Standalone/core (no platform) consume the pure User with no guard (single DB).
-        User::addGlobalScope('tenant_context_guard', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            if (! \Aero\Contracts\AeroMode::isSaas()) {
-                return;
-            }
-            // Central/landlord rows are tenant-agnostic, so the guard is a no-op for them.
-            // Determine the effective connection name WITHOUT resolving the connection —
-            // calling $builder->getConnection() inside a global scope re-enters connection
-            // resolution and recurses. The model's explicit connection wins; otherwise the
-            // current default, which the admin domain flips to 'central'
-            // (SetDatabaseConnectionFromDomain; the test harness mirrors this).
-            $connection = $builder->getModel()->getConnectionName() ?? config('database.default');
-            if ($connection === 'central') {
-                return;
-            }
-            \Aero\Contracts\AeroMode::assertTenantContext(User::class);
-        });
+        foreach ([User::class, \Aero\Auth\Models\UserDevice::class] as $identityModel) {
+            $identityModel::addGlobalScope('tenant_context_guard', function (\Illuminate\Database\Eloquent\Builder $builder) {
+                if (! \Aero\Contracts\AeroMode::isSaas()) {
+                    return;
+                }
+                // Central/landlord rows are tenant-agnostic, so the guard is a no-op for them.
+                // Determine the effective connection name WITHOUT resolving the connection —
+                // calling $builder->getConnection() inside a global scope re-enters connection
+                // resolution and recurses. The model's explicit connection wins; otherwise the
+                // current default, which the admin domain flips to 'central'
+                // (SetDatabaseConnectionFromDomain; the test harness mirrors this).
+                $connection = $builder->getModel()->getConnectionName() ?? config('database.default');
+                if ($connection === 'central') {
+                    return;
+                }
+                \Aero\Contracts\AeroMode::assertTenantContext($builder->getModel()::class);
+            });
+        }
 
         // Register audit observers
         Plan::observe(PlanAuditObserver::class);

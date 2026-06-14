@@ -2,26 +2,22 @@
 
 namespace Aero\Auth\Models;
 
-use Aero\Contracts\Models\Concerns\EnforcesTenantContext;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Auth-identity unification (Unit 2D-step3): UserDevice is dual-context — central
- * landlord devices AND tenant-user devices, all in one `user_devices` table per
- * connection. It therefore follows the SAME pattern as {@see User}: a plain Model
- * with the {@see EnforcesTenantContext} guard (which no-ops for instances on the
- * 'central' connection) rather than {@see \Aero\Contracts\Models\TenantModel}
- * (whose guard has no central escape and would throw for landlord/console queries).
- * Eloquent relationship-connection inheritance routes $landlordUser->devices() onto
- * the central connection, so the escape fires; tenant users keep the fail-closed guard.
+ * Auth-identity unification: UserDevice is dual-context — central landlord devices
+ * AND tenant-user devices, all in one `user_devices` table per connection. Like
+ * {@see User}, it is a PURE identity model with no tenancy/connection knowledge
+ * (auth-purity ruling). The multi-tenant host (platform) applies the tenant-isolation
+ * guard to UserDevice at boot (AeroPlatformServiceProvider), with a no-op escape for
+ * central/landlord queries; standalone/core consume the pure model (single DB).
  * Replaces the former platform CentralModel duplicate.
  */
 class UserDevice extends Model
 {
-    use EnforcesTenantContext;
     use HasFactory;
 
     protected $fillable = [
