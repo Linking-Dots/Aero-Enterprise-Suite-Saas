@@ -176,7 +176,7 @@ class PlatformStatsWidget extends AbstractPlatformWidget
     {
         // Platform admin users
         $adminUsers = User::count();
-        $activeAdmins = User::where('active', true)->count();
+        $activeAdmins = User::active()->count();
 
         return [
             'adminUsers' => $adminUsers,

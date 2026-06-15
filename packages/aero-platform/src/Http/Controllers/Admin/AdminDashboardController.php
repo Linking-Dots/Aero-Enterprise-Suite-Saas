@@ -261,7 +261,7 @@ class AdminDashboardController extends Controller
                 ->count();
 
             $totalAdmins  = User::count();
-            $activeAdmins = User::where('active', true)->count();
+            $activeAdmins = User::active()->count();
 
             $activeSubscriptions = Subscription::where('status', Subscription::STATUS_ACTIVE)->count();
 

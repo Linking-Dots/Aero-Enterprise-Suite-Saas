@@ -47,8 +47,7 @@ class SendAttendanceReminders extends Command
             $dispatchedCount = 0;
             $skippedCount = 0;
 
-            User::query()
-                ->where('active', true)
+            User::active()
                 ->whereNotNull('fcm_token')
                 ->chunk($batchSize, function ($users) use ($attendanceSetting, &$totalUsers, &$dispatchedCount, &$skippedCount) {
                     foreach ($users as $user) {
@@ -116,7 +115,7 @@ class SendAttendanceReminders extends Command
             $users = collect([$user]);
         } else {
             // Get a single test user with FCM token
-            $user = User::where('active', true)
+            $user = User::active()
                 ->whereNotNull('fcm_token')
                 ->first();
 

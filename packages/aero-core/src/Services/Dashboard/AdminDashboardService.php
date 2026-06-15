@@ -166,7 +166,7 @@ class AdminDashboardService
         return TenantCache::remember('admin_dashboard.core_stats', 300, function () {
             try {
                 $totalUsers = User::count();
-                $activeUsers = User::where('active', true)->count();
+                $activeUsers = User::active()->count();
                 $newThisMonth = User::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
                     ->count();
@@ -300,7 +300,7 @@ class AdminDashboardService
                     ->toArray();
 
                 $totalUsersWithMfa = User::whereNotNull('two_factor_secret')->count();
-                $totalActiveUsers = User::where('active', true)->count();
+                $totalActiveUsers = User::active()->count();
                 $mfaAdoptionRate = $totalActiveUsers > 0
                     ? round(($totalUsersWithMfa / $totalActiveUsers) * 100, 1)
                     : 0;
