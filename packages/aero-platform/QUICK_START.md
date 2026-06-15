@@ -126,8 +126,9 @@ $user = User::create([
     'name' => 'John Doe',
     'email' => 'john@example.com',
     'password' => bcrypt('password'),
-    'active' => true,
 ]);
+// Active/inactive is managed via SoftDeletes: $user->delete() deactivates,
+// $user->restore() reactivates (no active/is_active column).
 
 // Assign role
 $user->assignRole('manager');
