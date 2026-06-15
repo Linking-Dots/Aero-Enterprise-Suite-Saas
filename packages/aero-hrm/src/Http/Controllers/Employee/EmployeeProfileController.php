@@ -357,7 +357,7 @@ class EmployeeProfileController extends Controller
             'department' => $user->employee?->department?->only(['id', 'name']),
             'designation' => $user->employee?->designation?->only(['id', 'title']),
             'date_of_joining' => $user->employee?->date_of_joining,
-            'active' => $user->active,
+            'active' => ! $user->trashed(),
         ];
     }
 

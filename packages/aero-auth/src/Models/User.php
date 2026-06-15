@@ -266,7 +266,8 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
      */
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        // Active = not soft-deleted (SoftDeletes is the source of truth).
+        return $query->whereNull('deleted_at');
     }
 
     /**
@@ -274,7 +275,8 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
      */
     public function scopeInactive($query)
     {
-        return $query->where('active', false);
+        // Inactive = soft-deleted.
+        return $query->onlyTrashed();
     }
 
     // =========================================================================
@@ -286,16 +288,14 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
      */
     public function setActiveStatus(bool $status): void
     {
+        // Active/inactive is managed via SoftDeletes: active = restored, inactive = soft-deleted.
         if ($status) {
             if ($this->trashed()) {
                 $this->restore();
             }
-            $this->active = true;
         } else {
-            $this->active = false;
             $this->delete();
         }
-        $this->save();
     }
 
     /**
@@ -604,7 +604,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
      */
     public function getPublishedAttribute(): bool
     {
-        return (bool) $this->active;
+        return ! $this->trashed();
     }
 
     /**
@@ -963,7 +963,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
      */
     public function isActive(): bool
     {
-        return (bool) $this->active;
+        return ! $this->trashed();
     }
 
     /**

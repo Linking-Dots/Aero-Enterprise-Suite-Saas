@@ -157,8 +157,8 @@ class ImpersonationController extends Controller
                 ->with('error', 'The target user for impersonation no longer exists.');
         }
 
-        // Check user is active
-        if (! $user->active) {
+        // Check user is active (active = not soft-deleted)
+        if ($user->trashed()) {
             Log::warning('Impersonation target user is inactive', [
                 'user_id' => $user->id,
                 'user_email' => $user->email,

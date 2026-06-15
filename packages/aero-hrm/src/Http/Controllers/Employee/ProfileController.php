@@ -384,7 +384,7 @@ class ProfileController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'profile_image_url' => $user->profile_image_url,
-            'active' => $user->active,
+            'active' => ! $user->trashed(),
 
             // Employee personal info
             'gender' => $employee->gender,

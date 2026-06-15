@@ -81,8 +81,8 @@ class SocialAuthController extends Controller
                     ->with('error', 'No account found with this email. Please contact your administrator.');
             }
 
-            // Check if user is active
-            if (! $user->active) {
+            // Check if user is active (active = not soft-deleted)
+            if ($user->trashed()) {
                 $this->authService->logAuthenticationEvent(
                     $user,
                     'oauth_login_inactive_account',
