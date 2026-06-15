@@ -50,12 +50,9 @@ class RevokeSystemAccess implements ShouldQueue
 
     protected function revokeAccessImmediately($user, $employee): void
     {
-        // Deactivate user account
-        $user->update([
-            'is_active' => false,
-            'deactivated_at' => now(),
-            'deactivation_reason' => 'Employee termination',
-        ]);
+        // Deactivate user account (active/inactive is managed via SoftDeletes:
+        // soft-deleting blocks login via the Eloquent auth provider's scope).
+        $user->delete();
 
         // Revoke all tokens (for API access)
         if (method_exists($user, 'tokens')) {

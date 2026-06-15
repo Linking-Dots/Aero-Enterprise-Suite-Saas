@@ -474,8 +474,10 @@ class OnboardingController extends Controller
                 ]);
             }
 
-            // Mark employee as active
-            $employee->update(['active' => true]);
+            // Mark employee as active (active = not soft-deleted; restore if needed)
+            if ($employee->trashed()) {
+                $employee->restore();
+            }
 
             // Mark onboarding as completed
             $onboarding->update(['status' => Onboarding::STATUS_COMPLETED]);

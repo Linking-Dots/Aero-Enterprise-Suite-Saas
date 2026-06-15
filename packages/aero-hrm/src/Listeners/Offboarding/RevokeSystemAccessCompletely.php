@@ -35,12 +35,13 @@ class RevokeSystemAccessCompletely implements ShouldQueue
         }
 
         try {
-            // Deactivate user account
-            $user->update([
-                'is_active' => false,
-                'deactivated_at' => now(),
-                'deactivation_reason' => "Offboarding completed - {$offboarding->reason}",
+            // Deactivate user account (active/inactive is managed via SoftDeletes:
+            // soft-deleting blocks login via the Eloquent auth provider's scope).
+            Log::info('Deactivating user on offboarding completion', [
+                'user_id' => $user->id,
+                'reason' => "Offboarding completed - {$offboarding->reason}",
             ]);
+            $user->delete();
 
             // Revoke all API tokens
             if (method_exists($user, 'tokens')) {
