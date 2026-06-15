@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'employee_id' => $this->employee_id,
             'profile_image_url' => $this->profile_image_url,
-            'active' => $this->active,
+            'active' => $this->deleted_at === null,
 
             // Basic Information
             'user_name' => $this->user_name,

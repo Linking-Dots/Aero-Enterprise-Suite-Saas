@@ -39,7 +39,6 @@ class LandlordUserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->optional()->phoneNumber(),
             'password' => static::$password ??= Hash::make('password'),
-            'active' => true,
             'profile_image' => null,
             'timezone' => 'UTC',
             'email_verified_at' => now(),
@@ -58,13 +57,12 @@ class LandlordUserFactory extends Factory
     }
 
     /**
-     * Indicate that the user is inactive.
+     * Indicate that the user is inactive (inactive = soft-deleted; SoftDeletes is
+     * the source of truth for active/inactive).
      */
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'active' => false,
-        ]);
+        return $this->afterCreating(fn (User $user) => $user->delete());
     }
 
     /**

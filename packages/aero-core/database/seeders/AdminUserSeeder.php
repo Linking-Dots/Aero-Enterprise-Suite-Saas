@@ -35,7 +35,6 @@ class AdminUserSeeder extends Seeder
             'user_name' => 'admin',
             'email' => 'admin@dbedc.com',
             'password' => Hash::make('password'),
-            'active' => true,
             'email_verified_at' => now(),
         ]);
 

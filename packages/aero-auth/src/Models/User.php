@@ -90,9 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
         'phone',
         'password',
 
-        // Account Status
-        'active',
-        'is_active',
+        // Account Status (active/inactive is managed via SoftDeletes, not a column)
         'account_locked_at',
         'locked_reason',
         'force_password_reset',
@@ -150,8 +148,6 @@ class User extends Authenticatable implements MustVerifyEmail, UserContract, Sea
         'phone_verified_at' => 'datetime',
         'phone_verification_sent_at' => 'datetime',
         'password' => 'hashed',
-        'active' => 'boolean',
-        'is_active' => 'boolean',
         'account_locked_at' => 'datetime',
         'single_device_login_enabled' => 'boolean',
         'device_reset_at' => 'datetime',

@@ -82,7 +82,6 @@ class UserInvitationService implements UserInvitationServiceInterface
                 'name' => $invitation->name,
                 'email' => $invitation->email,
                 'password' => \Hash::make($userData['password']),
-                'active' => true,
                 'email_verified_at' => now(),
             ]);
 
