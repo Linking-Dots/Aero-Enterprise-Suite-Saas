@@ -29,7 +29,7 @@ class AssetController extends Controller
         return Inertia::render('HRM/Assets/AssetAllocationsIndex', [
             'title' => 'Asset Allocations',
             'categories' => AssetCategory::active()->get(),
-            'employees' => Employee::with('user')->whereHas('user', fn ($q) => $q->where('active', true))->get(),
+            'employees' => Employee::with('user')->whereHas('user', fn ($q) => $q->whereNull('deleted_at'))->get(),
         ]);
     }
 

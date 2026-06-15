@@ -20,7 +20,7 @@ class DisciplinaryCaseController extends Controller
             'title' => 'Disciplinary Cases',
             'actionTypes' => DisciplinaryActionType::active()->get(),
             'employees' => Employee::with('user:id,name,email')
-                ->whereHas('user', fn ($q) => $q->where('active', true))
+                ->whereHas('user', fn ($q) => $q->whereNull('deleted_at'))
                 ->get()
                 ->map(fn ($e) => [
                     'id' => $e->id,

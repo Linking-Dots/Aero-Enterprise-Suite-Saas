@@ -84,7 +84,6 @@ class RegisterController extends Controller
                 'user_name' => $request->name, // Using name as username for now
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'is_active' => true,
                 'security_notifications' => true,
                 'notification_preferences' => json_encode([
                     'email_notifications' => true,

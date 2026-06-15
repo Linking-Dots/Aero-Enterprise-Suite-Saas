@@ -164,7 +164,7 @@ abstract class BaseProjectNotification extends Notification implements ShouldQue
 
         // Get direct recipients
         $directRecipients = $userModel::whereIn('id', $directIds)
-            ->where('is_active', true)
+            ->whereNull('deleted_at') // active = not soft-deleted
             ->get();
 
         // Merge and deduplicate

@@ -704,7 +704,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         return $userModel::whereHas('roles', function ($query) use ($roleIds) {
             $query->whereIn('roles.id', $roleIds);
         })
-            ->where('is_active', true)
+            ->whereNull('deleted_at') // active = not soft-deleted
             ->get();
     }
 
@@ -789,7 +789,7 @@ class RoleModuleAccessService implements RoleModuleAccessInterface
         return $userModel::whereHas('roles', function ($query) use ($roleIds) {
             $query->whereIn('roles.id', $roleIds);
         })
-            ->where('is_active', true)
+            ->whereNull('deleted_at') // active = not soft-deleted
             ->get();
     }
 

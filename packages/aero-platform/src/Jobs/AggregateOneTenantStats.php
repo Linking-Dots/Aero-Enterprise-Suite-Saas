@@ -85,7 +85,7 @@ class AggregateOneTenantStats implements ShouldQueue
     {
         $totalUsers = DB::table('users')->count();
         $activeUsers = DB::table('users')
-            ->where('is_active', true)
+            ->whereNull('deleted_at') // active = not soft-deleted
             ->where(function ($query) {
                 $query->whereNotNull('last_login_at')
                     ->where('last_login_at', '>=', now()->subDays(30));

@@ -111,7 +111,6 @@ class AdminSetupController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
                 'password' => Hash::make($validated['password']),
-                'active' => true,
                 'email_verified_at' => now(), // Mark as verified - no verification needed
                 'phone_verified_at' => ! empty($validated['phone']) ? now() : null,
             ]);
