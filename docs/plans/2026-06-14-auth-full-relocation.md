@@ -13,8 +13,7 @@
 - **platform/core** = CONSUMERS of auth + hrmac. No auth/identity/security code remains in them.
 - **No duplication anywhere.**
 - Move-list (verified 2026-06-14): platform → auth: LandlordAuthContext, TenantImpersonationToken,
-  SecurityEvent, LandlordUserService, TenantImpersonationService, Marketing/SocialAuthService,
-  Admin+Public/SocialAuthController, CheckSessionExpiry,
+  SecurityEvent, LandlordUserService, TenantImpersonationService, CheckSessionExpiry,
   ApiSecurityMiddleware, SecurityHeaders, TrackSecurityActivity, AuthEventSubscriber. core → auth:
   Actions/Fortify/* (5), CheckForcePasswordReset, RequireTwoFactor, UserInvitation + Service + Mail,
   PasswordPolicyController. Plus: new `Tenant` contract; repoint routes + service-provider
@@ -26,7 +25,15 @@
   - UserService (core) + LandlordUserService (platform) -> ONE auth user service
   - auth UserController + LandlordUserController (platform) -> ONE user controller
   - PhoneVerificationService: DELETED (orphan — only consumer died in Unit1; rebuild clean in auth if a live feature ever needs it; Boss-Proxy 2026-06-14)
-  - SocialAuthService + Admin/Public SocialAuthController (platform) -> ONE social capability in auth
+  - SocialAuth: KEEP DISTINCT (architectural decision 2026-06-15, Boss delegated "be decisive").
+    aero-auth owns tenant-app social LOGIN (Auth/SocialAuthController) + the shared SocialAuthAccount
+    model (already there). The landlord MARKETING-SITE OAuth + provider-config (platform
+    Public/Admin SocialAuthController + Marketing/SocialAuthService) STAYS in aero-platform — it is
+    PlatformSetting-coupled product surface, a different population than tenant identity; moving it
+    would force a new OAuth-config contract purely to abstract a platform-owned capability. Identity
+    data is already unified via the shared SocialAuthAccount; the two OAuth flows legitimately differ.
+    NO code move; struck from the auth move-list. (auth owns social *login*; platform owns its
+    marketing OAuth + provider config.)
   - UserInvitation + UserInvitationService + Mail (core) -> auth (single)
   - Fortify actions + password/2FA middleware (core) -> auth (single)
   - devices/sessions services -> one each (dups already removed)
