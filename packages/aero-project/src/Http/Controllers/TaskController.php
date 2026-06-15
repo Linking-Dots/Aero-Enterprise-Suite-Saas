@@ -171,7 +171,7 @@ class TaskController extends Controller
             return \Aero\HRMAC\Facades\HRMAC::getUsersWithModuleAccess('project');
         } catch (\Exception $e) {
             // Fallback to all active users
-            return User::where('is_active', true)->get();
+            return User::active()->get();
         }
     }
 }

@@ -25,7 +25,7 @@ class ManagersController extends Controller
         } catch (\Exception $e) {
             // Fallback to all active users
             return response()->json(
-                User::where('is_active', true)
+                User::active()
                     ->select('id', 'name')
                     ->orderBy('name')
                     ->get()

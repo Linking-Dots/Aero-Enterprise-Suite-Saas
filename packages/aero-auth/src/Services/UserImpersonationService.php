@@ -326,8 +326,8 @@ class UserImpersonationService
             throw new \RuntimeException('Cannot impersonate users with equal or higher privileges.');
         }
 
-        // Check if target user is active
-        if (! $target->is_active) {
+        // Check if target user is active (active = not soft-deleted)
+        if ($target->trashed()) {
             throw new \RuntimeException('Cannot impersonate inactive users.');
         }
 

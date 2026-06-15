@@ -365,7 +365,7 @@ class PerformanceReviewController extends Controller
                 ->map(fn ($user) => ['id' => $user->id, 'name' => $user->name]);
         } catch (\Exception $e) {
             // Fallback to all active users
-            return \Aero\Core\Models\User::where('is_active', true)
+            return \Aero\Core\Models\User::active()
                 ->get(['id', 'name']);
         }
     }

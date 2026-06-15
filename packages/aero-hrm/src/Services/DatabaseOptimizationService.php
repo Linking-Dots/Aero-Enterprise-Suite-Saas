@@ -30,16 +30,18 @@ class DatabaseOptimizationService
                     'departments.title as department_name',
                     'designations.title as designation_name',
                     'roles.name as role_name'
-                )
-                ->where('users.deleted_at', null);
+                );
+
+            // active/inactive is managed via SoftDeletes (active = not soft-deleted).
+            if (($filters['status'] ?? 'active') === 'inactive') {
+                $query->whereNotNull('users.deleted_at');
+            } else {
+                $query->whereNull('users.deleted_at');
+            }
 
             // Apply filters
             if (! empty($filters['department'])) {
                 $query->where('users.department', $filters['department']);
-            }
-
-            if (! empty($filters['status'])) {
-                $query->where('users.active', $filters['status'] === 'active');
             }
 
             return $query->get();
@@ -88,7 +90,7 @@ class DatabaseOptimizationService
         try {
             // Check for missing indexes on frequently queried columns
             $missingIndexes = [
-                'users' => ['department', 'designation', 'active', 'email'],
+                'users' => ['department', 'designation', 'deleted_at', 'email'],
                 'attendances' => ['user_id', 'type', 'created_at'],
                 'leaves' => ['user_id', 'status', 'from_date', 'to_date'],
                 'daily_works' => ['user_id', 'date', 'status'],

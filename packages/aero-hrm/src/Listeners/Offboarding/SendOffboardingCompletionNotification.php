@@ -29,7 +29,7 @@ class SendOffboardingCompletionNotification implements ShouldQueue
         try {
             // Notify the employee (if they still have access)
             $user = $employee->user;
-            if ($user && $user->is_active) {
+            if ($user && ! $user->trashed()) {
                 $user->notify(new OffboardingCompletedNotification($offboarding));
                 $this->logNotification($user, $offboarding, 'offboarding.completed');
             }
