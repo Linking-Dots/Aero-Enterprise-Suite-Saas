@@ -56,7 +56,6 @@ use Illuminate\Support\Facades\Log;
  * @property string $email
  * @property string|null $phone
  * @property string|null $password
- * @property bool $active
  */
 class User extends Authenticatable implements MustVerifyEmail, UserContract, Searchable
 {

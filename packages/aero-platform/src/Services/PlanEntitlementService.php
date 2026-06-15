@@ -43,9 +43,9 @@ class PlanEntitlementService
             return false;
         }
 
-        // Count active tenant users
+        // Count active tenant users (active = not soft-deleted)
         $userCount = User::where('tenant_id', $tenantId)
-            ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->count();
 
         return $userCount >= $maxUsers;
@@ -147,7 +147,7 @@ class PlanEntitlementService
         }
 
         $userCount = User::where('tenant_id', $tenantId)
-            ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->count();
 
         return max(0, $maxUsers - $userCount);

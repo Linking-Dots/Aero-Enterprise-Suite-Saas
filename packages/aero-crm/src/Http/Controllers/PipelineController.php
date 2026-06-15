@@ -52,7 +52,7 @@ class PipelineController extends Controller
 
         // Get users for assignee filter
         $users = User::select('id', 'name')
-            ->where('is_active', true)
+            ->whereNull('deleted_at') // active = not soft-deleted
             ->orderBy('name')
             ->get();
 

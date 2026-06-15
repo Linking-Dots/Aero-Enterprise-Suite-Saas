@@ -79,7 +79,6 @@ class PlanEntitlementServiceTest extends TestCase
         // Create 3 active users
         \Aero\Core\Models\User::factory()->count(3)->create([
             'tenant_id' => $tenant->id,
-            'is_active' => true,
         ]);
 
         $this->assertTrue($this->service->hasReachedUserLimit($tenant->id));
