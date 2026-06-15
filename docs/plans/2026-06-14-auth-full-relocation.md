@@ -12,12 +12,23 @@
   auth. Auth may DEPEND on hrmac for role capability (LandlordUserService assigns roles via hrmac).
 - **platform/core** = CONSUMERS of auth + hrmac. No auth/identity/security code remains in them.
 - **No duplication anywhere.**
-- Move-list (verified 2026-06-14): platform → auth: LandlordAuthContext, TenantImpersonationToken,
-  SecurityEvent, LandlordUserService, TenantImpersonationService, CheckSessionExpiry,
-  ApiSecurityMiddleware, SecurityHeaders, TrackSecurityActivity, AuthEventSubscriber. core → auth:
-  Actions/Fortify/* (5), CheckForcePasswordReset, RequireTwoFactor, UserInvitation + Service + Mail,
-  PasswordPolicyController. Plus: new `Tenant` contract; repoint routes + service-provider
-  registrations; auth→hrmac for roles is allowed.
+- Move-list (verified 2026-06-14) — STATUS as of 2026-06-15:
+  - LandlordUserService → DONE (merged into auth UserService, Unit3b).
+  - CheckSessionExpiry, ApiSecurityMiddleware, SecurityHeaders, TrackSecurityActivity → DELETED as
+    dead/unwired (d2ab5d275); AuthEventSubscriber (platform) → DELETED as dead dup (auth's is live).
+  - LandlordAuthContext → KEEP in platform: it's platform's clean consumer-impl of the auth
+    `AuthContext` contract (implements Aero\Auth\Contracts\AuthContext, uses Aero\Auth\Models\User,
+    references the landlord guard + platform.admin.dashboard route, bound by the platform provider's
+    domain-aware closure). Already pure; moving it to auth would be wrong. Struck from move-list.
+  - TenantImpersonationToken / TenantImpersonationService / SecurityEvent → DEFERRED: tenant
+    impersonation is a TANGLE (two parallel impls — cookie-based TenantImpersonationService via
+    AdminTenantController vs URL-token TenantImpersonationToken via auth ImpersonationController; +
+    dead admin-auth.php routes). Needs a Boss product decision on the canonical mechanism BEFORE the
+    auth-purity fix (auth ImpersonationController must stay for its tenant-side handle()/end() flow;
+    only the Platform\Tenant + token refs need a contract).
+  - core → auth: Actions/Fortify/* (5) + CheckForcePasswordReset + RequireTwoFactor → DELETED dead
+    (Unit3a); UserInvitation + Service + Mail → DONE (relocated, Unit3a); PasswordPolicyController →
+    (still core-resident, HRMAC-wired; revisit if needed).
 - **RELOCATE = RELOCATE-AND-MERGE (Boss, 2026-06-14): "on relocating you should also merge".**
   Do NOT create parallel copies in auth — MERGE the duplicate/parallel auth implementations that
   exist across core+platform into ONE implementation per capability in aero-auth, so core (tenant)
