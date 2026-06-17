@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Aero\Auth\Http\Controllers\Auth\AuthenticatedSessionController;
-use Aero\Auth\Http\Controllers\Auth\ImpersonationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -53,11 +52,3 @@ Route::get('/session-check', function () {
         'user_id' => Auth::guard('landlord')->id(),
     ]);
 })->name('admin.session-check');
-
-// Authenticated landlord auth routes (impersonation: admin → tenant user)
-Route::middleware(['auth:landlord'])->group(function () {
-    Route::post('/users/{id}/impersonate', [ImpersonationController::class, 'startImpersonation'])
-        ->name('admin.users.impersonate');
-    Route::post('/impersonation/stop', [ImpersonationController::class, 'stopAdminImpersonation'])
-        ->name('admin.impersonation.stop');
-});
