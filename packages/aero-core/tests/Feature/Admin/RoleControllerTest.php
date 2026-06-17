@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Aero\Core\Tests\Feature\Admin;
 
 use Aero\Core\Tests\PackageTestCase;
+use Aero\HRMAC\Models\Role;
 use Inertia\Testing\AssertableInertia as Assert;
-use Spatie\Permission\Models\Role;
 
 /**
  * Feature tests for RoleController (CA-1).
  *
- * Note: RoleService internally uses Spatie\Permission\Models\Role.
+ * Note: roles use Aero\HRMAC\Models\Role (the project's spatie-backed role model).
  *
  * Run:
  *   php c:/laragon/www/aeos365/vendor/bin/phpunit \
@@ -53,7 +53,7 @@ class RoleControllerTest extends PackageTestCase
 
         $this->actingAs($admin)
             ->post(route('core.roles.store'), ['name' => 'Manager'])
-            ->assertRedirect(route('core.roles.index'));
+            ->assertRedirect(); // HRMAC RoleController redirects back() after mutation
 
         $this->assertDatabaseHas('roles', ['name' => 'Manager']);
     }
@@ -92,7 +92,7 @@ class RoleControllerTest extends PackageTestCase
 
         $this->actingAs($admin)
             ->put(route('core.roles.update', $role), ['name' => 'Senior Editor'])
-            ->assertRedirect(route('core.roles.index'));
+            ->assertRedirect(); // HRMAC RoleController redirects back() after mutation
 
         $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'Senior Editor']);
     }
@@ -106,8 +106,8 @@ class RoleControllerTest extends PackageTestCase
         $admin          = $this->makeSuperAdmin();
         $superAdminRole = Role::where('name', 'super-admin')->first();
 
-        $controller = app(\Aero\Core\Http\Controllers\Admin\RoleController::class);
-        $request    = new \Aero\Core\Http\Requests\UpdateRoleRequest();
+        $controller = app(\Aero\HRMAC\Http\Controllers\RoleController::class);
+        $request    = new \Aero\HRMAC\Http\Requests\UpdateRoleRequest();
         $request->merge(['name' => 'Hacked']);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
@@ -129,7 +129,7 @@ class RoleControllerTest extends PackageTestCase
 
         $this->actingAs($admin)
             ->delete(route('core.roles.destroy', $role))
-            ->assertRedirect(route('core.roles.index'));
+            ->assertRedirect(); // HRMAC RoleController redirects back() after mutation
 
         $this->assertDatabaseMissing('roles', ['id' => $role->id]);
     }
@@ -144,9 +144,9 @@ class RoleControllerTest extends PackageTestCase
         $request        = \Illuminate\Http\Request::create('/roles/'.$superAdminRole->id, 'DELETE');
         $request->setUserResolver(fn () => $admin);
 
-        $controller = app(\Aero\Core\Http\Controllers\Admin\RoleController::class);
+        $controller = app(\Aero\HRMAC\Http\Controllers\RoleController::class);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
-        $controller->destroy($superAdminRole, $request);
+        $controller->destroy($request, $superAdminRole);
     }
 }
