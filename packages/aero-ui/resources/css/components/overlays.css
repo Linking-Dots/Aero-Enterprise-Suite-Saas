@@ -47,8 +47,9 @@
 .aeos-popover[data-side="top"][data-align="end"]      { bottom:calc(100% + 6px); right:0; }
 
 /* ── Menu ────────────────────────────────────────────────────── */
-.aeos-menu { list-style:none; margin:0; padding:var(--aeos-space-1); }
-.aeos-menu-item { display:flex; align-items:center; gap:var(--aeos-space-3); padding:var(--aeos-pad-nav-y) var(--aeos-pad-nav-x); border-radius:var(--aeos-r-md); font-size:var(--aeos-text-sm); color:var(--aeos-text-primary); cursor:pointer; transition:background var(--aeos-dur-fast); user-select:none; }
+.aeos-menu { list-style:none; margin:0; padding:var(--aeos-space-1); min-width:190px; }
+.aeos-menu-item { display:flex; align-items:center; gap:var(--aeos-space-2); padding:var(--aeos-space-2) var(--aeos-space-3); border-radius:var(--aeos-r-md); font-size:var(--aeos-text-sm); line-height:1.2; color:var(--aeos-text-primary); cursor:pointer; transition:background var(--aeos-dur-fast); user-select:none; white-space:nowrap; }
+.aeos-menu-item > span { flex:1; min-width:0; }
 .aeos-menu-item:hover { background:var(--aeos-bg-hover); }
 .aeos-menu-item.is-danger { color:var(--aeos-destructive); }
 .aeos-menu-item.is-danger:hover { background:var(--aeos-danger-tint); }

@@ -6,7 +6,6 @@ import {
   Input,
   Text,
   Badge,
-  useHRMAC,
 } from '@aero/ui';
 import {
   UserIcon,
@@ -26,7 +25,6 @@ import {
  * Usage: Mount once in App.jsx so it is available on every page.
  */
 export default function SearchOverlay() {
-  const canSearch = useHRMAC('core.global_search.search_ui.use');
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -36,13 +34,12 @@ export default function SearchOverlay() {
   const abortRef = useRef(null);
 
   const openOverlay = useCallback(() => {
-    if (!canSearch) return;
     setOpen(true);
     setQuery('');
     setResults([]);
     setSelectedIndex(0);
     setTimeout(() => inputRef.current?.focus(), 50);
-  }, [canSearch]);
+  }, []);
 
   const closeOverlay = useCallback(() => {
     setOpen(false);
@@ -66,6 +63,13 @@ export default function SearchOverlay() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, openOverlay, closeOverlay]);
+
+  // Open from the Global Bar search trigger (decoupled via a window event).
+  useEffect(() => {
+    const onOpen = () => openOverlay();
+    window.addEventListener('aeos:open-search', onOpen);
+    return () => window.removeEventListener('aeos:open-search', onOpen);
+  }, [openOverlay]);
 
   // Fetch suggestions on query change (debounced)
   useEffect(() => {
@@ -125,15 +129,12 @@ export default function SearchOverlay() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, results, selectedIndex, query, closeOverlay]);
 
-  if (!canSearch) return null;
-
   return createPortal(
     <Modal
       open={open}
       onClose={closeOverlay}
       size="lg"
     >
-      <Modal.Content>
         {/* Search input */}
         <Input
           ref={inputRef}
@@ -219,7 +220,6 @@ export default function SearchOverlay() {
           <div className="aeos-flex-1" />
           <Text size="xs" tone="muted">Global Search</Text>
         </div>
-      </Modal.Content>
     </Modal>,
     document.body
   );

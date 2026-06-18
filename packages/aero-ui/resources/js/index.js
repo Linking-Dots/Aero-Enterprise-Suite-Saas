@@ -100,6 +100,7 @@ export { default as Icon } from './icons/icons.jsx';
 // ── App Chrome ───────────────────────────────────────────────
 export {
   AeosLogo, AppBrand, AppTopbarTitle, AppUserMenu,
+  GlobalActions, GlobalSearchTrigger, GlobalNotifications,
 }                                           from './components/AppChrome.jsx';
 
 // ── Global Search ───────────────────────────────────────────

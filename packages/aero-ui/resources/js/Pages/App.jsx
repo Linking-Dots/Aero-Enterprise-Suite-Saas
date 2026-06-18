@@ -11,7 +11,7 @@
  */
 import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
-import { AppShell, AppBrand, AppTopbarTitle, AppUserMenu, SearchOverlay } from '@aero/ui';
+import { AppShell, AppBrand, AppTopbarTitle, GlobalActions, SearchOverlay } from '@aero/ui';
 import { useTheme } from '../theme/ThemeProvider.jsx';
 
 import * as HeroIcons from '@heroicons/react/24/outline';
@@ -123,7 +123,7 @@ export default function App({ title, children }) {
         brand={<AppBrand href="/dashboard" size={28} />}
         nav={nav}
         topbar={<AppTopbarTitle title={title} />}
-        actions={<AppUserMenu user={auth?.user} />}
+        actions={<GlobalActions user={auth?.user} />}
       >
         {children}
       </AppShell>
