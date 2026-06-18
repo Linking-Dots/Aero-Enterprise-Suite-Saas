@@ -35,6 +35,14 @@
 .dash-grid > .aeos-card-auto.aeos-col-span-3 { grid-column: span 3; }
 .dash-grid > .aeos-card-auto.aeos-col-span-4 { grid-column: span 4; }
 
+/* Widget empty-state — muted, centered; fills a widget body slot (e.g. a chart
+   area) so genuinely-empty data reads as "no data" rather than a stuck skeleton. */
+.dash-widget-empty {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 120px; padding: var(--aeos-space-4);
+    font-size: var(--aeos-text-sm); color: var(--aeos-text-tertiary); text-align: center;
+}
+
 /* ── Refresh button ────────────────────────────────────────────────────── */
 .dash-widget-refresh-btn {
     display: inline-flex;

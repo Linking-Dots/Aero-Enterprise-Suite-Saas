@@ -86,8 +86,10 @@ export function ActivityChartWidget({ userActivity: initialActivity }) {
                 <Text size="sm" tone="secondary" className="dash-widget-error">{error}</Text>
             )}
 
-            {loading || chartData.length === 0 ? (
+            {loading ? (
                 <Skeleton h={120} />
+            ) : !chartData.some(d => (d.logins || 0) + (d.activeUsers || 0) + (d.newUsers || 0) > 0) ? (
+                <div className="dash-widget-empty">No activity in this period yet.</div>
             ) : (
                 <ResponsiveContainer width="100%" height={120}>
                     <AreaChart data={chartData} margin={{ top: 4, right: 0, left: -32, bottom: 0 }}>

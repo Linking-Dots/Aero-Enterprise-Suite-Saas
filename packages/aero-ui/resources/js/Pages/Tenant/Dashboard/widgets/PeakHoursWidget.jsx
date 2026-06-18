@@ -48,7 +48,19 @@ function HeatCell({ value, max, hour }) {
 export function PeakHoursWidget({ userActivity: initialActivity }) {
     const { data, loading, error, refresh } = useWidgetRefresh('userActivity', initialActivity);
 
-    const peakHours = data?.peakHours ?? Array(24).fill(0);
+    // The service returns peakHours as [{ hour, count }] rows (not a flat 24-array),
+    // so normalize into a 24-length number array indexed by hour. Also tolerate an
+    // already-flat array for forward-compatibility.
+    const rawPeak   = data?.peakHours ?? [];
+    const peakHours = Array(24).fill(0);
+    if (rawPeak.length === 24 && rawPeak.every(v => typeof v === 'number')) {
+        rawPeak.forEach((v, i) => { peakHours[i] = v; });
+    } else {
+        rawPeak.forEach(item => {
+            const h = Number(item?.hour);
+            if (Number.isInteger(h) && h >= 0 && h < 24) peakHours[h] = Number(item.count) || 0;
+        });
+    }
     const max       = Math.max(...peakHours, 1);
 
     const peakHour  = peakHours.indexOf(max);
