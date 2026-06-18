@@ -3,6 +3,7 @@
 namespace Aero\Auth\Listeners;
 
 use Aero\Auth\Models\User;
+use Aero\Auth\Services\SessionManagementService;
 use Aero\Notifications\Models\UserNotificationPreference;
 use Illuminate\Auth\Events\Attempting;
 use Illuminate\Auth\Events\Authenticated;
@@ -59,6 +60,18 @@ class AuthEventSubscriber
             'email' => $event->user->email,
             'ip' => request()->ip(),
         ]);
+
+        // Record a session row so "online users" / active-session metrics reflect
+        // reality — the dashboard reads user_sessions, which was otherwise never
+        // populated on login. Never let session tracking break the login flow.
+        try {
+            app(SessionManagementService::class)->createSession($event->user, request());
+        } catch (\Throwable $e) {
+            Log::channel('auth')->warning('Session record on login skipped', [
+                'user_id' => $event->user->id ?? null,
+                'error'   => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
