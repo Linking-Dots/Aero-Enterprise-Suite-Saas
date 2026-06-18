@@ -16,6 +16,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Platform Domains (SaaS)
+    |--------------------------------------------------------------------------
+    |
+    | The landlord (platform) domain and its admin subdomain. Resolved from env
+    | HERE, at config-load time, so the values survive `php artisan config:cache`.
+    | Route registration and domain-context checks MUST read these via
+    | config('aero.platform_domain' | 'aero.admin_domain') and NEVER env(...)
+    | directly: once config is cached, env() outside config files returns null,
+    | which previously routed the admin domain to the bogus 'admin.localhost'
+    | and 404'd every admin route after a cached install.
+    |
+    */
+
+    'platform_domain' => env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost')),
+
+    'admin_domain' => env(
+        'ADMIN_DOMAIN',
+        'admin.'.env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'))
+    ),
+
+    /*
+    |--------------------------------------------------------------------------
     | Standalone Tenant ID
     |--------------------------------------------------------------------------
     |

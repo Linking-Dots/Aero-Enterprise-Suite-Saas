@@ -760,8 +760,8 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 'admin.'.$rootDomain,     // e.g., admin.aeos365.test
             ], $centralDomains);
         } else {
-            // Console context: use env vars
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            // Console context: use config (config-cache-safe; env() is null when cached)
+            $platformDomain = config('aero.platform_domain', 'localhost');
             if ($platformDomain && $platformDomain !== 'localhost') {
                 $centralDomains = array_merge([
                     $platformDomain,
@@ -967,10 +967,12 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function registerRoutes(): void
     {
-        // Get domains from environment variables
-        // Note: We use env() here because this runs at boot time before config is fully loaded
-        $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
-        $adminDomain = env('ADMIN_DOMAIN', 'admin.'.$platformDomain);
+        // Domains come from config (config/aero.php), NOT env(): this runs at boot
+        // and also during `route:cache`, where env() outside config files returns null
+        // once config has been cached — which previously baked 'admin.localhost' into
+        // the cached route manifest and 404'd every admin route.
+        $platformDomain = config('aero.platform_domain', 'localhost');
+        $adminDomain = config('aero.admin_domain', 'admin.'.$platformDomain);
 
         // Platform web routes (for domain.com ONLY - public pages, registration)
         // Uses explicit domain constraint to prevent matching on admin/tenant subdomains
@@ -1052,10 +1054,10 @@ class AeroPlatformServiceProvider extends ServiceProvider
             return $hostWithoutPort;
         }
 
-        // Fallback: Use configured PLATFORM_DOMAIN from .env
-        // This is critical for proper route registration during boot
-        $platformDomain = env('PLATFORM_DOMAIN');
-        if ($platformDomain) {
+        // Fallback: configured platform domain (config-cache-safe; not env()).
+        // Critical for route registration at boot / during route:cache.
+        $platformDomain = config('aero.platform_domain');
+        if ($platformDomain && $platformDomain !== 'localhost') {
             // Remove any protocol or trailing slashes
             $platformDomain = preg_replace('#^https?://|/$#', '', $platformDomain);
 
@@ -1071,8 +1073,8 @@ class AeroPlatformServiceProvider extends ServiceProvider
      */
     protected function getAdminDomain(): string
     {
-        // Try ADMIN_DOMAIN first (explicit configuration)
-        $adminDomain = env('ADMIN_DOMAIN');
+        // Try the configured admin domain first (config-cache-safe; not env()).
+        $adminDomain = config('aero.admin_domain');
         if ($adminDomain) {
             // Remove any protocol or trailing slashes
             $adminDomain = preg_replace('#^https?://|/$#', '', $adminDomain);
