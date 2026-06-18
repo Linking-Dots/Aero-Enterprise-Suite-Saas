@@ -576,7 +576,7 @@ class AeroCoreServiceProvider extends ServiceProvider
             // SaaS Mode: Core routes are ONLY for tenant subdomains ({tenant}.domain.com).
             // Using a domain constraint guarantees this at route-matching time, not request time,
             // so route:list and cached routes cannot leak onto the platform domain.
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            $platformDomain = config('aero.platform_domain', 'localhost');
 
             // B-43: constrain {tenant} so reserved subdomains (admin, www, api, …) are
             // NOT treated as tenants. Without this, admin.<domain> matches {tenant}=admin

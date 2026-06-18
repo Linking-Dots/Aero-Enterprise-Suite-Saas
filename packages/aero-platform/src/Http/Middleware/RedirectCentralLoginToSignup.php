@@ -35,6 +35,7 @@ class RedirectCentralLoginToSignup
 
     private function platformDomain(): string
     {
-        return (string) env('PLATFORM_DOMAIN', env('APP_DOMAIN', config('app.domain', 'localhost')));
+        // config (config-cache-safe); env() returns null once config is cached.
+        return (string) config('aero.platform_domain', config('app.domain', 'localhost'));
     }
 }

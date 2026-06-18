@@ -148,7 +148,7 @@ class AeroProjectServiceProvider extends ServiceProvider
         // Web routes
         if (file_exists($webRoutesPath)) {
             if (function_exists('is_saas_mode') && is_saas_mode()) {
-                $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+                $platformDomain = config('aero.platform_domain', 'localhost');
 
                 Route::domain('{tenant}.'.$platformDomain)
                     ->middleware([
@@ -164,7 +164,7 @@ class AeroProjectServiceProvider extends ServiceProvider
         // API routes
         if (file_exists($apiRoutesPath)) {
             if (function_exists('is_saas_mode') && is_saas_mode()) {
-                $platformDomain = $platformDomain ?? env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+                $platformDomain = $platformDomain ?? config('aero.platform_domain', 'localhost');
 
                 Route::domain('{tenant}.'.$platformDomain)
                     ->middleware([

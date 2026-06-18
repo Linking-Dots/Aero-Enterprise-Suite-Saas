@@ -63,8 +63,8 @@ class AeroComplianceServiceProvider extends ServiceProvider
     protected function registerRoutes(): void
     {
         $isSaas = function_exists('is_saas_mode') && is_saas_mode();
-        $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
-        $adminDomain = env('ADMIN_DOMAIN', 'admin.'.$platformDomain);
+        $platformDomain = config('aero.platform_domain', 'localhost');
+        $adminDomain = config('aero.admin_domain', 'admin.'.$platformDomain);
 
         // API routes (tenant-scoped)
         if (file_exists(__DIR__.'/../routes/api.php')) {

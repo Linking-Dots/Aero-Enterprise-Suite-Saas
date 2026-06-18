@@ -799,10 +799,12 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $trustedPatterns[] = '^localhost$';
         $trustedPatterns[] = '^127\.0\.0\.1$';
 
-        // Get platform domain from .env or auto-detect
-        $platformDomain = env('PLATFORM_DOMAIN');
+        // Get platform domain from config (config-cache-safe; env() is null when cached).
+        // SECURITY: under config:cache a stale env() read here would null the domain and
+        // silently fall through to the dev-only .test/.local trust branch below.
+        $platformDomain = config('aero.platform_domain');
 
-        if ($platformDomain) {
+        if ($platformDomain && $platformDomain !== 'localhost') {
             // Escape dots for regex
             $escapedDomain = preg_quote($platformDomain, '/');
 

@@ -98,7 +98,7 @@ class AeroHrmServiceProvider extends ServiceProvider
         $routesPath = __DIR__.'/../routes';
 
         if ($this->isPlatformActive() && $this->isSaaSMode()) {
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            $platformDomain = config('aero.platform_domain', 'localhost');
 
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([

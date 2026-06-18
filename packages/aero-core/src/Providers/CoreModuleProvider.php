@@ -241,7 +241,7 @@ class CoreModuleProvider extends AbstractModuleProvider
 
         if ($this->isPlatformActive()) {
             // SaaS mode: Only load on tenant subdomains using domain constraint
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            $platformDomain = config('aero.platform_domain', 'localhost');
 
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([

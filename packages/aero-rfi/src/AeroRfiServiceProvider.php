@@ -111,7 +111,7 @@ class AeroRfiServiceProvider extends ServiceProvider
         $routesPath = __DIR__.'/../routes';
 
         if (function_exists('is_saas_mode') && is_saas_mode()) {
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            $platformDomain = config('aero.platform_domain', 'localhost');
 
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([
@@ -152,7 +152,7 @@ class AeroRfiServiceProvider extends ServiceProvider
         }
 
         if (function_exists('is_saas_mode') && is_saas_mode()) {
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            $platformDomain = config('aero.platform_domain', 'localhost');
 
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([

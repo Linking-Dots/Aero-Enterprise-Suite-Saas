@@ -151,7 +151,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
         // InitializeTenancyIfNotCentral initializes tenant context on tenant domains
         // 'tenant' middleware (EnsureTenantContext) ensures valid tenant context exists
         $tenancyMiddleware = InitializeTenancyIfNotCentral::class;
-        $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+        $platformDomain = config('aero.platform_domain', 'localhost');
 
         // Register tenant routes (subdomain-based, requires auth)
         if (File::exists($routesPath.'/tenant.php')) {

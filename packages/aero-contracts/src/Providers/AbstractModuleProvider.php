@@ -220,7 +220,7 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
         }
 
         if ($this->isPlatformActive()) {
-            $platformDomain = env('PLATFORM_DOMAIN', env('APP_DOMAIN', 'localhost'));
+            $platformDomain = config('aero.platform_domain', 'localhost');
 
             Route::domain('{tenant}.'.$platformDomain)
                 ->middleware([
