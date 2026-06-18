@@ -120,9 +120,9 @@ export function Popover({ trigger, children, side = 'bottom', align = 'start' })
 }
 
 /* ── Menu ─────────────────────────────────────────────────────── */
-export function Menu({ trigger, items = [] }) {
+export function Menu({ trigger, items = [], side = 'bottom', align = 'start' }) {
   return (
-    <Popover trigger={trigger}>
+    <Popover trigger={trigger} side={side} align={align}>
       {({ close }) => (
         <ul className="aeos-menu" role="menu">
           {items.map((it, i) =>

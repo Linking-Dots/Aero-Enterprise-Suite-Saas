@@ -204,7 +204,9 @@ export function SidebarShell({
       <aside className="aeos-shell-sidebar" aria-label="Side navigation">
         {brand && <div className="aeos-shell-sidebar-brand">{brand}</div>}
         {nav.map((item, i) => (
-          <RecursiveNavItem key={i} item={item} expanded={expanded} />
+          // The mobile drawer is a full overlay — always show labels there, even
+          // when the desktop rail is collapsed (icon-only is useless in a drawer).
+          <RecursiveNavItem key={i} item={item} expanded={mobileOpen || expanded} />
         ))}
       </aside>
 

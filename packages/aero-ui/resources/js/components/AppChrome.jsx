@@ -114,7 +114,9 @@ export function AppUserMenu({ user, logoutRoute = 'logout', className }) {
     { label: 'Sign out',         icon: 'arrowRight', danger: true, onClick: () => router.post(route(logoutRoute)) },
   ];
 
-  return <Menu trigger={trigger} items={items} />;
+  // Right-align: the trigger lives at the far right of the Global Bar, so a
+  // left-aligned menu overflows the viewport edge (clipped on mobile).
+  return <Menu trigger={trigger} items={items} align="end" />;
 }
 
 // ─── GlobalSearchTrigger ──────────────────────────────────────────────────────
