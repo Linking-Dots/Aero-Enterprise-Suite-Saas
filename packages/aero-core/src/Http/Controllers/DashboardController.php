@@ -64,27 +64,34 @@ class DashboardController extends Controller
      * JSON endpoint — refresh a single widget via fetch() on the frontend.
      * Route: GET /dashboard/widget/{widgetKey}
      */
-    public function widgetData(string $widgetKey): \Illuminate\Http\JsonResponse
+    public function widgetData(): \Illuminate\Http\JsonResponse
     {
-        $data = match ($widgetKey) {
-            'coreStats'          => $this->dashboardService->getCoreStats(),
-            'userActivity'       => $this->dashboardService->getUserActivity(request('period', 'week')),
-            'sessionsData'       => $this->dashboardService->getActiveSessionsData(),
-            'securityOverview'   => $this->dashboardService->getSecurityOverview(),
-            'storageAnalytics'   => $this->dashboardService->getStorageAnalytics(),
-            'subscriptionInfo'   => $this->dashboardService->getSubscriptionInfo(),
-            'recentAuditLog'     => $this->dashboardService->getRecentAuditLog(15),
-            'systemHealth'       => $this->dashboardService->getSystemHealth(),
-            'announcements'      => $this->dashboardService->getAnnouncements(),
-            'onboardingProgress' => $this->dashboardService->getOnboardingProgress(),
-            default              => null,
-        };
+        // Read the named route param explicitly. Tenant routes carry a leading
+        // {tenant} parameter, which Laravel would otherwise bind positionally to
+        // a typed method argument (so `string $widgetKey` received the subdomain).
+        $widgetKey = (string) request()->route('widgetKey');
 
-        if ($data === null) {
+        // Map of known widget keys -> resolvers. Kept separate from the result so
+        // a known widget whose data is legitimately null (e.g. onboardingProgress
+        // = "hide", or an empty fresh tenant) is NOT mistaken for an unknown key.
+        $resolvers = [
+            'coreStats'          => fn () => $this->dashboardService->getCoreStats(),
+            'userActivity'       => fn () => $this->dashboardService->getUserActivity(request('period', 'week')),
+            'sessionsData'       => fn () => $this->dashboardService->getActiveSessionsData(),
+            'securityOverview'   => fn () => $this->dashboardService->getSecurityOverview(),
+            'storageAnalytics'   => fn () => $this->dashboardService->getStorageAnalytics(),
+            'subscriptionInfo'   => fn () => $this->dashboardService->getSubscriptionInfo(),
+            'recentAuditLog'     => fn () => $this->dashboardService->getRecentAuditLog(15),
+            'systemHealth'       => fn () => $this->dashboardService->getSystemHealth(),
+            'announcements'      => fn () => $this->dashboardService->getAnnouncements(),
+            'onboardingProgress' => fn () => $this->dashboardService->getOnboardingProgress(),
+        ];
+
+        if (! isset($resolvers[$widgetKey])) {
             return response()->json(['error' => 'Unknown widget key'], 404);
         }
 
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $resolvers[$widgetKey]()]);
     }
 
     /**

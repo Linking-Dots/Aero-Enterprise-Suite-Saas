@@ -11,7 +11,7 @@
  * • `refresh` — call to re-fetch; returns a Promise so callers can await it.
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 /**
  * @template T
@@ -22,8 +22,13 @@ import { useState, useCallback, useRef } from 'react';
  * @returns {{ data: T, loading: boolean, error: string|null, refresh: () => Promise<void> }}
  */
 export function useWidgetRefresh(widgetKey, initialData, { extraParams = '' } = {}) {
+    // Most dashboard props are Inertia::lazy() — absent on the initial page load.
+    // When the prop wasn't sent, fetch it on mount so the widget self-populates
+    // (skeleton -> data) instead of sitting on its empty state forever.
+    const needsInitialLoad = initialData === null || initialData === undefined;
+
     const [data,    setData]    = useState(initialData);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(needsInitialLoad);
     const [error,   setError]   = useState(null);
 
     const extraRef = useRef(extraParams);
@@ -62,6 +67,12 @@ export function useWidgetRefresh(widgetKey, initialData, { extraParams = '' } = 
             setLoading(false);
         }
     }, [widgetKey]);
+
+    useEffect(() => {
+        if (needsInitialLoad) refresh();
+        // Mount-only: fetch the lazy prop once. refresh is stable per widgetKey.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return { data, loading, error, refresh };
 }
