@@ -93,13 +93,17 @@ export default function StepPlan({ plans = [], modules = [], modulePricing = {},
     return parts.map(s => s.trim().replace(/^[\s:–-]+|[\s:–-]+$/g, '')).filter(s => s.length > 2);
   }
 
-  const planPrice = selectedPlan ? getPrice(selectedPlan) : 0;
+  // Coerce to Number — plan/module prices arrive as decimal STRINGS from the API,
+  // and `"29.00" + 20` string-concatenates to "29.0020" instead of summing to 49.
+  const planPrice = selectedPlan ? (Number(getPrice(selectedPlan)) || 0) : 0;
   const suffix    = billing === 'yearly' ? 'yr' : 'mo';
 
   const modulesPrice = selectedModules.reduce((sum, code) => {
     const mp = modulePricing[code];
     if (!mp) return sum;
-    return sum + (billing === 'yearly' ? (mp.yearly ?? mp.monthly * 10) : (mp.monthly ?? 0));
+    const m = Number(mp.monthly) || 0;
+    const y = Number(mp.yearly) || m * 10;
+    return sum + (billing === 'yearly' ? y : m);
   }, 0);
 
   const total = planPrice + modulesPrice;

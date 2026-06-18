@@ -75,8 +75,10 @@ export default function StepPayment({
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   }
 
-  const planPrice   = getPrice(selectedPlan);
-  const modTotal    = selectedMods.reduce((s, c) => s + getModPrice(c), 0);
+  // Coerce to Number — prices arrive as decimal STRINGS; `"29.00" + 20` would
+  // string-concatenate to "29.0020" instead of summing to 49.
+  const planPrice   = Number(getPrice(selectedPlan)) || 0;
+  const modTotal    = selectedMods.reduce((s, c) => s + (Number(getModPrice(c)) || 0), 0);
   const total       = planPrice + modTotal;
   const suffix      = billing === 'yearly' ? 'yr' : 'mo';
   const trialEnd    = formatDate(trialDays);
