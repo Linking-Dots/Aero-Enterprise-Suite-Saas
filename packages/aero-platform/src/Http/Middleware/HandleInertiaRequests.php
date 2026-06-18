@@ -319,16 +319,32 @@ class HandleInertiaRequests extends Middleware
     private function mapTenantUser($user, bool $isSuperAdmin): array
     {
         $userData = $user->toArray();
-        $designation = $user->designation?->title ?? null;
+
+        // HRM-module relations — access defensively so a missing table on a
+        // core-only tenant can't 500 the shared props.
+        $designation = null;
+        $attendanceType = null;
+        try {
+            $designation = $user->designation?->title ?? null;
+            $attendanceType = $user->attendanceType ? [
+                'id' => $user->attendanceType->id,
+                'name' => $user->attendanceType->name,
+                'slug' => $user->attendanceType->slug,
+            ] : null;
+        } catch (QueryException $e) {
+            if ($e->getCode() !== '42S02') {
+                throw $e;
+            }
+        }
 
         return array_merge($userData, [
             'is_super_admin' => $isSuperAdmin,
             'is_tenant_super_admin' => $isSuperAdmin,
-            'attendance_type' => $user->attendanceType ? [
-                'id' => $user->attendanceType->id,
-                'name' => $user->attendanceType->name,
-                'slug' => $user->attendanceType->slug,
-            ] : null,
+            // Normalize roles to plain name STRINGS (toArray() yields full role
+            // objects). Frontend consumers render auth.user.roles[0] as text, so
+            // objects here crash the UI ("Objects are not valid as a React child").
+            'roles' => $user->roles->pluck('name')->values()->all(),
+            'attendance_type' => $attendanceType,
             'designation' => $designation,
             'module_access' => ! $isSuperAdmin ? $this->getTenantUserModuleAccess($user) : null,
             'accessible_modules' => ! $isSuperAdmin ? $this->getTenantUserAccessibleModules($user) : null,
@@ -348,21 +364,27 @@ class HandleInertiaRequests extends Middleware
      */
     private function getTenantUserSafe(Request $request)
     {
+        $user = $request->user();
+        if (! $user) {
+            return null;
+        }
+
+        // designation / attendanceType are HRM-module relations that may be absent
+        // on a core-only tenant. Eager-load them when possible, but NEVER drop the
+        // authenticated user if those tables are missing — fall back to the base
+        // user so auth.user is always populated (a missing module must not log the
+        // user out of the UI / hide the user menu and global search).
         try {
-            $user = $request->user();
-            if ($user) {
-                // Eager load relationships if table exists
-                return User::with(['designation', 'attendanceType'])->find($user->id);
-            }
+            return User::with(['designation', 'attendanceType'])->find($user->id) ?? $user;
         } catch (QueryException $e) {
-            // 42S02 = Table not found. Common during new tenant provisioning.
+            // 42S02 = Table not found. Common on core-only tenants.
             if ($e->getCode() !== '42S02') {
                 throw $e;
             }
-            Log::warning('Tenant user load skipped: Tables missing.');
-        }
+            Log::warning('Tenant user relations skipped: HRM module tables missing.');
 
-        return null;
+            return $user;
+        }
     }
 
     private function resolvePlatformSettings(Request $request): ?array
