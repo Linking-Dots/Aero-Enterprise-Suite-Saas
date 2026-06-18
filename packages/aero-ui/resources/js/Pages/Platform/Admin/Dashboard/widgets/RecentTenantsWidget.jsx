@@ -36,7 +36,7 @@ export default function RecentTenantsWidget({ recentTenants }) {
             intent="ghost"
             size="sm"
             rightIcon={<ArrowTopRightOnSquareIcon style={{ width: 12, height: 12 }} />}
-            onClick={() => router.get(route('admin.tenants.index'))}
+            onClick={() => router.get(route('platform.admin.tenants.index'))}
             style={{ flexShrink: 0 }}
           >
             View all {tenants.length > 0 ? tenants.length : ''}
@@ -99,7 +99,7 @@ export default function RecentTenantsWidget({ recentTenants }) {
                   <tr
                     key={t.id ?? t.uuid ?? i}
                     style={{ cursor: 'pointer' }}
-                    onClick={() => t.id && router.get(route('admin.tenants.show', t.id))}
+                    onClick={() => t.id && router.get(route('platform.admin.tenants.show', t.id))}
                     onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--aeos-bg-subtle)')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >

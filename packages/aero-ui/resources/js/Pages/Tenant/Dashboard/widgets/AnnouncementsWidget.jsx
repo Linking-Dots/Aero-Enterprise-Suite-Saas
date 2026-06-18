@@ -90,7 +90,7 @@ export function AnnouncementsWidget({ announcements: initialData }) {
                 <HStack gap={2} align="center">
                     <Eyebrow tone="primary">Announcements</Eyebrow>
                     <Box grow />
-                    <Link href={route('announcements.index')} className="dash-view-all-link">
+                    <Link href={route('core.announcements.index')} className="dash-view-all-link">
                         View all →
                     </Link>
                 </HStack>

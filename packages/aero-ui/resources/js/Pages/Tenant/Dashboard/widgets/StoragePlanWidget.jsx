@@ -141,7 +141,7 @@ export function StoragePlanWidget({
                         {isOnTrial && (
                             <Badge
                                 as={Link}
-                                href={route('subscription.index')}
+                                href={route('core.settings.usage.index')}
                                 intent="amber"
                             >
                                 Upgrade →

@@ -71,7 +71,7 @@ export default function CommandBar({ welcome, systemStatus = 'operational', aler
         intent="ghost"
         size="sm"
         leftIcon={<BellAlertIcon style={{ width: 16, height: 16 }} />}
-        onClick={() => router.get(route('admin.dashboard'))}
+        onClick={() => router.get(route('platform.admin.dashboard'))}
         style={{ flexShrink: 0, position: 'relative' }}
         aria-label={`${alertCount} active alerts`}
       >
@@ -119,7 +119,7 @@ export default function CommandBar({ welcome, systemStatus = 'operational', aler
         intent="ghost"
         size="sm"
         leftIcon={<Cog6ToothIcon style={{ width: 16, height: 16 }} />}
-        onClick={() => router.get(route('admin.settings.index'))}
+        onClick={() => router.get(route('platform.admin.settings.general'))}
         style={{ flexShrink: 0 }}
         aria-label="Platform settings"
       />

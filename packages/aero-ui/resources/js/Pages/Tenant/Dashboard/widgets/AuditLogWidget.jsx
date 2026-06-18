@@ -112,7 +112,7 @@ export function AuditLogWidget({ recentAuditLog: initialData }) {
 
                     <CardFooter align="left">
                         <Link
-                            href={route('audit-logs.index')}
+                            href={route('core.audit-logs.index')}
                             className="dash-view-all-link"
                         >
                             View all {data?.length ?? ''} entries →

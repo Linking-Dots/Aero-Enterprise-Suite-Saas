@@ -22,7 +22,7 @@ const DEFAULT_ACTIONS = [
     Icon:   BuildingOffice2Icon,
     bg:     'var(--aeos-success-bg)',
     color:  'var(--aeos-success)',
-    route:  'admin.tenants.create',
+    route:  'platform.admin.tenants.create',
   },
   {
     key:    'manage-plans',
@@ -30,7 +30,7 @@ const DEFAULT_ACTIONS = [
     Icon:   CreditCardIcon,
     bg:     'var(--aeos-primary-bg)',
     color:  'var(--aeos-primary)',
-    route:  'admin.plans.index',
+    route:  'platform.admin.plans.index',
   },
   {
     key:    'analytics',
@@ -38,7 +38,7 @@ const DEFAULT_ACTIONS = [
     Icon:   ChartBarIcon,
     bg:     'var(--aeos-warning-bg)',
     color:  'var(--aeos-warning)',
-    route:  'admin.analytics.index',
+    route:  'platform.admin.analytics.index',
   },
   {
     key:    'error-logs',
@@ -46,7 +46,7 @@ const DEFAULT_ACTIONS = [
     Icon:   CommandLineIcon,
     bg:     'var(--aeos-tertiary-bg)',
     color:  'var(--aeos-tertiary)',
-    route:  'admin.error-logs.index',
+    route:  'platform.admin.error-logs.index',
   },
   {
     key:    'email-tenants',
@@ -54,7 +54,7 @@ const DEFAULT_ACTIONS = [
     Icon:   EnvelopeIcon,
     bg:     '#E1F5EE',
     color:  'var(--aeos-success)',
-    route:  'admin.tenant-comms.index',
+    route:  'platform.admin.tenant-comms.broadcasts.index',
   },
   {
     key:    'settings',
@@ -62,7 +62,7 @@ const DEFAULT_ACTIONS = [
     Icon:   Cog6ToothIcon,
     bg:     'var(--aeos-bg-subtle)',
     color:  'var(--aeos-text-secondary)',
-    route:  'admin.settings.index',
+    route:  'platform.admin.settings.general',
   },
 ];
 
