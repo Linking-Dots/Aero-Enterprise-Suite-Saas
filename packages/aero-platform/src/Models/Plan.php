@@ -323,10 +323,16 @@ class Plan extends CentralModel
 
     /**
      * Get the count of modules included in this plan.
+     *
+     * DEPRECATED: the plan↔module pivot (`plan_module`) is gone — plans and products
+     * are SEPARATE subscriptions, and modules are carried by products, not plans.
+     * Returns 0 so legacy callers/serializers don't query the dropped table (which
+     * 500'd the tenants admin page). Slated for removal with the full plan_module
+     * deprecation refactor (move module association to product subscriptions).
      */
     public function getModulesCountAttribute(): int
     {
-        return $this->modules()->count();
+        return 0;
     }
 
     /**
