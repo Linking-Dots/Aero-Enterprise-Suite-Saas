@@ -175,6 +175,22 @@ class HandleInertiaRequests extends Middleware
         // 1. Authenticate User (Safely)
         $user = $this->getTenantUserSafe($request);
 
+        // Keep "online now" accurate: bump the current session's last_active_at as
+        // the user browses (throttled to once a minute). Login only sets it once, so
+        // without this the user drops out of "online" after the inactivity window
+        // even while actively using the app.
+        if ($user) {
+            try {
+                \Aero\Auth\Models\UserSession::query()
+                    ->where('user_id', $user->id)
+                    ->where('is_current', true)
+                    ->where('last_active_at', '<', now()->subSeconds(60))
+                    ->update(['last_active_at' => now()]);
+            } catch (\Throwable $e) {
+                // Activity tracking must never break a page load.
+            }
+        }
+
         // 2. Load System Settings (Tenant Scope)
         $settings = $this->resolveSystemSettings($request);
         $branding = $settings['branding'] ?? [];

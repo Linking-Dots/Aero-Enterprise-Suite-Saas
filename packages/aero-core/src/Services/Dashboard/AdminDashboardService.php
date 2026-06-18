@@ -163,7 +163,7 @@ class AdminDashboardService
 
     public function getCoreStats(): array
     {
-        return TenantCache::remember('admin_dashboard.core_stats', 300, function () {
+        $stats = TenantCache::remember('admin_dashboard.core_stats', 300, function () {
             try {
                 $totalUsers = User::count();
                 $activeUsers = User::active()->count();
@@ -206,6 +206,16 @@ class AdminDashboardService
                 ];
             }
         });
+
+        // Online-now is a real-time metric — recompute fresh so the 5-minute cache
+        // above can never make an actively-browsing user appear offline.
+        try {
+            $stats['onlineUsers'] = UserSession::where('last_active_at', '>=', now()->subMinutes(5))->count();
+        } catch (\Throwable $e) {
+            $stats['onlineUsers'] = 0;
+        }
+
+        return $stats;
     }
 
     /**
@@ -226,11 +236,13 @@ class AdminDashboardService
                     default => 7,
                 };
 
-                $startDate = now()->subDays($days)->startOfDay();
+                // subDays($days - 1) so the window is the last N days INCLUDING today
+                // (the loop below emits exactly $days points ending today).
+                $startDate = now()->subDays($days - 1)->startOfDay();
 
                 $logins = AuditLog::where('action', 'login')
                     ->where('created_at', '>=', $startDate)
-                    ->selectRaw('DATE(created_at) as date, COUNT(DISTINCT user_id) as active_users, COUNT(*) as logins')
+                    ->selectRaw('DATE(created_at) as date, COUNT(DISTINCT actor_id) as active_users, COUNT(*) as logins')
                     ->groupByRaw('DATE(created_at)')
                     ->orderBy('date')
                     ->get();
@@ -307,7 +319,7 @@ class AdminDashboardService
 
                 $lastSecurityEvent = AuditLog::whereIn('action', ['failed_login', 'suspicious', 'password_reset', 'account_locked'])
                     ->latest()
-                    ->first(['action', 'description', 'created_at', 'user_name']);
+                    ->first(['action', 'description', 'created_at', 'actor_name']);
 
                 return [
                     'failedLoginsLast24h' => $failedLoginsToday,
@@ -468,17 +480,16 @@ class AdminDashboardService
     {
         return TenantCache::remember('admin_dashboard.recent_audit_log', 120, function () use ($limit) {
             try {
-                return AuditLog::with('user:id,name')
-                    ->latest()
+                return AuditLog::latest()
                     ->limit($limit)
-                    ->get(['id', 'user_id', 'user_name', 'action', 'description', 'auditable_type', 'created_at', 'metadata'])
+                    ->get(['id', 'actor_id', 'actor_name', 'action', 'description', 'subject_type', 'created_at', 'metadata'])
                     ->map(function ($log) {
                         return [
                             'id' => $log->id,
-                            'user' => $log->user_name ?? $log->user?->name ?? 'System',
+                            'user' => $log->actor_name ?? 'System',
                             'action' => $log->action,
                             'description' => $log->description,
-                            'auditableType' => class_basename($log->auditable_type ?? ''),
+                            'auditableType' => class_basename($log->subject_type ?? ''),
                             'createdAt' => $log->created_at->toISOString(),
                             'timeAgo' => $log->created_at->diffForHumans(),
                         ];

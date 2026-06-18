@@ -62,8 +62,8 @@ export function SessionsWidget({ sessionsData: initialData }) {
                     {/* ── Counters ── */}
                     <HStack gap={0} className="dash-session-stats-row">
                         <StatCell value={data?.onlineNow}   label="Online now" highlight />
-                        <StatCell value={data?.todayCount}  label="Today" />
-                        <StatCell value={data?.weekCount?.toLocaleString()} label="This week" />
+                        <StatCell value={data?.activeToday}  label="Today" />
+                        <StatCell value={data?.activeThisWeek?.toLocaleString()} label="This week" />
                     </HStack>
 
                     <Divider />
