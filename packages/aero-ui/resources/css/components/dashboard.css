@@ -18,16 +18,22 @@
 /* ── Grid ──────────────────────────────────────────────────────────────── */
 .dash-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* minmax(0,1fr) — keep all 4 tracks EQUAL and let them shrink, so wide widget
+       content can't blow a column out (unequal widths) or overflow a narrow shell
+       panel (e.g. the command shell's center column). */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--aeos-space-3);
     padding: var(--aeos-space-5) var(--aeos-space-5) var(--aeos-space-8);
 }
 
-/* Column spans */
-.aeos-col-span-1 { grid-column: span 1; }
-.aeos-col-span-2 { grid-column: span 2; }
-.aeos-col-span-3 { grid-column: span 3; }
-.aeos-col-span-4 { grid-column: span 4; }
+/* Column spans — scoped under `.dash-grid > .aeos-card-auto` (specificity 0,3,0)
+   so they BEAT the card-style customizer's `all: revert` on .aeos-card-auto
+   (body[data-card-style] .aeos-card-auto, 0,2,1), which otherwise resets
+   grid-column to auto and collapses every widget to a single equal column. */
+.dash-grid > .aeos-card-auto.aeos-col-span-1 { grid-column: span 1; }
+.dash-grid > .aeos-card-auto.aeos-col-span-2 { grid-column: span 2; }
+.dash-grid > .aeos-card-auto.aeos-col-span-3 { grid-column: span 3; }
+.dash-grid > .aeos-card-auto.aeos-col-span-4 { grid-column: span 4; }
 
 /* ── Refresh button ────────────────────────────────────────────────────── */
 .dash-widget-refresh-btn {
@@ -325,24 +331,29 @@
     background: var(--aeos-divider);
 }
 
-/* ── Responsive overrides ───────────────────────────────────────────────── */
-@media (max-width: 1280px) {
-    .dash-grid { grid-template-columns: repeat(3, 1fr); }
-    .aeos-col-span-4 { grid-column: span 3; }
+/* ── Responsive overrides ───────────────────────────────────────────────────
+   Container-query based: the grid adapts to its CONTENT width (which differs per
+   shell — e.g. the command shell's narrow center panel) rather than the viewport,
+   so it never overflows. Requires an ancestor with container-type:inline-size
+   (set on .aeos-shell-content). Col-spans keep the 0,3,0 specificity to survive
+   the card-style `all: revert`. */
+@container (max-width: 1100px) {
+    .dash-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .dash-grid > .aeos-card-auto.aeos-col-span-4 { grid-column: span 3; }
 }
 
-@media (max-width: 960px) {
-    .dash-grid { grid-template-columns: repeat(2, 1fr); }
-    .aeos-col-span-3,
-    .aeos-col-span-4 { grid-column: span 2; }
+@container (max-width: 820px) {
+    .dash-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dash-grid > .aeos-card-auto.aeos-col-span-3,
+    .dash-grid > .aeos-card-auto.aeos-col-span-4 { grid-column: span 2; }
 }
 
-@media (max-width: 640px) {
+@container (max-width: 560px) {
     .dash-grid { grid-template-columns: 1fr; gap: var(--aeos-space-2); padding: var(--aeos-space-3); }
-    .aeos-col-span-1,
-    .aeos-col-span-2,
-    .aeos-col-span-3,
-    .aeos-col-span-4 { grid-column: span 1; }
+    .dash-grid > .aeos-card-auto.aeos-col-span-1,
+    .dash-grid > .aeos-card-auto.aeos-col-span-2,
+    .dash-grid > .aeos-card-auto.aeos-col-span-3,
+    .dash-grid > .aeos-card-auto.aeos-col-span-4 { grid-column: span 1; }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────────────────── */

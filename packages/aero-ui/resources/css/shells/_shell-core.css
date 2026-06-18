@@ -45,6 +45,14 @@ body[data-aeos-shell] {
   max-width: var(--aeos-page-max-w, 1400px);
   padding: var(--aeos-page-pad-y, var(--aeos-space-6)) var(--aeos-page-pad-x, var(--aeos-space-6));
   box-sizing: border-box;
+  /* Query container so content (e.g. the dashboard grid) can adapt to the actual
+     available width per shell via @container, instead of the viewport. */
+  container-type: inline-size;
+}
+/* Command shell renders content directly in .aeos-shell-content (no page-container),
+   so make it a query container too. */
+[data-aeos-shell="command"] .aeos-shell-content {
+  container-type: inline-size;
 }
 @media (max-width: 640px) {
   .aeos-page-container {
