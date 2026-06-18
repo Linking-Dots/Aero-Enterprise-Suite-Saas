@@ -326,17 +326,24 @@ class TenantProvisioner
             return;
         }
 
-        $moduleIds = Module::whereIn('code', $moduleCodes)
-            ->where('is_active', true)
-            ->pluck('id')
-            ->all();
+        // The HRMAC Module model + tenant_module pivot live on the CENTRAL/landlord DB.
+        // This runs during signup trial-activation — a platform/central request with no
+        // tenant context resolved — so HrmacModel's tenant-context guard would throw
+        // ("queried outside of a valid HRMAC context"). Central landlord work is
+        // legitimate (no tenant to leak between), so run it with the guard disabled.
+        \Aero\Contracts\AeroMode::withoutTenantContextGuard(function () use ($tenant, $moduleCodes) {
+            $moduleIds = Module::whereIn('code', $moduleCodes)
+                ->where('is_active', true)
+                ->pluck('id')
+                ->all();
 
-        $syncData = array_fill_keys($moduleIds, [
-            'is_active' => true,
-            'subscribed_at' => now(),
-        ]);
+            $syncData = array_fill_keys($moduleIds, [
+                'is_active' => true,
+                'subscribed_at' => now(),
+            ]);
 
-        $tenant->modules()->sync($syncData);
+            $tenant->modules()->sync($syncData);
+        });
     }
 
     private function buildDomain(?string $subdomain): string

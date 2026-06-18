@@ -183,7 +183,11 @@ class ProvisionTenant implements ShouldQueue
             $this->logAuditEvent('tenant.provisioning.completed', array_merge($context, [
                 'plan_id' => $planId,
                 'plan_name' => $planName,
-                'modules' => $this->tenant->getActiveModules()->all() ?? [],
+                // Central HRMAC read in queue/sync context — guard would throw and (worse)
+                // roll back an already-SUCCESSFUL provision. Wrap it.
+                'modules' => \Aero\Contracts\AeroMode::withoutTenantContextGuard(
+                    fn () => $this->tenant->getActiveModules()->all()
+                ) ?? [],
                 'database' => $this->tenant->database()?->getName(),
             ]));
         } catch (Throwable $e) {
@@ -681,7 +685,13 @@ class ProvisionTenant implements ShouldQueue
         $this->logStep('   → Auth-first core + sharable migrations: '.count($paths).' path(s)', ['paths' => $paths]);
 
         // Subscribed PRODUCTS only (tier=product), with dependencies auto-resolved.
-        $tenantModules = $this->tenant->getActiveModules()->all();
+        // getActiveModules() reads the tenant_module pivot + HRMAC Module on the CENTRAL
+        // DB; provisioning runs in a queue/sync context with no tenant/platform HRMAC
+        // context resolved, so the HrmacModel guard would throw. Central landlord read —
+        // legitimate, no tenant to leak between.
+        $tenantModules = \Aero\Contracts\AeroMode::withoutTenantContextGuard(
+            fn () => $this->tenant->getActiveModules()->all()
+        );
 
         if (! empty($tenantModules)) {
             $tenantModules = $this->resolveModuleDependencies($tenantModules);
@@ -1211,6 +1221,14 @@ class ProvisionTenant implements ShouldQueue
                 ]);
             }
 
+            // ── Approach-2 secure admin binding ───────────────────────────────
+            // Pre-create the tenant admin HERE, bound to the email verified during
+            // signup, with NO usable password. This closes the tenant-hijack hole: the
+            // public /admin-setup page can no longer be claimed (an admin now exists, so
+            // it redirects to login), and the ONLY way in is the password-set link emailed
+            // to the verified address below.
+            $this->createTenantAdminUser();
+
             $this->logStep('   → Default roles seeded successfully', []);
         } catch (Throwable $e) {
             $this->logStep("   → Failed to seed default roles: {$e->getMessage()}", [
@@ -1219,6 +1237,106 @@ class ProvisionTenant implements ShouldQueue
             throw $e;
         } finally {
             tenancy()->end();
+        }
+    }
+
+    /**
+     * Pre-create the tenant admin, bound to the verified signup email, with no usable
+     * password (Approach 2). Runs inside the tenant context established by
+     * seedDefaultRoles(); the owner sets a real password via the emailed link.
+     */
+    protected function createTenantAdminUser(): void
+    {
+        $email = $this->tenant->email;
+        if (empty($email)) {
+            $this->logStep('   → No tenant email; skipping admin pre-creation', [], 'warning');
+
+            return;
+        }
+
+        if (\Aero\Auth\Models\User::query()->where('email', $email)->exists()) {
+            $this->logStep('   → Tenant admin already exists; skipping pre-creation', []);
+
+            return;
+        }
+
+        $local = \Illuminate\Support\Str::of($email)->before('@');
+        $userName = $local->slug('_')->value() ?: 'admin';
+        $base = $userName;
+        $n = 1;
+        while (\Aero\Auth\Models\User::where('user_name', $userName)->exists()) {
+            $userName = $base.'_'.(++$n);
+        }
+
+        $admin = \Aero\Auth\Models\User::create([
+            'name' => $this->tenant->name ?: $local->title()->value(),
+            'user_name' => $userName,
+            'email' => $email,
+            // Unusable random password — the owner sets a real one via the secure link.
+            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(48)),
+            'email_verified_at' => now(), // email was verified during signup
+        ]);
+
+        $superAdmin = Role::where('name', 'Super Administrator')->first();
+        if ($superAdmin) {
+            $admin->assignRole($superAdmin);
+        }
+
+        $this->logStep('   → Pre-created tenant admin (no password) bound to verified email', [
+            'user_id' => $admin->id,
+            'email' => $email,
+        ]);
+
+        $this->sendAdminPasswordSetupLink($admin);
+    }
+
+    /**
+     * Email the verified admin a single-use, expiring link to set their initial
+     * password (reuses Laravel's password-reset flow; token stored in the tenant DB).
+     */
+    protected function sendAdminPasswordSetupLink(\Aero\Auth\Models\User $admin): void
+    {
+        try {
+            $token = \Illuminate\Support\Facades\Password::broker()->createToken($admin);
+
+            // Use the eager-loaded domains collection (loaded in handle() on central conn).
+            $domain = $this->tenant->domains->firstWhere('is_primary', true)?->domain
+                ?? $this->tenant->domains->first()?->domain;
+            if (! $domain) {
+                $this->logStep('   → No tenant domain; cannot build password-set link', [], 'warning');
+
+                return;
+            }
+
+            $url = "https://{$domain}/reset-password/{$token}?email=".urlencode($admin->email);
+            $appName = config('app.name');
+
+            $html = "
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <h1 style='color: #4F46E5;'>Set your password</h1>
+                    <p>Your <strong>{$this->tenant->name}</strong> workspace is ready. For security,
+                       set your admin password using the secure link below — it is tied to your
+                       verified email and expires soon.</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='{$url}' style='background: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;'>Set your password</a>
+                    </div>
+                    <p style='color:#666;'>If you didn't expect this email, you can safely ignore it.</p>
+                    <p style='color: #666;'>The {$appName} Team</p>
+                </div>
+            ";
+
+            app(\Aero\Notifications\Services\Mail\MailService::class)
+                ->usePlatformSettings()
+                ->sendMail($admin->email, "Set your password · {$this->tenant->name}", $html);
+
+            // Dev aid: also log the link so it is retrievable when MAIL_MAILER=log.
+            Log::info('[AdminPasswordSetup] password-set link generated', [
+                'tenant_id' => $this->tenant->id,
+                'email' => $admin->email,
+                'url' => $url,
+            ]);
+        } catch (Throwable $e) {
+            $this->logStep('   → Failed to send password-set link: '.$e->getMessage(), [], 'warning');
         }
     }
 
