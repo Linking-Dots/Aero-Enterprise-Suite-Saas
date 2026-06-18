@@ -64,10 +64,7 @@ export default function Database({ mode, savedDatabase, connections }) {
           preserveScroll: true,
           onSuccess: res,
           onError:   rej,
-          onFinish:  () => {},
         });
-        // resolve after a tick if Inertia doesn't call onSuccess synchronously
-        setTimeout(res, 3000);
       });
       setConnState('saved');
     } catch (err) {

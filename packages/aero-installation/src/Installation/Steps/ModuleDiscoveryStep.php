@@ -200,6 +200,14 @@ class ModuleDiscoveryStep extends BaseInstallationStep
         $this->ensureModulesTable();
 
         foreach ($modules as $module) {
+            // The module's HRMAC scope (platform|tenant|core|all) is the source of truth
+            // in its config/module.php. It MUST be persisted: HRMAC role-access seeding
+            // (PlatformHrmacSeeder) looks the module up by scope, e.g. scope='platform'
+            // for the central/landlord module. Omitting it left scope at the column
+            // default ('tenant'), so the platform module was invisible to HRMAC.
+            $moduleConfig = $this->readModuleConfig($module['code']);
+            $scope = $moduleConfig['scope'] ?? ($module['scope'] ?? 'tenant');
+
             $existing = DB::table('modules')->where('code', $module['code'])->first();
 
             if (! $existing) {
@@ -207,12 +215,13 @@ class ModuleDiscoveryStep extends BaseInstallationStep
                     'code' => $module['code'],
                     'name' => $module['name'],
                     'description' => $module['description'],
+                    'scope' => $scope,
                     'is_core' => $module['is_core'],
                     'is_active' => $module['is_active'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                $this->log("Module inserted: {$module['code']}");
+                $this->log("Module inserted: {$module['code']} (scope: {$scope})");
 
                 // Seed sub_modules and module_components for the module
                 $this->seedModuleComponents($moduleId, $module['code']);
@@ -223,11 +232,16 @@ class ModuleDiscoveryStep extends BaseInstallationStep
                     ->update([
                         'name' => $module['name'],
                         'description' => $module['description'],
+                        'scope' => $scope,
                         'is_core' => $module['is_core'],
                         'is_active' => $module['is_active'],
                         'updated_at' => now(),
                     ]);
-                $this->log("Module updated: {$module['code']}");
+                $this->log("Module updated: {$module['code']} (scope: {$scope})");
+
+                // Ensure hierarchy is present even if the module row already existed
+                // (idempotent re-run / retry).
+                $this->seedModuleComponents($existing->id, $module['code']);
             }
         }
     }
@@ -281,54 +295,86 @@ class ModuleDiscoveryStep extends BaseInstallationStep
             return;
         }
 
-        // Seed sub_modules from config
+        // Seed sub_modules from config.
+        //
+        // IDEMPOTENT, last-wins upsert keyed on the same unique constraints the tables
+        // declare (sub_modules:[module_id,code], module_component_actions:[module_component_id,code]).
+        // A module config may legitimately contain duplicate sub-module codes (the platform
+        // manifest has several divergent 'code' repeats); the canonical aero:sync-module
+        // sync tolerates them via updateOrCreate (the last definition wins). A plain insert
+        // here was the strict outlier that aborted install on the first duplicate. Matching
+        // the canonical behaviour also makes this step safely re-runnable on retry.
         $subModules = $moduleConfig['submodules'] ?? [];
         foreach ($subModules as $subModule) {
-            $subModuleId = DB::table('sub_modules')->insertGetId([
-                'module_id' => $moduleId,
-                'code' => $subModule['code'],
-                'name' => $subModule['name'],
-                'description' => $subModule['description'] ?? null,
-                'icon' => $subModule['icon'] ?? null,
-                'route' => $subModule['route'] ?? null,
-                'priority' => $subModule['priority'] ?? 0,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $subModuleId = $this->upsertGetId(
+                'sub_modules',
+                ['module_id' => $moduleId, 'code' => $subModule['code']],
+                [
+                    'name' => $subModule['name'],
+                    'description' => $subModule['description'] ?? null,
+                    'icon' => $subModule['icon'] ?? null,
+                    'route' => $subModule['route'] ?? null,
+                    'priority' => $subModule['priority'] ?? 0,
+                    'is_active' => true,
+                ]
+            );
             $this->log("Seeded sub_module: {$subModule['code']} for module: {$moduleCode}");
 
-            // Seed components for this submodule
+            // Seed components for this submodule (keyed on module_id+sub_module_id+code;
+            // module_components has no DB unique constraint, so de-dupe at the app layer).
             $components = $subModule['components'] ?? [];
             foreach ($components as $component) {
-                $componentId = DB::table('module_components')->insertGetId([
-                    'module_id' => $moduleId,
-                    'sub_module_id' => $subModuleId,
-                    'code' => $component['code'],
-                    'name' => $component['name'],
-                    'type' => $component['type'] ?? 'page',
-                    'route' => $component['route'] ?? null,
-                    'is_active' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                $componentId = $this->upsertGetId(
+                    'module_components',
+                    ['module_id' => $moduleId, 'sub_module_id' => $subModuleId, 'code' => $component['code']],
+                    [
+                        'name' => $component['name'],
+                        'type' => $component['type'] ?? 'page',
+                        'route' => $component['route'] ?? null,
+                        'is_active' => true,
+                    ]
+                );
                 $this->log("Seeded module_component: {$component['code']} for sub_module: {$subModule['code']}");
 
                 // Seed actions for this component
                 $actions = $component['actions'] ?? [];
                 foreach ($actions as $action) {
-                    DB::table('module_component_actions')->insert([
-                        'module_component_id' => $componentId,
-                        'code' => $action['code'],
-                        'name' => $action['name'],
-                        'description' => $action['description'] ?? null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                    DB::table('module_component_actions')->updateOrInsert(
+                        ['module_component_id' => $componentId, 'code' => $action['code']],
+                        [
+                            'name' => $action['name'],
+                            'description' => $action['description'] ?? null,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
                     $this->log("Seeded module_component_action: {$action['code']} for component: {$component['code']}");
                 }
             }
         }
+    }
+
+    /**
+     * Insert-or-update a row identified by $keys, returning its primary id.
+     * Last-wins on $values for an existing row; mirrors updateOrCreate semantics on
+     * raw query-builder tables (which don't return an id from updateOrInsert).
+     *
+     * @param  array<string, mixed>  $keys
+     * @param  array<string, mixed>  $values
+     */
+    protected function upsertGetId(string $table, array $keys, array $values): int
+    {
+        $existing = DB::table($table)->where($keys)->first();
+
+        if ($existing) {
+            DB::table($table)->where('id', $existing->id)->update($values + ['updated_at' => now()]);
+
+            return (int) $existing->id;
+        }
+
+        return (int) DB::table($table)->insertGetId(
+            $keys + $values + ['created_at' => now(), 'updated_at' => now()]
+        );
     }
 
     /**

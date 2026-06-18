@@ -57,11 +57,19 @@ class MigrationStep extends BaseInstallationStep
 
         // Phase 4 — fail-closed: refuse to route migrations if any aero package is
         // unclassified (no valid extra.aero.tier), which would otherwise be skipped and
-        // silently leave its tables out of every database.
-        if (Artisan::call('aero:verify-tiers') !== 0) {
+        // silently leave its tables out of every database. Gate on the kernel verifier
+        // directly: this step runs in a WEB request during the install wizard, where the
+        // aero:verify-tiers console command is NOT registered (AeroCoreServiceProvider
+        // registers commands only when runningInConsole()).
+        $tierCheck = \Aero\Kernel\Migration\PackageTier::verifyAll();
+        if (! $tierCheck['ok']) {
+            $details = [];
+            foreach ($tierCheck['errors'] as $pkg => $why) {
+                $details[] = "{$pkg}: {$why}";
+            }
             throw new \RuntimeException(
                 'Migration aborted — one or more aero packages lack a valid extra.aero.tier. '
-                .trim(Artisan::output())
+                .implode('; ', $details)
             );
         }
 

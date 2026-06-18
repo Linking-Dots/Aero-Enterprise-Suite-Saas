@@ -31,3 +31,6 @@ logs/
 # PHPUnit per-run result cache (machine-specific)
 *.phpunit.result.cache
 .phpunit.result.cache
+
+# Playwright MCP browser-test snapshots
+.playwright-mcp/

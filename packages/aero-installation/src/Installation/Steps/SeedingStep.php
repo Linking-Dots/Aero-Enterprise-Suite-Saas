@@ -83,10 +83,18 @@ class SeedingStep extends BaseInstallationStep
         
         // Run core package seeders for roles and role module access with mode parameter
         // HRMAC handles permissions via role module access, no PermissionSeeder needed
-        // Settings are collected from UI, no SettingsSeeder needed
+        // Settings are collected from UI, no SettingsSeeder needed.
+        //
+        // PlatformHrmacSeeder is the LANDLORD RBAC seeder: it creates the
+        // 'Super Platform Admin' (landlord guard) + 'Platform Admin' roles and grants
+        // them HRMAC access to the platform module. Without it the central/landlord DB
+        // has no platform super-admin role and the installer's admin user cannot access
+        // the platform admin. It must run after the module hierarchy is synced
+        // (ModuleDiscoveryStep, which sets module scope='platform').
         $platformSeeders = [
             'Aero\\Core\\Database\\Seeders\\RoleSeeder',
             'Aero\\Core\\Database\\Seeders\\RoleModuleAccessSeeder',
+            'Aero\\Platform\\Database\\Seeders\\PlatformHrmacSeeder',
         ];
 
         foreach ($platformSeeders as $seeder) {

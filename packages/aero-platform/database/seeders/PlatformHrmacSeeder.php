@@ -30,8 +30,16 @@ class PlatformHrmacSeeder extends Seeder
         /** @var RoleModuleAccessInterface $hrmac */
         $hrmac = app(RoleModuleAccessInterface::class);
 
-        // 1. Ensure platform module hierarchy is synced into HRMAC tables
-        Artisan::call('aero:sync-module');
+        // 1. Ensure platform module hierarchy is synced into HRMAC tables.
+        //    aero:sync-module is a console-only command (registered under
+        //    runningInConsole), so it is unavailable during the WEB install. There the
+        //    installer's ModuleDiscoveryStep has already synced the hierarchy WITH scope,
+        //    so a failure here is non-fatal — guard it and continue.
+        try {
+            Artisan::call('aero:sync-module');
+        } catch (\Throwable $e) {
+            logger()->info('[PlatformHrmacSeeder] aero:sync-module unavailable (web install) — relying on prior module sync: '.$e->getMessage());
+        }
 
         // 2. Create Super Platform Admin role (full access)
         $superAdmin = HrmacRole::firstOrCreate(

@@ -35,10 +35,21 @@ class CacheStep extends BaseInstallationStep
     {
         $results = [];
 
-        // Clear old caches
-        $this->log('Clearing old caches');
+        // Clear stale COMPILED caches only (config/route/view).
+        //
+        // Do NOT call `cache:clear`: it flushes the default application cache store,
+        // which during the web install holds the installation orchestrator's own
+        // cross-poll state (UnifiedInstallationController caches the orchestrator
+        // there, keyed by session id). Flushing it mid-run destroys that state, so the
+        // next poll can't find the orchestrator, falls back to the last 'completed'
+        // step-progress row and reports the install finished — skipping FinalizeStep
+        // and never writing the aeos.installed lock file. FinalizeStep already avoids
+        // cache:clear for this exact reason; mirror that here.
+        $this->log('Clearing stale compiled caches (config/route/view)');
         try {
-            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
             $results['cache_cleared'] = true;
         } catch (\Exception $e) {
             $this->warn('Cache clear failed: '.$e->getMessage());

@@ -533,7 +533,11 @@ class UnifiedInstallationController extends Controller
             'connection', 'host', 'port', 'database', 'username', 'password',
         ]));
 
-        return response()->json(['success' => true]);
+        // Inertia-standard response: this endpoint is called via Inertia's router.post,
+        // so it must return an Inertia response (a redirect), NOT plain JSON — returning
+        // JSON trips Inertia's "must receive a valid Inertia response" guard. back()
+        // reloads the step with fresh props (savedDatabase) so onSuccess fires client-side.
+        return back();
     }
 
     /**
@@ -584,7 +588,9 @@ class UnifiedInstallationController extends Controller
 
         $this->persistConfig('settings', $request->all());
 
-        return response()->json(['success' => true]);
+        // Inertia-standard response (called via Inertia router.post) — return a redirect,
+        // not JSON, so Inertia's response guard is satisfied and onSuccess fires.
+        return back();
     }
 
     /**
@@ -601,7 +607,9 @@ class UnifiedInstallationController extends Controller
 
         $this->persistConfig('settings', $request->all());
 
-        return response()->json(['success' => true]);
+        // Inertia-standard response (called via Inertia router.post) — return a redirect,
+        // not JSON, so Inertia's response guard is satisfied and onSuccess fires.
+        return back();
     }
 
     /**
@@ -649,7 +657,9 @@ class UnifiedInstallationController extends Controller
             'password_hash' => Hash::make($request->password),
         ]);
 
-        return response()->json(['success' => true]);
+        // Inertia-standard response (called via Inertia useForm().post) — return a redirect,
+        // not JSON, so Inertia's response guard is satisfied and onSuccess fires.
+        return back();
     }
 
     /**
@@ -873,9 +883,15 @@ class UnifiedInstallationController extends Controller
     {
         $mode = $this->getMode();
 
-        // Check if application is already installed to prevent re-running steps or recreating orchestrator
-        if ($this->isInstalled()) {
-            Log::info('[Installation] Application is already installed, returning completed progress');
+        // Treat the install as finished ONLY when the authoritative lock file exists
+        // (storage/app/aeos.installed, written by FinalizeStep at the very end).
+        // Do NOT use InstallationState::isInstalled() here: its schema fallback
+        // (hasTable('users') && hasTable('modules')) turns true the moment MigrationStep
+        // creates those tables — i.e. MID-INSTALL — which would short-circuit this poll to
+        // "completed" before the module-sync, admin-user, seeding and finalize steps ever
+        // run, leaving a half-installed system with no admin user and no lock file.
+        if (File::exists(storage_path(self::LOCK_FILE))) {
+            Log::info('[Installation] Lock file present — installation already complete');
 
             return [
                 'status' => 'completed',

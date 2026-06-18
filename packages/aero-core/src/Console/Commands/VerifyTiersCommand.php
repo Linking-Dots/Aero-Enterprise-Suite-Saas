@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Core\Console\Commands;
 
+use Aero\Kernel\Migration\PackageTier;
 use Illuminate\Console\Command;
 
 /**
@@ -29,48 +30,26 @@ class VerifyTiersCommand extends Command
 
     public function handle(): int
     {
-        $byTier = ['platform' => [], 'core' => [], 'sharable' => [], 'product' => []];
-        $errors = [];
-        $skipped = [];
-
-        foreach ($this->discoverPackageComposers() as $name => $composerPath) {
-            $data = json_decode((string) file_get_contents($composerPath), true);
-            if (! is_array($data)) {
-                $errors[$name] = 'composer.json is not valid JSON';
-                continue;
-            }
-
-            $tier = $data['extra']['aero']['tier'] ?? null;
-            if ($tier === null) {
-                $errors[$name] = 'missing extra.aero.tier';
-                continue;
-            }
-            if (! in_array($tier, self::VALID_TIERS, true)) {
-                $errors[$name] = "invalid tier '{$tier}' (must be one of: ".implode('|', self::VALID_TIERS).')';
-                continue;
-            }
-
-            $byTier[$tier][] = $name;
-        }
-
-        // Stub dirs (no composer.json) — recorded, not fatal.
-        foreach ($this->discoverStubDirs() as $name) {
-            $skipped[] = $name;
-        }
+        // Pure scan lives in the kernel so the install-time MigrationStep (a web
+        // request, where console commands aren't registered) can gate on the same logic.
+        $result = PackageTier::verifyAll();
+        $byTier = $result['by_tier'];
+        $errors = $result['errors'];
+        $skipped = $result['skipped'];
 
         if ($this->option('json')) {
             $this->line((string) json_encode([
-                'ok' => $errors === [],
-                'by_tier' => array_map('count', $byTier),
+                'ok' => $result['ok'],
+                'by_tier' => $byTier,
                 'errors' => $errors,
                 'skipped_stubs' => $skipped,
             ], JSON_PRETTY_PRINT));
 
-            return $errors === [] ? self::SUCCESS : self::FAILURE;
+            return $result['ok'] ? self::SUCCESS : self::FAILURE;
         }
 
         foreach (self::VALID_TIERS as $tier) {
-            $this->line(sprintf('  %-9s : %d', $tier, count($byTier[$tier])));
+            $this->line(sprintf('  %-9s : %d', $tier, $byTier[$tier] ?? 0));
         }
         if ($skipped !== []) {
             $this->warn('Skipped (no composer.json — stub): '.implode(', ', $skipped));
@@ -89,55 +68,5 @@ class VerifyTiersCommand extends Command
         $this->info('✅ All aero packages declare a valid tier.');
 
         return self::SUCCESS;
-    }
-
-    /**
-     * @return array<string, string> package short-name => composer.json path
-     */
-    private function discoverPackageComposers(): array
-    {
-        $found = [];
-        foreach ($this->aeroDirs() as $dir) {
-            $composer = $dir.DIRECTORY_SEPARATOR.'composer.json';
-            if (is_file($composer)) {
-                $found[basename($dir)] = $composer;
-            }
-        }
-        ksort($found);
-
-        return $found;
-    }
-
-    /**
-     * @return array<int, string> stub dir short-names (no composer.json)
-     */
-    private function discoverStubDirs(): array
-    {
-        $stubs = [];
-        foreach ($this->aeroDirs() as $dir) {
-            if (! is_file($dir.DIRECTORY_SEPARATOR.'composer.json')) {
-                $stubs[] = basename($dir);
-            }
-        }
-        sort($stubs);
-
-        return $stubs;
-    }
-
-    /**
-     * @return array<int, string> absolute paths of aero-* package dirs (packages/ + vendor/aero/)
-     */
-    private function aeroDirs(): array
-    {
-        // vendor/aero first, then packages/ — so a monorepo packages/ entry (the source of
-        // truth) overwrites a vendored copy of the same package on de-dupe by name.
-        $dirs = [];
-        foreach ([base_path('vendor/aero/*'), base_path('packages/aero-*')] as $glob) {
-            foreach ((array) glob($glob, GLOB_ONLYDIR) as $dir) {
-                $dirs[basename($dir)] = $dir;
-            }
-        }
-
-        return array_values($dirs);
     }
 }

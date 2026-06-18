@@ -3,6 +3,7 @@
 namespace Aero\Core\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class InstallationState
@@ -27,20 +28,33 @@ class InstallationState
         // Cache-backed schema check (only reachable when the file doesn't exist yet).
         // CacheServiceProvider is deferred, so wrap in try/catch for early-boot safety.
         try {
-            return Cache::store('file')->rememberForever(self::CACHE_KEY, function () {
-                try {
-                    return Schema::hasTable('users') && Schema::hasTable('modules');
-                } catch (\Throwable) {
-                    return false;
-                }
-            });
+            return Cache::store('file')->rememberForever(self::CACHE_KEY, fn () => self::schemaShowsInstalled());
         } catch (\Throwable) {
             // Cache not yet registered (very early boot) — fall back to direct schema check.
-            try {
-                return Schema::hasTable('users') && Schema::hasTable('modules');
-            } catch (\Throwable) {
-                return false;
-            }
+            return self::schemaShowsInstalled();
+        }
+    }
+
+    /**
+     * Heuristic "is the database a finished install?" used ONLY when the lock file is
+     * absent (a fresh install in progress, or a rare lock-file-lost recovery).
+     *
+     * Requires the foundational tables to EXIST *and* hold rows. Checking table
+     * existence alone is wrong: MigrationStep creates `users` and `modules` early in
+     * the install, so a table-only check flips true mid-install — before the module
+     * hierarchy is synced or any admin user is created — which would prematurely mark
+     * the system installed and abort the wizard. A genuinely finished install always
+     * has seeded modules and at least one admin user.
+     */
+    private static function schemaShowsInstalled(): bool
+    {
+        try {
+            return Schema::hasTable('users')
+                && Schema::hasTable('modules')
+                && DB::table('modules')->exists()
+                && DB::table('users')->exists();
+        } catch (\Throwable) {
+            return false;
         }
     }
 

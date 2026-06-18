@@ -65,6 +65,12 @@ class FinalizeStep extends BaseInstallationStep
             $results['marked_complete'] = false;
         }
 
+        // Link the wizard admin user to the super-admin role. This runs here (the last
+        // step) because roles are created by SeedingStep, which runs AFTER AdminUserStep —
+        // so AdminUserStep itself cannot assign a role that does not exist yet.
+        $this->log('Ensuring admin user has the super-admin role');
+        $results['admin_role_assigned'] = $this->ensureAdminSuperRole();
+
         // Verify HRMAC structure is complete
         $this->log('Verifying HRMAC structure');
         try {
@@ -164,6 +170,71 @@ class FinalizeStep extends BaseInstallationStep
 
         } catch (\Exception) {
             // Table might not exist yet
+        }
+    }
+
+    /**
+     * Link the wizard admin user to the appropriate super-admin role.
+     *
+     * SaaS (central/landlord) → 'Super Platform Admin' (landlord guard), created by
+     * PlatformHrmacSeeder with HRMAC platform-module access; standalone → 'Super
+     * Administrator'. Idempotent. Returns true when the admin ends up linked.
+     */
+    protected function ensureAdminSuperRole(): bool
+    {
+        $mode = env('INSTALLATION_MODE')
+            ?: (file_exists(storage_path('app/aeos.mode'))
+                ? trim((string) file_get_contents(storage_path('app/aeos.mode')))
+                : 'standalone');
+
+        $connection = $mode === 'saas' ? 'central' : null;
+        $roleName = $mode === 'saas' ? 'Super Platform Admin' : 'Super Administrator';
+
+        // Admin email from the persisted wizard config (same source AdminUserStep uses).
+        $adminEmail = null;
+        $configPath = storage_path('framework/installation_config.json');
+        if (file_exists($configPath)) {
+            $cfg = json_decode((string) file_get_contents($configPath), true) ?: [];
+            $adminEmail = $cfg['admin']['email'] ?? null;
+        }
+        $adminEmail = $adminEmail ?: env('ADMIN_EMAIL');
+
+        try {
+            $db = DB::connection($connection);
+
+            $user = $adminEmail
+                ? $db->table('users')->where('email', $adminEmail)->first()
+                : $db->table('users')->orderBy('id')->first();
+            $role = $db->table('roles')->where('name', $roleName)->first();
+
+            if (! $user || ! $role) {
+                $this->warn("Admin role assignment skipped (user or '{$roleName}' role missing)");
+
+                return false;
+            }
+
+            $linked = $db->table('model_has_roles')
+                ->where('role_id', $role->id)
+                ->where('model_type', 'user')
+                ->where('model_id', $user->id)
+                ->exists();
+
+            if (! $linked) {
+                $db->table('model_has_roles')->insert([
+                    'role_id' => $role->id,
+                    'model_type' => 'user',
+                    'model_id' => $user->id,
+                ]);
+                $this->log("Assigned '{$roleName}' to admin user {$user->email} (id {$user->id})");
+            } else {
+                $this->log("Admin user already linked to '{$roleName}'");
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->warn('Admin super-admin role assignment failed: '.$e->getMessage());
+
+            return false;
         }
     }
 

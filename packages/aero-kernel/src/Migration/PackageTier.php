@@ -72,6 +72,70 @@ final class PackageTier
     }
 
     /**
+     * Scan every installed aero package (packages/ source-of-truth + vendor/aero) and
+     * classify by tier, collecting unclassified/invalid packages as errors. Pure data —
+     * no console I/O — so BOTH the `aero:verify-tiers` command AND the install-time
+     * MigrationStep can gate on it. MigrationStep runs in a WEB request during the
+     * wizard, where console commands aren't registered (AeroCoreServiceProvider only
+     * registers commands when runningInConsole()); calling this directly avoids that
+     * coupling. Stub dirs without composer.json are recorded as skipped, not fatal.
+     *
+     * @return array{ok:bool, by_tier:array<string,int>, errors:array<string,string>, skipped:array<int,string>}
+     */
+    public static function verifyAll(): array
+    {
+        $byTier = [self::PLATFORM => [], self::CORE => [], self::SHARABLE => [], self::PRODUCT => []];
+        $errors = [];
+        $skipped = [];
+
+        // vendor/aero first, then packages/ (source of truth). Basenames differ
+        // ('core' vs 'aero-core'), so both copies are scanned — harmless for a
+        // "does every package declare a valid tier?" gate.
+        $dirs = [];
+        foreach ([base_path('vendor/aero/*'), base_path('packages/aero-*')] as $glob) {
+            foreach ((array) glob($glob, GLOB_ONLYDIR) as $dir) {
+                $dirs[basename($dir)] = $dir;
+            }
+        }
+        ksort($dirs);
+
+        foreach ($dirs as $name => $dir) {
+            $composer = $dir.DIRECTORY_SEPARATOR.'composer.json';
+            if (! is_file($composer)) {
+                $skipped[] = $name;
+                continue;
+            }
+
+            $data = json_decode((string) file_get_contents($composer), true);
+            if (! is_array($data)) {
+                $errors[$name] = 'composer.json is not valid JSON';
+                continue;
+            }
+
+            $tier = $data['extra']['aero']['tier'] ?? null;
+            if ($tier === null) {
+                $errors[$name] = 'missing extra.aero.tier';
+                continue;
+            }
+            if (! in_array($tier, self::TIERS, true)) {
+                $errors[$name] = "invalid tier '{$tier}' (must be one of: ".implode('|', self::TIERS).')';
+                continue;
+            }
+
+            $byTier[$tier][] = $name;
+        }
+
+        sort($skipped);
+
+        return [
+            'ok' => $errors === [],
+            'by_tier' => array_map('count', $byTier),
+            'errors' => $errors,
+            'skipped' => $skipped,
+        ];
+    }
+
+    /**
      * Does this package's tier belong in the given install context
      * ('central' | 'tenant' | 'standalone')? Fail-closed on unknown tier/context.
      */

@@ -49,14 +49,20 @@ return new class extends Migration
         // users.user_name is NOT NULL while landlord_users.user_name is nullable,
         // hence COALESCE(user_name, email). Every other users column omitted here
         // is nullable or defaulted.
+        //
+        // NOTE: `active`/`is_active` were dropped from `users` by the column-dedup
+        // unit (2026_06_15_000001) — SoftDeletes (`deleted_at`, moved below) is now
+        // the SOLE source of truth for active/inactive. That drop runs in the auth
+        // tier BEFORE platform, so `users` has no `active` column by the time this
+        // platform migration runs; the data-move must NOT reference it.
         DB::connection('central')->statement(
             'INSERT IGNORE INTO users ('
-            .'id, user_name, phone, email, password, name, active, '
+            .'id, user_name, phone, email, password, name, '
             .'profile_image, timezone, two_factor_secret, two_factor_recovery_codes, '
             .'two_factor_confirmed_at, last_login_at, last_login_ip, email_verified_at, '
             .'remember_token, created_at, updated_at, deleted_at'
             .') SELECT '
-            .'id, COALESCE(user_name, email), phone, email, password, name, active, '
+            .'id, COALESCE(user_name, email), phone, email, password, name, '
             .'profile_image, timezone, two_factor_secret, two_factor_recovery_codes, '
             .'two_factor_confirmed_at, last_login_at, last_login_ip, email_verified_at, '
             .'remember_token, created_at, updated_at, deleted_at'
