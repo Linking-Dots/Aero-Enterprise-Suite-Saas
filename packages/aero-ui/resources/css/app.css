@@ -46,6 +46,7 @@
 @import url('./components/navigation.css');
 @import url('./components/overlays.css');
 @import url('./components/feedback.css');
+@import url('./components/dashboard.css');
 @import url('./components/payroll.css');
 @import url('./components/public.css');
 @import url('./components/utilities.css');
