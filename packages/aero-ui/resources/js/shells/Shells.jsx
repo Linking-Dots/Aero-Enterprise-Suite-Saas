@@ -20,6 +20,7 @@ import { useTheme } from '../theme/ThemeProvider.jsx';
 import { Bars3Icon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { cx } from '../components/Primitives.jsx';
 import { Tooltip } from '../components/Overlays.jsx';
+import { AeosErrorBoundary } from '../components/AeosErrorBoundary.jsx';
 
 /* ─── Shell preference persistence ─────────────────────────────────────── */
 const SHELL_PREFS_KEY = 'aeos-shell-prefs';
@@ -124,6 +125,10 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
       {hasChildren && (expanded || isCommand) && (
         <div
           className="aeos-shell-sidebar-children"
+          // Collapsed children are visually clipped (grid 0fr) but stay in the DOM.
+          // `inert` removes them from tab order, pointer hit-testing and the a11y
+          // tree so a collapsed group can't steal focus or intercept clicks.
+          {...(isOpen ? {} : { inert: '' })}
           style={{
             display: 'grid',
             gridTemplateRows: isOpen ? '1fr' : '0fr',
@@ -142,14 +147,17 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
 }
 
 /* ─── AppShell — variant router ─────────────────────────────────────────── */
-export function AppShell({ variant, ...props }) {
+export function AppShell({ variant, children, ...props }) {
   const theme = useTheme();
   const shell = variant ?? theme.shell;
+  // Page-scope boundary: contain a content-render error inside the shell so the
+  // sidebar/topbar stay alive and the error shows in-place (never blank).
+  const content = <AeosErrorBoundary scope="page">{children}</AeosErrorBoundary>;
   switch (shell) {
-    case 'topnav':   return <TopNavShell   {...props} />;
-    case 'floating': return <FloatingShell {...props} />;
-    case 'command':  return <CommandShell  {...props} />;
-    default:         return <SidebarShell  {...props} />;
+    case 'topnav':   return <TopNavShell   {...props}>{content}</TopNavShell>;
+    case 'floating': return <FloatingShell {...props}>{content}</FloatingShell>;
+    case 'command':  return <CommandShell  {...props}>{content}</CommandShell>;
+    default:         return <SidebarShell  {...props}>{content}</SidebarShell>;
   }
 }
 

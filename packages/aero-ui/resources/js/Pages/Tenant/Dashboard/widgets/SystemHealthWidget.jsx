@@ -37,7 +37,8 @@ function ServicePill({ name, status }) {
 export function SystemHealthWidget({ systemHealth: initialData }) {
     const { auth }   = usePage().props;
     const user       = auth?.user;
-    const userRoles  = user?.roles ?? [];
+    // roles may arrive as strings or role objects — coerce to display strings.
+    const userRoles  = (user?.roles ?? []).map(r => (typeof r === 'string' ? r : (r?.name ?? r?.title ?? ''))).filter(Boolean);
 
     const { data, loading, error, refresh } = useWidgetRefresh('systemHealth', initialData);
 
