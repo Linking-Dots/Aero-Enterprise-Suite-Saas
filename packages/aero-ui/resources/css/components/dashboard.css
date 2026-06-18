@@ -43,6 +43,29 @@
     font-size: var(--aeos-text-sm); color: var(--aeos-text-tertiary); text-align: center;
 }
 
+/* ── Command-shell context rail (DashboardRail) ──────────────────────────── */
+.dash-rail-link {
+    display: flex; align-items: center; gap: var(--aeos-space-2);
+    padding: var(--aeos-space-2);
+    border-radius: var(--aeos-r-sm);
+    color: var(--aeos-text-secondary); font-size: var(--aeos-text-sm);
+    transition: background var(--aeos-dur-fast) var(--aeos-ease-out),
+                color      var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.dash-rail-link:hover { background: var(--aeos-bg-hover); color: var(--aeos-text-primary); }
+.dash-rail-link svg { flex-shrink: 0; }
+.dash-rail-shortcut {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 var(--aeos-space-2);
+    font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary);
+}
+.dash-rail-kbd {
+    font-family: var(--aeos-font-mono); font-size: var(--aeos-text-2xs);
+    color: var(--aeos-text-tertiary); background: var(--aeos-bg-active);
+    border: var(--aeos-border-width) solid var(--aeos-border-subtle);
+    border-radius: var(--aeos-r-sm); padding: 1px 5px;
+}
+
 /* ── Refresh button ────────────────────────────────────────────────────── */
 .dash-widget-refresh-btn {
     display: inline-flex;

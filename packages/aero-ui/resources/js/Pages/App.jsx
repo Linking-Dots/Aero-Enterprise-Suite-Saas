@@ -106,7 +106,7 @@ function buildFallbackNav(currentUrl) {
 }
 
 // ─── App layout ───────────────────────────────────────────────────────────────
-export default function App({ title, children }) {
+export default function App({ title, rail, railTitle = 'Context', children }) {
   const { auth, navigation, navigationGroups, url } = usePage().props;
   const theme = useTheme();
   const currentUrl = url ?? (typeof window !== 'undefined' ? window.location.pathname : '/dashboard');
@@ -124,6 +124,8 @@ export default function App({ title, children }) {
         nav={nav}
         topbar={<AppTopbarTitle title={title} />}
         actions={<GlobalActions user={auth?.user} />}
+        rail={rail}
+        railTitle={railTitle}
       >
         {children}
       </AppShell>

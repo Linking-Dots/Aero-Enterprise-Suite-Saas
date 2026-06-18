@@ -18,6 +18,7 @@
 
 import App            from '@/Pages/App.jsx';
 import DashboardLayout from '@/layouts/AppLayout.jsx';
+import DashboardRail   from './Dashboard/DashboardRail.jsx';
 
 import { WelcomeWidget }       from './Dashboard/widgets/WelcomeWidget.jsx';
 import { KpiRow }              from './Dashboard/widgets/KpiRow.jsx';
@@ -84,7 +85,7 @@ export default function Dashboard({
 }
 
 Dashboard.layout = page => (
-    <App title="Dashboard">
+    <App title="Dashboard" railTitle="At a glance" rail={<DashboardRail />}>
         <DashboardLayout>{page}</DashboardLayout>
     </App>
 );
