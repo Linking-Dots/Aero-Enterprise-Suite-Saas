@@ -64,8 +64,10 @@ export function StoragePlanWidget({
     const totalBytes = storage?.totalBytes ?? 1;
     const usedPct    = Math.round((usedBytes / totalBytes) * 100);
 
-    const usedSeats  = sub?.usage?.users ?? 0;
-    const totalSeats = sub?.quota?.users ?? 100;
+    // Service shape: subscriptionInfo.quotaUsage.users = { used, limit }.
+    const usedSeats  = sub?.quotaUsage?.users?.used ?? 0;
+    const seatLimit  = sub?.quotaUsage?.users?.limit;
+    const totalSeats = (typeof seatLimit === 'number' && seatLimit > 0) ? seatLimit : 100;
     const seatPct    = Math.round((usedSeats / totalSeats) * 100);
 
     const isOnTrial  = sub?.isOnTrial   ?? false;

@@ -33,9 +33,9 @@ function MetricMini({ label, value, intent }) {
 export function SecurityWidget({ securityOverview: initialData }) {
     const { data, loading, error, refresh } = useWidgetRefresh('securityOverview', initialData);
 
-    const failedLogins    = data?.failedLogins24h ?? 0;
+    const failedLogins    = data?.failedLoginsLast24h ?? 0;
     const mfaPercent      = data?.mfaAdoptionPercent ?? 0;
-    const activeSessions  = data?.activeSessionsLast30Min ?? 0;
+    const activeSessions  = data?.activeSessions ?? 0;
     const lastEvent       = data?.lastSecurityEvent ?? null;
     const hasAlert        = failedLogins > 0;
 

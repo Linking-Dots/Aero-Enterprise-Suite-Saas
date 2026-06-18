@@ -293,7 +293,7 @@ class AdminDashboardService
      */
     public function getSecurityOverview(): array
     {
-        return TenantCache::remember('admin_dashboard.security_overview', 120, function () {
+        $overview = TenantCache::remember('admin_dashboard.security_overview', 120, function () {
             try {
                 $failedLoginsToday = AuditLog::where('action', 'failed_login')
                     ->whereDate('created_at', today())
@@ -346,6 +346,16 @@ class AdminDashboardService
                 ];
             }
         });
+
+        // Active sessions is real-time — recompute fresh so the 2-minute cache can't
+        // make a live session disappear from the security posture.
+        try {
+            $overview['activeSessions'] = UserSession::where('last_active_at', '>=', now()->subMinutes(30))->count();
+        } catch (\Throwable $e) {
+            // keep the cached value on failure
+        }
+
+        return $overview;
     }
 
     /**
@@ -896,16 +906,21 @@ class AdminDashboardService
      */
     protected function getQuotaUsage(): array
     {
+        $usersUsed = 0;
         try {
-            return [
-                'users' => [
-                    'used' => User::count(),
-                    'limit' => $this->getPlanQuota('max_users', 'unlimited'),
-                ],
-            ];
-        } catch (\Throwable) {
-            return [];
+            $usersUsed = User::count();
+        } catch (\Throwable $e) {
+            report($e);
         }
+
+        // Always return the structure (never []), so the seats widget reads a real
+        // count instead of falling back to 0 on any partial failure.
+        return [
+            'users' => [
+                'used'  => $usersUsed,
+                'limit' => $this->getPlanQuota('max_users', 'unlimited'),
+            ],
+        ];
     }
 
     protected function hasCompanyLogo(): bool
@@ -963,7 +978,9 @@ class AdminDashboardService
             'trialEndsAt' => null,
             'expiresAt' => null,
             'daysRemaining' => null,
-            'quotaUsage' => [],
+            // Even on the default/Free plan, surface real usage (e.g. seat count)
+            // so the storage & plan widget doesn't read empty.
+            'quotaUsage' => $this->getQuotaUsage(),
         ];
     }
 }

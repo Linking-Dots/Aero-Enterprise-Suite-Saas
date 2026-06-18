@@ -48,9 +48,11 @@ export function KpiRow({ coreStats: initialStats, userActivity: initialActivity 
         refresh: refreshStats,
     } = useWidgetRefresh('coreStats', initialStats);
 
-    // We reuse the already-fetched userActivity for real sparklines.
-    // No second request needed — it's passed as an Inertia prop.
-    const chartData = initialActivity?.chartData ?? [];
+    // userActivity is a lazy prop (null on initial load), so fetch it for the
+    // sparklines — otherwise toSparkline falls back to a flat array of zeros and
+    // the KPI trend lines render flat regardless of real activity.
+    const { data: activity } = useWidgetRefresh('userActivity', initialActivity);
+    const chartData = activity?.chartData ?? [];
 
     if (statsLoading || !stats) {
         return (
