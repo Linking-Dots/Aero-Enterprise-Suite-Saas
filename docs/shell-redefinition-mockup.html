@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AEOS365 — App-Shell Redefinition</title>
+<style>
+  :root{
+    --primary:#00b8d4; --primary-ink:#063b44; --primary-tint:#e6fbff;
+    --bg:#f5f7fa; --elevated:#ffffff; --tint:#f0f3f7; --rail:#fafbfc;
+    --text:#16202e; --text-2:#5a6b7e; --text-3:#92a1b2;
+    --border:#e4e9f0; --border-2:#eef2f7;
+    --ok:#16a34a; --warn:#d97706; --danger:#dc2626;
+    --r:10px; --r-sm:7px; --r-lg:14px;
+    --shadow:0 1px 2px rgba(16,32,46,.06), 0 8px 24px rgba(16,32,46,.06);
+    --shadow-pill:0 6px 24px rgba(16,32,46,.12);
+    --font:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+  h1.page{font-size:26px;margin:0 0 6px;letter-spacing:-.02em}
+  p.sub{color:var(--text-2);margin:0 0 8px;font-size:14px;line-height:1.6}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 34px;padding:14px 18px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);font-size:12.5px}
+  .legend b{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--primary-tint);color:var(--primary-ink);margin-right:6px;font-weight:600}
+  .shell-block{margin:0 0 44px}
+  .shell-head{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}
+  .shell-head h2{font-size:18px;margin:0;letter-spacing:-.01em}
+  .shell-head .tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--primary-ink);background:var(--primary-tint);padding:3px 9px;border-radius:20px}
+  .shell-head .note{font-size:13px;color:var(--text-2)}
+  .frame{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);background:var(--elevated);height:430px;display:flex;flex-direction:column}
+
+  /* ---- shared atoms ---- */
+  .globalbar{height:54px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--elevated)}
+  .iconbtn{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid transparent;display:flex;align-items:center;justify-content:center;color:var(--text-2);cursor:pointer}
+  .iconbtn:hover{background:var(--tint)}
+  .gtitle{font-weight:650;font-size:15px}
+  .spacer{flex:1}
+  .search{display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;min-width:200px;border:1px solid var(--border);border-radius:20px;color:var(--text-3);font-size:13px;background:var(--tint)}
+  .badge-dot{position:relative}
+  .badge-dot::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:2px solid var(--elevated)}
+  .avatar{display:flex;align-items:center;gap:8px;padding:3px 8px 3px 3px;border:1px solid var(--border);border-radius:20px;cursor:pointer}
+  .avatar .a{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7b61ff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .avatar .nm{font-size:12.5px;font-weight:600;line-height:1.1}
+  .avatar .rl{font-size:10.5px;color:var(--text-3)}
+
+  .pagehead{padding:16px 22px 0;flex-shrink:0}
+  .crumb{font-size:12px;color:var(--text-3);margin-bottom:7px}
+  .crumb b{color:var(--text-2);font-weight:600}
+  .ph-row{display:flex;align-items:center;gap:12px}
+  .ph-row h3{font-size:20px;margin:0;letter-spacing:-.01em}
+  .btn{height:34px;padding:0 14px;border-radius:var(--r-sm);border:1px solid transparent;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .btn-primary{background:var(--primary);color:#04323a}
+  .btn-ghost{background:transparent;border-color:var(--border);color:var(--text-2)}
+  .tabs{display:flex;gap:20px;margin-top:14px;border-bottom:1px solid var(--border)}
+  .tabs span{font-size:13px;color:var(--text-2);padding:0 1px 10px;cursor:pointer}
+  .tabs span.on{color:var(--primary-ink);border-bottom:2px solid var(--primary);font-weight:600}
+
+  .content{flex:1;overflow:auto;padding:18px 22px}
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .ipt{height:32px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--tint);font-size:12.5px;color:var(--text-3);display:flex;align-items:center;padding:0 10px}
+  .table{width:100%;border:1px solid var(--border-2);border-radius:var(--r);overflow:hidden;font-size:12.5px}
+  .table .tr{display:grid;grid-template-columns:1.6fr 1.4fr 1fr .8fr;padding:10px 14px;border-bottom:1px solid var(--border-2)}
+  .table .tr.h{background:var(--tint);color:var(--text-3);font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+  .table .tr:last-child{border-bottom:0}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+  .pill.ok{background:#e7f7ee;color:var(--ok)}
+  .pill.wn{background:#fdf2e3;color:var(--warn)}
+  .u{display:flex;align-items:center;gap:9px}
+  .u .a{width:26px;height:26px;border-radius:50%;background:var(--primary-tint);color:var(--primary-ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+  /* ---- nav atoms ---- */
+  .nav-i{display:flex;align-items:center;gap:11px;height:38px;padding:0 12px;border-radius:var(--r-sm);color:var(--text-2);font-size:13px;cursor:pointer;white-space:nowrap}
+  .nav-i:hover{background:var(--tint)}
+  .nav-i.on{background:var(--primary-tint);color:var(--primary-ink);font-weight:600}
+  .nav-i .ic{width:18px;height:18px;flex-shrink:0;opacity:.85}
+  .nav-sec{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:14px 12px 6px;font-weight:700}
+
+  /* ===== 1. SIDEBAR ===== */
+  .s1{display:flex;height:100%}
+  .s1 .side{width:200px;flex-shrink:0;border-right:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:2px;background:var(--rail)}
+  .s1 .brand{display:flex;align-items:center;gap:9px;height:42px;padding:0 8px;font-weight:700;margin-bottom:6px}
+  .s1 .logo,.brandlogo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--primary),#7b61ff);flex-shrink:0}
+  .s1 .main{flex:1;display:flex;flex-direction:column;min-width:0}
+
+  /* ===== 2. TOPNAV ===== */
+  .s2{display:flex;flex-direction:column;height:100%}
+  .topnav{height:56px;flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 18px;border-bottom:1px solid var(--border)}
+  .topnav .brand{display:flex;align-items:center;gap:9px;font-weight:700;margin-right:18px}
+  .topnav .tn{height:34px;display:flex;align-items:center;padding:0 13px;border-radius:var(--r-sm);font-size:13px;color:var(--text-2);cursor:pointer}
+  .topnav .tn.on{background:var(--primary-tint);color:var(--primary-ink);font-weight:600}
+
+  /* ===== 3. FLOATING ===== */
+  .s3{position:relative;height:100%;background:linear-gradient(135deg,#eef3f8,#f6f8fb);padding:16px;display:flex;gap:16px}
+  .s3 .pill{width:62px;flex-shrink:0;background:var(--elevated);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-pill);display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0}
+  .s3 .pill .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--primary),#7b61ff);margin-bottom:6px}
+  .s3 .pill .fi{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:var(--text-3);cursor:pointer}
+  .s3 .pill .fi.on{background:var(--primary-tint);color:var(--primary-ink)}
+  .s3 .panel{flex:1;background:var(--elevated);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+
+  /* ===== 4. COMMAND ===== */
+  .s4{display:flex;height:100%}
+  .s4 .left{width:184px;flex-shrink:0;border-right:1px solid var(--border);padding:10px;background:var(--rail);overflow:auto}
+  .s4 .brand{display:flex;align-items:center;gap:9px;height:40px;padding:0 8px;font-weight:700;margin-bottom:2px}
+  .s4 .mid{flex:1;display:flex;flex-direction:column;min-width:0}
+  .s4 .right{width:218px;flex-shrink:0;border-left:1px solid var(--border);background:var(--rail);display:flex;flex-direction:column}
+  .s4 .right .rh{height:54px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);font-weight:650;font-size:13px}
+  .s4 .right .rb{padding:14px 16px;font-size:12px;color:var(--text-2);line-height:1.7}
+  .s4 .right .card{background:var(--elevated);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;margin-bottom:10px}
+  .s4 .right .card .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
+  .icon{width:18px;height:18px;display:inline-block;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page">AEOS365 — App-Shell Redefinition</h1>
+  <p class="sub"><b>One content contract, four arrangements.</b> Every shell exposes the same regions; only the layout differs. The same “Users” page is shown in all four so the consistency is visible.</p>
+  <div class="legend">
+    <span><b>Global Bar</b> nav-toggle · page title · Search · Notifications · User menu</span>
+    <span><b>Page Header</b> breadcrumb · title · actions · tabs</span>
+    <span><b>Primary Nav</b> sectioned, recursive</span>
+    <span><b>Content</b> page body</span>
+    <span><b>Context Rail</b> optional (Command)</span>
+  </div>
+
+  <!-- reusable content snippet rendered inline per shell -->
+
+  <!-- 1. SIDEBAR -->
+  <div class="shell-block">
+    <div class="shell-head"><span class="tag">Default</span><h2>1 · Sidebar Shell</h2><span class="note">Icon rail ↔ labels. The everyday workhorse — deep nav, dense apps.</span></div>
+    <div class="frame">
+      <div class="s1">
+        <div class="side">
+          <div class="brand"><span class="logo"></span><span>aeos365</span></div>
+          <div class="nav-i"><span class="ic">▤</span>Dashboard</div>
+          <div class="nav-i on"><span class="ic">◔</span>Users</div>
+          <div class="nav-i"><span class="ic">◫</span>Roles &amp; Access</div>
+          <div class="nav-i"><span class="ic">▦</span>Audit Logs</div>
+          <div class="nav-i"><span class="ic">▣</span>Files</div>
+          <div class="nav-i"><span class="ic">◇</span>Organization</div>
+          <div style="flex:1"></div>
+          <div class="nav-i"><span class="ic">⚙</span>Settings</div>
+        </div>
+        <div class="main">
+          <div class="globalbar">
+            <div class="iconbtn">☰</div><div class="gtitle">Users</div><div class="spacer"></div>
+            <div class="search">🔍 Search…</div>
+            <div class="iconbtn badge-dot">🔔</div>
+            <div class="avatar"><span class="a">DA</span><div><div class="nm">Demo Admin</div><div class="rl">Super Administrator</div></div></div>
+          </div>
+          <div class="pagehead">
+            <div class="crumb">Home › <b>Users</b></div>
+            <div class="ph-row"><h3>Users</h3><div class="spacer"></div><button class="btn btn-ghost">⭳ Export</button><button class="btn btn-primary">＋ New user</button></div>
+            <div class="tabs"><span class="on">Overview</span><span>Invitations</span><span>Profile</span></div>
+          </div>
+          <div class="content">
+            <div class="toolbar"><div class="ipt" style="min-width:220px">🔍 Search name, email, username…</div><div class="ipt">Role ▾</div><div class="ipt">Status ▾</div><div class="spacer"></div><button class="btn btn-ghost">Saved views ▾</button></div>
+            <div class="table">
+              <div class="tr h"><span>User</span><span>Email</span><span>Role</span><span>Status</span></div>
+              <div class="tr"><span class="u"><span class="a">DA</span>Demo Admin</span><span>admin@democorp.com</span><span>Super Admin</span><span><span class="pill ok">Active</span></span></div>
+              <div class="tr"><span class="u"><span class="a">JM</span>Jordan Miles</span><span>jordan@democorp.com</span><span>Manager</span><span><span class="pill ok">Active</span></span></div>
+              <div class="tr"><span class="u"><span class="a">SK</span>Sam Kerr</span><span>sam@democorp.com</span><span>Member</span><span><span class="pill wn">Invited</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. TOPNAV -->
+  <div class="shell-block">
+    <div class="shell-head"><span class="tag">Shallow nav</span><h2>2 · TopNav Shell</h2><span class="note">Horizontal bar. Few top-level sections; marketing-adjacent / focused apps.</span></div>
+    <div class="frame">
+      <div class="s2">
+        <div class="topnav">
+          <div class="brand"><span class="brandlogo"></span>aeos365</div>
+          <div class="tn">Dashboard</div><div class="tn on">Users</div><div class="tn">Roles</div><div class="tn">Audit</div><div class="tn">Settings</div>
+          <div class="spacer"></div>
+          <div class="search">🔍 Search…</div>
+          <div class="iconbtn badge-dot">🔔</div>
+          <div class="avatar"><span class="a">DA</span><div><div class="nm">Demo Admin</div><div class="rl">Super Administrator</div></div></div>
+        </div>
+        <div class="pagehead">
+          <div class="crumb">Home › <b>Users</b></div>
+          <div class="ph-row"><h3>Users</h3><div class="spacer"></div><button class="btn btn-ghost">⭳ Export</button><button class="btn btn-primary">＋ New user</button></div>
+          <div class="tabs"><span class="on">Overview</span><span>Invitations</span><span>Profile</span></div>
+        </div>
+        <div class="content">
+          <div class="toolbar"><div class="ipt" style="min-width:220px">🔍 Search name, email, username…</div><div class="ipt">Role ▾</div><div class="ipt">Status ▾</div></div>
+          <div class="table">
+            <div class="tr h"><span>User</span><span>Email</span><span>Role</span><span>Status</span></div>
+            <div class="tr"><span class="u"><span class="a">DA</span>Demo Admin</span><span>admin@democorp.com</span><span>Super Admin</span><span><span class="pill ok">Active</span></span></div>
+            <div class="tr"><span class="u"><span class="a">JM</span>Jordan Miles</span><span>jordan@democorp.com</span><span>Manager</span><span><span class="pill ok">Active</span></span></div>
+            <div class="tr"><span class="u"><span class="a">SK</span>Sam Kerr</span><span>sam@democorp.com</span><span>Member</span><span><span class="pill wn">Invited</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2b. TOPNAV OVERFLOW -->
+  <div class="shell-block">
+    <div class="shell-head"><span class="tag" style="background:#fdeccd;color:#8a5a00">Overflow</span><h2>2b · TopNav — when the bar runs out of room</h2><span class="note">Priority+ pattern: show what fits, collapse the rest into “More ▾”. Active item always stays visible; on mobile the whole nav becomes the hamburger drawer.</span></div>
+    <div class="frame" style="height:300px">
+      <div class="s2">
+        <div class="topnav">
+          <div class="brand"><span class="brandlogo"></span>aeos365</div>
+          <div class="tn">Dashboard</div><div class="tn on">Users</div><div class="tn">Roles</div><div class="tn">Audit</div><div class="tn">Files</div><div class="tn">Organization</div>
+          <div class="tn" style="background:var(--tint);color:var(--text);font-weight:600;position:relative">More ▾
+            <div style="position:absolute;top:40px;left:0;z-index:5;background:var(--elevated);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-pill);padding:6px;min-width:200px;text-align:left">
+              <div class="nav-i"><span class="ic">◇</span>Billing &amp; Subscription</div>
+              <div class="nav-i"><span class="ic">▤</span>API &amp; Webhooks</div>
+              <div class="nav-i"><span class="ic">▦</span>Email Engine</div>
+              <div class="nav-i"><span class="ic">◫</span>System Health</div>
+              <div class="nav-i"><span class="ic">⚙</span>Settings</div>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="search">🔍 Search…</div>
+          <div class="iconbtn badge-dot">🔔</div>
+          <div class="avatar"><span class="a">DA</span><div><div class="nm">Demo Admin</div><div class="rl">Super Administrator</div></div></div>
+        </div>
+        <div class="pagehead">
+          <div class="crumb">Home › <b>Users</b></div>
+          <div class="ph-row"><h3>Users</h3><div class="spacer"></div><button class="btn btn-primary">＋ New user</button></div>
+        </div>
+        <div class="content" style="color:var(--text-3);font-size:13px;display:flex;align-items:center;justify-content:center">
+          ↑ 6 sections fit · the remaining 5 fold into “More ▾” · active “Users” is never hidden
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. FLOATING -->
+  <div class="shell-block">
+    <div class="shell-head"><span class="tag">Airy</span><h2>3 · Floating Shell</h2><span class="note">Inset glass pill rail; collapses to a bottom tab bar on mobile. Modern / focused.</span></div>
+    <div class="frame">
+      <div class="s3">
+        <div class="pill">
+          <span class="logo"></span>
+          <div class="fi">▤</div><div class="fi on">◔</div><div class="fi">◫</div><div class="fi">▦</div><div class="fi">▣</div>
+          <div style="flex:1"></div><div class="fi">⚙</div>
+        </div>
+        <div class="panel">
+          <div class="globalbar">
+            <div class="gtitle">Users</div><div class="spacer"></div>
+            <div class="search">🔍 Search…</div>
+            <div class="iconbtn badge-dot">🔔</div>
+            <div class="avatar"><span class="a">DA</span><div><div class="nm">Demo Admin</div><div class="rl">Super Administrator</div></div></div>
+          </div>
+          <div class="pagehead">
+            <div class="crumb">Home › <b>Users</b></div>
+            <div class="ph-row"><h3>Users</h3><div class="spacer"></div><button class="btn btn-primary">＋ New user</button></div>
+          </div>
+          <div class="content">
+            <div class="table">
+              <div class="tr h"><span>User</span><span>Email</span><span>Role</span><span>Status</span></div>
+              <div class="tr"><span class="u"><span class="a">DA</span>Demo Admin</span><span>admin@democorp.com</span><span>Super Admin</span><span><span class="pill ok">Active</span></span></div>
+              <div class="tr"><span class="u"><span class="a">JM</span>Jordan Miles</span><span>jordan@democorp.com</span><span>Manager</span><span><span class="pill ok">Active</span></span></div>
+              <div class="tr"><span class="u"><span class="a">SK</span>Sam Kerr</span><span>sam@democorp.com</span><span>Member</span><span><span class="pill wn">Invited</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. COMMAND -->
+  <div class="shell-block">
+    <div class="shell-head"><span class="tag">Power</span><h2>4 · Command Shell</h2><span class="note">Three-panel, IDE-style: grouped nav · content · context rail. For dense, expert workflows.</span></div>
+    <div class="frame">
+      <div class="s4">
+        <div class="left">
+          <div class="brand"><span class="brandlogo"></span>aeos365</div>
+          <div class="nav-sec">Main</div>
+          <div class="nav-i"><span class="ic">▤</span>Dashboard</div>
+          <div class="nav-i on"><span class="ic">◔</span>Users</div>
+          <div class="nav-i"><span class="ic">◫</span>Roles</div>
+          <div class="nav-sec">Administration</div>
+          <div class="nav-i"><span class="ic">▦</span>Audit Logs</div>
+          <div class="nav-i"><span class="ic">◇</span>Organization</div>
+          <div class="nav-i"><span class="ic">⚙</span>Settings</div>
+        </div>
+        <div class="mid">
+          <div class="globalbar">
+            <div class="gtitle">Users</div><div class="spacer"></div>
+            <div class="search">🔍 Search…</div><div class="iconbtn badge-dot">🔔</div>
+            <div class="avatar"><span class="a">DA</span><div><div class="nm">Demo Admin</div><div class="rl">Super Administrator</div></div></div>
+          </div>
+          <div class="pagehead">
+            <div class="crumb">Home › <b>Users</b></div>
+            <div class="ph-row"><h3>Users</h3><div class="spacer"></div><button class="btn btn-primary">＋ New user</button></div>
+          </div>
+          <div class="content">
+            <div class="table">
+              <div class="tr h"><span>User</span><span>Email</span><span>Role</span><span>Status</span></div>
+              <div class="tr"><span class="u"><span class="a">DA</span>Demo Admin</span><span>admin@democorp.com</span><span>Super Admin</span><span><span class="pill ok">Active</span></span></div>
+              <div class="tr"><span class="u"><span class="a">JM</span>Jordan Miles</span><span>jordan@democorp.com</span><span>Manager</span><span><span class="pill ok">Active</span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="rh">Context</div>
+          <div class="rb">
+            <div class="card"><div class="k">Selected</div><div style="font-weight:650;color:var(--text);margin-top:3px">Demo Admin</div>admin@democorp.com</div>
+            <div class="card"><div class="k">Quick filters</div><div style="margin-top:5px">Active · Invited · Suspended</div></div>
+            <div class="card"><div class="k">Bulk actions</div><div style="margin-top:5px">Assign role · Export · Deactivate</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
