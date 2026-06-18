@@ -179,7 +179,7 @@ class AdminDashboardService
                     ? round((($newThisMonth - $lastMonthUsers) / $lastMonthUsers) * 100, 1)
                     : ($newThisMonth > 0 ? 100 : 0);
 
-                $onlineUsers = UserSession::where('last_activity', '>=', now()->subMinutes(5))->count();
+                $onlineUsers = UserSession::where('last_active_at', '>=', now()->subMinutes(5))->count();
 
                 return [
                     'totalUsers' => $totalUsers,
@@ -291,7 +291,7 @@ class AdminDashboardService
                     ->where('created_at', '>=', now()->subWeek())
                     ->count();
 
-                $activeSessions = UserSession::where('last_activity', '>=', now()->subMinutes(30))->count();
+                $activeSessions = UserSession::where('last_active_at', '>=', now()->subMinutes(30))->count();
 
                 $recentDevices = UserDevice::with('user:id,name')
                     ->orderByDesc('last_used_at')
@@ -792,20 +792,20 @@ class AdminDashboardService
     {
         return TenantCache::remember('admin_dashboard.active_sessions', 60, function () {
             try {
-                $onlineNow = UserSession::where('last_activity', '>=', now()->subMinutes(5))->count();
-                $activeToday = UserSession::whereDate('last_activity', today())->count();
-                $activeThisWeek = UserSession::where('last_activity', '>=', now()->startOfWeek())->count();
+                $onlineNow = UserSession::where('last_active_at', '>=', now()->subMinutes(5))->count();
+                $activeToday = UserSession::whereDate('last_active_at', today())->count();
+                $activeThisWeek = UserSession::where('last_active_at', '>=', now()->startOfWeek())->count();
 
                 // Recent sessions
                 $recentSessions = UserSession::with('user:id,name')
-                    ->orderByDesc('last_activity')
+                    ->orderByDesc('last_active_at')
                     ->limit(6)
-                    ->get(['id', 'user_id', 'ip_address', 'last_activity', 'user_agent'])
+                    ->get(['id', 'user_id', 'ip_address', 'last_active_at', 'user_agent'])
                     ->map(fn ($s) => [
                         'user' => $s->user?->name ?? 'Unknown',
                         'ip' => $s->ip_address ?? '—',
-                        'timeAgo' => \Carbon\Carbon::createFromTimestamp($s->last_activity)->diffForHumans(),
-                        'isOnline' => $s->last_activity >= now()->subMinutes(5)->timestamp,
+                        'timeAgo' => $s->last_active_at ? \Carbon\Carbon::parse($s->last_active_at)->diffForHumans() : '—',
+                        'isOnline' => $s->last_active_at && \Carbon\Carbon::parse($s->last_active_at)->greaterThanOrEqualTo(now()->subMinutes(5)),
                     ])
                     ->toArray();
 
