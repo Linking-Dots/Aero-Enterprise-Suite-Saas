@@ -53,6 +53,24 @@ export default function PublicLayout({ children, title }) {
     <>
       {title && <Head title={`${title} · aeos365`} />}
 
+      {/*
+       * Release the app-shell body lock. ThemeProvider sets body.dataset.aeosShell
+       * globally, and [data-aeos-shell] locks <body> to 100dvh/overflow:hidden for
+       * in-app internal-scroll layouts — which leaks onto these document-scroll
+       * public pages (re-added after our useEffect strips it), so they can't scroll.
+       * This scoped !important override wins regardless and is removed when the
+       * public layout unmounts (so app pages keep their lock).
+       */}
+      <style>{`
+        body[data-aeos-shell] {
+          display: block !important;
+          overflow: visible !important;
+          max-height: none !important;
+          height: auto !important;
+        }
+        html { overflow-y: auto !important; }
+      `}</style>
+
       {/* Skip-to-content — keyboard accessibility */}
       <a href="#main-content" className="aeos-pub-skip-link">
         Skip to main content

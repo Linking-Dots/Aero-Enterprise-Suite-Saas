@@ -114,8 +114,19 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
       </div>
 
       <style>{`
-        /* ── Shell reset ───────────────────────────────────────────── */
-        body[data-aeos-shell] { display: block !important; }
+        /* ── Shell reset ───────────────────────────────────────────────
+         * The app-shell ([data-aeos-shell]) locks <body> to a 100dvh,
+         * overflow:hidden grid for in-app internal-scroll layouts. ThemeProvider
+         * sets body.dataset.aeosShell globally, so signup (a document-scroll page)
+         * inherits that lock and CANNOT SCROLL. Release it here (scoped to while
+         * this layout is mounted) so the page scrolls normally. */
+        body[data-aeos-shell] {
+          display: block !important;
+          overflow: visible !important;
+          max-height: none !important;
+          height: auto !important;
+        }
+        html { overflow-y: auto !important; }
         .aeos-theme-drawer-trigger { display: none !important; }
 
         /* ── Root ──────────────────────────────────────────────────── */
