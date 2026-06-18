@@ -19,6 +19,7 @@
 import App            from '@/Pages/App.jsx';
 import DashboardLayout from '@/layouts/AppLayout.jsx';
 import DashboardRail   from './Dashboard/DashboardRail.jsx';
+import { PageHeader }  from '@aero/ui';
 
 import { WelcomeWidget }       from './Dashboard/widgets/WelcomeWidget.jsx';
 import { KpiRow }              from './Dashboard/widgets/KpiRow.jsx';
@@ -49,6 +50,13 @@ export default function Dashboard({
 }) {
     return (
         <div className="dash-grid">
+
+            {/* ── Standardized page header (breadcrumb/title standard) ── */}
+            <PageHeader
+                className="aeos-col-span-4 dash-page-header"
+                title="Dashboard"
+                description="Activity, security and usage at a glance."
+            />
 
             {/* ── Row 1 · Welcome ─────────────────────────────────── */}
             <WelcomeWidget
