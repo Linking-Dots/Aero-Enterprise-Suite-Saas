@@ -17,12 +17,17 @@ import { createRoot } from 'react-dom/client';
 
 import { ThemeProvider } from './theme/ThemeProvider.jsx';
 import ThemeDrawer       from './theme/ThemeDrawer.jsx';
+import { AeosErrorBoundary, EngineErrorPanel } from './components/AeosErrorBoundary.jsx';
 import '../css/app.css';
 
 function AeosEngine({ App, props }) {
   return (
     <ThemeProvider>
-      <App {...props} />
+      {/* Last-resort boundary: a thrown render error (bad route(), broken shell,
+          public page) shows VISIBLY instead of blanking the SPA. Never silent. */}
+      <AeosErrorBoundary scope="app">
+        <App {...props} />
+      </AeosErrorBoundary>
       <ThemeDrawer />
     </ThemeProvider>
   );
@@ -32,7 +37,18 @@ createInertiaApp({
   resolve: name => {
     const pages = import.meta.glob('./Pages/**/*.jsx', { eager: true });
     const page  = pages[`./Pages/${name}.jsx`];
-    if (!page) throw new Error(`[AeroUI] Page not found: ${name}`);
+    // A missing page resolves OUTSIDE React, so a throw here would escape the
+    // boundary and blank the app. Resolve a visible error page instead.
+    if (!page) {
+      return {
+        default: () => (
+          <EngineErrorPanel
+            scope="app"
+            error={new Error(`Page not found: "${name}". The route resolved but no Pages/${name}.jsx component exists.`)}
+          />
+        ),
+      };
+    }
     return page;
   },
   setup({ el, App, props }) {

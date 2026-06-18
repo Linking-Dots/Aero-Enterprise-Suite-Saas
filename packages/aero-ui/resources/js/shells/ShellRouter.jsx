@@ -25,6 +25,7 @@ import {
 } from 'react';
 
 import { useTheme } from '../theme/ThemeProvider.jsx';
+import { AeosErrorBoundary } from '../components/AeosErrorBoundary.jsx';
 
 import {
   SidebarShell,
@@ -126,7 +127,10 @@ function ShellRouterInner({
 
   const sharedProps = {
     brand, nav, topbar, actions, footer,
-    hideTopbar, maxWidth, expanded, onExpandedChange, children,
+    hideTopbar, maxWidth, expanded, onExpandedChange,
+    // Page-scope boundary: a content-render error is contained here so the
+    // shell chrome (sidebar/topbar) stays alive and the error shows in-place.
+    children: <AeosErrorBoundary scope="page">{children}</AeosErrorBoundary>,
   };
 
   const variantProps = {};
