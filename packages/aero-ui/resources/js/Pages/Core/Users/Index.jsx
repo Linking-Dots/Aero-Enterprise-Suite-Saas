@@ -6,7 +6,7 @@ import {
   Button,
   Badge,
   Pagination,
-  HStack, VStack,
+  HStack, VStack, Box,
   Text,
   Input,
   Select,
@@ -15,7 +15,10 @@ import {
   useHRMAC,
   SavedViewsDropdown,
   Stat,
+  Avatar,
+  Menu,
 } from '@aero/ui';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import App from '@/Pages/App.jsx';
 
 export default function UsersIndex({ users, roles, filters, stats }) {
@@ -117,60 +120,70 @@ export default function UsersIndex({ users, roles, filters, stats }) {
       ),
     },
     {
-      key: 'name', label: 'Name', width: '20%',
+      key: 'name', label: 'User', width: '24%',
       render: row => (
-        <Text size="sm">
-          {row.name}
-          {row.user_name && <span className="aeos-text-tertiary"> @{row.user_name}</span>}
-        </Text>
+        <HStack gap={3} align="center">
+          <Avatar name={row.name} size={32} />
+          <VStack gap={0}>
+            <Text size="sm" weight={500}>{row.name}</Text>
+            {row.user_name && <Text size="xs" tone="tertiary" mono>@{row.user_name}</Text>}
+          </VStack>
+        </HStack>
       ),
     },
     { key: 'email', label: 'Email', width: '20%', render: row => row.email },
     {
-      key: 'roles', label: 'Roles', width: '18%',
+      key: 'roles', label: 'Role', width: '16%',
       render: row => (
         <HStack gap={1} wrap>
-          {row.roles?.map(r => (
-            <Badge key={r.id} intent="neutral" size="sm">{r.name}</Badge>
-          )) || <Text tone="secondary" size="sm">—</Text>}
+          {row.roles?.length
+            ? row.roles.map(r => <Badge key={r.id} intent="indigo" size="sm">{r.name}</Badge>)
+            : <Text tone="tertiary" size="sm">—</Text>}
         </HStack>
       ),
     },
     {
       key: 'status', label: 'Status', width: '12%',
       render: row => (
-        <Badge intent={row.deleted_at ? 'warning' : 'success'}>
+        <Badge intent={row.deleted_at ? 'warning' : 'success'} dot>
           {row.deleted_at ? 'Inactive' : 'Active'}
         </Badge>
       ),
     },
     { key: 'created_at', label: 'Joined', width: '12%', render: row => new Date(row.created_at).toLocaleDateString() },
     {
-      key: 'actions', label: '', width: '28%', align: 'right',
+      key: 'actions', label: '', width: '120px', align: 'right',
+      // Primary action (Edit) stays inline; everything else collapses into a single
+      // overflow menu so rows stay scannable instead of a wall of 5 buttons.
       render: row => {
         const isActive = !row.deleted_at; // active = not trashed (SoftDeletes)
+        const menuItems = [
+          canView && { label: 'View profile', onClick: () => router.visit(route('core.users.show', row.id)) },
+          canActivate && (isActive
+            ? { label: 'Deactivate', onClick: () => toggleUserStatus(row.id, false) }
+            : { label: 'Activate',   onClick: () => toggleUserStatus(row.id, true) }),
+          canImpersonate && { label: 'Impersonate', onClick: () => impersonateUser(row.id) },
+          canDelete && { divider: true },
+          canDelete && { label: 'Delete', danger: true, onClick: () => deleteUser(row.id) },
+        ].filter(Boolean);
+
         return (
-          <HStack gap={2} justify="end">
-            {canView && (
-              <Button intent="soft" size="sm" onClick={() => router.visit(route('core.users.show', row.id))}>
-                View
-              </Button>
-            )}
+          <HStack gap={1} justify="end" align="center">
             {canEdit && (
               <Button intent="soft" size="sm" onClick={() => router.visit(route('core.users.edit', row.id))}>
                 Edit
               </Button>
             )}
-            {canActivate && (
-              isActive
-                ? <Button intent="ghost" size="sm" onClick={() => toggleUserStatus(row.id, false)}>Deactivate</Button>
-                : <Button intent="soft"  size="sm" onClick={() => toggleUserStatus(row.id, true)}>Activate</Button>
-            )}
-            {canImpersonate && (
-              <Button intent="ghost" size="sm" onClick={() => impersonateUser(row.id)}>Impersonate</Button>
-            )}
-            {canDelete && (
-              <Button intent="danger" size="sm" onClick={() => deleteUser(row.id)}>Delete</Button>
+            {menuItems.length > 0 && (
+              <Menu
+                align="end"
+                trigger={
+                  <Button intent="ghost" size="sm" aria-label="More actions">
+                    <EllipsisHorizontalIcon className="aeos-icon-sm" />
+                  </Button>
+                }
+                items={menuItems}
+              />
             )}
           </HStack>
         );
@@ -236,8 +249,8 @@ export default function UsersIndex({ users, roles, filters, stats }) {
       table={
         <VStack gap={3}>
           {selectedIds.length > 0 && (
-            <HStack gap={2}>
-              <Text size="sm">{selectedIds.length} selected</Text>
+            <HStack gap={2} align="center" className="aeos-table-bulkbar">
+              <Text size="sm" weight={600}>{selectedIds.length} selected</Text>
               {canActivate && (
                 <Button intent="soft"  size="sm" onClick={() => handleBulkToggle(true)}>Activate</Button>
               )}
@@ -247,6 +260,8 @@ export default function UsersIndex({ users, roles, filters, stats }) {
               {canBulkDelete && (
                 <Button intent="danger" size="sm" onClick={handleBulkDelete}>Delete</Button>
               )}
+              <Box grow />
+              <Button intent="ghost" size="sm" onClick={() => setSelectedIds([])}>Clear</Button>
             </HStack>
           )}
           <DataTable

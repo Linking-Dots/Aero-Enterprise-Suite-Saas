@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { XMarkIcon, SparklesIcon, ExclamationTriangleIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { cx } from './Primitives.jsx';
@@ -92,28 +92,66 @@ export function Tooltip({ label, side = 'top', children }) {
 /* ── Popover ──────────────────────────────────────────────────── */
 export function Popover({ trigger, children, side = 'bottom', align = 'start' }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const [pos, setPos]   = useState(null);
+  const triggerRef = useRef(null);
+  const popRef     = useRef(null);
+
+  // Position the (portaled) popover relative to the trigger, flipping above when
+  // there isn't room below. Portaling to <body> means it escapes any ancestor
+  // overflow:hidden (tables, cards, scroll areas) that would otherwise clip it.
+  const place = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const gap = 6;
+    const spaceBelow = window.innerHeight - r.bottom;
+    const flipUp = spaceBelow < 220 && r.top > spaceBelow;
+    setPos({
+      top:    flipUp ? null : Math.round(r.bottom + gap),
+      bottom: flipUp ? Math.round(window.innerHeight - r.top + gap) : null,
+      left:   align === 'end' ? null : Math.round(r.left),
+      right:  align === 'end' ? Math.round(window.innerWidth - r.right) : null,
+    });
+  }, [align]);
+
+  const toggle = () => setOpen(o => { if (!o) place(); return !o; });
 
   useEffect(() => {
     if (!open) return;
-    const onClick = e => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    place();
+    const onDown = e => {
+      if (triggerRef.current?.contains(e.target) || popRef.current?.contains(e.target)) return;
+      setOpen(false);
     };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
-  }, [open]);
+    const onReflow = () => place();
+    document.addEventListener('mousedown', onDown);
+    window.addEventListener('resize', onReflow);
+    window.addEventListener('scroll', onReflow, true);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      window.removeEventListener('resize', onReflow);
+      window.removeEventListener('scroll', onReflow, true);
+    };
+  }, [open, place]);
 
   return (
-    <span className="aeos-popover-wrap" ref={ref}>
-      <span onClick={() => setOpen(o => !o)}>{trigger}</span>
-      {open && (
+    <span className="aeos-popover-wrap">
+      <span ref={triggerRef} onClick={toggle}>{trigger}</span>
+      {open && pos && createPortal(
         <div
+          ref={popRef}
           className="aeos-popover aeos-glass-strong aeos-anim-pop-in"
-          data-side={side}
-          data-align={align}
+          style={{
+            position: 'fixed',
+            top:    pos.top    ?? undefined,
+            bottom: pos.bottom ?? undefined,
+            left:   pos.left   ?? undefined,
+            right:  pos.right  ?? undefined,
+          }}
         >
           {typeof children === 'function' ? children({ close: () => setOpen(false) }) : children}
-        </div>
+        </div>,
+        document.body,
       )}
     </span>
   );

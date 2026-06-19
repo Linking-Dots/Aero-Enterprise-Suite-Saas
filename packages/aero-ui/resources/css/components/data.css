@@ -294,3 +294,11 @@
   border-color: var(--aeos-warning-border);
   color: var(--aeos-secondary);
 }
+
+/* ── Table bulk-action bar (resource-management standard) ──────────────────── */
+.aeos-table-bulkbar {
+  padding: var(--aeos-space-2) var(--aeos-space-3);
+  background: var(--aeos-primary-tint);
+  border: var(--aeos-border-width) solid var(--aeos-primary-border);
+  border-radius: var(--aeos-r-md);
+}
