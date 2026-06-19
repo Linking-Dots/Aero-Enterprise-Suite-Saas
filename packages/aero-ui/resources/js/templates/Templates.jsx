@@ -4,7 +4,7 @@ import { Breadcrumb, PageHeader } from '../components/Navigation.jsx';
 
 /* ── IndexPageLayout — list views with KPIs + filter bar + table ─ */
 export function IndexPageLayout({
-  title, breadcrumb, eyebrow, description, actions,
+  title, breadcrumb, eyebrow, description, actions, tabs,
   kpis, filters, table, pagination, maxWidth,
 }) {
   return (
@@ -18,6 +18,7 @@ export function IndexPageLayout({
         eyebrow={eyebrow}
         description={description}
         actions={actions}
+        tabs={tabs}
       />
       {kpis?.length > 0 && (
         <div className="aeos-kpi-row">

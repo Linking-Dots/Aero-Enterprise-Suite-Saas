@@ -143,3 +143,6 @@
 /* Light mode */
 .aeos--light .aeos-theme-toggle { background:var(--aeos-bg-tint); }
 .aeos--light .aeos-theme-toggle-slider { background:var(--aeos-bg-active); border-color:var(--aeos-border-base); }
+
+/* Page-header tabs slot (resource-management standard) */
+.aeos-page-header-tabs { margin-top: var(--aeos-space-4); }

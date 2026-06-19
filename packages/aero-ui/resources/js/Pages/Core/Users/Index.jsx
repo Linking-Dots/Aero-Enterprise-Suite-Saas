@@ -17,6 +17,7 @@ import {
   Stat,
   Avatar,
   Menu,
+  Tabs,
 } from '@aero/ui';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import App from '@/Pages/App.jsx';
@@ -199,6 +200,24 @@ export default function UsersIndex({ users, roles, filters, stats }) {
         { label: 'Users' },
       ]}
       description="Manage user accounts, roles, and permissions."
+      tabs={
+        <Tabs
+          value={status === 'inactive' ? 'inactive' : 'all'}
+          tabs={[
+            { value: 'all',         label: 'All users',   count: stats?.total },
+            { value: 'invitations', label: 'Invitations' },
+            { value: 'inactive',    label: 'Deactivated',  count: stats?.inactive },
+          ]}
+          onChange={v => {
+            if (v === 'invitations') { router.visit('/users/invitations'); return; }
+            const newStatus = v === 'inactive' ? 'inactive' : '';
+            setStatus(newStatus);
+            router.get(route('core.users.index'), { search, status: newStatus, role }, {
+              preserveState: true, preserveScroll: true, only: ['users', 'filters'],
+            });
+          }}
+        />
+      }
       actions={
         canCreate && (
           <Button intent="primary" onClick={() => router.visit(route('core.users.create'))}>

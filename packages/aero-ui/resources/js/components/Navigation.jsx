@@ -108,7 +108,7 @@ export function SectionHeader({ eyebrow, title, description, actions, divider, c
 }
 
 /** PageHeader — page-level header with breadcrumb, title, status chip, and actions. */
-export function PageHeader({ breadcrumb, title, eyebrow, description, status, actions, className }) {
+export function PageHeader({ breadcrumb, title, eyebrow, description, status, actions, tabs, className }) {
   return (
     <header className={cx('aeos-page-header', className)}>
       {breadcrumb && <Breadcrumb items={breadcrumb} />}
@@ -123,6 +123,7 @@ export function PageHeader({ breadcrumb, title, eyebrow, description, status, ac
         </div>
         {actions && <div className="aeos-page-actions">{actions}</div>}
       </div>
+      {tabs && <div className="aeos-page-header-tabs">{tabs}</div>}
     </header>
   );
 }
