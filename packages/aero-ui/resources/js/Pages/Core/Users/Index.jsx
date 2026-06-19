@@ -19,6 +19,7 @@ import {
   Menu,
   Tabs,
   Drawer,
+  EmptyState,
 } from '@aero/ui';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import App from '@/Pages/App.jsx';
@@ -44,6 +45,15 @@ export default function UsersIndex({ users, roles, invitations, filters, stats }
   // table) and pending invitations (a different view). `view` switches datasets.
   const [view, setView] = useState('users');
   const invites = Array.isArray(invitations) ? invitations : (invitations?.data ?? []);
+
+  // Show the table skeleton while any partial reload (tab/filter/page) is in
+  // flight, so the user gets feedback instead of a frozen stale table.
+  const [tableLoading, setTableLoading] = useState(false);
+  useEffect(() => {
+    const offStart  = router.on('start',  () => setTableLoading(true));
+    const offFinish = router.on('finish', () => setTableLoading(false));
+    return () => { offStart(); offFinish(); };
+  }, []);
 
   const resendInvite = id => {
     router.post(route('core.users.invitations.resend', id), {}, {
@@ -280,6 +290,8 @@ export default function UsersIndex({ users, roles, invitations, filters, stats }
   ];
 
   const showingInvites = view === 'invitations';
+  const hasActiveFilter = !!(search || status || role);
+  const userRows = users?.data ?? [];
 
   return (
     <>
@@ -368,11 +380,18 @@ export default function UsersIndex({ users, roles, invitations, filters, stats }
       }
       table={
         showingInvites ? (
-          <DataTable
-            columns={invitationColumns}
-            rows={invites}
-            empty="No pending invitations. Use “Invite user” to add teammates by email."
-          />
+          !tableLoading && invites.length === 0 ? (
+            <EmptyState
+              icon="inbox"
+              title="No pending invitations"
+              description="Invite teammates by email — they set their own password and join with the role you choose."
+              action={canCreate && (
+                <Button intent="primary" onClick={() => setInviteOpen(true)}>Invite user</Button>
+              )}
+            />
+          ) : (
+            <DataTable columns={invitationColumns} rows={invites} loading={tableLoading} />
+          )
         ) : (
         <VStack gap={3}>
           {selectedIds.length > 0 && (
@@ -391,11 +410,27 @@ export default function UsersIndex({ users, roles, invitations, filters, stats }
               <Button intent="ghost" size="sm" onClick={() => setSelectedIds([])}>Clear</Button>
             </HStack>
           )}
-          <DataTable
-            columns={columns}
-            rows={users?.data || []}
-            empty="No users found."
-          />
+          {!tableLoading && userRows.length === 0 ? (
+            hasActiveFilter ? (
+              <EmptyState
+                icon="users"
+                title="No users match your filters"
+                description="Try adjusting your search, status, or role filters."
+                action={<Button intent="ghost" onClick={resetFilters}>Reset filters</Button>}
+              />
+            ) : (
+              <EmptyState
+                icon="users"
+                title="No users yet"
+                description="Invite your first teammate by email, or create an account directly."
+                action={canCreate && (
+                  <Button intent="primary" onClick={() => setInviteOpen(true)}>Invite user</Button>
+                )}
+              />
+            )
+          ) : (
+            <DataTable columns={columns} rows={userRows} loading={tableLoading} />
+          )}
         </VStack>
         )
       }
