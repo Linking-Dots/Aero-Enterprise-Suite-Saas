@@ -266,3 +266,29 @@ body[data-card-style] button.aeos-card-auto {
   color: inherit;
   text-decoration: none;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Card-style customizer on LIST-PAGE surfaces (KPI stat cards + table card).
+   These have their own internal layout (grid / table), so apply ONLY the
+   visual treatment per data-card-style — NOT `all: revert` (which would wipe
+   their layout). Keeps theming consistent with .aeos-card-auto on every page.
+   Design decision (memory: theme-consistency-all-pages): every surface must
+   respond to ALL theme-drawer settings.
+   ══════════════════════════════════════════════════════════════════════════ */
+.aeos-table-section { background: var(--aeos-bg-elevated); }
+
+body[data-card-style="flat"]     :is(.aeos-stat-card, .aeos-table-section) { background: var(--aeos-bg-subtle);   border-color: var(--aeos-border-subtle); box-shadow: none; }
+body[data-card-style="elevated"] :is(.aeos-stat-card, .aeos-table-section) { background: var(--aeos-bg-elevated); border-color: var(--aeos-primary-tint); box-shadow: var(--aeos-shadow-card); }
+body[data-card-style="glass"]    :is(.aeos-stat-card, .aeos-table-section) { background: var(--aeos-glass-bg); border-color: var(--aeos-glass-border); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+body[data-card-style="glass-strong"] :is(.aeos-stat-card, .aeos-table-section) { background: var(--aeos-glass-bg-strong); border-color: var(--aeos-primary-border); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+body[data-card-style="glow"]     :is(.aeos-stat-card, .aeos-table-section) { background: var(--aeos-bg-overlay); border-color: var(--aeos-primary); box-shadow: 0 0 0 1px var(--aeos-primary), var(--aeos-glow-cyan); }
+body[data-card-style="outline"]  :is(.aeos-stat-card, .aeos-table-section) { background: transparent; border: 1.5px solid var(--aeos-primary); box-shadow: none; }
+body[data-card-style="gradient-border"] :is(.aeos-stat-card, .aeos-table-section) {
+  border: var(--aeos-border-width) solid transparent;
+  background: linear-gradient(var(--aeos-bg-card), var(--aeos-bg-card)) padding-box, var(--aeos-grad-full) border-box;
+}
+body[data-card-style="noise"]    :is(.aeos-stat-card, .aeos-table-section) { background: var(--aeos-bg-elevated); border-color: var(--aeos-border-subtle); position: relative; }
+body[data-card-style="noise"]    :is(.aeos-stat-card, .aeos-table-section)::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
