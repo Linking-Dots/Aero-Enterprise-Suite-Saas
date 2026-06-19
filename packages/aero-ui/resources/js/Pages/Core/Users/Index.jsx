@@ -202,15 +202,15 @@ export default function UsersIndex({ users, roles, filters, stats }) {
       description="Manage user accounts, roles, and permissions."
       tabs={
         <Tabs
-          value={status === 'inactive' ? 'inactive' : 'all'}
+          value={status || 'all'}
           tabs={[
-            { value: 'all',         label: 'All users',   count: stats?.total },
-            { value: 'invitations', label: 'Invitations' },
-            { value: 'inactive',    label: 'Deactivated',  count: stats?.inactive },
+            { value: 'all',      label: 'All users',   count: stats?.total },
+            { value: 'active',   label: 'Active',      count: stats?.active },
+            { value: 'inactive', label: 'Deactivated', count: stats?.inactive },
           ]}
           onChange={v => {
-            if (v === 'invitations') { router.visit('/users/invitations'); return; }
-            const newStatus = v === 'inactive' ? 'inactive' : '';
+            // Tabs switch table content in place via the status filter — never navigate.
+            const newStatus = v === 'all' ? '' : v;
             setStatus(newStatus);
             router.get(route('core.users.index'), { search, status: newStatus, role }, {
               preserveState: true, preserveScroll: true, only: ['users', 'filters'],

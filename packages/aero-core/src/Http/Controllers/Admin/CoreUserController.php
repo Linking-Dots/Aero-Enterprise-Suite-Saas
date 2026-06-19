@@ -37,6 +37,13 @@ class CoreUserController extends Controller
             'users' => $users,
             'roles' => Role::orderBy('name')->get(['id', 'name']),
             'filters' => $request->only('search', 'role', 'status'),
+            // KPI stats — were never sent (so the cards read 0). active = not
+            // trashed, inactive (deactivated) = soft-deleted, total = both.
+            'stats' => [
+                'total'    => User::withTrashed()->count(),
+                'active'   => User::count(),
+                'inactive' => User::onlyTrashed()->count(),
+            ],
         ]);
     }
 
