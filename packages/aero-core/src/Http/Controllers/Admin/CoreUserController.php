@@ -33,9 +33,16 @@ class CoreUserController extends Controller
     {
         $users = $this->userService->list($request->only('search', 'role', 'status'));
 
+        // Invite-first UX: pending invitations are folded into this page under a
+        // "Pending invitations" tab (resend/cancel inline) — no separate page.
+        $invitations = $this->invitationService->list($request->only('search'))
+            ->whereNull('accepted_at')
+            ->values();
+
         return Inertia::render('Core/Users/Index', [
             'users' => $users,
             'roles' => Role::orderBy('name')->get(['id', 'name']),
+            'invitations' => $invitations,
             'filters' => $request->only('search', 'role', 'status'),
             // KPI stats — were never sent (so the cards read 0). active = not
             // trashed, inactive (deactivated) = soft-deleted, total = both.
@@ -43,6 +50,7 @@ class CoreUserController extends Controller
                 'total'    => User::withTrashed()->count(),
                 'active'   => User::count(),
                 'inactive' => User::onlyTrashed()->count(),
+                'pending'  => $invitations->count(),
             ],
         ]);
     }
