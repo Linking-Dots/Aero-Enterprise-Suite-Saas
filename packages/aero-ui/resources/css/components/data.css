@@ -302,3 +302,36 @@
   border: var(--aeos-border-width) solid var(--aeos-primary-border);
   border-radius: var(--aeos-r-md);
 }
+
+/* ── RBAC module-access tree (Roles & Access drawer) ───────────────────────────
+   Token-only; indentation/guides compound naturally through nested .rbac-children
+   so the hierarchy reads without inline styles or raw utility classes. */
+.rbac-tree { width: 100%; }
+.rbac-node { width: 100%; }
+.rbac-row {
+  padding: var(--aeos-space-2);
+  border-radius: var(--aeos-r-sm);
+}
+.rbac-row:hover { background: var(--aeos-bg-hover); }
+.rbac-row--mod { background: var(--aeos-bg-subtle); }
+.rbac-grow { flex: 1 1 auto; min-width: 0; }
+.rbac-children {
+  padding-left: var(--aeos-space-3);
+  margin-left: var(--aeos-space-3);
+  border-left: var(--aeos-border-width) solid var(--aeos-border-subtle);
+}
+.rbac-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--aeos-space-5);
+  height: var(--aeos-space-5);
+  flex-shrink: 0;
+  color: var(--aeos-text-tertiary);
+  border-radius: var(--aeos-r-sm);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.rbac-chevron:hover { background: var(--aeos-bg-hover); color: var(--aeos-text-primary); }
+.rbac-empty { padding: var(--aeos-space-1) var(--aeos-space-2); }

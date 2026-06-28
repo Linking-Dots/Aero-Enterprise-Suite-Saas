@@ -12,7 +12,6 @@ import {
     EnvelopeIcon,
     UserPlusIcon,
     ShieldCheckIcon,
-    Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 
 function RailStat({ label, value }) {
@@ -54,10 +53,6 @@ export default function UsersRail() {
                     <Link href="/roles" className="dash-rail-link">
                         <ShieldCheckIcon className="aeos-icon-sm" aria-hidden="true" />
                         <span>Roles &amp; access</span>
-                    </Link>
-                    <Link href="/modules" className="dash-rail-link">
-                        <Squares2X2Icon className="aeos-icon-sm" aria-hidden="true" />
-                        <span>Module access</span>
                     </Link>
                 </VStack>
             </VStack>
