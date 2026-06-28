@@ -23,6 +23,7 @@ import {
 } from '@aero/ui';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import App from '@/Pages/App.jsx';
+import UsersRail from './UsersRail.jsx';
 
 export default function UsersIndex({ users, roles, invitations, filters, stats }) {
   const toast = useToast();
@@ -85,6 +86,14 @@ export default function UsersIndex({ users, roles, invitations, filters, stats }
       onError:   () => toast.error('Could not send invitation.'),
     });
   };
+
+  // The command-shell context rail (UsersRail) triggers the invite drawer via a
+  // window event, so the rail stays decoupled from this page's local state.
+  useEffect(() => {
+    const open = () => setInviteOpen(true);
+    window.addEventListener('aeos:open-invite', open);
+    return () => window.removeEventListener('aeos:open-invite', open);
+  }, []);
 
   const applyFilters = () => {
     router.get(route('core.users.index'), { search, status, role }, {
@@ -504,5 +513,5 @@ export default function UsersIndex({ users, roles, invitations, filters, stats }
 }
 
 UsersIndex.layout = page => (
-  <App title="Users">{page}</App>
+  <App title="Users" railTitle="User management" rail={<UsersRail />}>{page}</App>
 );
