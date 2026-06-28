@@ -364,8 +364,10 @@ Route::middleware('auth:web')->group(function () {
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-modules' capability can access these routes
     Route::prefix('modules')->name('core.modules.')->middleware('hrmac:core.roles_permissions.module_access.view')->group(function () {
-        // View
-        Route::get('/', [ModuleController::class, 'index'])->name('index');
+        // View — module access is now edited inline on the unified RBAC page (per-role
+        // access Drawer), so the standalone tree page redirects there. The JSON
+        // role-access.show|sync endpoints below remain the editor's data contract.
+        Route::get('/', fn () => redirect()->route('core.roles.index'))->name('index');
         Route::get('/api', [ModuleController::class, 'apiIndex'])->name('api.index');
         Route::post('/check-access', [ModuleController::class, 'checkAccess'])->name('check-access');
         Route::get('/{moduleCode}/requirements', [ModuleController::class, 'getModuleRequirements'])->name('requirements');

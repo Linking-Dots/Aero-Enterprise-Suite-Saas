@@ -6,7 +6,12 @@ namespace Aero\HRMAC\Http\Controllers;
 
 use Aero\HRMAC\Http\Requests\StoreRoleRequest;
 use Aero\HRMAC\Http\Requests\UpdateRoleRequest;
+use Aero\HRMAC\Models\Module;
+use Aero\HRMAC\Models\ModuleComponent;
+use Aero\HRMAC\Models\ModuleComponentAction;
 use Aero\HRMAC\Models\Role;
+use Aero\HRMAC\Models\RoleModuleAccess;
+use Aero\HRMAC\Models\SubModule;
 use Aero\HRMAC\Services\RoleService;
 use Aero\Kernel\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -50,14 +55,89 @@ class RoleController extends Controller
         // platform shell) via a route default — HRMAC names no specific view.
         $view = $request->route()?->defaults['hrmac_role_view'] ?? 'Core/Roles/Index';
 
-        return Inertia::render($view, [
+        $props = [
             'roles' => $roles,
-            // Assignable users for the (tenant) inline-assign modal. Best-effort: the
+            // Assignable users for the inline assign-user drawer. Best-effort: the
             // configured user model may be unqueryable in some host contexts (e.g. the
             // tenant-scoped User model on the platform), where this surface isn't used.
             'users' => $this->assignableUsers(),
             'can_manage_super_admin' => $this->isSuperAdmin($request->user()),
-        ]);
+        ];
+
+        // The unified tenant RBAC page edits per-role module access inline (the access
+        // Drawer), so it also needs the module tree, the available action scopes, and
+        // the registry counts. The platform role view is a different component that
+        // neither needs nor renders these, so we only attach them for the core view —
+        // and never run the tenant-scoped module query in the platform context.
+        if ($view === 'Core/Roles/Index') {
+            $props['modules'] = $this->moduleTree('tenant');
+            $props['accessScopes'] = RoleModuleAccess::ACCESS_SCOPES;
+            $props['statistics'] = $this->moduleStatistics('tenant');
+        }
+
+        return Inertia::render($view, $props);
+    }
+
+    /**
+     * Build the hierarchical module tree (module → sub-module → component → action)
+     * the access Drawer renders. Mirrors the shape ModuleController exposes, using
+     * numeric DB ids so it round-trips with core.modules.role-access.show|sync.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function moduleTree(string $scope): array
+    {
+        return Module::where('scope', $scope)
+            ->where('is_active', true)
+            ->with([
+                'subModules' => fn ($q) => $q->orderBy('priority'),
+                'subModules.components' => fn ($q) => $q->orderBy('id'),
+                'subModules.components.actions' => fn ($q) => $q->orderBy('id'),
+            ])
+            ->orderBy('priority')
+            ->get()
+            ->map(fn (Module $module) => [
+                'id' => $module->id,
+                'code' => $module->code,
+                'name' => $module->name,
+                'is_core' => $module->is_core,
+                'sub_modules' => $module->subModules->map(fn (SubModule $sub) => [
+                    'id' => $sub->id,
+                    'code' => $sub->code,
+                    'name' => $sub->name,
+                    'components' => $sub->components->map(fn (ModuleComponent $comp) => [
+                        'id' => $comp->id,
+                        'code' => $comp->code,
+                        'name' => $comp->name,
+                        'actions' => $comp->actions->map(fn (ModuleComponentAction $action) => [
+                            'id' => $action->id,
+                            'code' => $action->code,
+                            'name' => $action->name,
+                        ])->toArray(),
+                    ])->toArray(),
+                ])->toArray(),
+            ])->toArray();
+    }
+
+    /**
+     * Registry counts for the access-related KPIs on the RBAC page.
+     *
+     * @return array<string, int>
+     */
+    private function moduleStatistics(string $scope): array
+    {
+        $moduleIds = Module::where('scope', $scope)->where('is_active', true)->pluck('id');
+        $subModuleIds = SubModule::whereIn('module_id', $moduleIds)->pluck('id');
+
+        return [
+            'total_modules' => $moduleIds->count(),
+            'total_sub_modules' => $subModuleIds->count(),
+            'total_components' => ModuleComponent::whereIn('sub_module_id', $subModuleIds)->count(),
+            'total_actions' => ModuleComponentAction::whereHas(
+                'component',
+                fn ($q) => $q->whereIn('sub_module_id', $subModuleIds)
+            )->count(),
+        ];
     }
 
     /**

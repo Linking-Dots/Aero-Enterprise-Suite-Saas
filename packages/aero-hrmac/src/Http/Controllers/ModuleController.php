@@ -853,9 +853,15 @@ class ModuleController extends Controller
 
     /**
      * Get role access tree for a specific role (for UI display)
+     *
+     * The {roleId} is read explicitly from the route by name. Multi-tenant routes
+     * carry a leading tenant route parameter, so a positional/typed binding would
+     * receive the tenant slug instead of the role id.
      */
-    public function getRoleAccess(int $roleId)
+    public function getRoleAccess(Request $request)
     {
+        $roleId = (int) $request->route('roleId');
+
         if (! $this->isSuperAdmin()) {
             return response()->json(['error' => 'Insufficient permissions'], 403);
         }
@@ -903,8 +909,12 @@ class ModuleController extends Controller
      *   ]
      * }
      */
-    public function syncRoleAccess(Request $request, int $roleId)
+    public function syncRoleAccess(Request $request)
     {
+        // Read {roleId} from the route by name — multi-tenant routes carry a leading
+        // tenant route parameter that would otherwise bind positionally to $roleId.
+        $roleId = (int) $request->route('roleId');
+
         if (! $this->isSuperAdmin()) {
             return response()->json(['error' => 'Insufficient permissions'], 403);
         }
