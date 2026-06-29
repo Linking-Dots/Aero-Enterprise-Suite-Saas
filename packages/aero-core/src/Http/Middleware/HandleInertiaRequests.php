@@ -573,27 +573,15 @@ class HandleInertiaRequests extends Middleware
                 $modules = array_merge($modules, $coreModules);
             }
 
-            // Add plan-based modules from subscription
+            // Add subscribed product modules. Canonical source: Tenant::getSubscribedProductModules
+            // (baseline + active/trialing product_subscriptions). This replaces both the
+            // hand-rolled product query and the tenant_module pivot override — the override's
+            // ->where('is_active', true) on the joined pivot raised an ambiguous-column SQL
+            // error (modules.is_active vs tenant_module.is_active) that made this whole method
+            // fail closed, so the nav only ever rendered core modules.
             $tenant = tenant();
             if ($tenant) {
-                // Access gate: ProductSubscription is the canonical source of module access.
-                // plan_modules defines the catalog/storefront only — it does NOT grant access.
-                $productModules = $tenant->productSubscriptions()
-                    ->where('status', 'active')
-                    ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
-                    ->with('product:id,module_code')
-                    ->get()
-                    ->pluck('product.module_code')
-                    ->filter()
-                    ->values()
-                    ->toArray();
-                $modules = array_merge($modules, $productModules);
-
-                // Admin overrides: granted outside subscription flow
-                $tenantModules = $tenant->modules()->where('is_active', true)->pluck('code')->toArray();
-                if (! empty($tenantModules)) {
-                    $modules = array_merge($modules, $tenantModules);
-                }
+                $modules = array_merge($modules, $tenant->subscribed_product_modules);
             }
 
             $result = array_values(array_unique($modules));
