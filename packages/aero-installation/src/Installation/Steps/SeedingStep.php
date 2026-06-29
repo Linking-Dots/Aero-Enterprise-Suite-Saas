@@ -91,13 +91,12 @@ class SeedingStep extends BaseInstallationStep
         // has no platform super-admin role and the installer's admin user cannot access
         // the platform admin. It must run after the module hierarchy is synced
         // (ModuleDiscoveryStep, which sets module scope='platform').
+        // Catalog (plans/products/module pricing) is seeded by PlanSeedingStep via the
+        // platform PlatformDatabaseSeeder; this step seeds only landlord RBAC data.
         $platformSeeders = [
             'Aero\\Core\\Database\\Seeders\\RoleSeeder',
             'Aero\\Core\\Database\\Seeders\\RoleModuleAccessSeeder',
             'Aero\\Platform\\Database\\Seeders\\PlatformHrmacSeeder',
-            // Product catalog (gated to installed/priced product packages) — without it
-            // the marketplace + product-subscription flow have nothing to sell.
-            'Aero\\Platform\\Database\\Seeders\\ProductSeeder',
         ];
 
         foreach ($platformSeeders as $seeder) {
