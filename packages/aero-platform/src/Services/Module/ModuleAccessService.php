@@ -435,8 +435,9 @@ class ModuleAccessService
     /**
      * Check if the tenant has access to a specific module/item.
      *
-     * Module access is determined by the tenant_module pivot and
-     * independent module subscriptions (subscription_modules), not by the plan.
+     * Module access is determined by the canonical product subscriptions
+     * (Tenant::getSubscribedProductModules = baseline + active/trialing
+     * product_subscriptions), not by the plan.
      *
      * @param  string  $type  Type: module, submodule, component, action
      */
@@ -457,35 +458,20 @@ class ModuleAccessService
         $cacheKey = "tenant_modules_access:{$tenant->id}";
 
         $activeModuleCodes = TenantCache::remember($cacheKey, 300, function () use ($tenant) {
-            $moduleCodes = [];
+            // Canonical: baseline + active/trialing product subscriptions
+            // (Tenant::getSubscribedProductModules). Replaces the deprecated tenant_module
+            // pivot + legacy subscription_modules reads, which would miss products bought
+            // through the unified product_subscriptions flow.
+            $moduleCodes = $tenant->subscribed_product_modules;
 
-            // Check 1: Get modules from tenant_module pivot (active subscribed modules)
-            $tenantModules = $tenant->modules()->pluck('code')->toArray();
-            $moduleCodes = array_merge($moduleCodes, $tenantModules);
-
-            // Check 2: Get modules from active module subscriptions (subscription_modules table)
-            $moduleSubCodes = $tenant->moduleSubscriptions()
-                ->where(function ($q) {
-                    $q->where('status', 'active')
-                        ->orWhere('status', 'trialing');
-                })
-                ->where(function ($q) {
-                    $q->whereNull('ends_at')
-                        ->orWhere('ends_at', '>=', now());
-                })
-                ->pluck('module_code')
-                ->toArray();
-            $moduleCodes = array_merge($moduleCodes, $moduleSubCodes);
-
-            // Add core modules (always accessible)
+            // Defensive: ensure core DB modules are always accessible (baseline already
+            // includes 'core', but a tenant may have additional is_core modules).
             $coreModules = Module::where('is_core', true)
                 ->where('is_active', true)
                 ->pluck('code')
                 ->toArray();
-            $moduleCodes = array_merge($moduleCodes, $coreModules);
 
-            // Return unique module codes
-            return array_unique($moduleCodes);
+            return array_values(array_unique(array_merge($moduleCodes, $coreModules)));
         });
 
         // Check if module is allowed

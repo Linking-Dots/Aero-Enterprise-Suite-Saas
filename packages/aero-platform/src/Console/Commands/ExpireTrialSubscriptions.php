@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Console\Commands;
 
+use Aero\Platform\Events\ProductSubscriptionChanged;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\SubscriptionModule;
 use Illuminate\Console\Command;
@@ -13,8 +15,9 @@ use Illuminate\Support\Facades\Log;
  * Expire trial subscriptions whose trial_ends_at has passed.
  *
  * Handles non-Stripe tenants (SSLCommerz, manual billing) who don't receive
- * Stripe webhook events for trial expiration. Also covers module trial periods
- * (subscription_modules with status=trialing).
+ * Stripe webhook events for trial expiration. Covers plan trials (subscriptions),
+ * the canonical product trials (product_subscriptions), and the legacy module
+ * trials (subscription_modules) still present from older data.
  */
 class ExpireTrialSubscriptions extends Command
 {
@@ -27,12 +30,61 @@ class ExpireTrialSubscriptions extends Command
         $this->info('Processing expired trials...');
 
         $planTrials = $this->expirePlanTrials();
+        $productTrials = $this->expireProductTrials();
         $moduleTrials = $this->expireModuleTrials();
 
         $this->info("Plan trials expired: {$planTrials}");
-        $this->info("Module trials expired: {$moduleTrials}");
+        $this->info("Product trials expired: {$productTrials}");
+        $this->info("Module trials expired (legacy): {$moduleTrials}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Expire product subscription trials (product_subscriptions table) — the canonical
+     * source of module access. Fires ProductSubscriptionChanged('cancelled') so the
+     * tenant module catalog re-syncs and role access for the lapsed module is suspended.
+     */
+    protected function expireProductTrials(): int
+    {
+        $expired = 0;
+
+        $trials = ProductSubscription::where('status', 'trialing')
+            ->whereNotNull('trial_ends_at')
+            ->where('trial_ends_at', '<=', now())
+            ->get();
+
+        foreach ($trials as $productSub) {
+            try {
+                // Skip externally-managed (Stripe etc.) subscriptions — the provider's
+                // webhook drives their lifecycle.
+                if ($productSub->external_subscription_id) {
+                    continue;
+                }
+
+                $productSub->update([
+                    'status' => 'expired',
+                    'ends_at' => $productSub->trial_ends_at,
+                ]);
+
+                event(new ProductSubscriptionChanged($productSub, 'cancelled'));
+
+                Log::info('Product trial subscription expired', [
+                    'product_subscription_id' => $productSub->id,
+                    'product_id' => $productSub->product_id,
+                    'tenant_id' => $productSub->tenant_id,
+                ]);
+
+                $expired++;
+            } catch (\Exception $e) {
+                Log::error('Failed to expire product trial subscription', [
+                    'product_subscription_id' => $productSub->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $expired;
     }
 
     /**
