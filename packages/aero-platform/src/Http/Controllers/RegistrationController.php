@@ -11,8 +11,9 @@ use Aero\Platform\Http\Requests\RegistrationTrialRequest;
 use Aero\Platform\Jobs\ProvisionTenant;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlatformSetting;
+use Aero\Platform\Models\Product;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
-use Aero\Platform\Models\SubscriptionModule;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\Module\RegistrationModuleDiscovery;
 use Aero\Platform\Services\Monitoring\PlatformVerificationService;
@@ -521,29 +522,26 @@ class RegistrationController extends Controller
                             'ends_at' => $trialEndsAt,
                         ]);
 
-                        // Create separate trial subscriptions for each selected product module
+                        // Canonical: one product_subscription per selected product. This is
+                        // the single source of truth that provisioning + module-access read
+                        // (Tenant::getSubscribedProductModules). The legacy subscription_modules
+                        // table is no longer written here. The ProductSubscriptionChanged event
+                        // is intentionally NOT fired during initial registration — the
+                        // ProvisionTenant job performs the first module sync; the event is for
+                        // post-provisioning subscription changes.
                         $selectedModules = (array) ($tenant->data['selected_modules'] ?? []);
                         $productModules = array_values(array_diff($selectedModules, ['core']));
 
                         if (! empty($productModules)) {
-                            $modulePricingRows = DB::table('module_pricing')
-                                ->whereIn('module_code', $productModules)
+                            $products = Product::whereIn('module_code', $productModules)
                                 ->where('is_active', true)
                                 ->get()
                                 ->keyBy('module_code');
 
                             foreach ($productModules as $moduleCode) {
-                                if (SubscriptionModule::where('billable_type', Tenant::class)
-                                    ->where('billable_id', $tenant->id)
-                                    ->where('module_code', $moduleCode)
-                                    ->exists()
-                                ) {
-                                    continue;
-                                }
-
-                                $pricing = $modulePricingRows->get($moduleCode);
-                                if (! $pricing) {
-                                    Log::warning('Module pricing not found for selected module during trial activation', [
+                                $product = $products->get($moduleCode);
+                                if (! $product) {
+                                    Log::warning('No active product found for selected module during trial activation', [
                                         'tenant_id' => $tenant->id,
                                         'module_code' => $moduleCode,
                                     ]);
@@ -551,19 +549,24 @@ class RegistrationController extends Controller
                                     continue;
                                 }
 
-                                $moduleAmount = $billingCycle === 'yearly'
-                                    ? $pricing->yearly_price
-                                    : $pricing->monthly_price;
+                                if (ProductSubscription::where('tenant_id', $tenant->id)
+                                    ->where('product_id', $product->id)
+                                    ->exists()
+                                ) {
+                                    continue;
+                                }
 
-                                SubscriptionModule::create([
-                                    'id' => (string) Str::uuid(),
-                                    'billable_type' => Tenant::class,
-                                    'billable_id' => $tenant->id,
-                                    'module_code' => $moduleCode,
+                                $moduleAmount = $billingCycle === 'yearly'
+                                    ? $product->yearly_price
+                                    : $product->monthly_price;
+
+                                ProductSubscription::create([
+                                    'tenant_id' => $tenant->id,
+                                    'product_id' => $product->id,
                                     'billing_cycle' => $billingCycle,
                                     'amount' => $moduleAmount,
-                                    'currency' => $plan->currency ?? config('cashier.currency', 'usd'),
-                                    'status' => SubscriptionModule::STATUS_TRIALING,
+                                    'currency' => $product->currency ?? $plan->currency ?? config('cashier.currency', 'usd'),
+                                    'status' => 'trialing',
                                     'trial_starts_at' => now(),
                                     'trial_ends_at' => $trialEndsAt,
                                     'starts_at' => now(),

@@ -57,8 +57,10 @@ class TenantMigrationPaths
             }
         }
 
-        // Tenant's subscribed product modules (+ dependencies).
-        $modules = $this->resolveModuleDependencies($tenant->getActiveModules()->all());
+        // Tenant's subscribed product modules (+ dependencies). Canonical source is
+        // product_subscriptions via getSubscribedProductModules (baseline entries are
+        // filtered out below), retiring the deprecated tenant_module pivot read.
+        $modules = $this->resolveModuleDependencies($tenant->subscribed_product_modules);
         foreach ($modules as $code) {
             if (in_array($code, self::EXCLUDED_MODULES, true) || in_array($code, $baseline, true)) {
                 continue;

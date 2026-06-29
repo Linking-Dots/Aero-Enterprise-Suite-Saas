@@ -183,11 +183,9 @@ class ProvisionTenant implements ShouldQueue
             $this->logAuditEvent('tenant.provisioning.completed', array_merge($context, [
                 'plan_id' => $planId,
                 'plan_name' => $planName,
-                // Central HRMAC read in queue/sync context — guard would throw and (worse)
-                // roll back an already-SUCCESSFUL provision. Wrap it.
-                'modules' => \Aero\Contracts\AeroMode::withoutTenantContextGuard(
-                    fn () => $this->tenant->getActiveModules()->all()
-                ) ?? [],
+                // Canonical subscribed product modules (product_subscriptions + baseline),
+                // read from the central connection — no HRMAC tenant-context guard needed.
+                'modules' => $this->tenant->subscribed_product_modules,
                 'database' => $this->tenant->database()?->getName(),
             ]));
         } catch (Throwable $e) {
@@ -685,13 +683,10 @@ class ProvisionTenant implements ShouldQueue
         $this->logStep('   → Auth-first core + sharable migrations: '.count($paths).' path(s)', ['paths' => $paths]);
 
         // Subscribed PRODUCTS only (tier=product), with dependencies auto-resolved.
-        // getActiveModules() reads the tenant_module pivot + HRMAC Module on the CENTRAL
-        // DB; provisioning runs in a queue/sync context with no tenant/platform HRMAC
-        // context resolved, so the HrmacModel guard would throw. Central landlord read —
-        // legitimate, no tenant to leak between.
-        $tenantModules = \Aero\Contracts\AeroMode::withoutTenantContextGuard(
-            fn () => $this->tenant->getActiveModules()->all()
-        );
+        // Canonical source: Tenant::getSubscribedProductModules (product_subscriptions +
+        // baseline), read from the central connection (ProductSubscription is a
+        // CentralModel) — no HRMAC tenant-context guard needed.
+        $tenantModules = $this->tenant->subscribed_product_modules;
 
         if (! empty($tenantModules)) {
             $tenantModules = $this->resolveModuleDependencies($tenantModules);
@@ -801,7 +796,7 @@ class ProvisionTenant implements ShouldQueue
         $modules = $this->discoverModuleConfigs();
 
         // Filter module configs by tenant modules (from tenant_module pivot table)
-        $tenantModuleCodes = $this->tenant->getActiveModules()->all();
+        $tenantModuleCodes = $this->tenant->subscribed_product_modules;
         $tenantModuleCodes = array_values(array_filter($tenantModuleCodes));
 
         // Resolve dependencies to ensure required modules are included
@@ -851,7 +846,7 @@ class ProvisionTenant implements ShouldQueue
         $modules = [];
 
         // Get tenant-selected module codes (core is always included)
-        $tenantModuleCodes = $this->tenant->getActiveModules()->all();
+        $tenantModuleCodes = $this->tenant->subscribed_product_modules;
         $tenantModuleCodes = array_values(array_filter($tenantModuleCodes));
         $allowedCodes = array_merge(['core'], $tenantModuleCodes);
         $allowedCodes = array_values(array_unique($allowedCodes));
