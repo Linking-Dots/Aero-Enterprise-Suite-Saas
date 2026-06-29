@@ -35,7 +35,9 @@ export default function SettingsSection({
             </Button>
           )}
           {onSave && (
-            <Button type="submit" intent="primary" loading={processing} disabled={!dirty} onClick={onSave}>
+            // type="submit" triggers the wrapping <form onSubmit>; no onClick here,
+            // otherwise the handler fires twice (click + native submit) per save.
+            <Button type="submit" intent="primary" loading={processing} disabled={!dirty}>
               Save changes
             </Button>
           )}

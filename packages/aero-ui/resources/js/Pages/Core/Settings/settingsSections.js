@@ -9,7 +9,7 @@
  * for ANY item, every icon here is a heroicons-component reference (same pattern as
  * UsersRail.jsx), not a string name.
  */
-import { useHRMAC } from '@aero/ui';
+import { useHRMACMany } from '@aero/ui';
 import {
   Cog8ToothIcon,
   GlobeAltIcon,
@@ -55,19 +55,14 @@ function resolveHref(routeName) {
 
 /** Visible groups with hrefs, filtered by HRMAC view permission + resolvable route. */
 export function useVisibleSettingsGroups() {
-  // Hooks must run unconditionally: compute a permission map for every item first.
-  const flat = SETTINGS_GROUPS.flatMap(g => g.items);
-  const allow = {};
-  for (const item of flat) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    allow[item.key] = useHRMAC(item.permission);
-  }
+  // useHRMACMany resolves every permission in one call (no looped hook / lint suppression).
+  const allow = useHRMACMany(SETTINGS_GROUPS.flatMap(g => g.items.map(it => it.permission)));
   return SETTINGS_GROUPS
     .map(g => ({
       group: g.group,
       items: g.items
         .map(it => ({ ...it, href: resolveHref(it.routeName) }))
-        .filter(it => it.href && allow[it.key]),
+        .filter(it => it.href && allow[it.permission]),
     }))
     .filter(g => g.items.length > 0);
 }
