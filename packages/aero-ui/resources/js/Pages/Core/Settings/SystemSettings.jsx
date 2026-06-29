@@ -1,124 +1,69 @@
 /**
- * System Settings — tabbed navigation hub for all settings sub-routes.
- *
- * Each tab navigates to its own route. Active tab is derived from the
- * current URL. Below the tabs the passed `settings` object is rendered
- * as a read-only key→value list.
+ * General settings — organization identity. First section of the unified
+ * Settings shell (replaces the old navigation-hub).
  */
-import { usePage } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import {
-  IndexPageLayout,
-  Card, CardHeader, CardBody,
-  HStack, VStack,
-  Text, Mono, Eyebrow,
-  Button,
-  Badge,
-  useHRMAC,
+  Field, Input, Card, CardHeader, CardBody, VStack, Text, useToast, useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
-
-const TABS = [
-  { label: 'General',          routeName: 'core.settings.system' },
-  { label: 'Security',         routeName: 'core.settings.security' },
-  { label: 'Localization',     routeName: 'core.settings.localization' },
-  { label: 'Branding',         routeName: 'core.settings.branding' },
-  { label: 'Email / SMTP',     routeName: 'core.settings.mail' },
-  { label: 'Password Policy',  routeName: 'core.settings.password-policy' },
-  { label: 'IP Access',        routeName: 'core.settings.ip-whitelist' },
-  { label: 'Email Templates',  routeName: 'core.settings.email-templates.index' },
-];
-
-function resolveHref(routeName) {
-  try { return route(routeName); } catch { return '#'; }
-}
-
-function isActiveTab(href, currentUrl) {
-  if (!href || href === '#') return false;
-  return currentUrl.startsWith(href);
-}
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsSection from './SettingsSection.jsx';
+import SettingsRail from './SettingsRail.jsx';
 
 export default function SystemSettings({ settings = {} }) {
-  const { url } = usePage().props;
-  const currentUrl = url ?? (typeof window !== 'undefined' ? window.location.pathname : '');
+  const toast   = useToast();
   const canEdit = useHRMAC('core.settings.general.edit');
 
-  const settingEntries = Object.entries(settings);
+  const { data, setData, put, processing, errors, reset, isDirty } = useForm({
+    app_name:      settings.app_name      ?? '',
+    app_url:       settings.app_url       ?? '',
+    support_email: settings.support_email ?? '',
+  });
+
+  function handleSave(e) {
+    e.preventDefault();
+    put(route('core.settings.system.update'), {
+      preserveScroll: true,
+      onSuccess: () => toast.success('General settings saved.'),
+      onError:   () => toast.error('Please fix the errors below.'),
+    });
+  }
 
   return (
-    <IndexPageLayout
-      title="System Settings"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Settings' },
-      ]}
-      description="Navigate to any settings area using the tabs below."
-    >
-      <VStack gap={6}>
-
-        {/* ── Tab Navigation ── */}
+    <form onSubmit={handleSave}>
+      <SettingsSection
+        title="General"
+        description="Your organization's name, URL, and support contact."
+        canEdit={canEdit}
+        dirty={isDirty}
+        processing={processing}
+        onReset={() => reset()}
+        onSave={handleSave}
+      >
         <Card>
-          <CardHeader>
-            <Eyebrow>Settings Areas</Eyebrow>
-          </CardHeader>
+          <CardHeader><Text size="sm" tone="secondary">Organization</Text></CardHeader>
           <CardBody>
-            <HStack gap={2} wrap>
-              {TABS.map(tab => {
-                const href = resolveHref(tab.routeName);
-                const active = isActiveTab(href, currentUrl);
-                return (
-                  <Button
-                    key={tab.routeName}
-                    intent={active ? 'primary' : 'soft'}
-                    size="sm"
-                    onClick={() => router.get(href)}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </HStack>
+            <VStack gap={4}>
+              <Field label="Application Name" error={errors.app_name}>
+                <Input value={data.app_name} onChange={e => setData('app_name', e.target.value)} placeholder="My Company" />
+              </Field>
+              <Field label="Application URL" error={errors.app_url}>
+                <Input value={data.app_url} onChange={e => setData('app_url', e.target.value)} placeholder="https://company.example.com" />
+              </Field>
+              <Field label="Support Email" error={errors.support_email}>
+                <Input type="email" value={data.support_email} onChange={e => setData('support_email', e.target.value)} placeholder="support@company.com" leftIcon="mail" />
+              </Field>
+            </VStack>
           </CardBody>
         </Card>
-
-        {/* ── Settings Key-Value List ── */}
-        {settingEntries.length > 0 && (
-          <Card>
-            <CardHeader>
-              <Text size="sm" tone="secondary">Current Settings</Text>
-            </CardHeader>
-            <CardBody>
-              <VStack gap={3}>
-                {settingEntries.map(([key, value]) => (
-                  <HStack key={key} gap={4} align="start">
-                    <Mono size="sm" tone="secondary">{key}</Mono>
-                    <Text size="sm">
-                      {value === null || value === undefined
-                        ? <Text tone="tertiary" size="sm">—</Text>
-                        : typeof value === 'boolean'
-                          ? <Badge intent={value ? 'success' : 'neutral'}>{value ? 'true' : 'false'}</Badge>
-                          : String(value)}
-                    </Text>
-                  </HStack>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-        )}
-
-        {settingEntries.length === 0 && (
-          <Card>
-            <CardBody>
-              <Text tone="secondary" size="sm">No settings data passed. Select a tab above to manage a specific settings area.</Text>
-            </CardBody>
-          </Card>
-        )}
-
-      </VStack>
-    </IndexPageLayout>
+      </SettingsSection>
+    </form>
   );
 }
 
 SystemSettings.layout = page => (
-  <App title="System Settings">{page}</App>
+  <App title="Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="general">{page}</SettingsLayout>
+  </App>
 );
