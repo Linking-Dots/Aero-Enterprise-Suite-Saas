@@ -95,6 +95,9 @@ class SeedingStep extends BaseInstallationStep
             'Aero\\Core\\Database\\Seeders\\RoleSeeder',
             'Aero\\Core\\Database\\Seeders\\RoleModuleAccessSeeder',
             'Aero\\Platform\\Database\\Seeders\\PlatformHrmacSeeder',
+            // Product catalog (gated to installed/priced product packages) — without it
+            // the marketplace + product-subscription flow have nothing to sell.
+            'Aero\\Platform\\Database\\Seeders\\ProductSeeder',
         ];
 
         foreach ($platformSeeders as $seeder) {

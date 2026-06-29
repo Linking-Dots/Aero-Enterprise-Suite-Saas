@@ -4,6 +4,8 @@ namespace Aero\Platform\Database\Seeders;
 
 use Aero\Platform\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
@@ -73,16 +75,32 @@ class ProductSeeder extends Seeder
 
     public function run(): void
     {
+        // Gate the catalog to installed, priced product packages: module_pricing is
+        // populated (by PlanSeedingStep / ModulePricingSeeder) only for product
+        // packages present in this deployment. Seeding a product whose package isn't
+        // installed would list a product in the marketplace that can't be provisioned.
+        $installed = Schema::hasTable('module_pricing')
+            ? DB::table('module_pricing')->where('is_active', true)->pluck('module_code')->all()
+            : null;
+
+        $seeded = 0;
         foreach ($this->products as $data) {
+            if ($installed !== null && ! in_array($data['module_code'], $installed, true)) {
+                continue;
+            }
+
             Product::updateOrCreate(
                 ['code' => $data['code']],
                 array_merge($data, [
-                    'id'       => (string) Str::uuid(),
-                    'currency' => 'USD',
+                    'id'                    => (string) Str::uuid(),
+                    'currency'              => 'USD',
+                    'is_active'             => true,
+                    'is_marketplace_visible' => true,
                 ])
             );
+            $seeded++;
         }
 
-        $this->command->info('Products seeded: ' . count($this->products));
+        $this->command?->info("Products seeded: {$seeded}");
     }
 }
