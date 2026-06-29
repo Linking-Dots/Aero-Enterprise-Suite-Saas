@@ -125,10 +125,20 @@ export default function AccessDrawer({ role, modules = [], accessScopes, canConf
     }
   };
 
-  // Sub-modules are the top tier: every module's sub-modules are flattened into one
-  // list (the lone "Core Framework" module wrapper added only noise). Module-level
-  // grants (mods) are preserved in state and round-tripped on save, just not shown.
-  const allSubs = modules.flatMap(m => m.sub_modules || []);
+  // Layout rule (matches the nav):
+  //  • Core is ALWAYS flattened — its sub-modules sit at the top tier (no wrapper).
+  //  • A single product is also flattened (merged into that same flat list).
+  //  • Two+ products are each grouped under their module header (Human Resource,
+  //    Customer Relations, …); core stays flat above the groups.
+  // Module-level grants (mods) are preserved in state and round-tripped on save.
+  const productModules = modules.filter(m => ! m.is_core);
+  const groupProducts = productModules.length > 1;
+
+  // Flat tier: core sub-modules always, plus product sub-modules when not grouping.
+  const flatModules = groupProducts ? modules.filter(m => m.is_core) : modules;
+  const allSubs = flatModules.flatMap(m => m.sub_modules || []);
+  // Grouped tier: products, only when there are two or more.
+  const groupModules = groupProducts ? productModules : [];
 
   // Client-side filter: keep a sub-module/component if its name (or a descendant's)
   // matches the search term, so the tree stays navigable on large registries.
@@ -142,18 +152,13 @@ export default function AccessDrawer({ role, modules = [], accessScopes, canConf
     return (matches(s.name) || compList.length) ? { ...s, components: matches(s.name) ? s.components : compList } : null;
   };
   const filteredSubs = !q ? allSubs : allSubs.map(filterSub).filter(Boolean);
-
-  // Adaptive layout (matches the nav): a single product flattens its sub-modules to
-  // the top tier; multiple products group their sub-modules under a module header
-  // (e.g. "Human Resource", "Customer Relations").
-  const grouped = modules.length > 1;
-  const filteredModules = !grouped ? [] : modules
+  const filteredGroups = !q ? groupModules : groupModules
     .map(m => {
       const subList = (m.sub_modules || []).map(filterSub).filter(Boolean);
       return (matches(m.name) || subList.length) ? { ...m, sub_modules: matches(m.name) ? m.sub_modules : subList } : null;
     })
     .filter(Boolean);
-  const treeEmpty = grouped ? filteredModules.length === 0 : filteredSubs.length === 0;
+  const treeEmpty = filteredSubs.length === 0 && filteredGroups.length === 0;
 
   const grantTotal = subs.size + comps.size + mods.size;
   const grantedSummary = `${grantTotal} grant${grantTotal === 1 ? '' : 's'} · ${actions.size} action${actions.size === 1 ? '' : 's'}`;
@@ -269,31 +274,32 @@ export default function AccessDrawer({ role, modules = [], accessScopes, canConf
             />
           ) : (
             <VStack gap={1} className="rbac-tree">
-              {grouped
-                ? filteredModules.map(module => {
-                    const mOpen = expanded.has(`m${module.id}`) || !!q;
-                    return (
-                      <Box key={module.id} className="rbac-node">
-                        <HStack gap={2} align="center" className="rbac-row rbac-row--mod">
-                          <button type="button" className="rbac-chevron" onClick={() => toggleExpand(`m${module.id}`)} aria-label="Toggle">
-                            <Chevron openState={mOpen} />
-                          </button>
-                          <Checkbox checked={mods.has(module.id)} onChange={() => toggleId(setMods, mods, module.id)} />
-                          <Text size="sm" weight={700} className="rbac-grow">{module.name}</Text>
-                          {module.is_core && <Badge intent="neutral" size="sm">Core</Badge>}
-                        </HStack>
-                        {mOpen && (
-                          <VStack gap={0} className="rbac-children">
-                            {(module.sub_modules || []).map(sub => renderSub(sub, false))}
-                            {(!module.sub_modules || module.sub_modules.length === 0) && (
-                              <Text size="xs" tone="tertiary" className="rbac-empty">No sub-modules</Text>
-                            )}
-                          </VStack>
+              {/* Flat tier: core (always) + the single product when not grouping. */}
+              {filteredSubs.map(sub => renderSub(sub, true))}
+
+              {/* Grouped tier: each product under its own module header (2+ products). */}
+              {filteredGroups.map(module => {
+                const mOpen = expanded.has(`m${module.id}`) || !!q;
+                return (
+                  <Box key={module.id} className="rbac-node">
+                    <HStack gap={2} align="center" className="rbac-row rbac-row--mod">
+                      <button type="button" className="rbac-chevron" onClick={() => toggleExpand(`m${module.id}`)} aria-label="Toggle">
+                        <Chevron openState={mOpen} />
+                      </button>
+                      <Checkbox checked={mods.has(module.id)} onChange={() => toggleId(setMods, mods, module.id)} />
+                      <Text size="sm" weight={700} className="rbac-grow">{module.name}</Text>
+                    </HStack>
+                    {mOpen && (
+                      <VStack gap={0} className="rbac-children">
+                        {(module.sub_modules || []).map(sub => renderSub(sub, false))}
+                        {(!module.sub_modules || module.sub_modules.length === 0) && (
+                          <Text size="xs" tone="tertiary" className="rbac-empty">No sub-modules</Text>
                         )}
-                      </Box>
-                    );
-                  })
-                : filteredSubs.map(sub => renderSub(sub, true))}
+                      </VStack>
+                    )}
+                  </Box>
+                );
+              })}
             </VStack>
           )}
         </VStack>
