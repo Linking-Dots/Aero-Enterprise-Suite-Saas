@@ -1,146 +1,95 @@
 import { router } from '@inertiajs/react';
 import {
-  DashboardLayout,
+  IndexPageLayout,
   Card,
   CardContent,
   VStack,
   HStack,
   Text,
-  Icon,
-  Button,
+  Mono,
   Badge,
+  Button,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
 
-export default function ActivityShow({ title, activity }) {
-  const getActionColor = (action) => {
-    switch (action) {
-      case 'created': return 'success';
-      case 'updated': return 'info';
-      case 'deleted': return 'danger';
-      case 'login': return 'success';
-      case 'logout': return 'neutral';
-      default: return 'secondary';
-    }
-  };
+const ACTION_INTENT = {
+  created: 'success', updated: 'neutral', deleted: 'danger',
+  login: 'success', logout: 'neutral', export: 'warning', import: 'warning',
+};
 
-  const getActionIcon = (action) => {
-    switch (action) {
-      case 'created': return 'plus-circle';
-      case 'updated': return 'pencil';
-      case 'deleted': return 'trash';
-      case 'login': return 'arrow-right-on-rectangle';
-      case 'logout': return 'arrow-left-on-rectangle';
-      case 'export': return 'download';
-      case 'import': return 'upload';
-      default: return 'document';
-    }
-  };
-
+function Field({ label, children }) {
   return (
-    <DashboardLayout
-      title={title}
-      actions={
-        <Button onClick={() => router.visit(route('core.activity.index'))}>
-          <Icon name="arrow-left" className="w-4 h-4" />
-          Back to Feed
-        </Button>
-      }
-    >
-      <VStack gap={4}>
-        {/* Activity Header */}
-        <Card>
-          <CardContent>
-            <VStack gap={3}>
-              <HStack gap={3} align="center">
-                <Icon name={getActionIcon(activity.action)} className="w-12 h-12" tone="secondary" />
-                <VStack gap={0}>
-                  <HStack gap={2} align="center">
-                    <Text size="xl" weight="medium">{activity.description}</Text>
-                    <Badge intent={getActionColor(activity.action)}>{activity.action}</Badge>
-                    {activity.module && <Badge intent="secondary">{activity.module}</Badge>}
-                  </HStack>
-                  <Text tone="secondary" size="sm">
-                    {new Date(activity.created_at).toLocaleString()}
-                  </Text>
-                </VStack>
-              </HStack>
-            </VStack>
-          </CardContent>
-        </Card>
-
-        {/* Activity Details */}
-        <Card>
-          <CardContent>
-            <VStack gap={4}>
-              <Text weight="medium" size="lg">Activity Details</Text>
-              
-              <VStack gap={2}>
-                <Text tone="secondary" size="sm">User</Text>
-                <Text>{activity.user?.name || 'System'}</Text>
-              </VStack>
-
-              {activity.tenant && (
-                <VStack gap={2}>
-                  <Text tone="secondary" size="sm">Tenant</Text>
-                  <Text>{activity.tenant.name}</Text>
-                </VStack>
-              )}
-
-              {activity.module && (
-                <VStack gap={2}>
-                  <Text tone="secondary" size="sm">Module</Text>
-                  <Text>{activity.module}</Text>
-                </VStack>
-              )}
-
-              {activity.entity_type && (
-                <VStack gap={2}>
-                  <Text tone="secondary" size="sm">Entity Type</Text>
-                  <Text>{activity.entity_type}</Text>
-                </VStack>
-              )}
-
-              {activity.entity_id && (
-                <VStack gap={2}>
-                  <Text tone="secondary" size="sm">Entity ID</Text>
-                  <Text>{activity.entity_id}</Text>
-                </VStack>
-              )}
-
-              <VStack gap={2}>
-                <Text tone="secondary" size="sm">IP Address</Text>
-                <Text>{activity.ip_address || 'N/A'}</Text>
-              </VStack>
-
-              <VStack gap={2}>
-                <Text tone="secondary" size="sm">User Agent</Text>
-                <Text size="sm">{activity.user_agent || 'N/A'}</Text>
-              </VStack>
-
-              {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                <VStack gap={2}>
-                  <Text tone="secondary" size="sm">Metadata</Text>
-                  <Card>
-                    <CardContent>
-                      <VStack gap={2}>
-                        {Object.entries(activity.metadata).map(([key, value]) => (
-                          <HStack key={key} gap={2}>
-                            <Text tone="secondary" size="sm">{key}:</Text>
-                            <Text size="sm">{String(value)}</Text>
-                          </HStack>
-                        ))}
-                      </VStack>
-                    </CardContent>
-                  </Card>
-                </VStack>
-              )}
-            </VStack>
-          </CardContent>
-        </Card>
-      </VStack>
-    </DashboardLayout>
+    <VStack gap={1}>
+      <Text tone="secondary" size="sm">{label}</Text>
+      <Text size="sm">{children}</Text>
+    </VStack>
   );
 }
 
-ActivityShow.layout = page => <App title={page.props.title}>{page}</App>;
+export default function ActivityShow({ activity }) {
+  return (
+    <IndexPageLayout
+      title="Activity details"
+      breadcrumb={[
+        { label: 'Dashboard', href: route('core.dashboard') },
+        { label: 'Activity Feed', href: route('core.activity.index') },
+        { label: 'Details' },
+      ]}
+      description={activity?.description || ''}
+      actions={
+        <Button intent="ghost" type="button" leftIcon="arrowLeft"
+          onClick={() => router.visit(route('core.activity.index'))}>Back to feed</Button>
+      }
+      table={
+        <VStack gap={4}>
+          <Card>
+            <CardContent>
+              <HStack gap={2} align="center" wrap>
+                <Text size="lg" weight={600}>{activity?.description || '—'}</Text>
+                <Badge intent={ACTION_INTENT[activity?.action] ?? 'neutral'}>{activity?.action || '—'}</Badge>
+                {activity?.module && <Badge intent="indigo" size="sm">{activity.module}</Badge>}
+              </HStack>
+              <Text tone="secondary" size="sm">
+                {activity?.created_at ? new Date(activity.created_at).toLocaleString() : '—'}
+              </Text>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent>
+              <VStack gap={4}>
+                <Text weight={600} size="md">Details</Text>
+                <Field label="User">{activity?.user?.name || 'System'}</Field>
+                {activity?.tenant && <Field label="Tenant">{activity.tenant.name}</Field>}
+                {activity?.module && <Field label="Module">{activity.module}</Field>}
+                {activity?.entity_type && <Field label="Entity type">{activity.entity_type}</Field>}
+                {activity?.entity_id && <Field label="Entity ID"><Mono size="sm">{activity.entity_id}</Mono></Field>}
+                <Field label="IP address"><Mono size="sm">{activity?.ip_address || 'N/A'}</Mono></Field>
+                <Field label="User agent">{activity?.user_agent || 'N/A'}</Field>
+                {activity?.metadata && Object.keys(activity.metadata).length > 0 && (
+                  <VStack gap={1}>
+                    <Text tone="secondary" size="sm">Metadata</Text>
+                    <Card>
+                      <CardContent>
+                        <VStack gap={2}>
+                          {Object.entries(activity.metadata).map(([k, v]) => (
+                            <HStack key={k} gap={2}>
+                              <Text tone="secondary" size="sm">{k}:</Text>
+                              <Text size="sm">{String(v)}</Text>
+                            </HStack>
+                          ))}
+                        </VStack>
+                      </CardContent>
+                    </Card>
+                  </VStack>
+                )}
+              </VStack>
+            </CardContent>
+          </Card>
+        </VStack>
+      }
+    />
+  );
+}
+
+ActivityShow.layout = page => <App title="Activity details">{page}</App>;

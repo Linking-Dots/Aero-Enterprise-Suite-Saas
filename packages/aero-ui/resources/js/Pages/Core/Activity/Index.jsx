@@ -1,182 +1,147 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import {
-  DashboardLayout,
-  Card,
-  CardContent,
-  VStack,
-  HStack,
-  Text,
-  Icon,
+  IndexPageLayout,
+  DataTable,
   Button,
   Badge,
-  TextField,
+  Pagination,
+  HStack,
+  VStack,
+  Input,
+  Select,
+  Text,
+  Mono,
+  Stat,
+  EmptyState,
+  Menu,
+  useHRMAC,
 } from '@aero/ui';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import App from '@/Pages/App.jsx';
 
-export default function ActivityIndex({ title, activities, stats, filters }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedModule, setSelectedModule] = useState(filters.module || '');
-  const [selectedAction, setSelectedAction] = useState(filters.action || '');
+const ACTION_INTENT = {
+  created: 'success', updated: 'neutral', deleted: 'danger',
+  login: 'success', logout: 'neutral', export: 'warning', import: 'warning',
+};
 
-  const handleFilter = () => {
-    router.get(route('core.activity.index'), {
-      module: selectedModule || undefined,
-      action: selectedAction || undefined,
+const ACTION_OPTIONS = [
+  { value: '', label: 'All Actions' },
+  { value: 'created', label: 'Created' },
+  { value: 'updated', label: 'Updated' },
+  { value: 'deleted', label: 'Deleted' },
+  { value: 'login', label: 'Login' },
+  { value: 'logout', label: 'Logout' },
+];
+
+const MODULE_OPTIONS = [
+  { value: '', label: 'All Modules' },
+  { value: 'users', label: 'Users' },
+  { value: 'roles', label: 'Roles' },
+  { value: 'tags', label: 'Tags' },
+  { value: 'settings', label: 'Settings' },
+];
+
+export default function ActivityIndex({ activities, stats, filters }) {
+  const canExport = useHRMAC('core.activity_feed.feed.export');
+
+  const [module, setModule] = useState(filters?.module ?? '');
+  const [action, setAction] = useState(filters?.action ?? '');
+
+  const [tableLoading, setTableLoading] = useState(false);
+  useEffect(() => {
+    const offStart  = router.on('start',  () => setTableLoading(true));
+    const offFinish = router.on('finish', () => setTableLoading(false));
+    return () => { offStart(); offFinish(); };
+  }, []);
+
+  const reload = (next = {}) => {
+    const params = { ...next };
+    if (module) params.module = module;
+    if (action) params.action = action;
+    router.get(route('core.activity.index'), params, {
+      preserveState: true, preserveScroll: true, only: ['activities', 'filters', 'stats'],
     });
   };
 
-  const handleExport = () => {
-    window.open(route('core.activity.export'), '_blank');
+  const applyFilters = () => reload({ page: 1 });
+  const resetFilters = () => {
+    setModule(''); setAction('');
+    router.get(route('core.activity.index'), {}, {
+      preserveState: true, preserveScroll: true, only: ['activities', 'filters', 'stats'],
+    });
   };
 
-  const getActionColor = (action) => {
-    switch (action) {
-      case 'created': return 'success';
-      case 'updated': return 'info';
-      case 'deleted': return 'danger';
-      case 'login': return 'success';
-      case 'logout': return 'neutral';
-      default: return 'secondary';
-    }
-  };
+  const exportFeed = () => window.open(route('core.activity.export', { module, action }), '_blank');
 
-  const getActionIcon = (action) => {
-    switch (action) {
-      case 'created': return 'plus-circle';
-      case 'updated': return 'pencil';
-      case 'deleted': return 'trash';
-      case 'login': return 'arrow-right-on-rectangle';
-      case 'logout': return 'arrow-left-on-rectangle';
-      case 'export': return 'download';
-      case 'import': return 'upload';
-      default: return 'document';
-    }
-  };
+  const columns = [
+    { key: 'actor', label: 'Actor', width: '18%',
+      render: row => <Text size="sm">{row.user?.name || 'System'}</Text> },
+    { key: 'description', label: 'Description', width: '34%',
+      render: row => <Text size="sm">{row.description || '—'}</Text> },
+    { key: 'action', label: 'Action', width: '14%',
+      render: row => <Badge intent={ACTION_INTENT[row.action] ?? 'neutral'}>{row.action || '—'}</Badge> },
+    { key: 'module', label: 'Module', width: '14%',
+      render: row => row.module ? <Badge intent="indigo" size="sm">{row.module}</Badge> : <Text tone="tertiary" size="sm">—</Text> },
+    { key: 'created_at', label: 'Time', width: '16%',
+      render: row => <Mono size="sm">{row.created_at ? new Date(row.created_at).toLocaleString() : '—'}</Mono> },
+    { key: 'actions', label: '', width: '60px', align: 'right',
+      render: row => (
+        <Menu align="end"
+          trigger={<Button intent="ghost" size="sm" aria-label="More actions"><EllipsisHorizontalIcon className="aeos-icon-sm" /></Button>}
+          items={[{ label: 'View details', onClick: () => router.visit(route('core.activity.show', row.id)) }]} />
+      ) },
+  ];
+
+  const rows = activities?.data ?? [];
+  const hasFilter = !!(module || action);
 
   return (
-    <DashboardLayout
-      title={title}
-      actions={
-        <Button onClick={handleExport}>
-          <Icon name="download" className="w-4 h-4" />
-          Export
-        </Button>
-      }
-    >
-      <VStack gap={4}>
-        {/* Stats Cards */}
-        <HStack gap={4}>
-          <Card className="aeos-flex-1">
-            <CardContent>
-              <VStack gap={2}>
-                <Text tone="secondary" size="sm">Total Activities</Text>
-                <Text size="xl" weight="medium">{stats.total_activities}</Text>
-              </VStack>
-            </CardContent>
-          </Card>
-          <Card className="aeos-flex-1">
-            <CardContent>
-              <VStack gap={2}>
-                <Text tone="secondary" size="sm">Today</Text>
-                <Text size="xl" weight="medium">{stats.today_activities}</Text>
-              </VStack>
-            </CardContent>
-          </Card>
-          <Card className="aeos-flex-1">
-            <CardContent>
-              <VStack gap={2}>
-                <Text tone="secondary" size="sm">This Week</Text>
-                <Text size="xl" weight="medium">{stats.week_activities}</Text>
-              </VStack>
-            </CardContent>
-          </Card>
+    <IndexPageLayout
+      title="Activity Feed"
+      breadcrumb={[
+        { label: 'Dashboard', href: route('core.dashboard') },
+        { label: 'Activity Feed' },
+      ]}
+      description="Cross-module timeline of user and system actions."
+      actions={canExport && (
+        <Button intent="ghost" type="button" leftIcon="download" onClick={exportFeed}>Export</Button>
+      )}
+      kpis={[
+        <Stat key="total" title="Total activities" value={stats?.total_activities ?? 0} icon="document" />,
+        <Stat key="today" title="Today"            value={stats?.today_activities ?? 0} icon="clock" />,
+        <Stat key="week"  title="This week"        value={stats?.week_activities ?? 0} icon="calendar" />,
+      ]}
+      filters={
+        <HStack gap={3} align="end" wrap>
+          <Select value={module} onChange={e => setModule(e.target.value)} options={MODULE_OPTIONS} />
+          <Select value={action} onChange={e => setAction(e.target.value)} options={ACTION_OPTIONS} />
+          <Button intent="primary" type="button" onClick={applyFilters}>Filter</Button>
+          <Button intent="ghost"   type="button" onClick={resetFilters}>Reset</Button>
         </HStack>
-
-        {/* Filters */}
-        <Card>
-          <CardContent>
-            <HStack gap={3} align="center">
-              <TextField
-                placeholder="Search activities..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="aeos-flex-1"
-              />
-              <TextField
-                label="Module"
-                select
-                value={selectedModule}
-                onChange={(e) => setSelectedModule(e.target.value)}
-                className="aeos-w-200"
-              >
-                <option value="">All Modules</option>
-                <option value="users">Users</option>
-                <option value="roles">Roles</option>
-                <option value="tags">Tags</option>
-                <option value="settings">Settings</option>
-              </TextField>
-              <TextField
-                label="Action"
-                select
-                value={selectedAction}
-                onChange={(e) => setSelectedAction(e.target.value)}
-                className="aeos-w-200"
-              >
-                <option value="">All Actions</option>
-                <option value="created">Created</option>
-                <option value="updated">Updated</option>
-                <option value="deleted">Deleted</option>
-                <option value="login">Login</option>
-                <option value="logout">Logout</option>
-              </TextField>
-              <Button onClick={handleFilter}>Filter</Button>
-            </HStack>
-          </CardContent>
-        </Card>
-
-        {/* Activity List */}
-        {activities.data.length === 0 ? (
-          <Card>
-            <CardContent>
-              <VStack gap={4} align="center">
-                <Icon name="document" className="w-12 h-12" tone="secondary" />
-                <Text tone="secondary">No activities found</Text>
-                <Text tone="secondary" size="sm">Activities will appear here as users interact with the system</Text>
-              </VStack>
-            </CardContent>
-          </Card>
+      }
+      table={
+        !tableLoading && rows.length === 0 ? (
+          hasFilter ? (
+            <EmptyState icon="filter" title="No matching activity"
+              description="Try adjusting the module or action filter."
+              action={<Button intent="ghost" type="button" onClick={resetFilters}>Reset filters</Button>} />
+          ) : (
+            <EmptyState icon="document" title="No activity yet"
+              description="Activity will appear here as users interact with the system." />
+          )
         ) : (
-          <VStack gap={3}>
-            {activities.data.map((activity) => (
-              <Card key={activity.id}>
-                <CardContent>
-                  <HStack gap={3} align="center" justify="space-between">
-                    <HStack gap={3} align="center">
-                      <Icon name={getActionIcon(activity.action)} className="w-8 h-8" tone="secondary" />
-                      <VStack gap={0}>
-                        <HStack gap={2} align="center">
-                          <Text weight="medium">{activity.description}</Text>
-                          <Badge intent={getActionColor(activity.action)}>{activity.action}</Badge>
-                          {activity.module && <Badge intent="secondary">{activity.module}</Badge>}
-                        </HStack>
-                        <Text tone="secondary" size="sm">
-                          {activity.user?.name || 'System'} • {new Date(activity.created_at).toLocaleString()}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                    <Button variant="ghost" size="sm" onClick={() => router.visit(route('core.activity.show', activity.id))}>
-                      <Icon name="eye" className="w-4 h-4" />
-                    </Button>
-                  </HStack>
-                </CardContent>
-              </Card>
-            ))}
-          </VStack>
-        )}
-      </VStack>
-    </DashboardLayout>
+          <DataTable columns={columns} rows={rows} loading={tableLoading} />
+        )
+      }
+      pagination={
+        activities?.last_page > 1 && (
+          <Pagination page={activities.current_page} total={activities.last_page}
+            onChange={page => reload({ page })} />
+        )
+      }
+    />
   );
 }
 
-ActivityIndex.layout = page => <App title={page.props.title}>{page}</App>;
+ActivityIndex.layout = page => <App title="Activity Feed">{page}</App>;
