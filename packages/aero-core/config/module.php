@@ -375,6 +375,7 @@ return [
             'icon' => 'ClipboardDocumentListIcon',
             'route' => '/audit-logs',
             'priority' => 6,
+            'collapse_nav' => true,
 
             'components' => [
                 [
