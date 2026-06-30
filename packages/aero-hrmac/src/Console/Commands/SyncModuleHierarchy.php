@@ -94,6 +94,13 @@ class SyncModuleHierarchy extends Command
             $this->info("📍 Context: {$scope}");
             $this->newLine();
 
+            // The module hierarchy (modules/sub_modules/components/actions) is
+            // central catalog data. Under SaaS the HrmacContextGuard blocks model
+            // writes that run without a resolved request context — but a CLI sync
+            // is exactly the central/CLI case the guard tells callers to bypass.
+            // Without this wrap, `aero:sync-module` fails on the first model touch
+            // in SaaS ("queried outside of a valid HRMAC context").
+            return \Aero\Contracts\AeroMode::withoutTenantContextGuard(function () use ($scope, $fresh, $prune) {
             try {
                 DB::beginTransaction();
 
@@ -169,6 +176,7 @@ class SyncModuleHierarchy extends Command
 
                 return self::FAILURE;
             }
+            });
 
         } finally {
             // Plan 04 T5 — release advisory lock no matter what
