@@ -137,7 +137,7 @@ export default function EmailTemplates({ templates = [] }) {
       key: 'actions', label: '', width: '28%', align: 'right',
       render: row => (
         <HStack gap={2} justify="end">
-          <Button intent="soft" size="sm" onClick={() => openPreview(row)} leftIcon="eye">
+          <Button intent="soft" size="sm" onClick={() => openPreview(row)}>
             Preview
           </Button>
           {!row.is_locked && canEdit && (

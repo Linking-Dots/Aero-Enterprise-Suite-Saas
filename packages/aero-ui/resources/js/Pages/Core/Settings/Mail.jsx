@@ -123,7 +123,6 @@ export default function MailSettings({ mail = {} }) {
                   value={data.host}
                   onChange={e => setData('host', e.target.value)}
                   placeholder="smtp.example.com"
-                  leftIcon="server"
                 />
               </Field>
               <HStack gap={4} wrap>
@@ -166,7 +165,6 @@ export default function MailSettings({ mail = {} }) {
                   value={data.password}
                   onChange={e => setData('password', e.target.value)}
                   placeholder="Leave blank to keep existing"
-                  leftIcon="lock"
                 />
               </Field>
             </VStack>
@@ -221,7 +219,6 @@ export default function MailSettings({ mail = {} }) {
                   intent="soft"
                   loading={testLoading}
                   onClick={handleTest}
-                  leftIcon="send"
                 >
                   Send Test
                 </Button>
