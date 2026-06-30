@@ -418,6 +418,32 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | 1.5b Activity Feed
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'activity_feed',
+            'name' => 'Activity Feed',
+            'description' => 'Cross-module activity timeline of user and system actions',
+            'icon' => 'ClockIcon',
+            'route' => '/activity',
+            'priority' => 7,
+            'components' => [
+                [
+                    'code' => 'feed',
+                    'name' => 'Activity Feed',
+                    'type' => 'page',
+                    'route' => '/activity',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Activity Feed'],
+                        ['code' => 'export', 'name' => 'Export Activities'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
         | 1.6 Notifications
         |--------------------------------------------------------------------------
         */
@@ -1144,13 +1170,6 @@ return [
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Mentions'],
                         ['code' => 'mark_read', 'name' => 'Mark as Read'],
-                    ],
-                ],
-                [
-                    'code' => 'activity_feed', 'name' => 'Activity Feed', 'type' => 'page', 'route' => '/activity',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Activity Feed'],
-                        ['code' => 'export', 'name' => 'Export Activities'],
                     ],
                 ],
             ],

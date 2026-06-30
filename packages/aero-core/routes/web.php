@@ -981,17 +981,13 @@ Route::middleware('auth:web')->group(function () {
     // Activity Feed routes
     Route::prefix('activity')->name('core.activity.')->group(function () {
         Route::get('/', [ActivityController::class, 'index'])
-            ->middleware('hrmac:core.activity_feed.view')
-            ->name('index');
+            ->middleware('hrmac:core.activity_feed.feed.view')->name('index');
         Route::get('/{id}', [ActivityController::class, 'show'])
-            ->middleware('hrmac:core.activity_feed.view')
-            ->name('show');
+            ->middleware('hrmac:core.activity_feed.feed.view')->name('show');
         Route::get('/stats', [ActivityController::class, 'stats'])
-            ->middleware('hrmac:core.activity_feed.view')
-            ->name('stats');
+            ->middleware('hrmac:core.activity_feed.feed.view')->name('stats');
         Route::get('/export', [ActivityController::class, 'export'])
-            ->middleware('hrmac:core.activity_feed.export')
-            ->name('export');
+            ->middleware('hrmac:core.activity_feed.feed.export')->name('export');
     });
 
     // Data Export/Import routes
