@@ -62,7 +62,9 @@ export default function AuditLogsIndex({ stats, tab: initialTab, logs, filters }
   const canViewSecurity = useHRMAC('core.audit_logs.security_logs.view');
   const canViewQueue    = useHRMAC('core.audit_logs.queue_monitor.view');
   const canExportLogs   = useHRMAC('core.audit_logs.activity_logs.export');
-  const canExportSec    = useHRMAC('core.audit_logs.security_logs.view') && useHRMAC('core.audit_logs.security_logs.export');
+  // Keep this hook unconditional (Rules of Hooks); combine with the view gate below.
+  const canExportSecPerm = useHRMAC('core.audit_logs.security_logs.export');
+  const canExportSec    = canViewSecurity && canExportSecPerm;
   const canRetry        = useHRMAC('core.audit_logs.queue_monitor.retry');
   const canFlush        = useHRMAC('core.audit_logs.queue_monitor.flush');
 
