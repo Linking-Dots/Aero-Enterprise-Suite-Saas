@@ -3,23 +3,25 @@
  *
  * Props: { settings: {} }
  *
- * Violations fixed vs. prior stub:
+ * Ported onto the unified SettingsLayout shell (Task 3). Violations fixed:
  *   P0-1: all style={} removed from Field and select wrappers
  *   P0-2: all raw <select> replaced with Select engine component
  *   P1-1: errors passed as strings
  *   P2-1: intent= not variant=
+ *   HTTP: route is PUT — was incorrectly posted with post() (405). Fixed to put().
  */
 import { useForm } from '@inertiajs/react';
 import {
-  FormPageLayout,
-  Field, Input, Select,
-  Button,
+  Field, Select,
   Card, CardHeader, CardBody,
-  HStack, VStack, Text,
+  VStack, Text,
   useToast,
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsSection from './SettingsSection.jsx';
+import SettingsRail from './SettingsRail.jsx';
 
 const TIMEZONE_OPTIONS = [
   'UTC',
@@ -91,7 +93,7 @@ export default function LocalizationSettings({ settings = {} }) {
   const toast   = useToast();
   const canEdit = useHRMAC('core.settings.localization.edit');
 
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const { data, setData, put, processing, errors, reset, isDirty } = useForm({
     timezone:    settings.timezone    ?? 'UTC',
     date_format: settings.date_format ?? 'Y-m-d',
     time_format: settings.time_format ?? '24',
@@ -101,7 +103,7 @@ export default function LocalizationSettings({ settings = {} }) {
 
   function handleSave(e) {
     e.preventDefault();
-    post(route('core.settings.localization.update'), {
+    put(route('core.settings.localization.update'), {
       preserveScroll: true,
       onSuccess: () => toast.success('Localization settings saved.'),
       onError:   () => toast.error('Please fix the errors below.'),
@@ -110,87 +112,74 @@ export default function LocalizationSettings({ settings = {} }) {
 
   return (
     <form onSubmit={handleSave}>
-      <FormPageLayout
+      <SettingsSection
         title="Localization"
-        breadcrumb={[
-          { label: 'Settings', href: route('core.settings.system') },
-          { label: 'Localization' },
-        ]}
         description="Configure timezone, date/time format, language, and currency for your organization."
-        actions={
-          canEdit && (
-            <HStack gap={3}>
-              <Button type="button" intent="soft" onClick={() => reset()} disabled={processing}>
-                Reset
-              </Button>
-              <Button type="submit" intent="primary" loading={processing}>
-                Save Changes
-              </Button>
-            </HStack>
-          )
-        }
+        canEdit={canEdit}
+        dirty={isDirty}
+        processing={processing}
+        onReset={() => reset()}
+        onSave={handleSave}
       >
-        <VStack gap={6}>
+        {/* ── Regional ── */}
+        <Card>
+          <CardHeader><Text size="sm" tone="secondary">Regional</Text></CardHeader>
+          <CardBody>
+            <VStack gap={4}>
+              <Field label="Timezone" error={errors.timezone}>
+                <Select
+                  value={data.timezone}
+                  onChange={e => setData('timezone', e.target.value)}
+                  options={TIMEZONE_OPTIONS}
+                />
+              </Field>
+              <Field label="Language" error={errors.language}>
+                <Select
+                  value={data.language}
+                  onChange={e => setData('language', e.target.value)}
+                  options={LANGUAGE_OPTIONS}
+                />
+              </Field>
+              <Field label="Currency" error={errors.currency}>
+                <Select
+                  value={data.currency}
+                  onChange={e => setData('currency', e.target.value)}
+                  options={CURRENCY_OPTIONS}
+                />
+              </Field>
+            </VStack>
+          </CardBody>
+        </Card>
 
-          {/* ── Regional ── */}
-          <Card>
-            <CardHeader><Text size="sm" tone="secondary">Regional</Text></CardHeader>
-            <CardBody>
-              <VStack gap={4}>
-                <Field label="Timezone" error={errors.timezone}>
-                  <Select
-                    value={data.timezone}
-                    onChange={e => setData('timezone', e.target.value)}
-                    options={TIMEZONE_OPTIONS}
-                  />
-                </Field>
-                <Field label="Language" error={errors.language}>
-                  <Select
-                    value={data.language}
-                    onChange={e => setData('language', e.target.value)}
-                    options={LANGUAGE_OPTIONS}
-                  />
-                </Field>
-                <Field label="Currency" error={errors.currency}>
-                  <Select
-                    value={data.currency}
-                    onChange={e => setData('currency', e.target.value)}
-                    options={CURRENCY_OPTIONS}
-                  />
-                </Field>
-              </VStack>
-            </CardBody>
-          </Card>
-
-          {/* ── Date & Time ── */}
-          <Card>
-            <CardHeader><Text size="sm" tone="secondary">Date & Time Format</Text></CardHeader>
-            <CardBody>
-              <VStack gap={4}>
-                <Field label="Date Format" error={errors.date_format}>
-                  <Select
-                    value={data.date_format}
-                    onChange={e => setData('date_format', e.target.value)}
-                    options={DATE_FORMAT_OPTIONS}
-                  />
-                </Field>
-                <Field label="Time Format" error={errors.time_format}>
-                  <Select
-                    value={data.time_format}
-                    onChange={e => setData('time_format', e.target.value)}
-                    options={TIME_FORMAT_OPTIONS}
-                  />
-                </Field>
-              </VStack>
-            </CardBody>
-          </Card>
-
-        </VStack>
-      </FormPageLayout>
+        {/* ── Date & Time ── */}
+        <Card>
+          <CardHeader><Text size="sm" tone="secondary">Date & Time Format</Text></CardHeader>
+          <CardBody>
+            <VStack gap={4}>
+              <Field label="Date Format" error={errors.date_format}>
+                <Select
+                  value={data.date_format}
+                  onChange={e => setData('date_format', e.target.value)}
+                  options={DATE_FORMAT_OPTIONS}
+                />
+              </Field>
+              <Field label="Time Format" error={errors.time_format}>
+                <Select
+                  value={data.time_format}
+                  onChange={e => setData('time_format', e.target.value)}
+                  options={TIME_FORMAT_OPTIONS}
+                />
+              </Field>
+            </VStack>
+          </CardBody>
+        </Card>
+      </SettingsSection>
     </form>
   );
 }
 
 LocalizationSettings.layout = page => (
-  <App title="Localization">{page}</App>
+  <App title="Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="localization">{page}</SettingsLayout>
+  </App>
 );
