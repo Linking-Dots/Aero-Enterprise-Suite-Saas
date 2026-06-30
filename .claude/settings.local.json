@@ -20,7 +20,8 @@
       "Bash(printf '[2026-06-14T00:00:00Z] DECISION=PROCEED REVERSIBLE=yes — Unit-1 dead-code delete \\(6 files: platform UserDeviceController/VerificationController/PhoneVerificationController, platform AuthSecurityAudit dup, platform ResetDevicesForSecurityUpdate, both LandlordUserProvider classes\\) — verified zero live refs/routes/registrations; landlord guard uses eloquent driver not custom provider; ResetDevices is unregistered dead, drop per standing pref.\\\\n[2026-06-14T00:00:01Z] DECISION=PROCEED REVERSIBLE=yes — Ratify auth-full-relocation plan sequencing \\(Units 1-5, purity-before-move\\) — sound, each unit independently green; deferred items \\(TenantImpersonation, platform security mw, PasswordPolicyController, SocialAuth split\\) correctly routed to per-item Boss-Proxy.\\\\n' >> \"c:\\\\\\\\laragon\\\\\\\\www\\\\\\\\Aero-Enterprise-Suite-Saas\\\\\\\\.claude\\\\\\\\boss-decisions.log\")",
       "Bash(cat)",
       "Bash(git add *)",
-      "Bash(git commit -q -m ' *)"
+      "Bash(git commit -q -m ' *)",
+      "mcp__plugin_playwright_playwright__browser_resize"
     ],
     "additionalDirectories": [
       "C:\\laragon\\www\\js\\Pages\\Platform\\Public\\utils",
