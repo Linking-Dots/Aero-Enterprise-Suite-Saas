@@ -643,7 +643,9 @@ Route::middleware('auth:web')->group(function () {
             Route::post('/', [MailSettingsController::class, 'update'])->name('update')->middleware('hrmac:core.settings.mail_settings.update');
             Route::post('/test', [MailSettingsController::class, 'sendTest'])->name('test')->middleware('hrmac:core.settings.mail_settings.test');
         });
-        Route::get('/integrations', [SystemSettingController::class, 'index'])->name('integrations.index'); // API & integrations
+        // NOTE: /settings/integrations (GET) is defined by IntegrationsController below
+        // (prefix settings/integrations) — the stale duplicate that pointed at
+        // SystemSettingController@index was removed so the page renders Integrations.
         Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update')->middleware('hrmac:core.settings.general.edit');
         Route::post('/system/test-email', [SystemSettingController::class, 'sendTestEmail'])->name('system.test-email');
         Route::post('/system/test-sms', [SystemSettingController::class, 'sendTestSms'])->name('system.test-sms');
