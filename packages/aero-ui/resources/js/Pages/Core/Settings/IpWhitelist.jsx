@@ -33,7 +33,7 @@ export default function IpWhitelist({ settings = {} }) {
   const toast   = useToast();
   const canEdit = useHRMAC('core.settings.ip_whitelist.edit');
 
-  const { data, setData, post, processing, errors, reset, isDirty } = useForm({
+  const { data, setData, put, processing, errors, reset, isDirty } = useForm({
     allowed_ips:  settings.allowed_ips  ?? '',
     blocked_ips:  settings.blocked_ips  ?? '',
     geo_blocking: settings.geo_blocking ?? false,
@@ -41,7 +41,7 @@ export default function IpWhitelist({ settings = {} }) {
 
   function handleSave(e) {
     e.preventDefault();
-    post(route('core.settings.ip-whitelist.update'), {
+    put(route('core.settings.ip-whitelist.update'), {
       preserveScroll: true,
       onSuccess: () => toast.success('IP access settings saved.'),
       onError:   () => toast.error('Please fix the errors below.'),

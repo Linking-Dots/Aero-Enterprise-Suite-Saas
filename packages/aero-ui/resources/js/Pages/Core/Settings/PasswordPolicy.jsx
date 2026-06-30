@@ -32,7 +32,7 @@ export default function PasswordPolicy({ settings = {} }) {
   const toast   = useToast();
   const canEdit = useHRMAC('core.settings.password_policy.edit');
 
-  const { data, setData, post, processing, errors, reset, isDirty } = useForm({
+  const { data, setData, put, processing, errors, reset, isDirty } = useForm({
     min_length:         settings.min_length         ?? 8,
     require_uppercase:  settings.require_uppercase  ?? true,
     require_lowercase:  settings.require_lowercase  ?? true,
@@ -44,7 +44,7 @@ export default function PasswordPolicy({ settings = {} }) {
 
   function handleSave(e) {
     e.preventDefault();
-    post(route('core.settings.password-policy.update'), {
+    put(route('core.settings.password-policy.update'), {
       preserveScroll: true,
       onSuccess: () => toast.success('Password policy saved.'),
       onError:   () => toast.error('Please fix the errors below.'),
