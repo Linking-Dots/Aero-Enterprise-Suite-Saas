@@ -1,7 +1,8 @@
 /**
- * settingsSections — single source of truth for the Settings shell.
- * Both SettingsLayout (in-content rail) and SettingsRail (command-shell rail)
- * read from here. Permission codes are the DECLARED config/module.php actions.
+ * settingsSections — the CORE (tenant) settings-section config consumed by the
+ * shared settings shell (components/settings/*). Permission codes are the
+ * DECLARED config/module.php actions. The Platform cluster supplies its own
+ * equivalent config; the generic shell + useVisibleSettingsGroups are shared.
  *
  * Icon note: the @aero/ui string-name Icon registry (packages/aero-ui/resources/js/icons/icons.jsx)
  * does not include `globe`, `photo`, `shield`, `key`, `lock`, or `puzzle` — only `cog`,
@@ -9,7 +10,6 @@
  * for ANY item, every icon here is a heroicons-component reference (same pattern as
  * UsersRail.jsx), not a string name.
  */
-import { useHRMACMany } from '@aero/ui';
 import {
   Cog8ToothIcon,
   GlobeAltIcon,
@@ -49,20 +49,5 @@ export const SETTINGS_GROUPS = [
   },
 ];
 
-function resolveHref(routeName) {
-  try { return route(routeName); } catch { return null; }
-}
-
-/** Visible groups with hrefs, filtered by HRMAC view permission + resolvable route. */
-export function useVisibleSettingsGroups() {
-  // useHRMACMany resolves every permission in one call (no looped hook / lint suppression).
-  const allow = useHRMACMany(SETTINGS_GROUPS.flatMap(g => g.items.map(it => it.permission)));
-  return SETTINGS_GROUPS
-    .map(g => ({
-      group: g.group,
-      items: g.items
-        .map(it => ({ ...it, href: resolveHref(it.routeName) }))
-        .filter(it => it.href && allow[it.permission]),
-    }))
-    .filter(g => g.items.length > 0);
-}
+// Filtering/href-resolution is provided generically by
+// components/settings/useSettingsGroups.js (shared with the Platform cluster).
