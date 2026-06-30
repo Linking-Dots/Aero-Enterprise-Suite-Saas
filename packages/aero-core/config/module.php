@@ -509,6 +509,11 @@ return [
             'route' => '/settings/system',
             'priority' => 99,
 
+            // Collapse the 9 settings pages into a single "Settings" nav link →
+            // /settings/system. The unified in-page SettingsLayout rail owns
+            // sub-navigation; the component actions below still define HRMAC perms.
+            'collapse_nav' => true,
+
             'components' => [
                 [
                     'code' => 'general',

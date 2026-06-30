@@ -1030,8 +1030,21 @@ class AeroCoreServiceProvider extends ServiceProvider
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
             $components = $submodule['components'] ?? [];
 
-            // If submodule has only ONE component, use it directly as the menu item
-            if (count($components) === 1) {
+            // collapse_nav: render as a single leaf link (no child pages). The
+            // component HRMAC actions are still defined/synced; collapsing only
+            // hides the child links so an in-page rail owns sub-navigation
+            // (e.g. the unified Settings shell → /settings/system).
+            if (($submodule['collapse_nav'] ?? false) === true) {
+                $submoduleNav[] = [
+                    'name' => $submodule['name'] ?? ucfirst($submoduleCode),
+                    'path' => $submodule['route'] ?? ($components[0]['route'] ?? null),
+                    'icon' => $submoduleIcon,
+                    'access' => 'core.'.$submoduleCode,
+                    'priority' => $submodule['priority'] ?? 100,
+                    'type' => 'page',
+                    // No children - the in-page rail handles sub-navigation.
+                ];
+            } elseif (count($components) === 1) {
                 $component = $components[0];
                 $submoduleNav[] = [
                     'name' => $submodule['name'] ?? ucfirst($submoduleCode),

@@ -266,19 +266,27 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
             $submoduleCode = $submodule['code'] ?? '';
             $submoduleIcon = $submodule['icon'] ?? null;
 
-            $componentNav = [];
-            foreach ($submodule['components'] ?? [] as $component) {
-                if (empty($component['route'])) {
-                    continue;
-                }
+            // collapse_nav: render this submodule as a single leaf link (no child
+            // pages in the nav). The component HRMAC actions are still defined in
+            // config and synced independently — collapsing only hides the child
+            // links so an in-page rail can own sub-navigation (e.g. Settings).
+            $collapseNav = (bool) ($submodule['collapse_nav'] ?? false);
 
-                $componentNav[] = [
-                    'name'   => $component['name'] ?? ucfirst($component['code'] ?? ''),
-                    'path'   => $component['route'] ?? '',
-                    'icon'   => $component['icon'] ?? $submoduleIcon,
-                    'access' => $this->moduleCode.'.'.$submoduleCode.'.'.($component['code'] ?? ''),
-                    'type'   => $component['type'] ?? 'page',
-                ];
+            $componentNav = [];
+            if (! $collapseNav) {
+                foreach ($submodule['components'] ?? [] as $component) {
+                    if (empty($component['route'])) {
+                        continue;
+                    }
+
+                    $componentNav[] = [
+                        'name'   => $component['name'] ?? ucfirst($component['code'] ?? ''),
+                        'path'   => $component['route'] ?? '',
+                        'icon'   => $component['icon'] ?? $submoduleIcon,
+                        'access' => $this->moduleCode.'.'.$submoduleCode.'.'.($component['code'] ?? ''),
+                        'type'   => $component['type'] ?? 'page',
+                    ];
+                }
             }
 
             $submoduleNav[] = [
