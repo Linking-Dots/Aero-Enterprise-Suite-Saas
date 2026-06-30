@@ -1,12 +1,16 @@
 /**
  * Settings — Integrations
  * 4 integration cards: Slack, Google Workspace, Microsoft 365, Zapier.
- * Each card saves independently via router.post().
+ * Each card saves independently via router.post(). Ported onto the unified
+ * SettingsLayout shell (Task 4) — no single SettingsSection save bar; each
+ * card is self-saving.
+ *
+ * HRMAC: core.settings.integrations.edit → core.settings.integrations.configure (Task 0 fix)
  */
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import {
-  IndexPageLayout,
+  Heading,
   Card, CardHeader, CardBody,
   Field, Input, Toggle,
   Button,
@@ -17,6 +21,8 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
 
 function IntegrationCard({ title, description, icon, integrationKey, fields, initialData, onSave, saving }) {
   const [form, setForm] = useState(initialData ?? {});
@@ -116,7 +122,7 @@ const INTEGRATIONS_CONFIG = [
 
 export default function Integrations({ integrations = {} }) {
   const toast   = useToast();
-  const canEdit = useHRMAC('core.settings.integrations.edit');
+  const canEdit = useHRMAC('core.settings.integrations.configure');
   const [savingKey, setSavingKey] = useState(null);
 
   const handleSave = (integrationKey, formData, onDone) => {
@@ -139,15 +145,12 @@ export default function Integrations({ integrations = {} }) {
   };
 
   return (
-    <IndexPageLayout
-      title="Integrations"
-      breadcrumb={[
-        { label: 'Dashboard',  href: route('core.dashboard') },
-        { label: 'Settings',   href: route('core.settings.system') },
-        { label: 'Integrations' },
-      ]}
-      description="Configure third-party integrations for Slack, Google Workspace, Microsoft 365, and Zapier."
-    >
+    <VStack gap={5}>
+      <VStack gap={1}>
+        <Heading level={3}>Integrations</Heading>
+        <Text size="sm" tone="secondary">Configure third-party integrations for Slack, Google Workspace, Microsoft 365, and Zapier.</Text>
+      </VStack>
+
       <VStack gap={5}>
         {INTEGRATIONS_CONFIG.map(cfg => (
           <IntegrationCard
@@ -162,10 +165,12 @@ export default function Integrations({ integrations = {} }) {
           />
         ))}
       </VStack>
-    </IndexPageLayout>
+    </VStack>
   );
 }
 
 Integrations.layout = page => (
-  <App title="Integrations">{page}</App>
+  <App title="Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="integrations">{page}</SettingsLayout>
+  </App>
 );

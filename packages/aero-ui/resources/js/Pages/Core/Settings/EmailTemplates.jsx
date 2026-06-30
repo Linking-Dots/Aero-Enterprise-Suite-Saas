@@ -4,18 +4,22 @@
  * Props: { templates: [] }
  *   Each template: { id, name, slug, subject, body_html, category, is_active, is_locked }
  *
- * Violations fixed vs. prior stub:
+ * Ported onto the unified SettingsLayout shell (Task 4). This section is a managed
+ * list + modal — it does NOT use SettingsSection's single save bar (no single form save).
+ * Violations fixed:
  *   P0-1: all style={} removed — table replaced with DataTable engine component
  *   P0-2: raw <select> → Select engine component
  *         raw <table> → DataTable engine component
  *         raw checkbox label → Toggle engine component
  *   P0-3: raw <td style> removed
  *   P2-1: variant= → intent= on Button
+ *   HRMAC: email-templates.{create,edit,delete} → email_templates.{create,edit,delete} (Task 0 fix)
+ *   Local <style> block removed — .email-template-body now centralized in SettingsLayout.jsx
  */
 import { useState } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import {
-  IndexPageLayout,
+  Heading, Box,
   DataTable,
   Field, Input, Textarea, Select, Toggle,
   Button,
@@ -27,6 +31,8 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
 
 const CATEGORY_OPTIONS = [
   { value: 'system',        label: 'System' },
@@ -40,9 +46,9 @@ function categoryIntent(cat) {
 
 export default function EmailTemplates({ templates = [] }) {
   const toast     = useToast();
-  const canCreate = useHRMAC('core.settings.email-templates.create');
-  const canEdit   = useHRMAC('core.settings.email-templates.edit');
-  const canDelete = useHRMAC('core.settings.email-templates.delete');
+  const canCreate = useHRMAC('core.settings.email_templates.create');
+  const canEdit   = useHRMAC('core.settings.email_templates.edit');
+  const canDelete = useHRMAC('core.settings.email_templates.delete');
 
   const [open,    setOpen]    = useState(false);
   const [editing, setEditing] = useState(null);
@@ -162,35 +168,33 @@ export default function EmailTemplates({ templates = [] }) {
 
   return (
     <>
-      <IndexPageLayout
-        title="Email Templates"
-        breadcrumb={[
-          { label: 'Settings', href: route('core.settings.system') },
-          { label: 'Email Templates' },
-        ]}
-        description="Manage transactional and system email templates."
-        actions={
-          canCreate && (
+      <VStack gap={5}>
+        <HStack align="center">
+          <VStack gap={1}>
+            <Heading level={3}>Email Templates</Heading>
+            <Text size="sm" tone="secondary">Manage transactional and system email templates.</Text>
+          </VStack>
+          <Box grow />
+          {canCreate && (
             <Button intent="primary" onClick={openCreate} leftIcon="plus">
               New Template
             </Button>
-          )
-        }
-        table={
-          <Card>
-            <CardHeader>
-              <Text size="sm" tone="secondary">Templates ({templates.length})</Text>
-            </CardHeader>
-            <CardBody>
-              <DataTable
-                columns={columns}
-                rows={templates}
-                empty="No email templates yet. Click 'New Template' to create one."
-              />
-            </CardBody>
-          </Card>
-        }
-      />
+          )}
+        </HStack>
+
+        <Card>
+          <CardHeader>
+            <Text size="sm" tone="secondary">Templates ({templates.length})</Text>
+          </CardHeader>
+          <CardBody>
+            <DataTable
+              columns={columns}
+              rows={templates}
+              empty="No email templates yet. Click 'New Template' to create one."
+            />
+          </CardBody>
+        </Card>
+      </VStack>
 
       <Modal
         open={open}
@@ -252,17 +256,12 @@ export default function EmailTemplates({ templates = [] }) {
           </VStack>
         </form>
       </Modal>
-
-      <style>{`
-        .email-template-body {
-          font-family: var(--aeos-font-mono);
-          font-size: 0.8125rem;
-        }
-      `}</style>
     </>
   );
 }
 
 EmailTemplates.layout = page => (
-  <App title="Email Templates">{page}</App>
+  <App title="Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="templates">{page}</SettingsLayout>
+  </App>
 );
