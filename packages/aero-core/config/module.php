@@ -638,6 +638,13 @@ return [
             'icon' => 'BuildingOffice2Icon',
             'route' => '/organization/profile',
             'priority' => 9,
+            // collapse_nav: render as a single "Organization" leaf link instead of
+            // /organization/profile + 4 siblings. The unified in-page
+            // OrganizationLayout rail owns sub-navigation; the component actions
+            // below still define HRMAC perms. Honored in BOTH registration paths
+            // (AbstractModuleProvider::registerNavigation + AeroCoreServiceProvider::
+            // registerCoreNavigation — last-wins, see Settings root cause).
+            'collapse_nav' => true,
             'components' => [
                 [
                     'code' => 'org_profile', 'name' => 'Organization Profile', 'type' => 'page', 'route' => '/organization/profile',
