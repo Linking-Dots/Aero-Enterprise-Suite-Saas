@@ -26,6 +26,7 @@ class TenantSubscriptionPresenter
             return null;
         }
 
+        // A null or 'monthly' billing cycle is treated as monthly; only 'yearly' switches the price/interval.
         $isYearly = $billingCycle === 'yearly';
         $price = $isYearly ? (float) $plan->yearly_price : (float) $plan->monthly_price;
         $features = is_array($plan->features) ? array_values($plan->features) : [];
@@ -72,6 +73,8 @@ class TenantSubscriptionPresenter
     }
 
     /**
+     * The `product` relation must be eager-loaded by the caller; this method does not issue a lazy query.
+     *
      * @return array{id:string,name:?string,status:?string,price:float,currency:string}
      */
     public function product(ProductSubscription $sub): array
