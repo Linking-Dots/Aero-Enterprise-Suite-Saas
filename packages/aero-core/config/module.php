@@ -141,6 +141,7 @@ return [
             'route' => '/subscription',
             'priority' => 2,
             'show_in_nav' => true, // Real tenant self-service page; no other nav home
+            'collapse_nav' => true, // Single hub link; Plans/Usage/Invoices are in-page tabs
             'plan' => 'saas',
 
             'components' => [

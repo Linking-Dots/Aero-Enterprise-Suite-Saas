@@ -238,9 +238,11 @@ if (class_exists('Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionContro
     Route::middleware(['auth:web', 'resolve.tenant.context'])->prefix('subscription')->name('core.subscription.')->group(function () use ($subscriptionController) {
         Route::get('/', [$subscriptionController, 'index'])->name('index')->middleware('hrmac:core.subscription.plans.view');
         Route::get('/plans', [$subscriptionController, 'plans'])->name('plans')->middleware('hrmac:core.subscription.plans.view');
-        Route::post('/change-plan', [$subscriptionController, 'changePlan'])->name('change-plan')->middleware('hrmac:core.subscription.plans.upgrade');
-        Route::get('/usage', [$subscriptionController, 'usage'])->name('usage')->middleware('hrmac:core.subscription.plans.view');
-        Route::get('/invoices', [$subscriptionController, 'invoices'])->name('invoices')->middleware('hrmac:core.subscription.plans.view');
+        Route::get('/usage', [$subscriptionController, 'usage'])->name('usage')->middleware('hrmac:core.subscription.usage.view');
+        Route::get('/invoices', [$subscriptionController, 'invoices'])->name('invoices')->middleware('hrmac:core.subscription.invoices.view');
+        Route::get('/invoices/{invoice}/download', [$subscriptionController, 'downloadInvoice'])->name('invoices.download')->middleware('hrmac:core.subscription.invoices.download');
+        Route::post('/change-plan', [$subscriptionController, 'changePlan'])->name('change-plan')->middleware('hrmac:core.subscription.plans.view');
+        Route::post('/cancel', [$subscriptionController, 'cancel'])->name('cancel')->middleware('hrmac:core.subscription.plans.cancel');
     });
 }
 
