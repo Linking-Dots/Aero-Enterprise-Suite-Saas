@@ -52,7 +52,7 @@ function IntegrationCard({ title, description, icon, integrationKey, fields, ini
           <Toggle
             label="Enable integration"
             checked={Boolean(form.enabled)}
-            onChange={v => handleChange('enabled', v)}
+            onChange={e => handleChange('enabled', e.target.checked)}
           />
 
           {form.enabled && fields.map(field => (
