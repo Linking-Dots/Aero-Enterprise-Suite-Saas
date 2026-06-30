@@ -138,15 +138,15 @@ class TenantSubscriptionController extends Controller
         $plan = $subscription?->plan;
 
         $usersUsed = User::where('tenant_id', $tenantId)->whereNull('deleted_at')->count();
-        $usersLimit = (int) ($plan->max_users ?? 0);
+        $usersLimit = (int) ($plan?->max_users ?? 0);
 
-        $storageLimit = (int) ($plan->max_storage_gb ?? 0);
+        $storageLimit = (int) ($plan?->max_storage_gb ?? 0);
         $latestStat = TenantStat::where('tenant_id', $tenantId)->orderByDesc('date')->first();
         if ($latestStat && $latestStat->storage_used_mb > 0) {
             $storageUsedGb = (float) $latestStat->storage_used_mb / 1024;
         } else {
             $tenant = Tenant::find($tenantId);
-            $storageUsedGb = (float) (($tenant->metadata['storage_usage_gb'] ?? 0));
+            $storageUsedGb = (float) data_get($tenant, 'metadata.storage_usage_gb', 0);
         }
 
         $metrics = [];
