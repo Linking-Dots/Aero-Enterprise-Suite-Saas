@@ -14,7 +14,6 @@ use Aero\Platform\Models\TenantStat;
 use Aero\Platform\Models\UsageRecord;
 use Aero\Platform\Services\Billing\TenantSubscriptionPresenter;
 use Aero\Platform\Services\SubscriptionLifecycleService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -83,33 +82,37 @@ class TenantSubscriptionController extends Controller
     /**
      * Change the tenant's subscription plan.
      */
-    public function changePlan(Request $request): JsonResponse
+    public function changePlan(Request $request): RedirectResponse
     {
-        $request->validate([
-            'plan_id' => ['required', 'exists:plans,id'],
-        ]);
+        $request->validate(['plan_id' => ['required', 'exists:plans,id']]);
 
         $tenant = tenant();
-        $subscription = Subscription::where('tenant_id', $tenant->id)
+        $subscription = Subscription::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
             ->with('plan')
             ->latest()
             ->firstOrFail();
 
         $newPlan = Plan::findOrFail($request->plan_id);
-        $currentPlan = $subscription->plan;
+        $direction = $this->presenter->direction($subscription->plan, $newPlan);
 
-        $isUpgrade = $newPlan->monthly_price > $currentPlan->monthly_price;
+        // Per-direction HRMAC authorization (route gates plans.view baseline).
+        $access = app(ModuleAccessService::class);
+        $action = $direction === 'upgrade' ? 'upgrade' : 'downgrade';
+        abort_unless(
+            $access->canPerformAction($request->user(), 'core', 'subscription', 'plans', $action)['allowed'] ?? false,
+            403
+        );
 
-        if ($isUpgrade) {
-            $updated = $this->lifecycleService->upgrade($subscription, $newPlan);
+        if ($direction === 'upgrade') {
+            $this->lifecycleService->upgrade($subscription, $newPlan);
+            $message = 'Plan upgraded successfully.';
         } else {
-            $updated = $this->lifecycleService->downgrade($subscription, $newPlan);
+            $this->lifecycleService->downgrade($subscription, $newPlan);
+            $message = 'Plan change scheduled.';
         }
 
-        return response()->json([
-            'message' => $isUpgrade ? 'Plan upgraded successfully.' : 'Plan downgrade scheduled.',
-            'subscription' => $updated,
-        ]);
+        return back()->with('success', $message);
     }
 
     protected function currentSubscription(string $tenantId): ?Subscription
