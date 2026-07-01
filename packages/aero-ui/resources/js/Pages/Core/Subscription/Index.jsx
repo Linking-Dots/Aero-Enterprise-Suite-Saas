@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
-import { IndexPageLayout, Tabs, Stat, useToast, useHRMAC } from '@aero/ui';
+import { PageHeader, Tabs, useToast, useHRMAC } from '@aero/ui';
 import App from '@/Pages/App.jsx';
 import OverviewPanel from './panels/OverviewPanel.jsx';
 import PlansPanel from './panels/PlansPanel.jsx';
 import UsagePanel from './panels/UsagePanel.jsx';
 import InvoicesPanel from './panels/InvoicesPanel.jsx';
-
-function money(amount, currency = 'USD') {
-  if (amount == null) return '—';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount) || 0);
-}
 
 const ONLY = ['tab', 'summary', 'plan', 'usage', 'products', 'plans', 'currentPlanId', 'invoices'];
 
@@ -21,10 +16,10 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
   const canUpgrade  = useHRMAC('core.subscription.plans.upgrade');
   const canCancel   = useHRMAC('core.subscription.plans.cancel');
 
-  const [tab, setTab] = useState(initialTab || 'overview');
+  const [tab, setTab]           = useState(initialTab || 'overview');
   const [changingId, setChangingId] = useState(null);
   const [cancelling, setCancelling] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
 
   useEffect(() => {
     const offStart  = router.on('start',  () => setLoading(true));
@@ -45,7 +40,7 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
     router.post(route('core.subscription.change-plan'), { plan_id: planId }, {
       preserveScroll: true,
       onSuccess: () => toast.success('Plan updated.'),
-      onError:   () => toast.error('Failed to change plan.'),
+      onError:   () => toast.error('Could not change plan.'),
       onFinish:  () => setChangingId(null),
     });
   };
@@ -55,8 +50,8 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
     setCancelling(true);
     router.post(route('core.subscription.cancel'), {}, {
       preserveScroll: true,
-      onSuccess: () => toast.success('Subscription cancellation scheduled.'),
-      onError:   () => toast.error('Failed to cancel subscription.'),
+      onSuccess: () => toast.success('Cancellation scheduled.'),
+      onError:   () => toast.error('Could not cancel subscription.'),
       onFinish:  () => setCancelling(false),
     });
   };
@@ -74,43 +69,48 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
     canInvoices && { value: 'invoices', label: 'Invoices' },
   ].filter(Boolean);
 
-  const s = summary ?? {};
-  const usersStat = s.users ?? { used: 0, limit: 0 };
-  const storageStat = s.storage ?? { used_gb: 0, limit_gb: 0 };
-
   return (
-    <IndexPageLayout
-      title="Subscription & Billing"
-      breadcrumb={[
-        { label: 'Dashboard', href: route('core.dashboard') },
-        { label: 'Subscription & Billing' },
-      ]}
-      description="Manage your plan, usage, and billing history."
-      tabs={<Tabs value={tab} tabs={tabs} onChange={switchTab} />}
-      kpis={[
-        <Stat key="plan" title="Current Plan" value={s.plan_name ?? '—'} icon="sparkles" iconTone="indigo" />,
-        <Stat key="price" title="Billing" value={s.price != null ? money(s.price, s.currency) : '—'}
-          description={s.interval ? `per ${s.interval}` : undefined} icon="trending" iconTone="success" />,
-        <Stat key="users" title="Users"
-          value={`${usersStat.used} / ${usersStat.limit === 0 ? '∞' : usersStat.limit}`} icon="users" iconTone="amber" />,
-        <Stat key="storage" title="Storage"
-          value={`${storageStat.used_gb} / ${storageStat.limit_gb === 0 ? '∞' : `${storageStat.limit_gb} GB`}`}
-          icon="folder" iconTone="amber" />,
-      ]}
-      table={
-        tab === 'plans' ? (
-          <PlansPanel plans={plans} currentPlanId={currentPlanId}
-            onChangePlan={canUpgrade ? changePlan : () => toast.error('You lack permission to change plans.')}
-            onCancel={cancel} changingId={changingId} cancelling={cancelling} canCancel={canCancel} />
+    <div className="aeos-page-layout aeos-page-layout-index">
+      <PageHeader
+        breadcrumb={[
+          { label: 'Dashboard', href: route('core.dashboard') },
+          { label: 'Subscription & Billing' },
+        ]}
+        title="Subscription & Billing"
+        description="Manage your plan, usage, and billing history."
+        tabs={<Tabs value={tab} tabs={tabs} onChange={switchTab} />}
+      />
+
+      <div className="aeos-billing-body">
+        {tab === 'plans' ? (
+          <PlansPanel
+            plans={plans}
+            currentPlanId={currentPlanId}
+            onChangePlan={canUpgrade ? changePlan : () => toast.error('You do not have permission to change plans.')}
+            onCancel={cancel}
+            changingId={changingId}
+            cancelling={cancelling}
+            canCancel={canCancel}
+          />
         ) : tab === 'usage' ? (
           <UsagePanel usage={usage} />
         ) : tab === 'invoices' ? (
           <InvoicesPanel invoices={invoices} loading={loading} onPage={invoicesPage} />
         ) : (
-          <OverviewPanel summary={summary} plan={plan} usage={usage} products={products} />
-        )
-      }
-    />
+          <OverviewPanel
+            summary={summary}
+            plan={plan}
+            usage={usage}
+            products={products}
+            canUpgrade={canUpgrade}
+            canCancel={canCancel}
+            onChange={() => switchTab('plans')}
+            onCancel={cancel}
+            cancelling={cancelling}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 

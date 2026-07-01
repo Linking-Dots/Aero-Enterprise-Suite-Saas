@@ -1,40 +1,37 @@
-import { Card, CardBody, VStack, HStack, Box, Text, Eyebrow, Heading, Badge, Button } from '@aero/ui';
-
-function money(amount, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount) || 0);
-}
+import { Card, CardBody, VStack, HStack, Box, Text, Heading, Eyebrow, Badge, Button } from '@aero/ui';
+import { money } from '../money.js';
 
 function PlanCard({ plan, isCurrent, onChange, busy }) {
   return (
-    <Card>
+    <Card className={isCurrent ? 'aeos-plan-current' : undefined}>
       <CardBody>
         <VStack gap={4}>
-          <HStack gap={2} align="center">
-            <Box grow>
-              <VStack gap={1}>
-                <Eyebrow>{plan.name}</Eyebrow>
-                <HStack gap={1} align="baseline">
-                  <Heading size="lg">{money(plan.price, plan.currency)}</Heading>
-                  <Text tone="secondary" size="sm">/ {plan.interval ?? 'month'}</Text>
-                </HStack>
-              </VStack>
-            </Box>
-            {isCurrent && <Badge intent="success">Current Plan</Badge>}
-          </HStack>
+          <VStack gap={1}>
+            <HStack gap={2} align="center">
+              <Box grow><Eyebrow>{plan.name}</Eyebrow></Box>
+              {isCurrent && <Badge intent="success" size="sm">Current</Badge>}
+            </HStack>
+            <HStack gap={1} align="baseline">
+              <Heading size="lg">{money(plan.price, plan.currency)}</Heading>
+              <Text size="sm" tone="secondary">/ {plan.interval ?? 'month'}</Text>
+            </HStack>
+          </VStack>
+
           {Array.isArray(plan.features) && plan.features.length > 0 && (
             <VStack gap={2}>
-              {plan.features.map((feat, i) => (
+              {plan.features.map((f, i) => (
                 <HStack key={i} gap={2} align="center">
                   <Badge intent="success" size="sm">✓</Badge>
-                  <Text size="sm">{feat}</Text>
+                  <Text size="sm">{f}</Text>
                 </HStack>
               ))}
             </VStack>
           )}
+
           {isCurrent ? (
-            <Button intent="ghost" disabled fullWidth type="button">Active Plan</Button>
+            <Button intent="ghost" type="button" fullWidth disabled>Current plan</Button>
           ) : (
-            <Button intent="primary" fullWidth type="button" loading={busy} onClick={() => onChange(plan.id)}>
+            <Button intent="primary" type="button" fullWidth loading={busy} onClick={() => onChange(plan.id)}>
               Switch to {plan.name}
             </Button>
           )}
@@ -46,24 +43,41 @@ function PlanCard({ plan, isCurrent, onChange, busy }) {
 
 export default function PlansPanel({ plans, currentPlanId, onChangePlan, onCancel, changingId, cancelling, canCancel }) {
   const list = plans ?? [];
+
   return (
     <VStack gap={4}>
       {list.length === 0 ? (
-        <Text tone="secondary">No plans available.</Text>
+        <Card><CardBody><Text tone="secondary">No plans are available right now.</Text></CardBody></Card>
       ) : (
-        <HStack gap={4} align="start" wrap>
+        <div className="aeos-billing-grid">
           {list.map(plan => (
-            <Box key={plan.id} grow>
-              <PlanCard plan={plan} isCurrent={plan.id === currentPlanId}
-                onChange={onChangePlan} busy={changingId === plan.id} />
-            </Box>
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              isCurrent={plan.id === currentPlanId}
+              onChange={onChangePlan}
+              busy={changingId === plan.id}
+            />
           ))}
-        </HStack>
+        </div>
       )}
+
       {canCancel && (
-        <HStack gap={2} justify="end">
-          <Button intent="danger" size="sm" type="button" loading={cancelling} disabled={cancelling} onClick={onCancel}>Cancel Subscription</Button>
-        </HStack>
+        <Card>
+          <CardBody>
+            <HStack gap={3} align="center" wrap>
+              <Box grow>
+                <VStack gap={1}>
+                  <Text>Cancel subscription</Text>
+                  <Text size="sm" tone="secondary">Your plan stays active until the end of the current billing period.</Text>
+                </VStack>
+              </Box>
+              <Button intent="danger" type="button" loading={cancelling} disabled={cancelling} onClick={onCancel}>
+                Cancel subscription
+              </Button>
+            </HStack>
+          </CardBody>
+        </Card>
       )}
     </VStack>
   );

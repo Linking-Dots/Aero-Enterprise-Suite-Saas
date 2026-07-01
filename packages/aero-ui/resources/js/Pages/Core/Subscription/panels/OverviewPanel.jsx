@@ -1,71 +1,92 @@
-import { Card, CardBody, VStack, HStack, Box, Text, Eyebrow, Badge } from '@aero/ui';
-import UsagePanel from './UsagePanel.jsx';
+import { Card, CardBody, VStack, HStack, Box, Text, Heading, Eyebrow, Badge, Button } from '@aero/ui';
+import { money } from '../money.js';
+import UsageMeter from './UsageMeter.jsx';
 
-function money(amount, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount) || 0);
-}
-
-export default function OverviewPanel({ summary, plan, usage, products }) {
+export default function OverviewPanel({ summary, plan, usage, products, canUpgrade, canCancel, onChange, onCancel, cancelling }) {
   const s = summary ?? {};
+  const u = usage ?? {};
+  const users = u.users ?? { used: 0, limit: 0 };
+  const storage = u.storage ?? { used_gb: 0, limit_gb: 0 };
   const prods = products ?? [];
   const features = plan?.features ?? [];
 
+  const statusIntent = s.status === 'active' ? 'success' : s.status === 'trialing' ? 'primary' : 'warning';
+  const renewLine = s.days_left != null
+    ? `Trial · ${s.days_left} day${s.days_left === 1 ? '' : 's'} left`
+    : null;
+
   return (
-    <VStack gap={4}>
+    <VStack gap={5}>
+      {/* Current plan hero */}
       <Card>
         <CardBody>
-          <VStack gap={3}>
-            <Eyebrow>Current Plan</Eyebrow>
-            <HStack gap={2} align="baseline">
-              <Text size="lg">{s.plan_name ?? '—'}</Text>
-              {s.price != null && <Text tone="secondary" size="sm">{money(s.price, s.currency)} / {s.interval}</Text>}
-              {s.status && <Badge intent={s.status === 'active' ? 'success' : 'warning'}>{s.status}</Badge>}
-            </HStack>
-            {s.days_left != null && <Text tone="secondary" size="sm">Trial: {s.days_left} days left</Text>}
-          </VStack>
-        </CardBody>
-      </Card>
-
-      <UsagePanel usage={usage} />
-
-      <Card>
-        <CardBody>
-          <VStack gap={3}>
-            <Eyebrow>Active Products</Eyebrow>
-            {prods.length > 0 ? (
-              <VStack gap={2}>
-                {prods.map(p => (
-                  <HStack key={p.id} gap={2} align="center">
-                    <Box grow><Text size="sm">{p.name ?? '—'}</Text></Box>
-                    <Text tone="secondary" size="sm">{money(p.price, p.currency)}</Text>
-                    <Badge intent={p.status === 'active' ? 'success' : 'neutral'} size="sm">{p.status}</Badge>
+          <VStack gap={4}>
+            <HStack gap={4} align="center" wrap>
+              <Box grow>
+                <VStack gap={2}>
+                  <Eyebrow>Current plan</Eyebrow>
+                  <HStack gap={2} align="baseline" wrap>
+                    <Heading size="lg">{s.plan_name ?? 'No plan'}</Heading>
+                    {s.price != null && (
+                      <Text tone="secondary">{money(s.price, s.currency)} / {s.interval ?? 'month'}</Text>
+                    )}
+                    {s.status && <Badge intent={statusIntent}>{s.status}</Badge>}
                   </HStack>
-                ))}
-              </VStack>
-            ) : (
-              <Text tone="secondary" size="sm">No add-on products.</Text>
+                  {renewLine && <Text size="sm" tone="secondary">{renewLine}</Text>}
+                </VStack>
+              </Box>
+              <HStack gap={2} wrap>
+                {canUpgrade && (
+                  <Button intent="primary" type="button" leftIcon="arrowUp" onClick={onChange}>Change plan</Button>
+                )}
+                {canCancel && (
+                  <Button intent="ghost" type="button" loading={cancelling} disabled={cancelling} onClick={onCancel}>Cancel</Button>
+                )}
+              </HStack>
+            </HStack>
+
+            {features.length > 0 && (
+              <HStack gap={2} wrap>
+                {features.map((f, i) => <Badge key={i} intent="neutral" size="sm">{f}</Badge>)}
+              </HStack>
             )}
           </VStack>
         </CardBody>
       </Card>
 
-      {features.length > 0 && (
+      {/* Usage + Products, side by side */}
+      <div className="aeos-billing-split">
         <Card>
           <CardBody>
-            <VStack gap={3}>
-              <Eyebrow>Plan Features</Eyebrow>
-              <VStack gap={2}>
-                {features.map((f, i) => (
-                  <HStack key={i} gap={2} align="center">
-                    <Badge intent="success" size="sm">✓</Badge>
-                    <Text size="sm">{f}</Text>
-                  </HStack>
-                ))}
-              </VStack>
+            <VStack gap={4}>
+              <Eyebrow>Resource usage</Eyebrow>
+              <UsageMeter label="Users" used={users.used} limit={users.limit} />
+              <UsageMeter label="Storage" used={storage.used_gb} limit={storage.limit_gb} unit=" GB" />
             </VStack>
           </CardBody>
         </Card>
-      )}
+
+        <Card>
+          <CardBody>
+            <VStack gap={3}>
+              <Eyebrow>Active products</Eyebrow>
+              {prods.length > 0 ? (
+                <VStack gap={3}>
+                  {prods.map(p => (
+                    <HStack key={p.id} gap={2} align="center">
+                      <Box grow><Text size="sm">{p.name ?? '—'}</Text></Box>
+                      <Text size="sm" tone="secondary">{money(p.price, p.currency)}</Text>
+                      <Badge intent={p.status === 'active' ? 'success' : 'neutral'} size="sm">{p.status}</Badge>
+                    </HStack>
+                  ))}
+                </VStack>
+              ) : (
+                <Text size="sm" tone="secondary">No add-on products. Add-ons you subscribe to will appear here.</Text>
+              )}
+            </VStack>
+          </CardBody>
+        </Card>
+      </div>
     </VStack>
   );
 }

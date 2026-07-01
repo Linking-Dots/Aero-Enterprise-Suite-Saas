@@ -30,7 +30,10 @@ class TenantSubscriptionPresenter
         // A null or 'monthly' billing cycle is treated as monthly; only 'yearly' switches the price/interval.
         $isYearly = $billingCycle === 'yearly';
         $price = $isYearly ? (float) $plan->yearly_price : (float) $plan->monthly_price;
-        $features = is_array($plan->features) ? array_values($plan->features) : [];
+        // Keep only non-empty scalar feature labels (seeded plans can carry blank entries).
+        $features = is_array($plan->features)
+            ? array_values(array_filter($plan->features, fn ($f) => is_scalar($f) && trim((string) $f) !== ''))
+            : [];
 
         return [
             'id' => $plan->id,
