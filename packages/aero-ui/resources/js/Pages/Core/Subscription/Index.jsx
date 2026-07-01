@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { PageHeader, Tabs, useToast, useHRMAC } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SubscriptionRail from './SubscriptionRail.jsx';
 import OverviewPanel from './panels/OverviewPanel.jsx';
 import PlansPanel from './panels/PlansPanel.jsx';
 import ProductsPanel from './panels/ProductsPanel.jsx';
@@ -156,4 +157,6 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
   );
 }
 
-SubscriptionIndex.layout = page => <App title="Subscription & Billing">{page}</App>;
+SubscriptionIndex.layout = page => (
+  <App title="Subscription & Billing" railTitle="Billing" rail={<SubscriptionRail />}>{page}</App>
+);
