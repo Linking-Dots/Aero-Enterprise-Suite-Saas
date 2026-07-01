@@ -84,7 +84,11 @@ class TenantSubscriptionController extends Controller
      */
     public function changePlan(Request $request): RedirectResponse
     {
-        $request->validate(['plan_id' => ['required', 'exists:plans,id']]);
+        // plans is a central table; validate against the central connection
+        // (the default connection here is the tenant DB, which has no plans table).
+        $request->validate([
+            'plan_id' => ['required', 'exists:'.(new Plan)->getConnectionName().'.plans,id'],
+        ]);
 
         $tenant = tenant();
         $subscription = Subscription::where('billable_type', Tenant::class)
@@ -171,7 +175,9 @@ class TenantSubscriptionController extends Controller
     {
         $plan = $subscription?->plan;
 
-        $usersUsed = User::where('tenant_id', $tenantId)->whereNull('deleted_at')->count();
+        // Users live in the tenant DB (already tenant-scoped) — there is no
+        // tenant_id column here, unlike the central users table. Count directly.
+        $usersUsed = User::whereNull('deleted_at')->count();
         $usersLimit = (int) ($plan?->max_users ?? 0);
 
         $storageLimit = (int) ($plan?->max_storage_gb ?? 0);
