@@ -27,11 +27,14 @@ class PayrollRunController extends Controller
         private readonly AuditServiceInterface $audit,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         Gate::authorize('hrmac', 'hrm.payroll.payroll-run.view');
 
+        $status = $request->string('status')->toString() ?: null;
+
         $runs = PayrollRun::query()
+            ->when($status, fn ($q, $s) => $q->where('status', $s))
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString()
@@ -48,6 +51,12 @@ class PayrollRunController extends Controller
 
         return Inertia::render('HRM/Payroll/Runs/Index', [
             'runs' => $runs,
+            'filters' => ['status' => $status],
+            'stats' => [
+                'total'    => PayrollRun::count(),
+                'approved' => PayrollRun::where('status', PayrollRun::STATUS_APPROVED)->count(),
+                'net_paid' => (float) PayrollRun::where('status', PayrollRun::STATUS_APPROVED)->sum('total_net'),
+            ],
         ]);
     }
 
@@ -95,17 +104,18 @@ class PayrollRunController extends Controller
         return redirect()->route('hrm.payroll.runs.show', $run);
     }
 
-    public function show(PayrollRun $run): Response
+    public function show(): Response
     {
+        $run = PayrollRun::findOrFail(request()->route('run'));
         Gate::authorize('hrmac', 'hrm.payroll.payroll-run.view');
 
         $run->load(['payslips.employee.user:id,name']);
 
         $this->audit->logAccess(
-            event: AuditEventType::SENSITIVE_VIEWED->value,
-            action: 'viewed',
-            subject: $run,
-            description: "Payroll run #{$run->id} ({$run->label}) viewed — {$run->payslips->count()} payslips exposed",
+            resourceType: 'payroll_run',
+            resourceId: $run->id,
+            subjectLabel: $run->label,
+            fields: ['total_gross', 'total_net', 'payslips'],
         );
 
         return Inertia::render('HRM/Payroll/Runs/Show', [
@@ -133,8 +143,9 @@ class PayrollRunController extends Controller
         ]);
     }
 
-    public function update(Request $request, PayrollRun $run): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
+        $run = PayrollRun::findOrFail($request->route('run'));
         Gate::authorize('hrmac', 'hrm.payroll.payroll-run.execute');
 
         if ($run->isLocked()) {
@@ -165,8 +176,9 @@ class PayrollRunController extends Controller
         return back();
     }
 
-    public function approve(Request $request, PayrollRun $run): RedirectResponse
+    public function approve(Request $request): RedirectResponse
     {
+        $run = PayrollRun::findOrFail($request->route('run'));
         Gate::authorize('hrmac', 'hrm.payroll.payroll-run.lock');
 
         $this->approvalService->approve($run);

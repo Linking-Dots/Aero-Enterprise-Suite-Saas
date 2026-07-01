@@ -11,15 +11,13 @@ use Aero\HRM\Exceptions\PayrollLockedException;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * A single employee payslip generated as part of a PayrollRun.
  *
  * Security requirements:
  *  - bank_account_number / bank_name / bank_routing_number are encrypted at rest via EncryptedField.
- *  - LogsActivity trait tracks all mutations for GDPR/audit purposes.
+ *  - Auditing is handled by the AEOS AuditService at the PayrollRun level (project audit standard).
  *  - Immutability: once the parent PayrollRun is locked, no updates or deletes are allowed.
  *
  * @property int         $id
@@ -38,7 +36,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Payslip extends TenantModel
 {
     use HasFactory;
-    use LogsActivity;
 
     protected $table = 'hrm_payslips';
 
@@ -104,15 +101,5 @@ class Payslip extends TenantModel
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_id');
-    }
-
-    // ── Spatie LogsActivity ───────────────────────────────────────────────────
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->dontLogIfAttributesChangedOnly(['updated_at'])
-            ->setDescriptionForEvent(fn (string $eventName) => "Payslip {$eventName}");
     }
 }

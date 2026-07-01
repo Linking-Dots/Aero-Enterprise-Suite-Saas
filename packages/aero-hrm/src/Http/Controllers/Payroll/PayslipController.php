@@ -21,8 +21,9 @@ class PayslipController extends Controller
         private readonly AuditServiceInterface $audit,
     ) {}
 
-    public function show(Request $request, Payslip $payslip): InertiaResponse
+    public function show(Request $request): InertiaResponse
     {
+        $payslip = Payslip::findOrFail($request->route('payslip'));
         $user = $request->user();
         $isSelf = $payslip->employee?->user_id === $user->id;
 
@@ -61,8 +62,9 @@ class PayslipController extends Controller
         ]);
     }
 
-    public function download(Request $request, Payslip $payslip): Response
+    public function download(Request $request): Response
     {
+        $payslip = Payslip::findOrFail($request->route('payslip'));
         $user = $request->user();
         $isSelf = $payslip->employee?->user_id === $user->id;
 

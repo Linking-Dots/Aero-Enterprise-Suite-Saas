@@ -49,12 +49,24 @@ class EmployeeController extends Controller
                 'date_of_joining' => optional($e->date_of_joining)->toDateString(),
             ]);
 
+        $statusCounts = Employee::query()
+            ->selectRaw('status, COUNT(*) as c')
+            ->groupBy('status')
+            ->pluck('c', 'status');
+
         return Inertia::render('HRM/Employees/Index', [
             'employees' => $employees,
             'filters' => $filters,
             'departments' => Department::query()->select('id', 'name')->orderBy('name')->get(),
             'statuses' => ['active', 'probation', 'on_leave', 'terminated', 'resigned'],
             'employmentTypes' => ['full_time', 'part_time', 'contract', 'intern'],
+            'stats' => [
+                'total'      => (int) $statusCounts->sum(),
+                'active'     => (int) ($statusCounts['active'] ?? 0),
+                'on_leave'   => (int) ($statusCounts['on_leave'] ?? 0),
+                'terminated' => (int) ($statusCounts['terminated'] ?? 0),
+                'departments' => Department::count(),
+            ],
         ]);
     }
 

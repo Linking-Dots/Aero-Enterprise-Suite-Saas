@@ -662,46 +662,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/self-service/bank-information', [EmployeeSelfServiceController::class, 'updateBankInformation'])->name('selfservice.bank-information.update');
     });
 
-    // Payroll Management System
-    Route::middleware(['hrmac:hrm.payroll'])->group(function () {
-        Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
-        Route::post('/payroll', [PayrollController::class, 'store'])->name('payroll.store');
-        Route::get('/payroll/structures', [PayrollController::class, 'structures'])->name('payroll.structures'); // Salary structures
-        Route::get('/payroll/components', [PayrollController::class, 'components'])->name('payroll.components'); // Salary components
-        Route::get('/payroll/run', [PayrollController::class, 'run'])->name('payroll.run'); // Payroll run
-        Route::get('/payroll/payslips', [PayrollController::class, 'payslips'])->name('payroll.payslips'); // Payslips list
-        Route::get('/payroll/tax', [PayrollController::class, 'taxSetup'])->name('payroll.tax'); // Tax setup
-        Route::get('/payroll/declarations', [PayrollController::class, 'index'])->name('payroll.declarations'); // IT/Tax declarations
-        Route::get('/payroll/loans', [PayrollController::class, 'index'])->name('payroll.loans'); // Loan & Advance management
-        Route::get('/payroll/bank-file', [PayrollController::class, 'index'])->name('payroll.bank-file'); // Bank file generator
-        Route::get('/payroll/create', [PayrollController::class, 'create'])->name('payroll.create');
-        Route::post('/payroll', [PayrollController::class, 'store'])->name('payroll.store');
-        Route::get('/payroll/{id}', [PayrollController::class, 'show'])->name('payroll.show');
-        Route::get('/payroll/{id}/edit', [PayrollController::class, 'edit'])->name('payroll.edit');
-        Route::put('/payroll/{id}', [PayrollController::class, 'update'])->name('payroll.update');
-        Route::delete('/payroll/{id}', [PayrollController::class, 'destroy'])->name('payroll.destroy');
-
-        // Process Payroll
-        Route::post('/payroll/{id}/process', [PayrollController::class, 'processPayroll'])->name('payroll.process');
-
-        // Bulk Operations
-        Route::post('/payroll/bulk/generate', [PayrollController::class, 'bulkGenerate'])->name('payroll.bulk.generate');
-        Route::post('/payroll/bulk/process', [PayrollController::class, 'bulkProcess'])->name('payroll.bulk.process');
-
-        // Payslips
-        Route::get('/payroll/{id}/payslip', [PayrollController::class, 'viewPayslip'])->name('payroll.payslip.view');
-        Route::post('/payroll/{id}/payslip/generate', [PayrollController::class, 'generatePayslip'])->name('payroll.payslip.generate');
-        Route::post('/payroll/payslips/bulk-generate', [PayrollController::class, 'bulkGeneratePayslips'])->name('payroll.payslips.bulk.generate');
-        Route::get('/payroll/{id}/payslip/download', [PayrollController::class, 'downloadPayslip'])->name('payroll.payslip.download');
-        Route::post('/payroll/{id}/payslip/email', [PayrollController::class, 'sendPayslipEmail'])->name('payroll.payslip.email');
-
-        // Reports
-        Route::get('/payroll/reports', [PayrollController::class, 'reports'])->name('payroll.reports');
-        Route::post('/payroll/reports/monthly-summary', [PayrollController::class, 'monthlySummaryReport'])->name('payroll.reports.monthly');
-        Route::post('/payroll/reports/tax', [PayrollController::class, 'taxReport'])->name('payroll.reports.tax');
-        Route::post('/payroll/reports/bank-transfer', [PayrollController::class, 'bankTransferReport'])->name('payroll.reports.bank');
-        Route::post('/payroll/reports/statutory', [PayrollController::class, 'statutoryReport'])->name('payroll.reports.statutory');
-    });
+    // Payroll Management System — RETIRED (legacy v1). Superseded by Payroll v2
+    // (payroll/structures, payroll/components, payroll/runs, payroll/payslips,
+    // payroll/settings/tax) defined below. The legacy Employee/PayrollController
+    // rendered a non-existent `HRM/Payroll/Index` page and its `/payroll/{id}`
+    // route shadowed the v2 `/payroll/runs` GET, so it has been removed.
 
     // Employee Management - Core CRUD operations (legacy JSON API — broad gate)
     Route::middleware(['hrmac:hrm.employees'])->group(function () {

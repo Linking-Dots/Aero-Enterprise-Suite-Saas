@@ -490,14 +490,14 @@ return [
             'name' => 'Leaves',
             'description' => 'Leave types, requests, balances, holidays, and policies',
             'icon' => 'CalendarIcon',
-            'route' => '/hrm/leaves',
+            'route' => '/hrm/leave/applications',
             'priority' => 3,
             'components' => [
                 [
                     'code' => 'leave-types',
                     'name' => 'Leave Types',
                     'type' => 'page',
-                    'route' => '/hrm/leaves', // Fixed: Use working leave management page
+                    'route' => '/hrm/leave/types',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Leave Types'],
                         ['code' => 'create', 'name' => 'Create Leave Type'],
@@ -509,7 +509,7 @@ return [
                     'code' => 'leave-balances',
                     'name' => 'Leave Balances',
                     'type' => 'page',
-                    'route' => '/hrm/leaves', // Fixed: Use actual working route (LeaveController@index2)
+                    'route' => '/hrm/leave/balance',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Leave Balances'],
                         ['code' => 'update', 'name' => 'Update Leave Balance'],
@@ -519,7 +519,7 @@ return [
                     'code' => 'leave-requests',
                     'name' => 'Leave Requests',
                     'type' => 'page',
-                    'route' => '/hrm/leaves', // Fixed: Use actual working route (LeaveController@index2)
+                    'route' => '/hrm/leave/applications',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Leave Requests'],
                         ['code' => 'create', 'name' => 'Create Leave Request'],
@@ -541,7 +541,7 @@ return [
                     'code' => 'holiday-calendar',
                     'name' => 'Holiday Calendar',
                     'type' => 'page',
-                    'route' => '/hrm/holidays',
+                    'route' => '/hrm/leave/calendar',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Holidays'],
                         ['code' => 'create', 'name' => 'Create Holiday'],
@@ -553,7 +553,7 @@ return [
                     'code' => 'leave-policies',
                     'name' => 'Leave Policies',
                     'type' => 'page',
-                    'route' => '/hrm/leaves', // Fixed: Use working leave management page
+                    'route' => '/hrm/leave/applications',
                     'actions' => [
                         ['code' => 'manage', 'name' => 'Manage Leave Policies'],
                         ['code' => 'view', 'name' => 'View Leave Policies'],
@@ -582,14 +582,14 @@ return [
             'name' => 'Payroll',
             'description' => 'Salary structures, payroll processing, payslips, tax, and loans',
             'icon' => 'CurrencyDollarIcon',
-            'route' => '/hrm/payroll',
+            'route' => '/hrm/payroll/runs',
             'priority' => 4,
             'components' => [
                 [
                     'code' => 'salary-structures',
                     'name' => 'Salary Structures',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/structures',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Salary Structures'],
                         ['code' => 'create', 'name' => 'Create Salary Structure'],
@@ -601,7 +601,7 @@ return [
                     'code' => 'salary-components',
                     'name' => 'Salary Components',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/components',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Salary Components'],
                         ['code' => 'create', 'name' => 'Create Salary Component'],
@@ -613,7 +613,7 @@ return [
                     'code' => 'payroll-run',
                     'name' => 'Payroll Run',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/runs',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Payroll Runs'],
                         ['code' => 'execute', 'name' => 'Execute Payroll Run'],
@@ -626,7 +626,7 @@ return [
                     'code' => 'payslips',
                     'name' => 'Payslips',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/runs',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Payslips'],
                         ['code' => 'download', 'name' => 'Download Payslip'],
@@ -637,14 +637,14 @@ return [
                     'code' => 'tax-setup',
                     'name' => 'Tax Setup',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/settings/tax',
                     'actions' => [['code' => 'manage', 'name' => 'Manage Tax Rules']],
                 ],
                 [
                     'code' => 'tax-declarations', // Added
                     'name' => 'IT/Tax Declarations',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/runs',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Declarations'],
                         ['code' => 'verify', 'name' => 'Verify Proofs'],
@@ -654,7 +654,7 @@ return [
                     'code' => 'loans',
                     'name' => 'Loan & Advance Management',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/runs',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Loans'],
                         ['code' => 'create', 'name' => 'Create Loan'],
@@ -666,7 +666,7 @@ return [
                     'code' => 'bank-file',
                     'name' => 'Bank File Generator',
                     'type' => 'page',
-                    'route' => '/hrm/payroll',
+                    'route' => '/hrm/payroll/runs',
                     'actions' => [['code' => 'generate', 'name' => 'Generate Bank File']],
                 ],
             ],
