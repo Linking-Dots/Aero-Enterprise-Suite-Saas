@@ -138,14 +138,42 @@ class HRMACServiceProvider extends ServiceProvider
      */
     protected function registerHrmacGate(): void
     {
-        \Illuminate\Support\Facades\Gate::before(function ($user, string $ability) {
-            if (! is_object($user) || ! str_contains($ability, '.')) {
+        \Illuminate\Support\Facades\Gate::before(function ($user, string $ability, $arguments = []) {
+            if (! is_object($user)) {
                 return null;
             }
 
-            $parts = array_values(array_filter(explode('.', $ability), fn ($p) => $p !== ''));
+            // Resolve the HRMAC dot-path from either calling convention:
+            //   Gate::allows('hrm.attendance.view')            → path is the ability
+            //   Gate::authorize('hrmac', 'hrm.attendance.view') → path is the first argument
+            $path = null;
+            if ($ability === 'hrmac') {
+                $path = is_array($arguments) ? ($arguments[0] ?? null) : $arguments;
+            } elseif (str_contains($ability, '.')) {
+                $path = $ability;
+            }
+            if (! is_string($path) || ! str_contains($path, '.')) {
+                return null;
+            }
+
+            $parts = array_values(array_filter(explode('.', $path), fn ($p) => $p !== ''));
             if (count($parts) < 2) {
                 return null; // not a module.submodule ability
+            }
+
+            // Super admins bypass HRMAC abilities, mirroring the CheckRoleModuleAccess
+            // middleware (which grants super admins before any role-access check).
+            // Without this, controllers that add Gate::authorize('hrmac', ...) deny
+            // super admins even though the route middleware already let them through.
+            $superAdminRoles = [];
+            $rolesConfig = (array) config('hrmac.super_admin_roles', []);
+            array_walk_recursive($rolesConfig, function ($role) use (&$superAdminRoles) {
+                if (is_string($role) && $role !== '') {
+                    $superAdminRoles[] = $role;
+                }
+            });
+            if ($superAdminRoles !== [] && method_exists($user, 'hasAnyRole') && $user->hasAnyRole($superAdminRoles)) {
+                return true;
             }
 
             $module = $parts[0];

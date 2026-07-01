@@ -2043,7 +2043,7 @@ class AttendanceController extends Controller
     {
         Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.view');
 
-        $date = $request->date('date', now())->toDateString();
+        $date = ($request->date('date') ?? now())->toDateString();
         $records = Attendance::query()
             ->with(['employee.user:id,name'])
             ->whereDate('date', $date)
@@ -2062,7 +2062,7 @@ class AttendanceController extends Controller
     {
         Gate::authorize('hrmac', 'hrm.attendance.daily-attendance.view');
 
-        $month = $request->date('month', now())->startOfMonth();
+        $month = ($request->date('month') ?? now())->startOfMonth();
 
         $days = collect();
         $cursor = $month->copy();
