@@ -116,6 +116,20 @@ class TenantSubscriptionController extends Controller
     }
 
     /**
+     * Stream the invoice PDF — 403 if invoice is not owned by the current tenant,
+     * 404 if the PDF file is missing from storage.
+     */
+    public function downloadInvoice(Invoice $invoice): StreamedResponse
+    {
+        $tenant = tenant();
+
+        abort_unless($this->presenter->invoiceBelongsToTenant($invoice, $tenant->id), 403);
+        abort_if(empty($invoice->pdf_path) || ! Storage::exists($invoice->pdf_path), 404);
+
+        return Storage::download($invoice->pdf_path, ($invoice->invoice_number ?? 'invoice').'.pdf');
+    }
+
+    /**
      * Cancel the tenant's subscription.
      */
     public function cancel(Request $request): RedirectResponse

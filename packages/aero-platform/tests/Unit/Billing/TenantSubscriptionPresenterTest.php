@@ -125,6 +125,17 @@ class TenantSubscriptionPresenterTest extends TestCase
         $this->assertSame('USD', $shaped['currency']);
     }
 
+    public function test_invoice_ownership_guard_matches_tenant(): void
+    {
+        $invoice = new \Aero\Platform\Models\Invoice([
+            'billable_type' => \Aero\Platform\Models\Tenant::class,
+            'billable_id' => 'tenant-123',
+        ]);
+
+        $this->assertTrue($this->presenter->invoiceBelongsToTenant($invoice, 'tenant-123'));
+        $this->assertFalse($this->presenter->invoiceBelongsToTenant($invoice, 'tenant-999'));
+    }
+
     public function test_summary_merges_plan_status_and_usage(): void
     {
         $plan = new Plan(['name' => 'Pro', 'monthly_price' => '49.00', 'currency' => 'USD']);

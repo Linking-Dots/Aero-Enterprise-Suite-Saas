@@ -8,6 +8,7 @@ use Aero\Platform\Models\Invoice;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\Tenant;
 
 /**
  * Pure shaping for the tenant self-service Subscription hub.
@@ -106,6 +107,15 @@ class TenantSubscriptionPresenter
             'users' => $usage['users'],
             'storage' => $usage['storage'],
         ];
+    }
+
+    /**
+     * Cross-tenant leak guard: true only when the invoice's billable is this tenant.
+     */
+    public function invoiceBelongsToTenant(Invoice $invoice, string $tenantId): bool
+    {
+        return $invoice->billable_type === Tenant::class
+            && (string) $invoice->billable_id === (string) $tenantId;
     }
 
     /**
