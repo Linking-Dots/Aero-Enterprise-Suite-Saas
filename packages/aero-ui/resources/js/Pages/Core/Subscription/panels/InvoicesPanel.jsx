@@ -1,4 +1,3 @@
-import { router } from '@inertiajs/react';
 import { DataTable, Button, Badge, Pagination, VStack, Text, Mono, EmptyState } from '@aero/ui';
 
 const STATUS_INTENT = { paid: 'success', issued: 'neutral', overdue: 'danger', void: 'neutral', refunded: 'warning', draft: 'neutral' };

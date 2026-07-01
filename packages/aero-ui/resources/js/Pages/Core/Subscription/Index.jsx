@@ -23,6 +23,7 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
 
   const [tab, setTab] = useState(initialTab || 'overview');
   const [changingId, setChangingId] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -51,10 +52,12 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
 
   const cancel = () => {
     if (!confirm('Cancel your subscription? It stays active until the end of the billing period.')) return;
+    setCancelling(true);
     router.post(route('core.subscription.cancel'), {}, {
       preserveScroll: true,
       onSuccess: () => toast.success('Subscription cancellation scheduled.'),
       onError:   () => toast.error('Failed to cancel subscription.'),
+      onFinish:  () => setCancelling(false),
     });
   };
 
@@ -92,13 +95,13 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
           value={`${usersStat.used} / ${usersStat.limit === 0 ? '∞' : usersStat.limit}`} icon="users" iconTone="amber" />,
         <Stat key="storage" title="Storage"
           value={`${storageStat.used_gb} / ${storageStat.limit_gb === 0 ? '∞' : `${storageStat.limit_gb} GB`}`}
-          icon="inbox" iconTone="amber" />,
+          icon="folder" iconTone="amber" />,
       ]}
       table={
         tab === 'plans' ? (
           <PlansPanel plans={plans} currentPlanId={currentPlanId}
             onChangePlan={canUpgrade ? changePlan : () => toast.error('You lack permission to change plans.')}
-            onCancel={cancel} changingId={changingId} canCancel={canCancel} />
+            onCancel={cancel} changingId={changingId} cancelling={cancelling} canCancel={canCancel} />
         ) : tab === 'usage' ? (
           <UsagePanel usage={usage} />
         ) : tab === 'invoices' ? (

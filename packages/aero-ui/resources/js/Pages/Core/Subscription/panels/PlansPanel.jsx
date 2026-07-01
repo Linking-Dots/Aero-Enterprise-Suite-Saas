@@ -44,7 +44,7 @@ function PlanCard({ plan, isCurrent, onChange, busy }) {
   );
 }
 
-export default function PlansPanel({ plans, currentPlanId, onChangePlan, onCancel, changingId, canCancel }) {
+export default function PlansPanel({ plans, currentPlanId, onChangePlan, onCancel, changingId, cancelling, canCancel }) {
   const list = plans ?? [];
   return (
     <VStack gap={4}>
@@ -62,7 +62,7 @@ export default function PlansPanel({ plans, currentPlanId, onChangePlan, onCance
       )}
       {canCancel && (
         <HStack gap={2} justify="end">
-          <Button intent="danger" size="sm" type="button" onClick={onCancel}>Cancel Subscription</Button>
+          <Button intent="danger" size="sm" type="button" loading={cancelling} disabled={cancelling} onClick={onCancel}>Cancel Subscription</Button>
         </HStack>
       )}
     </VStack>
