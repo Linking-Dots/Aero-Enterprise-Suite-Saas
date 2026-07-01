@@ -142,6 +142,9 @@
 }
 
 /* Body content */
+.aeos-stat-body {
+  min-width: 0; /* allow the 1fr column to shrink so the metric column never clips */
+}
 .aeos-stat-body h3 {
   margin: 0 0 var(--aeos-space-1);
   font-family: var(--aeos-font-body);
@@ -172,6 +175,7 @@
   font-weight: 600;
   color: var(--aeos-primary);
   line-height: 1;
+  white-space: nowrap;
 }
 
 .aeos-stat-unit {

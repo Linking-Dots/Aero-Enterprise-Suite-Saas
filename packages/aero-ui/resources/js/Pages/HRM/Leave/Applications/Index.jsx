@@ -3,8 +3,9 @@ import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
   IndexPageLayout, DataTable, Button, HStack, Field, Input, Select,
-  Pagination, Badge, Text,
+  Pagination, Badge, Text, Stat, Avatar,
 } from '@aero/ui';
+import LeaveRail from '../LeaveRail.jsx';
 
 const STATUS_INTENT = {
   pending:   'warning',
@@ -13,21 +14,24 @@ const STATUS_INTENT = {
   cancelled: 'neutral',
 };
 
-export default function ApplicationsIndex({ applications, filters, leaveTypes }) {
-  const [status,   setStatus]   = useState(filters?.status    ?? '');
-  const [typeId,   setTypeId]   = useState(filters?.type_id   ?? '');
-  const [dateFrom, setDateFrom] = useState(filters?.date_from ?? '');
-  const [dateTo,   setDateTo]   = useState(filters?.date_to   ?? '');
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+export default function ApplicationsIndex({ applications, filters, leaveTypes, stats }) {
+  const [status,   setStatus]   = useState(filters?.status        ?? '');
+  const [typeId,   setTypeId]   = useState(filters?.leave_type_id ?? '');
+  const [dateFrom, setDateFrom] = useState(filters?.from          ?? '');
+  const [dateTo,   setDateTo]   = useState(filters?.to            ?? '');
 
   function applyFilters(overrides = {}) {
     router.get(
       route('hrm.leave.applications.index'),
       {
         ...filters,
-        status:    status    || undefined,
-        type_id:   typeId    || undefined,
-        date_from: dateFrom  || undefined,
-        date_to:   dateTo    || undefined,
+        status:        status   || undefined,
+        leave_type_id: typeId   || undefined,
+        from:          dateFrom || undefined,
+        to:            dateTo   || undefined,
         ...overrides,
       },
       { preserveState: true, preserveScroll: true, replace: true },
@@ -50,19 +54,24 @@ export default function ApplicationsIndex({ applications, filters, leaveTypes })
   const columns = [
     {
       key: 'employee', label: 'Employee',
-      render: row => row.employee?.name ?? <Text tone="secondary">—</Text>,
-    },
-    {
-      key: 'leave_type', label: 'Type',
-      render: row => row.leaveType ? (
+      render: row => row.employee?.user?.name ? (
         <HStack gap={2} align="center">
-          <span className="lapp-type-swatch" style={{ background: row.leaveType.color }} />
-          <Text>{row.leaveType.name}</Text>
+          <Avatar name={row.employee.user.name} size={28} />
+          <Text>{row.employee.user.name}</Text>
         </HStack>
       ) : <Text tone="secondary">—</Text>,
     },
-    { key: 'start_date', label: 'From',  render: row => row.start_date },
-    { key: 'end_date',   label: 'To',    render: row => row.end_date },
+    {
+      key: 'leave_type', label: 'Type',
+      render: row => row.leave_type ? (
+        <HStack gap={2} align="center">
+          <span className="lapp-type-swatch" style={{ background: row.leave_type.color }} />
+          <Text>{row.leave_type.name}</Text>
+        </HStack>
+      ) : <Text tone="secondary">—</Text>,
+    },
+    { key: 'start_date', label: 'From',  render: row => fmtDate(row.start_date) },
+    { key: 'end_date',   label: 'To',    render: row => fmtDate(row.end_date) },
     { key: 'total_days', label: 'Days',  render: row => row.total_days },
     {
       key: 'status', label: 'Status',
@@ -104,6 +113,11 @@ export default function ApplicationsIndex({ applications, filters, leaveTypes })
       <IndexPageLayout
         title="Leave Applications"
         breadcrumb={[{ label: 'HRM' }, { label: 'Leave' }, { label: 'Applications' }]}
+        kpis={[
+          <Stat key="total"    title="Total Requests" value={stats?.total    ?? 0} icon="document"    />,
+          <Stat key="pending"  title="Pending"        value={stats?.pending  ?? 0} icon="clock"       iconTone="amber" />,
+          <Stat key="approved" title="Approved"       value={stats?.approved ?? 0} icon="checkCircle" iconTone="success" />,
+        ]}
         actions={
           <Button
             intent="primary"
@@ -128,7 +142,7 @@ export default function ApplicationsIndex({ applications, filters, leaveTypes })
             <Field label="Leave Type">
               <Select
                 value={typeId}
-                onChange={e => { setTypeId(e.target.value); applyFilters({ type_id: e.target.value || undefined, page: 1 }); }}
+                onChange={e => { setTypeId(e.target.value); applyFilters({ leave_type_id: e.target.value || undefined, page: 1 }); }}
               >
                 {typeOptions.map(o => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -176,4 +190,6 @@ export default function ApplicationsIndex({ applications, filters, leaveTypes })
   );
 }
 
-ApplicationsIndex.layout = page => <App title="Leave Applications">{page}</App>;
+ApplicationsIndex.layout = page => (
+  <App title="Leave Applications" railTitle="Leave management" rail={<LeaveRail />}>{page}</App>
+);

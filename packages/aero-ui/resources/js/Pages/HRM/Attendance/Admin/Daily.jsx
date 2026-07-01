@@ -2,8 +2,9 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
-  IndexPageLayout, DataTable, HStack, Field, Input, Pagination, Badge, Text, Mono,
+  IndexPageLayout, DataTable, HStack, Field, Input, Pagination, Badge, Text, Mono, Stat, Avatar,
 } from '@aero/ui';
+import AttendanceRail from '../AttendanceRail.jsx';
 
 const STATUS_INTENT = {
   present: 'success',
@@ -23,7 +24,7 @@ function formatTime(ts) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function AttendanceDaily({ date, records, filters }) {
+export default function AttendanceDaily({ date, records, filters, stats }) {
   const [dateVal, setDateVal] = useState(filters?.date ?? date ?? '');
 
   function navigate(newDate) {
@@ -33,7 +34,12 @@ export default function AttendanceDaily({ date, records, filters }) {
   const columns = [
     {
       key: 'employee', label: 'Employee',
-      render: row => <Text>{row.employee?.user?.name ?? '—'}</Text>,
+      render: row => row.employee?.user?.name ? (
+        <HStack gap={2} align="center">
+          <Avatar name={row.employee.user.name} size={28} />
+          <Text>{row.employee.user.name}</Text>
+        </HStack>
+      ) : <Text tone="secondary">—</Text>,
     },
     {
       key: 'punchin', label: 'Punch In',
@@ -64,6 +70,11 @@ export default function AttendanceDaily({ date, records, filters }) {
     <IndexPageLayout
       title="Daily Attendance"
       breadcrumb={[{ label: 'HRM' }, { label: 'Attendance' }, { label: 'Daily' }]}
+      kpis={[
+        <Stat key="present" title="Present" value={stats?.present ?? 0} icon="checkCircle" iconTone="success" />,
+        <Stat key="late"    title="Late"    value={stats?.late    ?? 0} icon="clock"       iconTone="amber" />,
+        <Stat key="absent"  title="Absent"  value={stats?.absent  ?? 0} icon="x"           iconTone="danger" />,
+      ]}
       filters={
         <HStack gap={3}>
           <Field label="Date">
@@ -98,4 +109,6 @@ export default function AttendanceDaily({ date, records, filters }) {
   );
 }
 
-AttendanceDaily.layout = page => <App title="Daily Attendance">{page}</App>;
+AttendanceDaily.layout = page => (
+  <App title="Daily Attendance" railTitle="Attendance" rail={<AttendanceRail />}>{page}</App>
+);

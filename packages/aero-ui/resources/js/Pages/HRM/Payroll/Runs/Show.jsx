@@ -21,7 +21,7 @@ function statusLabel(run) {
   return run.status.charAt(0).toUpperCase() + run.status.slice(1);
 }
 
-export default function RunsShow({ run }) {
+export default function RunsShow({ run, payslips = [] }) {
   const canLock = useHRMAC('hrm.payroll.payroll-run.lock');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [locking,     setLocking]     = useState(false);
@@ -45,7 +45,7 @@ export default function RunsShow({ run }) {
   const payslipColumns = [
     {
       key: 'employee', label: 'Employee',
-      render: row => row.employee?.name ?? '—',
+      render: row => row.employee_name ?? row.employee_code ?? '—',
     },
     {
       key: 'gross', label: 'Gross',
@@ -138,7 +138,7 @@ export default function RunsShow({ run }) {
           <Eyebrow>Payslips</Eyebrow>
           <DataTable
             columns={payslipColumns}
-            rows={run.payslips ?? []}
+            rows={payslips}
             empty="No payslips generated yet."
           />
         </VStack>

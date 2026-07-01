@@ -2,9 +2,10 @@ import { router, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
-  IndexPageLayout, DataTable, Badge, Button, HStack, Field, Input, Select, Pagination,
+  IndexPageLayout, DataTable, Badge, Button, HStack, Field, Input, Select, Pagination, Stat, Avatar, Text,
 } from '@aero/ui';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import EmployeesRail from './EmployeesRail.jsx';
 
 const STATUS_COLORS = {
   active:      'success',
@@ -14,7 +15,7 @@ const STATUS_COLORS = {
   resigned:    'neutral',
 };
 
-export default function EmployeesIndex({ employees, filters, departments, statuses, employmentTypes }) {
+export default function EmployeesIndex({ employees, filters, departments, statuses, employmentTypes, stats }) {
   const [search, setSearch] = useState(filters.search ?? '');
 
   function applyFilters(overrides = {}) {
@@ -27,7 +28,15 @@ export default function EmployeesIndex({ employees, filters, departments, status
 
   const columns = [
     { key: 'employee_code', label: 'Code' },
-    { key: 'name',          label: 'Name' },
+    {
+      key: 'name', label: 'Name',
+      render: row => row.name ? (
+        <HStack gap={2} align="center">
+          <Avatar name={row.name} size={28} />
+          <Text>{row.name}</Text>
+        </HStack>
+      ) : <Text tone="secondary">—</Text>,
+    },
     { key: 'department',    label: 'Department' },
     { key: 'designation',   label: 'Designation' },
     { key: 'employment_type', label: 'Type' },
@@ -60,6 +69,11 @@ export default function EmployeesIndex({ employees, filters, departments, status
     <IndexPageLayout
       title="Employees"
       breadcrumb={[{ label: 'HRM' }, { label: 'Employees' }]}
+      kpis={[
+        <Stat key="total"  title="Total Employees" value={stats?.total       ?? 0} icon="users" />,
+        <Stat key="active" title="Active"          value={stats?.active      ?? 0} icon="checkCircle" iconTone="success" />,
+        <Stat key="depts"  title="Departments"     value={stats?.departments ?? 0} icon="inbox"       iconTone="indigo" />,
+      ]}
       actions={
         <Button as={Link} href={route('hrm.employees.create')} intent="primary">
           New Employee
@@ -130,4 +144,6 @@ export default function EmployeesIndex({ employees, filters, departments, status
   );
 }
 
-EmployeesIndex.layout = page => <App title="Employees">{page}</App>;
+EmployeesIndex.layout = page => (
+  <App title="Employees" railTitle="Workforce" rail={<EmployeesRail />}>{page}</App>
+);

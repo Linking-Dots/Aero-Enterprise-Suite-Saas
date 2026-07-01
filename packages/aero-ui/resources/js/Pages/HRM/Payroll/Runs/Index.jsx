@@ -1,9 +1,10 @@
 import { router, usePage } from '@inertiajs/react';
 import App from '@/Pages/App.jsx';
 import {
-  IndexPageLayout, DataTable, Button, HStack, Badge, Select, Pagination, Text, Mono,
+  IndexPageLayout, DataTable, Button, HStack, Badge, Select, Pagination, Text, Mono, Stat,
 } from '@aero/ui';
 import { useHRMAC } from '@/hooks/useHRMAC';
+import PayrollRail from '../PayrollRail.jsx';
 
 const STATUS_OPTIONS = [
   { value: '',         label: 'All Statuses' },
@@ -26,7 +27,9 @@ function statusLabel(run) {
   return run.status.charAt(0).toUpperCase() + run.status.slice(1);
 }
 
-export default function RunsIndex({ runs, filters }) {
+const fmtMoney = (v) => Number(v ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+export default function RunsIndex({ runs, filters, stats }) {
   const canExecute = useHRMAC('hrm.payroll.payroll-run.execute');
 
   const totalPages  = runs.last_page    ?? 1;
@@ -78,6 +81,11 @@ export default function RunsIndex({ runs, filters }) {
     <IndexPageLayout
       title="Payroll Runs"
       breadcrumb={[{ label: 'HRM' }, { label: 'Payroll' }, { label: 'Runs' }]}
+      kpis={[
+        <Stat key="runs"     title="Payroll Runs" value={stats?.total    ?? 0} icon="calendar" />,
+        <Stat key="approved" title="Approved"     value={stats?.approved ?? 0} icon="checkCircle" iconTone="success" />,
+        <Stat key="net"      title="Net Paid"     value={fmtMoney(stats?.net_paid)} icon="trending" iconTone="amber" />,
+      ]}
       actions={
         <HStack gap={3} align="center">
           <Select
@@ -121,4 +129,6 @@ export default function RunsIndex({ runs, filters }) {
   );
 }
 
-RunsIndex.layout = page => <App title="Payroll Runs">{page}</App>;
+RunsIndex.layout = page => (
+  <App title="Payroll Runs" railTitle="Payroll" rail={<PayrollRail />}>{page}</App>
+);
