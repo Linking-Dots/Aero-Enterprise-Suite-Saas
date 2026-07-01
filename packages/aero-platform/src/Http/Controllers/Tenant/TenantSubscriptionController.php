@@ -222,8 +222,19 @@ class TenantSubscriptionController extends Controller
             ->all();
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     protected function resolveInvoices(string $tenantId, Request $request): array
     {
-        return ['data' => [], 'total' => 0, 'current_page' => 1, 'last_page' => 1];
+        $paginator = Invoice::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenantId)
+            ->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        $paginator->getCollection()->transform(fn (Invoice $invoice) => $this->presenter->invoice($invoice));
+
+        return $paginator->toArray();
     }
 }
