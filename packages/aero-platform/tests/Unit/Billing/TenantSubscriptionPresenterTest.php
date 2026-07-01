@@ -143,6 +143,14 @@ class TenantSubscriptionPresenterTest extends TestCase
         $this->assertFalse($this->presenter->invoiceBelongsToTenant($wrongType, 'tenant-123'));
     }
 
+    public function test_product_subscription_ownership_guard_matches_tenant(): void
+    {
+        $sub = new ProductSubscription(['tenant_id' => 'tenant-123']);
+
+        $this->assertTrue($this->presenter->productSubscriptionBelongsToTenant($sub, 'tenant-123'));
+        $this->assertFalse($this->presenter->productSubscriptionBelongsToTenant($sub, 'tenant-999'));
+    }
+
     public function test_summary_merges_plan_status_and_usage(): void
     {
         $plan = new Plan(['name' => 'Pro', 'monthly_price' => '49.00', 'currency' => 'USD']);

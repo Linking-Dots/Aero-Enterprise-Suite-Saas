@@ -175,7 +175,9 @@ class TenantSubscriptionController extends Controller
         ]);
 
         $tenant = tenant();
-        $product = Product::active()->findOrFail($request->product_id);
+        // Only products actually offered in the marketplace may be self-subscribed,
+        // not any active product (some active products are intentionally hidden).
+        $product = Product::marketplaceVisible()->findOrFail($request->product_id);
         $cycle = $request->input('billing_cycle', 'monthly');
 
         $alreadySubscribed = ProductSubscription::where('tenant_id', $tenant->id)
@@ -294,8 +296,10 @@ class TenantSubscriptionController extends Controller
      */
     protected function resolveCatalog(string $tenantId): array
     {
+        // Same definition as "Your add-ons" (resolveProducts) so the catalog's
+        // "subscribed" flag can never disagree with the list.
         $subscribedProductIds = ProductSubscription::where('tenant_id', $tenantId)
-            ->whereIn('status', ['active', 'trialing'])
+            ->hasAccess()
             ->pluck('product_id')
             ->all();
 
