@@ -134,6 +134,13 @@ class TenantSubscriptionPresenterTest extends TestCase
 
         $this->assertTrue($this->presenter->invoiceBelongsToTenant($invoice, 'tenant-123'));
         $this->assertFalse($this->presenter->invoiceBelongsToTenant($invoice, 'tenant-999'));
+
+        // Wrong billable_type, matching id — guard must still return false.
+        $wrongType = new \Aero\Platform\Models\Invoice([
+            'billable_type' => \Aero\Platform\Models\Plan::class,
+            'billable_id' => 'tenant-123',
+        ]);
+        $this->assertFalse($this->presenter->invoiceBelongsToTenant($wrongType, 'tenant-123'));
     }
 
     public function test_summary_merges_plan_status_and_usage(): void
