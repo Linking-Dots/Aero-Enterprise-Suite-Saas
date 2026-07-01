@@ -7,12 +7,14 @@ use Aero\Core\Services\ModuleAccessService;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Models\Invoice;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Product;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Models\TenantStat;
 use Aero\Platform\Models\UsageRecord;
 use Aero\Platform\Services\Billing\TenantSubscriptionPresenter;
+use Aero\Platform\Services\ProductSubscriptionService;
 use Aero\Platform\Services\SubscriptionLifecycleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,7 @@ class TenantSubscriptionController extends Controller
     public function __construct(
         protected SubscriptionLifecycleService $lifecycleService,
         protected TenantSubscriptionPresenter $presenter,
+        protected ProductSubscriptionService $productService,
     ) {}
 
     public function index(Request $request): Response
@@ -42,6 +45,9 @@ class TenantSubscriptionController extends Controller
         if ($tab === 'invoices') {
             abort_unless($access->canAccessComponent($request->user(), 'core', 'subscription', 'invoices')['allowed'] ?? false, 403);
         }
+        if ($tab === 'products') {
+            abort_unless($access->canAccessComponent($request->user(), 'core', 'subscription', 'products')['allowed'] ?? false, 403);
+        }
 
         $subscription = $this->currentSubscription($tenant->id);
         $plan = $subscription?->plan;
@@ -54,12 +60,14 @@ class TenantSubscriptionController extends Controller
             'plan' => $this->presenter->plan($plan, $subscription?->billing_cycle),
             // Overview + Usage tabs need detailed usage:
             'usage' => in_array($tab, ['overview', 'usage'], true) ? $usage : null,
-            // Overview tab: read-only products:
-            'products' => $tab === 'overview' ? $this->resolveProducts($tenant->id) : null,
+            // Product subscriptions (separate from the plan) — shown on Overview + Products:
+            'products' => in_array($tab, ['overview', 'products'], true) ? $this->resolveProducts($tenant->id) : null,
+            // Products tab: the add-on catalog to subscribe to:
+            'catalog' => $tab === 'products' ? $this->resolveCatalog($tenant->id) : null,
             // Plans tab:
             'plans' => $tab === 'plans' ? $this->resolvePlans($subscription) : null,
             'currentPlanId' => $tab === 'plans' ? $subscription?->plan_id : null,
-            // Invoices tab (filled in Task 7):
+            // Invoices tab:
             'invoices' => $tab === 'invoices' ? $this->resolveInvoices($tenant->id, $request) : null,
         ]);
     }
@@ -77,6 +85,11 @@ class TenantSubscriptionController extends Controller
     public function invoices(Request $request): Response
     {
         return $this->index($request->merge(['tab' => 'invoices']));
+    }
+
+    public function products(Request $request): Response
+    {
+        return $this->index($request->merge(['tab' => 'products']));
     }
 
     /**
@@ -150,6 +163,49 @@ class TenantSubscriptionController extends Controller
         return back()->with('success', 'Subscription cancellation scheduled.');
     }
 
+    /**
+     * Subscribe the tenant to an add-on product — a subscription separate from the plan.
+     */
+    public function subscribeProduct(Request $request): RedirectResponse
+    {
+        // products is a central table; validate against the central connection.
+        $request->validate([
+            'product_id' => ['required', 'exists:'.(new Product)->getConnectionName().'.products,id'],
+            'billing_cycle' => ['nullable', 'in:monthly,yearly'],
+        ]);
+
+        $tenant = tenant();
+        $product = Product::active()->findOrFail($request->product_id);
+        $cycle = $request->input('billing_cycle', 'monthly');
+
+        $alreadySubscribed = ProductSubscription::where('tenant_id', $tenant->id)
+            ->where('product_id', $product->id)
+            ->whereIn('status', ['active', 'trialing'])
+            ->exists();
+
+        if ($alreadySubscribed) {
+            return back()->with('error', "You are already subscribed to {$product->name}.");
+        }
+
+        $this->productService->subscribe($tenant->id, $product->code, $cycle);
+
+        return back()->with('success', "Subscribed to {$product->name}.");
+    }
+
+    /**
+     * Cancel an add-on product subscription — 403 if it is not this tenant's.
+     */
+    public function cancelProduct(ProductSubscription $productSubscription): RedirectResponse
+    {
+        $tenant = tenant();
+
+        abort_unless($this->presenter->productSubscriptionBelongsToTenant($productSubscription, $tenant->id), 403);
+
+        $this->productService->cancel($productSubscription->id, 'Tenant self-service cancellation.');
+
+        return back()->with('success', 'Add-on cancellation scheduled.');
+    }
+
     protected function currentSubscription(string $tenantId): ?Subscription
     {
         return Subscription::where('billable_type', Tenant::class)
@@ -220,11 +276,33 @@ class TenantSubscriptionController extends Controller
      */
     protected function resolveProducts(string $tenantId): array
     {
+        // hasAccess() = active OR trialing — matches the catalog's "subscribed"
+        // flag so "Your add-ons" and the catalog never disagree.
         return ProductSubscription::where('tenant_id', $tenantId)
-            ->active()
+            ->hasAccess()
             ->with('product')
             ->get()
             ->map(fn (ProductSubscription $sub) => $this->presenter->product($sub))
+            ->all();
+    }
+
+    /**
+     * The add-on catalog (marketplace-visible products), each flagged with whether
+     * the tenant already holds an active/trialing subscription to it.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    protected function resolveCatalog(string $tenantId): array
+    {
+        $subscribedProductIds = ProductSubscription::where('tenant_id', $tenantId)
+            ->whereIn('status', ['active', 'trialing'])
+            ->pluck('product_id')
+            ->all();
+
+        return Product::marketplaceVisible()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Product $p) => $this->presenter->catalogProduct($p, in_array($p->id, $subscribedProductIds, true)))
             ->all();
     }
 

@@ -241,8 +241,11 @@ if (class_exists('Aero\Platform\Http\Controllers\Tenant\TenantSubscriptionContro
         Route::get('/usage', [$subscriptionController, 'usage'])->name('usage')->middleware('hrmac:core.subscription.usage.view');
         Route::get('/invoices', [$subscriptionController, 'invoices'])->name('invoices')->middleware('hrmac:core.subscription.invoices.view');
         Route::get('/invoices/{invoice}/download', [$subscriptionController, 'downloadInvoice'])->name('invoices.download')->middleware('hrmac:core.subscription.invoices.download');
+        Route::get('/products', [$subscriptionController, 'products'])->name('products')->middleware('hrmac:core.subscription.products.view');
         Route::post('/change-plan', [$subscriptionController, 'changePlan'])->name('change-plan')->middleware('hrmac:core.subscription.plans.view');
         Route::post('/cancel', [$subscriptionController, 'cancel'])->name('cancel')->middleware('hrmac:core.subscription.plans.cancel');
+        Route::post('/products/subscribe', [$subscriptionController, 'subscribeProduct'])->name('products.subscribe')->middleware('hrmac:core.subscription.products.subscribe');
+        Route::post('/products/{productSubscription}/cancel', [$subscriptionController, 'cancelProduct'])->name('products.cancel')->middleware('hrmac:core.subscription.products.cancel');
     });
 }
 

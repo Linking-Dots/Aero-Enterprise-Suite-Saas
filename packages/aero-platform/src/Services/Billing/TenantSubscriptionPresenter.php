@@ -6,6 +6,7 @@ namespace Aero\Platform\Services\Billing;
 
 use Aero\Platform\Models\Invoice;
 use Aero\Platform\Models\Plan;
+use Aero\Platform\Models\Product;
 use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
@@ -90,6 +91,32 @@ class TenantSubscriptionPresenter
             'price' => (float) $sub->amount,
             'currency' => $sub->currency ?? 'USD',
         ];
+    }
+
+    /**
+     * Shape a catalog Product (an available add-on) for the marketplace grid.
+     *
+     * @return array{id:string,code:?string,name:?string,description:?string,price:float,currency:string,subscribed:bool}
+     */
+    public function catalogProduct(Product $product, bool $subscribed): array
+    {
+        return [
+            'id' => $product->id,
+            'code' => $product->code,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price' => (float) $product->monthly_price,
+            'currency' => $product->currency ?? 'USD',
+            'subscribed' => $subscribed,
+        ];
+    }
+
+    /**
+     * Cross-tenant leak guard: true only when the product subscription is this tenant's.
+     */
+    public function productSubscriptionBelongsToTenant(ProductSubscription $sub, string $tenantId): bool
+    {
+        return (string) $sub->tenant_id === (string) $tenantId;
     }
 
     /**

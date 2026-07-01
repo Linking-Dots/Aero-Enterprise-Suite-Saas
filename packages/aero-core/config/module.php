@@ -176,6 +176,17 @@ return [
                         ['code' => 'download', 'name' => 'Download Invoice'],
                     ],
                 ],
+                [
+                    'code' => 'products',
+                    'name' => 'Add-on Products',
+                    'type' => 'page',
+                    'route' => '/subscription/products',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Add-ons'],
+                        ['code' => 'subscribe', 'name' => 'Subscribe to Add-on'],
+                        ['code' => 'cancel', 'name' => 'Cancel Add-on'],
+                    ],
+                ],
             ],
         ],
 

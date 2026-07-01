@@ -2,7 +2,7 @@ import { Card, CardBody, VStack, HStack, Box, Text, Heading, Eyebrow, Badge, But
 import { money } from '../money.js';
 import UsageMeter from './UsageMeter.jsx';
 
-export default function OverviewPanel({ summary, plan, usage, products, canUpgrade, canCancel, onChange, onCancel, cancelling }) {
+export default function OverviewPanel({ summary, plan, usage, products, canUpgrade, canCancel, canManageProducts, onChange, onManageProducts, onCancel, cancelling }) {
   const s = summary ?? {};
   const u = usage ?? {};
   const users = u.users ?? { used: 0, limit: 0 };
@@ -69,7 +69,12 @@ export default function OverviewPanel({ summary, plan, usage, products, canUpgra
         <Card>
           <CardBody>
             <VStack gap={3}>
-              <Eyebrow>Active products</Eyebrow>
+              <HStack gap={2} align="center">
+                <Box grow><Eyebrow>Active add-ons</Eyebrow></Box>
+                {canManageProducts && (
+                  <Button intent="ghost" size="sm" type="button" onClick={onManageProducts}>Manage</Button>
+                )}
+              </HStack>
               {prods.length > 0 ? (
                 <VStack gap={3}>
                   {prods.map(p => (

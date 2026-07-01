@@ -4,22 +4,28 @@ import { PageHeader, Tabs, useToast, useHRMAC } from '@aero/ui';
 import App from '@/Pages/App.jsx';
 import OverviewPanel from './panels/OverviewPanel.jsx';
 import PlansPanel from './panels/PlansPanel.jsx';
+import ProductsPanel from './panels/ProductsPanel.jsx';
 import UsagePanel from './panels/UsagePanel.jsx';
 import InvoicesPanel from './panels/InvoicesPanel.jsx';
 
-const ONLY = ['tab', 'summary', 'plan', 'usage', 'products', 'plans', 'currentPlanId', 'invoices'];
+const ONLY = ['tab', 'summary', 'plan', 'usage', 'products', 'catalog', 'plans', 'currentPlanId', 'invoices'];
 
-export default function SubscriptionIndex({ tab: initialTab, summary, plan, usage, products, plans, currentPlanId, invoices }) {
+export default function SubscriptionIndex({ tab: initialTab, summary, plan, usage, products, catalog, plans, currentPlanId, invoices }) {
   const toast = useToast();
-  const canUsage    = useHRMAC('core.subscription.usage.view');
-  const canInvoices = useHRMAC('core.subscription.invoices.view');
-  const canUpgrade  = useHRMAC('core.subscription.plans.upgrade');
-  const canCancel   = useHRMAC('core.subscription.plans.cancel');
+  const canUsage        = useHRMAC('core.subscription.usage.view');
+  const canInvoices     = useHRMAC('core.subscription.invoices.view');
+  const canUpgrade      = useHRMAC('core.subscription.plans.upgrade');
+  const canCancel       = useHRMAC('core.subscription.plans.cancel');
+  const canProducts     = useHRMAC('core.subscription.products.view');
+  const canSubscribe    = useHRMAC('core.subscription.products.subscribe');
+  const canCancelAddon  = useHRMAC('core.subscription.products.cancel');
 
-  const [tab, setTab]           = useState(initialTab || 'overview');
+  const [tab, setTab]               = useState(initialTab || 'overview');
   const [changingId, setChangingId] = useState(null);
   const [cancelling, setCancelling] = useState(false);
-  const [loading, setLoading]   = useState(false);
+  const [subscribingId, setSubscribingId] = useState(null);
+  const [cancellingAddonId, setCancellingAddonId] = useState(null);
+  const [loading, setLoading]       = useState(false);
 
   useEffect(() => {
     const offStart  = router.on('start',  () => setLoading(true));
@@ -56,6 +62,28 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
     });
   };
 
+  const subscribeProduct = productId => {
+    if (!confirm('Subscribe to this add-on? It is billed separately from your plan.')) return;
+    setSubscribingId(productId);
+    router.post(route('core.subscription.products.subscribe'), { product_id: productId }, {
+      preserveScroll: true, only: ONLY,
+      onSuccess: () => toast.success('Add-on subscribed.'),
+      onError:   () => toast.error('Could not subscribe to add-on.'),
+      onFinish:  () => setSubscribingId(null),
+    });
+  };
+
+  const cancelProduct = subscriptionId => {
+    if (!confirm('Cancel this add-on? It stays active until the end of the billing period.')) return;
+    setCancellingAddonId(subscriptionId);
+    router.post(route('core.subscription.products.cancel', subscriptionId), {}, {
+      preserveScroll: true, only: ONLY,
+      onSuccess: () => toast.success('Add-on cancellation scheduled.'),
+      onError:   () => toast.error('Could not cancel add-on.'),
+      onFinish:  () => setCancellingAddonId(null),
+    });
+  };
+
   const invoicesPage = page => {
     router.get(route('core.subscription.index'), { tab: 'invoices', page }, {
       preserveState: true, preserveScroll: true, only: ['invoices', 'tab'],
@@ -65,6 +93,7 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
   const tabs = [
     { value: 'overview', label: 'Overview' },
     { value: 'plans',    label: 'Plans' },
+    canProducts && { value: 'products', label: 'Add-ons' },
     canUsage    && { value: 'usage',    label: 'Usage' },
     canInvoices && { value: 'invoices', label: 'Invoices' },
   ].filter(Boolean);
@@ -77,7 +106,7 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
           { label: 'Subscription & Billing' },
         ]}
         title="Subscription & Billing"
-        description="Manage your plan, usage, and billing history."
+        description="Manage your plan, add-ons, usage, and billing history."
         tabs={<Tabs value={tab} tabs={tabs} onChange={switchTab} />}
       />
 
@@ -92,6 +121,17 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
             cancelling={cancelling}
             canCancel={canCancel}
           />
+        ) : tab === 'products' ? (
+          <ProductsPanel
+            subscriptions={products}
+            catalog={catalog}
+            onSubscribe={subscribeProduct}
+            onCancel={cancelProduct}
+            subscribingId={subscribingId}
+            cancellingId={cancellingAddonId}
+            canSubscribe={canSubscribe}
+            canCancel={canCancelAddon}
+          />
         ) : tab === 'usage' ? (
           <UsagePanel usage={usage} />
         ) : tab === 'invoices' ? (
@@ -104,7 +144,9 @@ export default function SubscriptionIndex({ tab: initialTab, summary, plan, usag
             products={products}
             canUpgrade={canUpgrade}
             canCancel={canCancel}
+            canManageProducts={canProducts}
             onChange={() => switchTab('plans')}
+            onManageProducts={() => switchTab('products')}
             onCancel={cancel}
             cancelling={cancelling}
           />
