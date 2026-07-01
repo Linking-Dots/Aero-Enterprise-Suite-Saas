@@ -115,6 +115,23 @@ class TenantSubscriptionController extends Controller
         return back()->with('success', $message);
     }
 
+    /**
+     * Cancel the tenant's subscription.
+     */
+    public function cancel(Request $request): RedirectResponse
+    {
+        $tenant = tenant();
+        $subscription = Subscription::where('billable_type', Tenant::class)
+            ->where('billable_id', $tenant->id)
+            ->with('plan')
+            ->latest()
+            ->firstOrFail();
+
+        $this->lifecycleService->cancel($subscription);
+
+        return back()->with('success', 'Subscription cancellation scheduled.');
+    }
+
     protected function currentSubscription(string $tenantId): ?Subscription
     {
         return Subscription::where('billable_type', Tenant::class)
