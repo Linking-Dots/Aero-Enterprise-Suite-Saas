@@ -132,6 +132,27 @@ class PublicPageController extends Controller
         ]);
     }
 
+    public function solutions(Request $request): Response
+    {
+        return Inertia::render('Platform/Public/Solutions', [
+            'title' => 'Solutions',
+        ]);
+    }
+
+    public function integrations(Request $request): Response
+    {
+        return Inertia::render('Platform/Public/Integrations', [
+            'title' => 'Integrations',
+        ]);
+    }
+
+    public function selfHosted(Request $request): Response
+    {
+        return Inertia::render('Platform/Public/SelfHosted', [
+            'title' => 'Self-Hosted',
+        ]);
+    }
+
     public function about(Request $request): Response
     {
         return Inertia::render('Platform/Public/About', [

@@ -47,6 +47,9 @@ Route::middleware('platform.domain')->group(function () {
     Route::get('/pricing', [PublicPageController::class, 'pricing'])->name('platform.pricing');
     Route::get('/features', [PublicPageController::class, 'features'])->name('platform.features');
     Route::get('/enterprise', [PublicPageController::class, 'enterprise'])->name('platform.enterprise');
+    Route::get('/solutions', [PublicPageController::class, 'solutions'])->name('platform.solutions');
+    Route::get('/integrations', [PublicPageController::class, 'integrations'])->name('platform.integrations');
+    Route::get('/self-hosted', [PublicPageController::class, 'selfHosted'])->name('platform.self-hosted');
     Route::get('/about', [PublicPageController::class, 'about'])->name('platform.about');
     Route::get('/docs', [PublicPageController::class, 'docs'])->name('platform.docs');
     Route::get('/contact', [PublicPageController::class, 'contact'])->name('platform.contact');

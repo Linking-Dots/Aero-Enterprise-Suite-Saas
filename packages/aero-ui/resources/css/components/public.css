@@ -1506,3 +1506,22 @@
   .lv-legal-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
   .lv-legal-toc .lv-toc-link { border-left: none; border: 1px solid var(--lv-card-border); border-radius: 999px; }
 }
+
+/* ════════ INTEGRATIONS marketplace ════════════════════════════════ */
+.lv-int-market { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.lv-conn-card { display: flex; align-items: center; gap: 1rem; background: var(--lv-card-bg); border: 1px solid var(--lv-card-border); border-radius: var(--aeos-r-xl); padding: 1.25rem; backdrop-filter: blur(8px); transition: border-color .2s; }
+.lv-conn-logo { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-family: var(--aeos-font-display); font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+.lv-conn-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lv-conn-name { font-weight: 700; color: var(--aeos-text-primary); font-size: .95rem; }
+.lv-conn-desc { font-size: .8rem; color: var(--aeos-text-secondary); }
+@media (max-width: 1023px) { .lv-int-market { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 639px)  { .lv-int-market { grid-template-columns: 1fr; } }
+
+/* ════════ SOLUTIONS by domain ═════════════════════════════════════ */
+.lv-solution-list { display: flex; flex-direction: column; gap: 1.25rem; }
+.lv-solution-card { background: var(--lv-card-bg); border: 1px solid var(--lv-card-border); border-radius: var(--aeos-r-2xl); padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; backdrop-filter: blur(8px); transition: border-color .2s; }
+.lv-solution-head { display: flex; align-items: flex-start; gap: 1.1rem; }
+.lv-solution-title { font-family: var(--aeos-font-display); font-size: 1.3rem; font-weight: 700; color: var(--aeos-text-primary); margin: 0; }
+.lv-solution-outcome { font-size: .95rem; color: var(--aeos-text-secondary); line-height: 1.6; margin: .25rem 0 0; max-width: 640px; }
+.lv-solution-mods { display: flex; flex-wrap: wrap; gap: .6rem; }
+.lv-solution-chip { display: inline-flex; align-items: center; gap: 6px; padding: .4rem .85rem; border-radius: 999px; border: 1px solid var(--lv-card-border); background: var(--aeos-bg-page); font-size: .8rem; color: var(--aeos-text-secondary); }
