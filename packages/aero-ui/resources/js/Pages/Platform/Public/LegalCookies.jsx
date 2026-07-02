@@ -3,6 +3,7 @@ import {
   Section, Container, VStack, HStack, Box, Text, Card,
 } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
+import LegalDoc from './legal/LegalDoc.jsx';
 
 const TOC = [
   { id: 'what-cookies-are',    label: 'What Cookies Are' },
@@ -176,11 +177,14 @@ function CookiesCTA() {
 // ── Page ─────────────────────────────────────────────────────────
 export default function LegalCookies() {
   return (
-    <>
-      <CookiesHero />
-      <CookiesContent />
-      <CookiesCTA />
-    </>
+    <LegalDoc
+      eyebrow="Legal"
+      title="Cookie Policy"
+      lead="What cookies and similar technologies we use, why we use them, and how you can control them."
+      updated="April 30, 2026"
+      toc={TOC}
+      sections={SECTIONS}
+    />
   );
 }
 

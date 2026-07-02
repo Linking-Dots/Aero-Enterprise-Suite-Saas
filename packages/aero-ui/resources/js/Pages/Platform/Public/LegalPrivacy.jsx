@@ -3,6 +3,7 @@ import {
   Section, Container, VStack, HStack, Box, Text, Card,
 } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
+import LegalDoc from './legal/LegalDoc.jsx';
 
 const TOC = [
   { id: 'intro',             label: 'Introduction' },
@@ -175,11 +176,14 @@ function PrivacyCTA() {
 // ── Page ─────────────────────────────────────────────────────────
 export default function LegalPrivacy() {
   return (
-    <>
-      <PrivacyHero />
-      <PrivacyContent />
-      <PrivacyCTA />
-    </>
+    <LegalDoc
+      eyebrow="Legal"
+      title="Privacy Policy"
+      lead="We take your privacy seriously. This policy describes what data we collect, how we use it, and the rights you have over your information."
+      updated="April 30, 2026"
+      toc={TOC}
+      sections={SECTIONS}
+    />
   );
 }
 

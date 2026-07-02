@@ -1,169 +1,168 @@
 import { useState } from 'react';
-import {
-  Section, Container, PublicSectionHeader, PublicFeatureCard,
-  Card, VStack, HStack, Text, Button, Badge,
-} from '@aero/ui';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Container } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
-import {
-  MODULES, PLATFORM_PILLARS, MODULE_CATEGORIES,
-} from './data/pageData.js';
+import { Reveal, ThemedShot, useTilt } from './home/primitives.jsx';
+import { CtaLiving } from './home/HomeSections.jsx';
+import { SHOTS, IMG } from './home/livingData.js';
+import { MODULES, PLATFORM_PILLARS, MODULE_CATEGORIES } from './data/pageData.js';
 
-// Map accent from accentColor string
-function accentFromColor(color = '') {
-  if (color.includes('cyan')) return 'cyan';
+function accentOf(color = '') {
   if (color.includes('indigo')) return 'indigo';
   if (color.includes('amber')) return 'amber';
   return 'cyan';
 }
 
-// ── Features Hero ────────────────────────────────────────────────
+// ── Hero ─────────────────────────────────────────────────────────
 function FeaturesHero() {
-  const categoryIcons = {
-    people: 'users',
-    finance: 'chart',
-    operations: 'cube',
-    quality: 'shield',
-    intelligence: 'sparkles',
-    all: 'globe',
-  };
-
+  const tilt = useTilt({ max: 6 });
   return (
-    <Section size="lg" className="aeos-pub-hero">
+    <section className="lv-hero lv-hero--page">
+      <div className="lv-hero-bg" aria-hidden="true">
+        <div className="lv-hero-aura lv-hero-aura--1" />
+        <div className="lv-hero-aura lv-hero-aura--2" />
+        <div className="lv-hero-grid" />
+      </div>
       <Container>
-        <PublicSectionHeader
-          eyebrow="The Platform"
-          title="Every module your enterprise needs."
-          lead="17+ purpose-built modules covering every operational domain — from HR and payroll to supply chain, quality, and AI assistance. One platform, infinite configurations."
-          align="center"
-        />
-        <div className="aeos-pub-cat-chips">
-          {MODULE_CATEGORIES.map((cat) => (
-            <Badge key={cat.id} intent="neutral">
-              {cat.label}
-            </Badge>
-          ))}
+        <div className="lv-hero-grid-cols">
+          <div className="lv-hero-copy">
+            <Reveal><span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> The platform</span></Reveal>
+            <Reveal delay={0.06}>
+              <h1 className="lv-h1 lv-h1--page">
+                Every module your{' '}
+                <span className="lv-h1-grad">enterprise needs.</span>
+              </h1>
+            </Reveal>
+            <Reveal delay={0.12}>
+              <p className="lv-lead">
+                17+ purpose-built modules across every operational domain — HR, payroll, finance,
+                supply chain, quality, and AI assistance. One platform, one tenant context,
+                infinite configurations.
+              </p>
+            </Reveal>
+            <Reveal delay={0.18}>
+              <div className="lv-hero-ctas">
+                <a href="https://demo.aeos365.com" className="lv-btn lv-btn--primary">Try the live demo</a>
+                <a href="/pricing" className="lv-btn lv-btn--ghost">View pricing</a>
+              </div>
+            </Reveal>
+          </div>
+          <motion.div
+            ref={tilt.ref} className="lv-hero-shot lv-hero-shot--page"
+            onMouseMove={tilt.onMove} onMouseLeave={tilt.onLeave}
+            style={{ rotateX: tilt.rotateX, rotateY: tilt.rotateY }}
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <ThemedShot shot={SHOTS.leave} alt="aeos365 leave calendar module" />
+          </motion.div>
         </div>
       </Container>
-    </Section>
+      <div className="lv-hero-fade" aria-hidden="true" />
+    </section>
   );
 }
 
-// ── Module Grid ───────────────────────────────────────────────────
-function ModuleGridSection() {
-  const [activeCategory, setActiveCategory] = useState('all');
-
-  const filtered = activeCategory === 'all'
-    ? MODULES
-    : MODULES.filter((m) => m.category === activeCategory);
+// ── Module explorer (filterable) ─────────────────────────────────
+function ModuleExplorer() {
+  const [cat, setCat] = useState('all');
+  const list = cat === 'all' ? MODULES : MODULES.filter((m) => m.category === cat);
 
   return (
-    <Section size="lg" bg="surface">
+    <section className="lv-feat">
       <Container>
-        <PublicSectionHeader
-          eyebrow="All modules"
-          title="Filter by category."
-          align="center"
-        />
+        <Reveal className="lv-feat-header">
+          <span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> All modules</span>
+          <h2 className="lv-h2">Explore the whole suite.</h2>
+          <p className="lv-lead lv-feat-lead">Filter by domain. Every module ships with HRMAC access control, audit trails, and its own isolated data.</p>
+        </Reveal>
 
-        {/* Filter buttons */}
-        <HStack gap={2} wrap align="center">
-          {MODULE_CATEGORIES.map((cat) => (
-            <Button
-              key={cat.id}
-              intent={activeCategory === cat.id ? 'primary' : 'soft'}
-              size="sm"
-              onClick={() => setActiveCategory(cat.id)}
+        <div className="lv-mod-filters">
+          {MODULE_CATEGORIES.map((c) => (
+            <button
+              key={c.id} type="button"
+              className={`lv-mod-chip ${cat === c.id ? 'is-active' : ''}`}
+              onClick={() => setCat(c.id)}
             >
-              {cat.label}
-            </Button>
-          ))}
-        </HStack>
-
-        {/* Module cards */}
-        <div className="aeos-pub-module-grid aeos-mt-lg">
-          {filtered.map((mod) => (
-            <PublicFeatureCard
-              key={mod.id}
-              icon={mod.icon}
-              title={mod.label}
-              description={mod.tagline}
-              stat={mod.stat ? `${mod.stat.value} ${mod.stat.label}` : undefined}
-              accent={accentFromColor(mod.accentColor)}
-              size="md"
-            />
+              {c.label}
+            </button>
           ))}
         </div>
+
+        <motion.div layout className="lv-mod-grid">
+          <AnimatePresence mode="popLayout">
+            {list.map((m) => {
+              const Icon = m.icon;
+              const accent = accentOf(m.accentColor);
+              return (
+                <motion.article
+                  key={m.id} layout
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -5 }}
+                  className={`lv-mod-card lv-feat-card--${accent}`}
+                >
+                  <div className="lv-mod-top">
+                    <span className={`lv-feat-icon lv-icon--${accent}`}><Icon width={22} height={22} /></span>
+                    {m.stat && <span className={`lv-mod-stat lv-accent--${accent}`}>{m.stat.value} <i>{m.stat.label}</i></span>}
+                  </div>
+                  <h3 className="lv-feat-name">{m.label}</h3>
+                  <p className="lv-feat-desc">{m.tagline}</p>
+                  <ul className="lv-mod-highlights">
+                    {m.highlights.slice(0, 4).map((h) => (
+                      <li key={h}><span className={`lv-mod-tick lv-accent--${accent}`}>✓</span>{h}</li>
+                    ))}
+                  </ul>
+                </motion.article>
+              );
+            })}
+          </AnimatePresence>
+        </motion.div>
       </Container>
-    </Section>
+    </section>
   );
 }
 
-// ── Platform Pillars ──────────────────────────────────────────────
-function PlatformPillars() {
+// ── Platform pillars ─────────────────────────────────────────────
+function Pillars() {
   return (
-    <Section size="lg">
+    <section className="lv-arch lv-arch--flat">
+      <div className="lv-arch-photo" style={{ backgroundImage: `url(${IMG}/stock/shapes-3d.jpg)` }} aria-hidden="true" />
+      <div className="lv-arch-grid-bg" aria-hidden="true" />
       <Container>
-        <PublicSectionHeader
-          eyebrow="Architecture"
-          title="Built on principles that scale with you."
-          lead="The platform's architecture isn't an afterthought — it's the product. Six pillars that make every module trustworthy, extensible, and enterprise-ready from day one."
-          align="center"
-        />
-        <div className="aeos-pub-pillar-grid">
-          {PLATFORM_PILLARS.map((pillar) => (
-            <PublicFeatureCard
-              key={pillar.title}
-              icon={pillar.icon}
-              title={pillar.title}
-              description={pillar.body}
-              accent={accentFromColor(pillar.accentColor)}
-              size="md"
-            />
-          ))}
+        <Reveal className="lv-arch-header">
+          <span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> Architecture</span>
+          <h2 className="lv-h2 lv-arch-title">Principles that{' '}<span className="lv-h2-grad">scale with you.</span></h2>
+          <p className="lv-lead lv-arch-lead">The architecture isn't an afterthought — it's the product. Six pillars that make every module trustworthy, extensible, and enterprise-ready.</p>
+        </Reveal>
+        <div className="lv-arch-cards lv-arch-cards--3">
+          {PLATFORM_PILLARS.map((p, i) => {
+            const Icon = p.icon; const accent = accentOf(p.accentColor);
+            return (
+              <Reveal key={p.title} delay={(i % 3) * 0.08} y={36}>
+                <motion.article className={`lv-arch-card lv-arch-card--${accent}`} whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}>
+                  <span className={`lv-arch-icon lv-icon--${accent}`}><Icon width={24} height={24} /></span>
+                  <h3 className="lv-arch-card-title">{p.title}</h3>
+                  <p className="lv-arch-card-body">{p.body}</p>
+                </motion.article>
+              </Reveal>
+            );
+          })}
         </div>
       </Container>
-    </Section>
+    </section>
   );
 }
 
-// ── Features CTA ─────────────────────────────────────────────────
-function FeaturesCTA() {
-  return (
-    <Section size="md" bg="gradient">
-      <Container>
-        <Card>
-          <VStack gap={4} align="center">
-            <p className="aeos-pub-label">Ready to explore?</p>
-            <h2 className="aeos-pub-h2 aeos-text-center">
-              See every module in action.
-            </h2>
-            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
-              Book a personalized walkthrough with our team, or jump straight into the
-              interactive demo and explore the platform yourself.
-            </p>
-            <HStack gap={3}>
-              <a href="https://demo.aeos365.com" className="aeos-pub-btn-primary">
-                Try live demo →
-              </a>
-              <a href="/pricing" className="aeos-pub-btn-ghost">
-                View pricing
-              </a>
-            </HStack>
-          </VStack>
-        </Card>
-      </Container>
-    </Section>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────
 export default function Features() {
   return (
     <>
       <FeaturesHero />
-      <ModuleGridSection />
-      <PlatformPillars />
-      <FeaturesCTA />
+      <ModuleExplorer />
+      <Pillars />
+      <CtaLiving />
     </>
   );
 }

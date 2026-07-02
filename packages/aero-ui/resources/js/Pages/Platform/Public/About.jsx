@@ -1,263 +1,158 @@
-import {
-  Section, Container, PublicSectionHeader, PublicStatCard,
-  Card, VStack, HStack, Box, Text, Eyebrow,
-} from '@aero/ui';
+import { motion } from 'framer-motion';
+import { Container } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
+import { Reveal, CountUp } from './home/primitives.jsx';
+import { CtaLiving } from './home/HomeSections.jsx';
+import { IMG } from './home/livingData.js';
 
-const ABOUT_STATS = [
-  { value: 2019, suffix: '', label: 'Founded' },
-  { value: 40,   suffix: '+', label: 'Modules' },
-  { value: 120,  suffix: '+', label: 'Countries served' },
-  { value: 98,   suffix: '%', label: 'Customer retention' },
+const STATS = [
+  { value: 2019, suffix: '', decimals: 0, label: 'Founded' },
+  { value: 40, suffix: '+', decimals: 0, label: 'Modules shipped' },
+  { value: 120, suffix: '+', decimals: 0, label: 'Countries served' },
+  { value: 98, suffix: '%', decimals: 0, label: 'Customer retention' },
 ];
-
+const PRINCIPLES = [
+  { label: 'Purpose-built', body: 'Every module is designed for real operational workflows, not adapted from generic frameworks.', accent: 'cyan' },
+  { label: 'Human-centred', body: 'Decisions are made for the person doing the work, not the admin configuring the system.', accent: 'indigo' },
+  { label: 'Transparent by default', body: 'No hidden limits, opaque pricing, or gotcha upgrade walls — ever.', accent: 'amber' },
+];
 const VALUES = [
-  {
-    badge: '01',
-    title: 'Integrity in everything',
-    body: 'We say what we mean and ship what we promise. No vaporware, no bait-and-switch features, no hidden costs buried in the fine print.',
-    accent: 'cyan',
-  },
-  {
-    badge: '02',
-    title: 'Radical transparency',
-    body: 'Our roadmap is public. Our pricing is plain English. Our uptime data is live. Customers deserve to make informed decisions.',
-    accent: 'indigo',
-  },
-  {
-    badge: '03',
-    title: 'User-first design',
-    body: 'Every interface decision is measured against a simple test: does this make the person doing the actual work faster and less stressed?',
-    accent: 'amber',
-  },
-  {
-    badge: '04',
-    title: 'Continuous innovation',
-    body: 'We ship meaningful improvements every sprint, informed by direct customer collaboration and emerging technology research.',
-    accent: 'cyan',
-  },
-  {
-    badge: '05',
-    title: 'Customer obsession',
-    body: 'Retention, not acquisition, is our north star. We win when customers grow their businesses using our platform — not when they sign a contract.',
-    accent: 'indigo',
-  },
-  {
-    badge: '06',
-    title: 'Collective ownership',
-    body: 'Every team member owns outcomes, not just tasks. Collaboration across engineering, design, and customer success is how great products ship.',
-    accent: 'amber',
-  },
+  { badge: '01', title: 'Integrity in everything', body: 'We say what we mean and ship what we promise. No vaporware, no bait-and-switch, no hidden costs.', accent: 'cyan' },
+  { badge: '02', title: 'Radical transparency', body: 'Our roadmap is public. Our pricing is plain English. Our uptime data is live.', accent: 'indigo' },
+  { badge: '03', title: 'User-first design', body: 'Every interface decision is measured against one test: does this make the work faster and less stressful?', accent: 'amber' },
+  { badge: '04', title: 'Continuous innovation', body: 'We ship meaningful improvements every sprint, informed by direct customer collaboration.', accent: 'cyan' },
+  { badge: '05', title: 'Customer obsession', body: 'Retention, not acquisition, is our north star. We win when customers grow using the platform.', accent: 'indigo' },
+  { badge: '06', title: 'Collective ownership', body: 'Every team member owns outcomes, not just tasks. Cross-functional collaboration ships great products.', accent: 'amber' },
 ];
-
 const MILESTONES = [
-  { year: '2019', quarter: 'Q3', title: 'Company founded', body: 'aeos365 is established with a charter to rebuild enterprise operations software from first principles — modular, multi-tenant, and genuinely usable.', accent: 'cyan' },
-  { year: '2020', quarter: 'Q1', title: 'Core HR & Payroll live', body: 'The HRM module exits private beta with 12 design-partner customers. Employee lifecycle, leave management, and payroll automation ship as a unified suite.', accent: 'indigo' },
-  { year: '2020', quarter: 'Q4', title: 'Finance & CRM modules', body: 'Accounts payable/receivable, budgeting, and a full CRM pipeline ship in a single release, giving early adopters a true cross-functional platform.', accent: 'amber' },
-  { year: '2021', quarter: 'Q2', title: 'Multi-tenant SaaS launch', body: 'Full subdomain-based tenant isolation, subscription billing, and the platform admin console launch — making aeos365 a true SaaS product available to the public.', accent: 'cyan' },
-  { year: '2022', quarter: 'Q1', title: '1,000-tenant milestone', body: 'The platform crosses 1,000 active tenants across 40+ countries. Advanced analytics, audit trails, and SSO support launch to meet growing compliance demands.', accent: 'indigo' },
-  { year: '2023', quarter: 'Q3', title: 'Enterprise tier introduced', body: 'A dedicated enterprise plan launches with 99.99% SLA options, multi-entity governance, data residency controls, and a dedicated customer success team.', accent: 'amber' },
-  { year: '2024', quarter: 'Q2', title: 'AI-assisted operations', body: 'aeos365 Assist launches — embedded AI summaries, smart scheduling, anomaly detection in finance, and predictive leave forecasting across the HRM suite.', accent: 'cyan' },
-  { year: '2025', quarter: 'Q1', title: '40+ module platform', body: 'The platform grows to 40+ modules — from IoT operations and supply chain to education management and real estate — serving industries we never initially planned for.', accent: 'indigo' },
+  { year: '2019', quarter: 'Q3', title: 'Company founded', body: 'aeos365 is established to rebuild enterprise operations software from first principles — modular, multi-tenant, and genuinely usable.', accent: 'cyan' },
+  { year: '2020', quarter: 'Q1', title: 'Core HR & Payroll live', body: 'The HRM module exits private beta with 12 design-partner customers. Employee lifecycle, leave, and payroll ship as a unified suite.', accent: 'indigo' },
+  { year: '2020', quarter: 'Q4', title: 'Finance & CRM modules', body: 'AP/AR, budgeting, and a full CRM pipeline ship in one release, giving early adopters a true cross-functional platform.', accent: 'amber' },
+  { year: '2021', quarter: 'Q2', title: 'Multi-tenant SaaS launch', body: 'Subdomain tenant isolation, subscription billing, and the platform admin console launch — aeos365 becomes a true public SaaS.', accent: 'cyan' },
+  { year: '2022', quarter: 'Q1', title: '1,000-tenant milestone', body: 'The platform crosses 1,000 active tenants across 40+ countries. Advanced analytics, audit trails, and SSO ship.', accent: 'indigo' },
+  { year: '2023', quarter: 'Q3', title: 'Enterprise tier introduced', body: 'A dedicated enterprise plan launches with 99.99% SLA options, multi-entity governance, and data residency controls.', accent: 'amber' },
+  { year: '2024', quarter: 'Q2', title: 'AI-assisted operations', body: 'aeos365 Assist launches — embedded summaries, smart scheduling, finance anomaly detection, and predictive leave forecasting.', accent: 'cyan' },
+  { year: '2025', quarter: 'Q1', title: '40+ module platform', body: 'The platform grows to 40+ modules — from supply chain to education and real estate — serving industries we never initially planned for.', accent: 'indigo' },
 ];
 
-// ── Hero ──────────────────────────────────────────────────────────
-function AboutHero() {
+function Hero() {
   return (
-    <Section size="lg" className="aeos-pub-hero">
+    <section className="lv-hero lv-hero--page lv-hero--center">
+      <div className="lv-hero-bg" aria-hidden="true">
+        <div className="lv-hero-photo" style={{ backgroundImage: `url(${IMG}/stock/render-3d.jpg)` }} />
+        <div className="lv-hero-aura lv-hero-aura--1" /><div className="lv-hero-aura lv-hero-aura--2" /><div className="lv-hero-grid" />
+      </div>
       <Container>
-        <VStack gap={5}>
-          <p className="aeos-pub-label">About aeos365</p>
-          <h1 className="aeos-pub-h1">
-            We build the operating layer{' '}
-            <span className="aeos-pub-gradient-text">modern businesses deserve.</span>
-          </h1>
-          <p className="aeos-pub-lead" style={{ maxWidth: 680 }}>
-            aeos365 was founded with a single conviction: that every organization —
-            from a fast-growing startup to a global enterprise — deserves software
-            that unifies people, processes, and data without the complexity tax.
-            Five years on, we are still building toward that promise.
-          </p>
-          <HStack gap={3}>
-            <a href="/signup" className="aeos-pub-btn-primary">Start for free</a>
-            <a href="/pricing" className="aeos-pub-btn-ghost">View plans</a>
-          </HStack>
-          {/* Stat row */}
-          <HStack gap={4} wrap>
-            {ABOUT_STATS.map((s) => (
-              <PublicStatCard
-                key={s.label}
-                value={s.value}
-                suffix={s.suffix}
-                label={s.label}
-                accent="cyan"
-              />
-            ))}
-          </HStack>
-        </VStack>
+        <div className="lv-hero-centered">
+          <Reveal><span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> About aeos365</span></Reveal>
+          <Reveal delay={0.06}><h1 className="lv-h1 lv-h1--page">We build the operating layer{' '}<span className="lv-h1-grad">modern businesses deserve.</span></h1></Reveal>
+          <Reveal delay={0.12}><p className="lv-lead lv-hero-centered-lead">Founded on one conviction: every organization — from a fast-growing startup to a global enterprise — deserves software that unifies people, processes, and data without the complexity tax.</p></Reveal>
+          <Reveal delay={0.18}>
+            <div className="lv-hero-ctas" style={{ justifyContent: 'center' }}>
+              <a href="/signup" className="lv-btn lv-btn--primary">Start for free</a>
+              <a href="/pricing" className="lv-btn lv-btn--ghost">View plans</a>
+            </div>
+          </Reveal>
+          <Reveal delay={0.24}>
+            <div className="lv-about-stats">
+              {STATS.map((s) => (
+                <div key={s.label} className="lv-stat">
+                  <span className="lv-stat-num"><CountUp value={s.value} decimals={s.decimals} suffix={s.suffix} /></span>
+                  <span className="lv-stat-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
       </Container>
-    </Section>
+      <div className="lv-hero-fade" aria-hidden="true" />
+    </section>
   );
 }
 
-// ── Mission & Vision ─────────────────────────────────────────────
 function MissionVision() {
   return (
-    <Section size="lg" bg="surface">
+    <section className="lv-split-sec">
       <Container>
-        <p className="aeos-pub-label aeos-text-center">Mission & Vision</p>
-        <HStack gap={8} align="start">
-          <VStack gap={4}>
-            <Eyebrow tone="primary">Our Mission</Eyebrow>
-            <h2 className="aeos-pub-h2">
-              Simplify the complexity that slows organizations down.
-            </h2>
-            <p className="aeos-pub-body">
-              Too many businesses operate across a patchwork of disconnected tools —
-              each team solving the same coordination problem in isolation. Our mission
-              is to eliminate that friction by providing one coherent, modular platform
-              that scales with the organization, not against it.
-            </p>
-            <p className="aeos-pub-body">
-              We believe software should remove barriers, not create them — which is why
-              every design decision at aeos365 starts with the question: "Does this make
-              the user's working day clearer?"
-            </p>
-          </VStack>
-          <VStack gap={4}>
-            <Eyebrow tone="primary">Our Vision</Eyebrow>
-            <h2 className="aeos-pub-h2">
-              A world where every organization runs at its true potential.
-            </h2>
-            <p className="aeos-pub-body">
-              We envision a future where the distance between a great idea and flawless
-              execution is measured in hours, not months. Where a ten-person team can
-              operate with the same process clarity as a ten-thousand-person enterprise.
-            </p>
-            <p className="aeos-pub-body">
-              By 2030, we aim to power the operational backbone of 10,000 organizations
-              across six continents — helping them move faster, govern better, and grow
-              with confidence.
-            </p>
-          </VStack>
-        </HStack>
-        {/* Principle cards */}
-        <HStack gap={4} wrap style={{ marginTop: '3rem' }}>
-          {[
-            { label: 'Purpose-built', body: 'Every module is designed for real operational workflows, not adapted from generic frameworks.' },
-            { label: 'Human-centred', body: 'Decisions are made for the person doing the work, not the IT admin configuring the system.' },
-            { label: 'Transparent by default', body: 'No hidden limits, opaque pricing, or gotcha upgrade walls — ever.' },
-          ].map((item) => (
-            <Box key={item.label} grow>
-              <Card>
-                <VStack gap={2}>
-                  <p className="aeos-pub-label aeos-pub-accent-text--cyan">{item.label}</p>
-                  <Text tone="secondary">{item.body}</Text>
-                </VStack>
-              </Card>
-            </Box>
+        <div className="lv-split lv-split--even">
+          <Reveal className="lv-split-copy">
+            <span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> Our mission</span>
+            <h2 className="lv-h2">Simplify the complexity that{' '}<span className="lv-h2-grad">slows organizations down.</span></h2>
+            <p className="lv-lead">Too many businesses operate across a patchwork of disconnected tools — each team solving the same coordination problem in isolation. Our mission is to eliminate that friction with one coherent, modular platform that scales with the organization, not against it.</p>
+          </Reveal>
+          <Reveal delay={0.1} className="lv-split-copy">
+            <span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> Our vision</span>
+            <h2 className="lv-h2">Every organization running at its{' '}<span className="lv-h2-grad">true potential.</span></h2>
+            <p className="lv-lead">We envision a future where the distance between a great idea and flawless execution is measured in hours, not months — where a ten-person team operates with the same clarity as a ten-thousand-person enterprise. By 2030 we aim to power the operational backbone of 10,000 organizations across six continents.</p>
+          </Reveal>
+        </div>
+        <div className="lv-principles">
+          {PRINCIPLES.map((p, i) => (
+            <Reveal key={p.label} delay={i * 0.08}>
+              <div className={`lv-arch-card lv-arch-card--${p.accent}`}>
+                <span className={`lv-principle-label lv-accent--${p.accent}`}>{p.label}</span>
+                <p className="lv-arch-card-body">{p.body}</p>
+              </div>
+            </Reveal>
           ))}
-        </HStack>
+        </div>
       </Container>
-    </Section>
+    </section>
   );
 }
 
-// ── Values ────────────────────────────────────────────────────────
 function Values() {
   return (
-    <Section size="lg">
+    <section className="lv-feat">
       <Container>
-        <PublicSectionHeader
-          eyebrow="Core values"
-          title="What we stand for, every single day."
-          lead="Values aren't posters on a wall. They're the criteria we use when making hard trade-offs — in product decisions, hiring, and customer commitments."
-          align="center"
-        />
-        <div className="aeos-pub-pillar-grid">
-          {VALUES.map((v) => (
-            <Card key={v.badge}>
-              <VStack gap={3}>
-                <p className={`aeos-pub-label aeos-pub-accent-text--${v.accent}`}>{v.badge}</p>
-                <h3 className="aeos-pub-h3">{v.title}</h3>
-                <Text tone="secondary">{v.body}</Text>
-              </VStack>
-            </Card>
+        <Reveal className="lv-feat-header">
+          <span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> Core values</span>
+          <h2 className="lv-h2">What we stand for,{' '}<span className="lv-h2-grad">every single day.</span></h2>
+          <p className="lv-lead lv-feat-lead">Values aren't posters on a wall — they're the criteria we use when making hard trade-offs in product, hiring, and customer commitments.</p>
+        </Reveal>
+        <div className="lv-arch-cards lv-arch-cards--3">
+          {VALUES.map((v, i) => (
+            <Reveal key={v.badge} delay={(i % 3) * 0.08} y={36}>
+              <motion.article className={`lv-arch-card lv-arch-card--${v.accent}`} whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}>
+                <span className={`lv-value-num lv-accent--${v.accent}`}>{v.badge}</span>
+                <h3 className="lv-arch-card-title">{v.title}</h3>
+                <p className="lv-arch-card-body">{v.body}</p>
+              </motion.article>
+            </Reveal>
           ))}
         </div>
       </Container>
-    </Section>
+    </section>
   );
 }
 
-// ── Timeline ─────────────────────────────────────────────────────
 function Timeline() {
   return (
-    <Section size="lg" bg="surface">
+    <section className="lv-tl-sec">
       <Container>
-        <PublicSectionHeader
-          eyebrow="Our journey"
-          title="From a bold idea to a global platform."
-          lead="Six years of focused building, honest customer relationships, and a relentless commitment to shipping software that actually works."
-          align="center"
-        />
-        <div className="aeos-pub-narrative-grid">
-          {MILESTONES.map((m) => (
-            <Card key={`${m.year}-${m.quarter}`}>
-              <VStack gap={3}>
-                <HStack gap={2}>
-                  <p className={`aeos-pub-label aeos-pub-accent-text--${m.accent}`}>{m.year}</p>
-                  <Text tone="tertiary">{m.quarter}</Text>
-                </HStack>
-                <h3 className="aeos-pub-h3">{m.title}</h3>
-                <Text tone="secondary">{m.body}</Text>
-              </VStack>
-            </Card>
+        <Reveal className="lv-feat-header">
+          <span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> Our journey</span>
+          <h2 className="lv-h2">From a bold idea to a{' '}<span className="lv-h2-grad">global platform.</span></h2>
+        </Reveal>
+        <div className="lv-timeline">
+          {MILESTONES.map((m, i) => (
+            <Reveal key={`${m.year}-${m.quarter}`} delay={(i % 2) * 0.06} className="lv-tl-item">
+              <div className="lv-tl-rail"><span className={`lv-tl-dot lv-accent--${m.accent}`} /></div>
+              <div className="lv-tl-card">
+                <span className={`lv-tl-year lv-accent--${m.accent}`}>{m.year} · {m.quarter}</span>
+                <h3 className="lv-tl-title">{m.title}</h3>
+                <p className="lv-tl-body">{m.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </Container>
-    </Section>
+    </section>
   );
 }
 
-// ── About CTA ─────────────────────────────────────────────────────
-function AboutCTA() {
-  return (
-    <Section size="md" bg="gradient">
-      <Container>
-        <Card>
-          <VStack gap={4} align="center">
-            <p className="aeos-pub-label">Join us</p>
-            <h2 className="aeos-pub-h2 aeos-text-center">
-              Build with a team that{' '}
-              <span className="aeos-pub-gradient-text">means it.</span>
-            </h2>
-            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow">
-              We are hiring across engineering, design, product, and customer success.
-              If you want to work on software that matters to real organizations — come build with us.
-            </p>
-            <HStack gap={3}>
-              <a href="/contact" className="aeos-pub-btn-primary">Get in touch →</a>
-              <a href="/pricing" className="aeos-pub-btn-ghost">View pricing</a>
-            </HStack>
-          </VStack>
-        </Card>
-      </Container>
-    </Section>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────
 export default function About() {
-  return (
-    <>
-      <AboutHero />
-      <MissionVision />
-      <Values />
-      <Timeline />
-      <AboutCTA />
-    </>
-  );
+  return (<><Hero /><MissionVision /><Values /><Timeline /><CtaLiving /></>);
 }
 
 About.layout = (page) => (

@@ -2,6 +2,7 @@ import {
   Section, Container, VStack, HStack, Box, Text, Card, Icon,
 } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
+import LegalDoc from './legal/LegalDoc.jsx';
 
 const TOC = [
   { id: 'overview',                label: 'Security Overview' },
@@ -190,11 +191,14 @@ function SecurityCTA() {
 // ── Page ─────────────────────────────────────────────────────────
 export default function LegalSecurity() {
   return (
-    <>
-      <SecurityHero />
-      <SecurityContent />
-      <SecurityCTA />
-    </>
+    <LegalDoc
+      eyebrow="Trust & security"
+      title="Security at aeos365"
+      lead="How we protect your data — encryption, isolation, access control, monitoring, and the operational practices behind the platform."
+      updated="April 30, 2026"
+      toc={TOC}
+      sections={SECTIONS}
+    />
   );
 }
 

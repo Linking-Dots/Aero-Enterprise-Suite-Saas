@@ -1,337 +1,134 @@
-import {
-  Section, Container, PublicSectionHeader,
-  Card, VStack, HStack, Box, Text, Mono, Badge, Icon,
-} from '@aero/ui';
+import { Container } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
+import { Reveal } from './home/primitives.jsx';
+import { CtaLiving } from './home/HomeSections.jsx';
 
-const TOC_ITEMS = [
-  { id: 'overview',       label: 'Overview & Base URL' },
-  { id: 'authentication', label: 'Authentication' },
-  { id: 'rate-limiting',  label: 'Rate Limiting' },
-  { id: 'endpoints',      label: 'Core Endpoints' },
-  { id: 'pagination',     label: 'Pagination & Filtering' },
-  { id: 'errors',         label: 'Error Codes' },
-  { id: 'versioning',     label: 'API Versioning' },
-  { id: 'sdks',           label: 'SDKs & Tools' },
+const TOC = [
+  { id: 'overview', label: 'Overview & base URL' }, { id: 'authentication', label: 'Authentication' },
+  { id: 'rate-limiting', label: 'Rate limiting' }, { id: 'endpoints', label: 'Core endpoints' },
+  { id: 'pagination', label: 'Pagination & filtering' }, { id: 'errors', label: 'Error codes' },
+  { id: 'versioning', label: 'API versioning' }, { id: 'sdks', label: 'SDKs & tools' },
 ];
-
-const METHOD_COLORS = { GET: '#3FB950', POST: '#79C0FF', PATCH: '#D29922', DELETE: '#FF7B72', PUT: '#F0883E' };
-
+const METHOD = { GET: 'get', POST: 'post', PATCH: 'patch', DELETE: 'delete', PUT: 'put' };
 const ENDPOINTS = [
-  { method: 'GET',    path: '/v2/employees',         desc: 'List all employees' },
-  { method: 'POST',   path: '/v2/employees',         desc: 'Create an employee' },
-  { method: 'GET',    path: '/v2/employees/{id}',    desc: 'Get a single employee' },
-  { method: 'PATCH',  path: '/v2/employees/{id}',    desc: 'Update an employee' },
-  { method: 'DELETE', path: '/v2/employees/{id}',    desc: 'Delete an employee' },
-  { method: 'GET',    path: '/v2/departments',       desc: 'List all departments' },
-  { method: 'GET',    path: '/v2/leaves',            desc: 'List leave requests' },
-  { method: 'POST',   path: '/v2/leaves',            desc: 'Submit a leave request' },
-  { method: 'GET',    path: '/v2/payroll/runs',      desc: 'List payroll runs' },
-  { method: 'POST',   path: '/v2/payroll/runs',      desc: 'Trigger a payroll run' },
+  { method: 'GET', path: '/v2/employees', desc: 'List all employees' },
+  { method: 'POST', path: '/v2/employees', desc: 'Create an employee' },
+  { method: 'GET', path: '/v2/employees/{id}', desc: 'Get a single employee' },
+  { method: 'PATCH', path: '/v2/employees/{id}', desc: 'Update an employee' },
+  { method: 'DELETE', path: '/v2/employees/{id}', desc: 'Delete an employee' },
+  { method: 'GET', path: '/v2/leaves', desc: 'List leave requests' },
+  { method: 'POST', path: '/v2/leaves', desc: 'Submit a leave request' },
+  { method: 'GET', path: '/v2/payroll/runs', desc: 'List payroll runs' },
+  { method: 'POST', path: '/v2/payroll/runs', desc: 'Trigger a payroll run' },
 ];
+const ERRORS = [['200', 'Success'], ['201', 'Created'], ['400', 'Bad request — check request body'], ['401', 'Unauthorized — invalid or missing token'], ['403', 'Forbidden — token lacks required scope'], ['404', 'Not found'], ['422', 'Validation error — see errors field'], ['429', 'Rate limit exceeded'], ['500', 'Internal server error']];
+const LIMITS = [['Starter', '60', '100'], ['Professional', '300', '500'], ['Enterprise', '1,200', '2,000']];
 
-const ERROR_CODES = [
-  ['200', 'Success'],
-  ['201', 'Created'],
-  ['400', 'Bad request — check request body'],
-  ['401', 'Unauthorized — invalid or missing token'],
-  ['403', 'Forbidden — token lacks required scope'],
-  ['404', 'Not found'],
-  ['422', 'Validation error — see errors field'],
-  ['429', 'Rate limit exceeded'],
-  ['500', 'Internal server error'],
-];
+function Code({ children }) { return <pre className="lv-code"><code>{children}</code></pre>; }
 
-const RATE_LIMITS = [
-  ['Starter', '60', '100'],
-  ['Professional', '300', '500'],
-  ['Enterprise', '1,200', '2,000'],
-];
-
-function CodeBlock({ children }) {
+function Hero() {
   return (
-    <pre className="aeos-pub-code-block">
-      <code>{children}</code>
-    </pre>
-  );
-}
-
-// ── Hero ──────────────────────────────────────────────────────────
-function DocsApiHero() {
-  return (
-    <Section size="lg" className="aeos-pub-hero">
+    <section className="lv-hero lv-hero--page">
+      <div className="lv-hero-bg" aria-hidden="true">
+        <div className="lv-hero-aura lv-hero-aura--1" /><div className="lv-hero-aura lv-hero-aura--2" /><div className="lv-hero-grid" />
+      </div>
       <Container>
-        <VStack gap={5}>
-          <p className="aeos-pub-label">Developer docs</p>
-          <h1 className="aeos-pub-h1">REST API Reference</h1>
-          <p className="aeos-pub-lead aeos-content-base">
-            Integrate your systems with the aeos365 platform using our comprehensive REST API.
-            Supports JSON, OAuth 2.0, and webhook events.
-          </p>
-          <HStack gap={3}>
-            <Card className="aeos-pub-trust-chip">
-              <Mono className="aeos-pub-accent-text--cyan">Last updated: Apr 30, 2026</Mono>
-            </Card>
-            <Card className="aeos-pub-trust-chip">
-              <Mono className="aeos-pub-accent-text--indigo">v2.0 — Stable</Mono>
-            </Card>
-          </HStack>
-          {/* Sample code */}
-          <Box style={{ maxWidth: 480 }}>
-            <pre style={{
-              background: '#0D1117', color: '#E6EDF3',
-              border: '1px solid rgba(0,229,255,0.2)', borderRadius: 10,
-              padding: '0.75rem 1.25rem', fontSize: '0.8rem',
-              fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.6,
-            }}>
-              <span style={{ color: '#8B949E' }}>{'// Authenticate all requests'}</span>{'\n'}
-              <span style={{ color: '#79C0FF' }}>Authorization</span>
-              <span style={{ color: '#E6EDF3' }}>: </span>
-              <span style={{ color: '#A5D6FF' }}>Bearer </span>
-              <span style={{ color: '#FF7B72' }}>{'{'}</span>
-              <span style={{ color: '#E6EDF3' }}>token</span>
-              <span style={{ color: '#FF7B72' }}>{'}'}</span>
-            </pre>
-          </Box>
-        </VStack>
+        <div className="lv-hero-grid-cols">
+          <div className="lv-hero-copy">
+            <Reveal><span className="lv-eyebrow"><span className="lv-eyebrow-dot" /> Developer docs</span></Reveal>
+            <Reveal delay={0.06}><h1 className="lv-h1 lv-h1--page">REST API{' '}<span className="lv-h1-grad">reference.</span></h1></Reveal>
+            <Reveal delay={0.12}><p className="lv-lead">Integrate your systems with aeos365 using our comprehensive REST API. JSON everywhere, OAuth 2.0 bearer tokens, and webhook events.</p></Reveal>
+            <Reveal delay={0.18}>
+              <div className="lv-hero-ctas">
+                <span className="lv-int-chip" style={{ flexDirection: 'row', gap: 8 }}><span className="lv-accent--cyan" style={{ fontFamily: 'var(--aeos-font-mono)', fontSize: '.8rem' }}>Updated Apr 30, 2026</span></span>
+                <span className="lv-int-chip" style={{ flexDirection: 'row', gap: 8 }}><span className="lv-accent--indigo" style={{ fontFamily: 'var(--aeos-font-mono)', fontSize: '.8rem' }}>v2.0 · Stable</span></span>
+              </div>
+            </Reveal>
+          </div>
+          <Reveal delay={0.2} className="lv-hero-shot lv-hero-shot--page">
+            <Code>{`// Authenticate every request\nAuthorization: Bearer {token}\nContent-Type: application/json\n\nGET /v2/employees?per_page=25\n→ 200 OK`}</Code>
+          </Reveal>
+        </div>
       </Container>
-    </Section>
+      <div className="lv-hero-fade" aria-hidden="true" />
+    </section>
   );
 }
 
-// ── API Content ───────────────────────────────────────────────────
 function ApiContent() {
   return (
-    <Section size="lg">
+    <section className="lv-api">
       <Container>
-        <HStack gap={6} align="start">
-          {/* Sticky TOC */}
-          <Box style={{ flexShrink: 0, width: 220 }}>
-            <VStack gap={1} className="aeos-pub-legal-toc">
-              <p className="aeos-pub-label">Contents</p>
-              {TOC_ITEMS.map((item) => (
-                <a key={item.id} href={`#${item.id}`} className="aeos-pub-toc-link">
-                  {item.label}
-                </a>
-              ))}
-            </VStack>
-          </Box>
-
-          {/* Main content */}
-          <Box grow>
-            <VStack gap={4}>
-
-              {/* Overview */}
-              <Card id="overview">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">Overview & Base URL</h2>
-                  <Text tone="secondary">
-                    The aeos365 REST API allows you to programmatically access and modify your tenant's data.
-                    All API requests must be made over HTTPS to:
-                  </Text>
-                  <Mono className="aeos-pub-accent-text--cyan">
-                    Base URL: https://api.aeos365.com/v2
-                  </Mono>
-                  <Text tone="secondary">
-                    All responses are in application/json format. Include Accept: application/json in all requests.
-                  </Text>
-                </VStack>
-              </Card>
-
-              {/* Authentication */}
-              <Card id="authentication">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">Authentication</h2>
-                  <Text tone="secondary">
-                    The API uses OAuth 2.0 Bearer tokens. Generate tokens via the aeos365 admin dashboard
-                    under Settings → API Keys.
-                  </Text>
-                  <pre style={{
-                    background: '#0D1117', color: '#E6EDF3',
-                    border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
-                    padding: '0.875rem 1.25rem', fontSize: '0.8125rem',
-                    fontFamily: "'JetBrains Mono','Fira Code',monospace", lineHeight: 1.65,
-                  }}>
-                    {'Authorization: Bearer YOUR_API_TOKEN\nContent-Type: application/json'}
-                  </pre>
-                  <Text tone="secondary">
-                    Tokens can be scoped to specific modules (e.g., hrm:read, finance:write) and expire after
-                    90 days by default. Service account tokens do not expire.
-                  </Text>
-                </VStack>
-              </Card>
-
-              {/* Rate Limiting */}
-              <Card id="rate-limiting">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">Rate Limiting</h2>
-                  <Text tone="secondary">API requests are rate-limited per token:</Text>
-                  <div className="aeos-overflow-x-auto">
-                    <table className="aeos-pub-comparison-table">
-                      <thead>
-                        <tr><th>Plan</th><th>Requests / minute</th><th>Burst</th></tr>
-                      </thead>
-                      <tbody>
-                        {RATE_LIMITS.map(([plan, rpm, burst]) => (
-                          <tr key={plan}><td>{plan}</td><td>{rpm}</td><td>{burst}</td></tr>
-                        ))}
-                      </tbody>
-                    </table>
+        <div className="lv-api-layout">
+          <aside className="lv-toc">
+            <p className="lv-eyebrow">Contents</p>
+            {TOC.map((t) => <a key={t.id} href={`#${t.id}`} className="lv-toc-link">{t.label}</a>)}
+          </aside>
+          <div className="lv-api-main">
+            <article id="overview" className="lv-api-card">
+              <h2 className="lv-api-h2">Overview & base URL</h2>
+              <p className="lv-api-p">The aeos365 REST API lets you programmatically access and modify your tenant's data. All requests must be made over HTTPS.</p>
+              <Code>{`Base URL:  https://api.aeos365.com/v2`}</Code>
+              <p className="lv-api-p">All responses are <code className="lv-inline">application/json</code>. Include <code className="lv-inline">Accept: application/json</code> in every request.</p>
+            </article>
+            <article id="authentication" className="lv-api-card">
+              <h2 className="lv-api-h2">Authentication</h2>
+              <p className="lv-api-p">The API uses OAuth 2.0 bearer tokens. Generate tokens in the admin dashboard under Settings → API Keys.</p>
+              <Code>{`Authorization: Bearer YOUR_API_TOKEN\nContent-Type: application/json`}</Code>
+              <p className="lv-api-p">Tokens can be scoped to modules (e.g. <code className="lv-inline">hrm:read</code>, <code className="lv-inline">finance:write</code>) and expire after 90 days by default. Service-account tokens do not expire.</p>
+            </article>
+            <article id="rate-limiting" className="lv-api-card">
+              <h2 className="lv-api-h2">Rate limiting</h2>
+              <p className="lv-api-p">API requests are rate-limited per token:</p>
+              <div className="lv-cmp-scroll"><table className="lv-cmp-table"><thead><tr><th>Plan</th><th>Requests / min</th><th>Burst</th></tr></thead>
+                <tbody>{LIMITS.map(([p, r, b]) => <tr key={p}><td>{p}</td><td>{r}</td><td>{b}</td></tr>)}</tbody></table></div>
+            </article>
+            <article id="endpoints" className="lv-api-card">
+              <h2 className="lv-api-h2">Core endpoints</h2>
+              <div className="lv-endpoints">
+                {ENDPOINTS.map((e) => (
+                  <div key={`${e.method}-${e.path}`} className="lv-endpoint">
+                    <span className={`lv-method lv-method--${METHOD[e.method]}`}>{e.method}</span>
+                    <code className="lv-endpoint-path">{e.path}</code>
+                    <span className="lv-endpoint-desc">{e.desc}</span>
                   </div>
-                  <Text tone="secondary">Rate limit headers included in every response:</Text>
-                  <VStack gap={1}>
-                    {['X-RateLimit-Limit — your plan\'s limit', 'X-RateLimit-Remaining — requests remaining this minute', 'X-RateLimit-Reset — Unix timestamp when the window resets'].map((item) => (
-                      <HStack key={item} gap={2} align="start">
-                        <Text tone="primary" className="aeos-pub-accent-text--cyan">▸</Text>
-                        <Mono size="sm" tone="secondary">{item}</Mono>
-                      </HStack>
-                    ))}
-                  </VStack>
-                </VStack>
-              </Card>
-
-              {/* Core Endpoints */}
-              <Card id="endpoints">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">Core Endpoints</h2>
-                  <Text tone="secondary">Endpoints follow RESTful conventions:</Text>
-                  <div className="aeos-overflow-x-auto">
-                    <table className="aeos-pub-comparison-table">
-                      <thead>
-                        <tr><th>Method</th><th>Path</th><th>Description</th></tr>
-                      </thead>
-                      <tbody>
-                        {ENDPOINTS.map((ep) => (
-                          <tr key={`${ep.method}-${ep.path}`}>
-                            <td><Mono style={{ color: METHOD_COLORS[ep.method] }}>{ep.method}</Mono></td>
-                            <td><Mono tone="secondary">{ep.path}</Mono></td>
-                            <td>{ep.desc}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </VStack>
-              </Card>
-
-              {/* Pagination */}
-              <Card id="pagination">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">Pagination & Filtering</h2>
-                  <Text tone="secondary">All list endpoints support cursor-based pagination:</Text>
-                  <pre className="aeos-code-block">
-                    {'GET /v2/employees?page=1&per_page=25&sort=created_at&order=desc'}
-                  </pre>
-                  <Text tone="secondary">Response envelope:</Text>
-                  <pre className="aeos-code-block">
-                    {'{\n  "data": [...],\n  "meta": {\n    "current_page": 1,\n    "per_page": 25,\n    "total": 840,\n    "last_page": 34\n  }\n}'}
-                  </pre>
-                </VStack>
-              </Card>
-
-              {/* Errors */}
-              <Card id="errors">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">Error Codes</h2>
-                  <Text tone="secondary">The API uses standard HTTP status codes:</Text>
-                  <div className="aeos-overflow-x-auto">
-                    <table className="aeos-pub-comparison-table">
-                      <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
-                      <tbody>
-                        {ERROR_CODES.map(([code, meaning]) => (
-                          <tr key={code}><td><Mono className="aeos-pub-accent-text--cyan">{code}</Mono></td><td>{meaning}</td></tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </VStack>
-              </Card>
-
-              {/* Versioning */}
-              <Card id="versioning">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">API Versioning</h2>
-                  <Text tone="secondary">
-                    The current stable API version is v2. Version is specified in the URL path: /v2/...
-                  </Text>
-                  <Text tone="secondary">
-                    aeos365 provides a minimum 12-month deprecation notice before removing any API version.
-                    The Sunset header is included in responses from deprecated endpoints:
-                  </Text>
-                  <pre className="aeos-code-block">
-                    {'Sunset: Sat, 01 Nov 2026 00:00:00 GMT'}
-                  </pre>
-                </VStack>
-              </Card>
-
-              {/* SDKs */}
-              <Card id="sdks">
-                <VStack gap={3}>
-                  <h2 className="aeos-pub-h2">SDKs & Tools</h2>
-                  <Text tone="secondary">Official SDKs are available for the most common languages:</Text>
-                  <VStack gap={2}>
-                    {[
-                      'PHP — composer require aeos365/sdk',
-                      'JavaScript/Node — npm install @aeos365/sdk',
-                      'Python — pip install aeos365',
-                      'Laravel — first-party integration with Artisan commands',
-                    ].map((item) => (
-                      <HStack key={item} gap={2} align="start">
-                        <Text className="aeos-pub-accent-text--cyan">▸</Text>
-                        <Mono tone="secondary" size="sm">{item}</Mono>
-                      </HStack>
-                    ))}
-                  </VStack>
-                  <Text tone="secondary">
-                    A Postman collection is available for download from the developer dashboard.
-                    OpenAPI 3.1 spec available at /v2/openapi.json.
-                  </Text>
-                </VStack>
-              </Card>
-
-            </VStack>
-          </Box>
-        </HStack>
+                ))}
+              </div>
+            </article>
+            <article id="pagination" className="lv-api-card">
+              <h2 className="lv-api-h2">Pagination & filtering</h2>
+              <p className="lv-api-p">All list endpoints support page-based pagination:</p>
+              <Code>{`GET /v2/employees?page=1&per_page=25&sort=created_at&order=desc`}</Code>
+              <Code>{`{\n  "data": [ ... ],\n  "meta": { "current_page": 1, "per_page": 25, "total": 840, "last_page": 34 }\n}`}</Code>
+            </article>
+            <article id="errors" className="lv-api-card">
+              <h2 className="lv-api-h2">Error codes</h2>
+              <div className="lv-cmp-scroll"><table className="lv-cmp-table"><thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+                <tbody>{ERRORS.map(([c, m]) => <tr key={c}><td><span className="lv-accent--cyan" style={{ fontFamily: 'var(--aeos-font-mono)' }}>{c}</span></td><td style={{ textAlign: 'left' }}>{m}</td></tr>)}</tbody></table></div>
+            </article>
+            <article id="versioning" className="lv-api-card">
+              <h2 className="lv-api-h2">API versioning</h2>
+              <p className="lv-api-p">The current stable version is <code className="lv-inline">v2</code>, specified in the URL path. We provide a minimum 12-month deprecation notice; deprecated endpoints include a Sunset header.</p>
+              <Code>{`Sunset: Sat, 01 Nov 2026 00:00:00 GMT`}</Code>
+            </article>
+            <article id="sdks" className="lv-api-card">
+              <h2 className="lv-api-h2">SDKs & tools</h2>
+              <ul className="lv-check-list">
+                {['PHP — composer require aeos365/sdk', 'JavaScript / Node — npm install @aeos365/sdk', 'Python — pip install aeos365', 'Laravel — first-party integration with Artisan commands'].map((s) => (
+                  <li key={s}><span className="lv-check lv-accent--cyan">▸</span><code className="lv-inline">{s}</code></li>
+                ))}
+              </ul>
+              <p className="lv-api-p">A Postman collection is available from the developer dashboard. OpenAPI 3.1 spec at <code className="lv-inline">/v2/openapi.json</code>.</p>
+            </article>
+          </div>
+        </div>
       </Container>
-    </Section>
+    </section>
   );
 }
 
-// ── API CTA ───────────────────────────────────────────────────────
-function ApiCTA() {
-  return (
-    <Section size="md" bg="gradient">
-      <Container>
-        <Card>
-          <VStack gap={4} align="center">
-            <p className="aeos-pub-label">Start integrating</p>
-            <h2 className="aeos-pub-h2 aeos-text-center">
-              Ready to build on top of aeos365?
-            </h2>
-            <p className="aeos-pub-lead aeos-text-center aeos-content-narrow-2">
-              Sign up and get your API token in under 2 minutes. Full documentation
-              and Postman collection included.
-            </p>
-            <HStack gap={3}>
-              <a href="/signup" className="aeos-pub-btn-primary">Get API access →</a>
-              <a href="/docs" className="aeos-pub-btn-ghost">Back to docs</a>
-            </HStack>
-          </VStack>
-        </Card>
-      </Container>
-    </Section>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────
 export default function DocsApi() {
-  return (
-    <>
-      <DocsApiHero />
-      <ApiContent />
-      <ApiCTA />
-    </>
-  );
+  return (<><Hero /><ApiContent /><CtaLiving /></>);
 }
 
 DocsApi.layout = (page) => (

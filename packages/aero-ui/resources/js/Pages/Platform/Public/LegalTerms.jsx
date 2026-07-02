@@ -3,6 +3,7 @@ import {
   Section, Container, VStack, HStack, Box, Text, Eyebrow, Card,
 } from '@aero/ui';
 import PublicLayout from './Layout/PublicLayout.jsx';
+import LegalDoc from './legal/LegalDoc.jsx';
 
 const TOC = [
   { id: 'acceptance',            label: 'Acceptance of Terms' },
@@ -202,11 +203,14 @@ function LegalCTA() {
 // ── Page ─────────────────────────────────────────────────────────
 export default function LegalTerms() {
   return (
-    <>
-      <LegalHero />
-      <LegalContent />
-      <LegalCTA />
-    </>
+    <LegalDoc
+      eyebrow="Legal"
+      title="Terms of Service"
+      lead="The terms that govern your use of aeos365. Please read them carefully — they define the agreement between you and us."
+      updated="April 30, 2026"
+      toc={TOC}
+      sections={SECTIONS}
+    />
   );
 }
 

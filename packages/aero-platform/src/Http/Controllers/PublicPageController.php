@@ -50,8 +50,8 @@ class PublicPageController extends Controller
                     ];
                 })->toArray();
             }
-        } catch (\Exception $e) {
-            // If database query fails, fall back to empty array (frontend will use static data)
+        } catch (\Throwable $e) {
+            // If DB query/mapping fails, fall back to empty array (frontend uses static data)
             $plans = [];
         }
 
@@ -91,12 +91,19 @@ class PublicPageController extends Controller
     protected function getModuleList($plan): array
     {
         $features = json_decode($plan->features ?? '[]', true);
-        // Extract module-related features
-        return array_filter($features, function ($feature) {
-            return !str_contains(strtolower($feature), 'users') && 
-                   !str_contains(strtolower($feature), 'storage') &&
-                   !str_contains(strtolower($feature), 'support');
-        });
+        if (!is_array($features)) {
+            return [];
+        }
+        // Extract module-related features (string entries only)
+        return array_values(array_filter($features, function ($feature) {
+            if (!is_string($feature)) {
+                return false;
+            }
+            $f = strtolower($feature);
+            return !str_contains($f, 'users')
+                && !str_contains($f, 'storage')
+                && !str_contains($f, 'support');
+        }));
     }
 
     /**
@@ -105,7 +112,10 @@ class PublicPageController extends Controller
     protected function getPlanPerks($plan): array
     {
         $features = json_decode($plan->features ?? '[]', true);
-        return $features;
+        if (!is_array($features)) {
+            return [];
+        }
+        return array_values(array_filter($features, 'is_string'));
     }
 
     public function features(Request $request): Response
