@@ -288,6 +288,7 @@ class CpanelDatabaseManager implements TenantDatabaseManager
                 'Authorization' => "cpanel {$username}:{$token}",
             ])
                 ->timeout(30)
+                ->withoutVerifying()   // cPanel :2083 cert is for the server FQDN, not localhost/127.0.0.1 — same as list_databases()
                 ->get($url, $params);
 
             if (! $response->successful()) {

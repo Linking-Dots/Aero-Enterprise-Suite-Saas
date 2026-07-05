@@ -280,7 +280,8 @@
       "Bash(curl -sk -o /dev/null -w \"/dashboard: %{http_code} -> %{redirect_url}\\\\n\" https://demo.aeos365.com/dashboard)",
       "Bash(php -r \"echo password_hash\\('123456', PASSWORD_BCRYPT\\), PHP_EOL;\")",
       "Bash(grep -n \"use Aero\\\\\\\\\\\\\\\\Platform\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\Tenant\" packages/aero-platform/src/Http/Controllers/RegistrationPageController.php)",
-      "Bash(sed -i 's/use Aero\\\\\\\\Platform\\\\\\\\Models\\\\\\\\Plan;/use Aero\\\\\\\\Platform\\\\\\\\Models\\\\\\\\Plan;\\\\nuse Aero\\\\\\\\Platform\\\\\\\\Models\\\\\\\\Tenant;/' packages/aero-platform/src/Http/Controllers/RegistrationPageController.php)"
+      "Bash(sed -i 's/use Aero\\\\\\\\Platform\\\\\\\\Models\\\\\\\\Plan;/use Aero\\\\\\\\Platform\\\\\\\\Models\\\\\\\\Plan;\\\\nuse Aero\\\\\\\\Platform\\\\\\\\Models\\\\\\\\Tenant;/' packages/aero-platform/src/Http/Controllers/RegistrationPageController.php)",
+      "Bash(grep -n 'queue\\\\b\\\\|onQueue\\\\|$queue' packages/aero-platform/src/Jobs/ProvisionTenant.php)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Emam Hosen\\AppData\\Local\\ms-playwright-mcp\\mcp-chrome-487e60b",
