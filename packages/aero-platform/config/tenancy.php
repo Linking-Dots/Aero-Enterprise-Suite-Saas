@@ -59,7 +59,9 @@ return [
         'auth', 'sso', 'oauth', 'login', 'logout', 'register', 'signup',
         // Common service names
         'blog', 'news', 'shop', 'store', 'billing', 'payments',
-        'test', 'demo', 'staging', 'preview', 'dev', 'sandbox',
+        // NOTE: 'demo' is intentionally NOT reserved — the flagship demo tenant
+        // lives at demo.<platform-domain> (Boss decision, 2026-07-05).
+        'test', 'staging', 'preview', 'dev', 'sandbox',
         // Reserved single-letter / minimal
         'a', 'b', 'c', 'x', 'y', 'z',
     ],
