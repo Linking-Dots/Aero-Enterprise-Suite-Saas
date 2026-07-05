@@ -249,14 +249,14 @@ class ProvisionTenant implements ShouldQueue
         $plan = $planId ? \Aero\Platform\Models\Plan::find($planId) : null;
         if (! $planId || ! $plan) {
             $this->logStep('   ⚠️  Tenant has no plan assigned - will provision with core only', [], 'warning');
+        }
+
+        // 5. Validate tenant has modules (carried by product subscriptions, not plans)
+        $moduleCount = count($this->tenant->subscribed_product_modules ?? []);
+        if ($moduleCount === 0) {
+            $this->logStep('   ⚠️  Tenant has no product modules - will provision with core only', [], 'warning');
         } else {
-            // 5. Validate plan has modules
-            $moduleCount = $plan->modules()->count();
-            if ($moduleCount === 0) {
-                $this->logStep('   ⚠️  Plan has no modules - will provision with core only', [], 'warning');
-            } else {
-                $this->logStep("   → Plan has {$moduleCount} module(s)", ['module_count' => $moduleCount]);
-            }
+            $this->logStep("   → Tenant has {$moduleCount} product module(s)", ['module_count' => $moduleCount]);
         }
 
         // 6. Validate migration paths exist

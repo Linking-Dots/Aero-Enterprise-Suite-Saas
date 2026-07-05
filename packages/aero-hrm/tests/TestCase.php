@@ -27,6 +27,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageProviders($app)
     {
         return [
+            \Aero\Auth\AeroAuthServiceProvider::class,
             AeroHrmServiceProvider::class,
         ];
     }

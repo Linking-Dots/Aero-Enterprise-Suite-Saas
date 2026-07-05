@@ -466,10 +466,10 @@ class ModuleController extends Controller
         try {
             $module = Module::findOrFail($moduleId);
 
-            // Check if module is in use by any plans
-            if ($module->plans()->exists()) {
+            // Check if module is carried by any product (modules are sold via products)
+            if (\Aero\Platform\Models\Product::where('module_code', $module->code)->exists()) {
                 return response()->json([
-                    'error' => 'Cannot delete module that is assigned to plans. Remove from plans first.',
+                    'error' => 'Cannot delete module that is carried by a product. Retire the product first.',
                 ], 422);
             }
 

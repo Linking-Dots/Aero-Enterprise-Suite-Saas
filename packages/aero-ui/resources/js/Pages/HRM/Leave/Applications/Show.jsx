@@ -3,8 +3,9 @@ import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
   DetailPageLayout, Card, CardBody, VStack, HStack,
-  Text, Badge, Button, Modal, Field, Textarea, Alert,
+  Text, Badge, Button, Modal, Field, Textarea, Alert, Avatar,
 } from '@aero/ui';
+import LeaveRail from '../LeaveRail.jsx';
 
 const STATUS_INTENT = {
   pending:   'warning',
@@ -12,6 +13,9 @@ const STATUS_INTENT = {
   rejected:  'danger',
   cancelled: 'neutral',
 };
+
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 function InfoRow({ label, value }) {
   return (
@@ -26,10 +30,13 @@ export default function ApplicationsShow({ application, permissions }) {
   const [rejectOpen, setRejectOpen] = useState(false);
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    rejection_reason: '',
+    reason: '',
   });
 
   const isPending = application.status === 'pending';
+  const statusLabel = application.status
+    ? application.status.charAt(0).toUpperCase() + application.status.slice(1)
+    : '—';
 
   function approve() {
     if (!confirm('Approve this leave application?')) return;
@@ -84,13 +91,23 @@ export default function ApplicationsShow({ application, permissions }) {
 
   return (
     <>
+      <style>{`
+        .lapp-type-swatch {
+          display: inline-block;
+          width: 0.75rem;
+          height: 0.75rem;
+          border-radius: var(--aeos-r-sm);
+          flex-shrink: 0;
+        }
+      `}</style>
+
       <DetailPageLayout
         title="Leave Application"
         breadcrumb={[
           { label: 'HRM' },
           { label: 'Leave' },
           { label: 'Applications', href: route('hrm.leave.applications.index') },
-          { label: application.employee?.name ?? 'Application' },
+          { label: application.employee_name ?? 'Application' },
         ]}
         actions={actions}
       >
@@ -98,21 +115,41 @@ export default function ApplicationsShow({ application, permissions }) {
           <Card>
             <CardBody>
               <VStack gap={4}>
-                <HStack gap={2} align="center">
-                  <Text size="lg">{application.employee?.name}</Text>
-                  <Badge intent={STATUS_INTENT[application.status] ?? 'neutral'}>
-                    {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                  </Badge>
+                <HStack gap={3} align="center">
+                  <Avatar name={application.employee_name ?? '—'} size={40} />
+                  <VStack gap={0}>
+                    <HStack gap={2} align="center">
+                      <Text size="lg">{application.employee_name ?? '—'}</Text>
+                      <Badge intent={STATUS_INTENT[application.status] ?? 'neutral'}>
+                        {statusLabel}
+                      </Badge>
+                    </HStack>
+                    {application.employee_code && (
+                      <Text size="sm" tone="secondary">{application.employee_code}</Text>
+                    )}
+                  </VStack>
                 </HStack>
 
                 <HStack gap={6} wrap>
-                  <InfoRow label="Leave Type"   value={application.leaveType?.name} />
-                  <InfoRow label="From"         value={application.start_date} />
-                  <InfoRow label="To"           value={application.end_date} />
-                  <InfoRow label="Total Days"   value={application.total_days} />
-                  <InfoRow label="Applied On"   value={application.created_at} />
-                  {application.approved_by_name && (
-                    <InfoRow label="Reviewed By" value={application.approved_by_name} />
+                  <VStack gap={0}>
+                    <Text size="xs" tone="tertiary">Leave Type</Text>
+                    <HStack gap={2} align="center">
+                      <span
+                        className="lapp-type-swatch"
+                        style={{ background: application.leave_type_color || 'var(--aeos-primary)' }}
+                      />
+                      <Text>{application.leave_type ?? '—'}</Text>
+                    </HStack>
+                  </VStack>
+                  <InfoRow label="From"       value={fmtDate(application.start_date)} />
+                  <InfoRow label="To"         value={fmtDate(application.end_date)} />
+                  <InfoRow label="Total Days" value={application.total_days} />
+                  <InfoRow label="Applied On" value={fmtDate(application.created_at)} />
+                  {application.approver_name && (
+                    <InfoRow label="Approved By" value={application.approver_name} />
+                  )}
+                  {application.rejector_name && (
+                    <InfoRow label="Rejected By" value={application.rejector_name} />
                   )}
                 </HStack>
 
@@ -155,10 +192,10 @@ export default function ApplicationsShow({ application, permissions }) {
             <Text tone="secondary">
               Please provide a reason for rejecting this leave application.
             </Text>
-            <Field label="Rejection Reason" error={errors.rejection_reason} required>
+            <Field label="Rejection Reason" error={errors.reason} required>
               <Textarea
-                value={data.rejection_reason}
-                onChange={e => setData('rejection_reason', e.target.value)}
+                value={data.reason}
+                onChange={e => setData('reason', e.target.value)}
                 placeholder="Enter reason for rejection"
                 rows={4}
               />
@@ -170,4 +207,6 @@ export default function ApplicationsShow({ application, permissions }) {
   );
 }
 
-ApplicationsShow.layout = page => <App title="Leave Application">{page}</App>;
+ApplicationsShow.layout = page => (
+  <App title="Leave Application" railTitle="Leave management" rail={<LeaveRail />}>{page}</App>
+);

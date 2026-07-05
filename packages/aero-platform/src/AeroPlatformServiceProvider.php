@@ -337,15 +337,12 @@ class AeroPlatformServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Decision 6 (module-model consolidation): the canonical hrmac Module is
-        // pure-shareable and must NOT reference the platform Plan model. Platform owns
-        // the module<->plan relationship, so it is registered dynamically on the canonical
-        // Module at boot (SaaS only). Preserves the pre-consolidation
-        // Aero\Platform\Models\Module::plans() behavior without coupling hrmac to platform.
-        \Aero\HRMAC\Models\Module::resolveRelationUsing('plans', function ($module) {
-            return $module->belongsToMany(Plan::class, 'plan_module')
-                ->withPivot('limits', 'is_enabled')
-                ->withTimestamps()
-                ->wherePivot('is_enabled', true);
+        // pure-shareable and must NOT reference platform models. Platform owns the
+        // module<->catalog relationship, so it is registered dynamically on the
+        // canonical Module at boot (SaaS only). Modules are carried by PRODUCTS
+        // (products.module_code); the old plan_module pivot is gone.
+        \Aero\HRMAC\Models\Module::resolveRelationUsing('products', function ($module) {
+            return $module->hasMany(\Aero\Platform\Models\Product::class, 'module_code', 'code');
         });
 
         // Auth purity (auth-identity unification): the shared Aero\Auth\Models\User is a

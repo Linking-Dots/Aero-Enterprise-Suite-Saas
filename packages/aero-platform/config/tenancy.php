@@ -143,8 +143,10 @@ return [
         // This is the default connection before tenancy is initialized
         'central_connection' => env('DB_CONNECTION', 'mysql'),
 
-        'prefix' => 'tenant',
-        'suffix' => '',
+        // Env-driven so constrained hosts (cPanel) can force their required
+        // account prefix on tenant databases (e.g. TENANCY_DB_PREFIX=aeos365_t).
+        'prefix' => env('TENANCY_DB_PREFIX', 'tenant'),
+        'suffix' => env('TENANCY_DB_SUFFIX', ''),
 
         // Template for tenant database connection
         // Uses the default DB connection as the template for creating tenant databases

@@ -2,13 +2,20 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
-  VStack, HStack, Box, Text, Mono, Eyebrow, Button, Badge, Card,
-  DataTable, Modal,
+  DetailPageLayout, VStack, HStack, Text, Eyebrow, Button, Badge, Card, CardBody,
+  DataTable, Modal, Stat, Avatar,
 } from '@aero/ui';
 import { useHRMAC } from '@/hooks/useHRMAC';
+import PayrollRail from '../PayrollRail.jsx';
+
+const money = (v) => Number(v ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
+const moneyCompact = (v) =>
+  Number(v ?? 0).toLocaleString(undefined, { notation: 'compact', maximumFractionDigits: 1 });
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 function statusIntent(run) {
-  if (run.locked_at) return 'neutral';
+  if (run.is_locked || run.locked_at) return 'neutral';
   switch (run.status) {
     case 'approved': return 'success';
     case 'draft':    return 'warning';
@@ -17,8 +24,8 @@ function statusIntent(run) {
 }
 
 function statusLabel(run) {
-  if (run.locked_at) return 'Locked';
-  return run.status.charAt(0).toUpperCase() + run.status.slice(1);
+  if (run.is_locked || run.locked_at) return 'Locked';
+  return run.status ? run.status.charAt(0).toUpperCase() + run.status.slice(1) : '—';
 }
 
 export default function RunsShow({ run, payslips = [] }) {
@@ -45,20 +52,19 @@ export default function RunsShow({ run, payslips = [] }) {
   const payslipColumns = [
     {
       key: 'employee', label: 'Employee',
-      render: row => row.employee_name ?? row.employee_code ?? '—',
+      render: row => (
+        <HStack gap={2} align="center">
+          <Avatar name={row.employee_name || row.employee_code || '—'} size={28} />
+          <VStack gap={0}>
+            <Text>{row.employee_name || '—'}</Text>
+            {row.employee_code && <Text size="xs" tone="tertiary">{row.employee_code}</Text>}
+          </VStack>
+        </HStack>
+      ),
     },
-    {
-      key: 'gross', label: 'Gross',
-      render: row => Number(row.gross ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
-    },
-    {
-      key: 'tax', label: 'Tax',
-      render: row => Number(row.tax ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
-    },
-    {
-      key: 'net', label: 'Net',
-      render: row => Number(row.net ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
-    },
+    { key: 'gross', label: 'Gross', render: row => money(row.gross) },
+    { key: 'tax',   label: 'Tax',   render: row => money(row.tax) },
+    { key: 'net',   label: 'Net',   render: row => money(row.net) },
     {
       key: 'actions', label: '',
       render: row => (
@@ -73,76 +79,90 @@ export default function RunsShow({ run, payslips = [] }) {
     },
   ];
 
+  const isLocked = run.is_locked || run.locked_at;
+
+  const actions = (
+    <HStack gap={2}>
+      {canLock && !isLocked && (
+        <Button intent="primary" onClick={() => setConfirmOpen(true)}>
+          Approve &amp; Lock
+        </Button>
+      )}
+      <Button
+        intent="ghost"
+        leftIcon="arrowLeft"
+        onClick={() => router.get(route('hrm.payroll.runs.index'))}
+      >
+        Back
+      </Button>
+    </HStack>
+  );
+
   return (
     <>
-      <VStack gap={6}>
-        {/* Header */}
-        <div className="flex items-center justify-between pb-5 border-b border-aeos-divider mb-6">
-          <HStack gap={2} align="center">
-            <Box grow>
-              <VStack gap={1}>
-                <Eyebrow>Payroll Run</Eyebrow>
-                <HStack gap={2} align="center">
-                  <Text size="lg">{run.label}</Text>
-                  <Badge intent={statusIntent(run)}>{statusLabel(run)}</Badge>
-                </HStack>
-              </VStack>
-            </Box>
-            <HStack gap={2}>
-              {canLock && !run.locked_at && (
-                <Button intent="primary" onClick={() => setConfirmOpen(true)}>
-                  Approve &amp; Lock
-                </Button>
-              )}
-              <Button
-                intent="ghost"
-                leftIcon="arrowLeft"
-                onClick={() => router.get(route('hrm.payroll.runs.index'))}
-              >
-                Back
-              </Button>
-            </HStack>
-          </HStack>
-        </div>
-
-        {/* Summary cards */}
-        <Card>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="flex flex-col gap-1 p-4 md:p-5">
-              <div className="text-xs text-default-500 mb-1">
-                <Eyebrow tone="secondary">Period</Eyebrow>
-              </div>
-              <Mono>{run.period_start} &rarr; {run.period_end}</Mono>
+      <DetailPageLayout
+        title={run.label ?? 'Payroll Run'}
+        breadcrumb={[
+          { label: 'HRM' },
+          { label: 'Payroll' },
+          { label: 'Runs', href: route('hrm.payroll.runs.index') },
+          { label: run.label ?? 'Run' },
+        ]}
+        actions={actions}
+        status={<Badge intent={statusIntent(run)}>{statusLabel(run)}</Badge>}
+      >
+        <VStack gap={5}>
+          <div className="aeos-kpi-row">
+            <div className="aeos-kpi-col">
+              <Stat title="Gross" value={moneyCompact(run.total_gross)} icon="trending" iconTone="indigo" />
             </div>
-            <div className="flex flex-col gap-1 p-4 md:p-5">
-              <div className="text-xs text-default-500 mb-1">
-                <Eyebrow tone="secondary">Total Gross</Eyebrow>
-              </div>
-              <Text size="lg">
-                {Number(run.total_gross ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </Text>
+            <div className="aeos-kpi-col">
+              <Stat title="Net" value={moneyCompact(run.total_net)} icon="check" iconTone="success" />
             </div>
-            <div className="flex flex-col gap-1 p-4 md:p-5">
-              <div className="text-xs text-default-500 mb-1">
-                <Eyebrow tone="secondary">Total Net</Eyebrow>
-              </div>
-              <Text size="lg">
-                {Number(run.total_net ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </Text>
+            <div className="aeos-kpi-col">
+              <Stat title="Payslips" value={payslips.length} icon="users" />
             </div>
           </div>
-        </Card>
 
-        {/* Payslips table */}
-        <VStack gap={2}>
-          <Eyebrow>Payslips</Eyebrow>
-          <DataTable
-            columns={payslipColumns}
-            rows={payslips}
-            empty="No payslips generated yet."
-          />
+          <Card>
+            <CardBody>
+              <HStack gap={6} wrap>
+                <VStack gap={0}>
+                  <Eyebrow tone="secondary">Period</Eyebrow>
+                  <Text>{fmtDate(run.period_start)} &rarr; {fmtDate(run.period_end)}</Text>
+                </VStack>
+                <VStack gap={0}>
+                  <Eyebrow tone="secondary">Total Gross</Eyebrow>
+                  <Text>{money(run.total_gross)}</Text>
+                </VStack>
+                <VStack gap={0}>
+                  <Eyebrow tone="secondary">Total Net</Eyebrow>
+                  <Text>{money(run.total_net)}</Text>
+                </VStack>
+                <VStack gap={0}>
+                  <Eyebrow tone="secondary">Status</Eyebrow>
+                  <Badge intent={statusIntent(run)}>{statusLabel(run)}</Badge>
+                </VStack>
+                {run.approved_at && (
+                  <VStack gap={0}>
+                    <Eyebrow tone="secondary">Approved</Eyebrow>
+                    <Text>{fmtDate(run.approved_at)}</Text>
+                  </VStack>
+                )}
+              </HStack>
+            </CardBody>
+          </Card>
+
+          <VStack gap={2}>
+            <Eyebrow>Payslips</Eyebrow>
+            <DataTable
+              columns={payslipColumns}
+              rows={payslips}
+              empty="No payslips generated yet."
+            />
+          </VStack>
         </VStack>
-      </VStack>
+      </DetailPageLayout>
 
       {/* Approve & Lock confirm modal */}
       <Modal
@@ -152,7 +172,7 @@ export default function RunsShow({ run, payslips = [] }) {
         footer={
           <HStack gap={2}>
             <Button intent="danger" loading={locking} onClick={doApprove}>
-              Confirm & Lock
+              Confirm &amp; Lock
             </Button>
             <Button intent="ghost" onClick={() => setConfirmOpen(false)}>
               Cancel
@@ -173,4 +193,6 @@ export default function RunsShow({ run, payslips = [] }) {
   );
 }
 
-RunsShow.layout = page => <App title="Payroll Run">{page}</App>;
+RunsShow.layout = page => (
+  <App title="Payroll Run" railTitle="Payroll" rail={<PayrollRail />}>{page}</App>
+);

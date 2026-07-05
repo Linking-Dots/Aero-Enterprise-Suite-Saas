@@ -3,8 +3,9 @@ import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
   IndexPageLayout, DataTable, Button, HStack, VStack, Field, Input, Select,
-  Pagination, Modal, Badge, Toggle, Text,
+  Pagination, Modal, Badge, Toggle, Text, Stat,
 } from '@aero/ui';
+import PayrollRail from '../PayrollRail.jsx';
 
 const KIND_OPTIONS = [
   { value: 'earning',   label: 'Earning' },
@@ -27,7 +28,7 @@ const EMPTY_FORM = {
   active:    true,
 };
 
-export default function ComponentsIndex({ components }) {
+export default function ComponentsIndex({ components, stats }) {
   const [modalOpen,  setModal]  = useState(false);
   const [editing,    setEditing] = useState(null);
   const [confirmId,  setConfirmId]   = useState(null);
@@ -143,6 +144,11 @@ export default function ComponentsIndex({ components }) {
       <IndexPageLayout
         title="Pay Components"
         breadcrumb={[{ label: 'HRM' }, { label: 'Payroll' }, { label: 'Components' }]}
+        kpis={[
+          <Stat key="total" title="Components" value={stats?.components_total     ?? 0} icon="layout" />,
+          <Stat key="earn"  title="Earnings"   value={stats?.components_earning   ?? 0} icon="trending" iconTone="success" />,
+          <Stat key="ded"   title="Deductions" value={stats?.components_deduction ?? 0} icon="minus" iconTone="amber" />,
+        ]}
         actions={
           <Button intent="primary" onClick={openCreate}>
             New Component
@@ -275,4 +281,6 @@ export default function ComponentsIndex({ components }) {
   );
 }
 
-ComponentsIndex.layout = page => <App title="Pay Components">{page}</App>;
+ComponentsIndex.layout = page => (
+  <App title="Pay Components" railTitle="Payroll" rail={<PayrollRail />}>{page}</App>
+);

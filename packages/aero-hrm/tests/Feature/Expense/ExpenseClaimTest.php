@@ -22,7 +22,7 @@ class ExpenseClaimTest extends TestCase
 
     protected function getPackageProviders($app): array
     {
-        return [ServiceProvider::class, AeroCoreServiceProvider::class, HRMACServiceProvider::class, AeroHrmServiceProvider::class];
+        return [\Aero\Auth\AeroAuthServiceProvider::class, ServiceProvider::class, AeroCoreServiceProvider::class, HRMACServiceProvider::class, AeroHrmServiceProvider::class];
     }
 
     protected function getEnvironmentSetUp($app): void

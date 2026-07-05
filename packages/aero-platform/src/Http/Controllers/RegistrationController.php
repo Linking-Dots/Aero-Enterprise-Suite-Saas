@@ -469,8 +469,10 @@ class RegistrationController extends Controller
             ])->withInput();
         }
 
-        // Admin data is NO LONGER collected here - it will be collected after provisioning
-        // on the tenant domain via the admin-setup page
+        // The tenant admin is pre-created during provisioning (ProvisionTenant),
+        // bound to the verified signup email with an unusable random password, and
+        // emailed a single-use password-set link. No admin credentials are collected
+        // here and there is NO post-provisioning admin-setup step (takeover risk).
 
         try {
             // Get existing pending tenant or create new one
@@ -529,11 +531,32 @@ class RegistrationController extends Controller
                         // is intentionally NOT fired during initial registration — the
                         // ProvisionTenant job performs the first module sync; the event is for
                         // post-provisioning subscription changes.
-                        $selectedModules = (array) ($tenant->data['selected_modules'] ?? []);
+                        //
+                        // Source the selected modules from the registration session payload —
+                        // the same authoritative source the plan_id above is read from. A pending
+                        // tenant reused from the details/verification step can have an empty
+                        // `data.selected_modules`, which previously dropped every add-on (e.g.
+                        // the HRM Suite) so no product_subscription was created and the module
+                        // sync only provisioned the core framework (no HRM nav).
+                        $selectedModules = (array) (
+                            $planPayload['modules']
+                            ?? ($planPayload['data']['selected_modules'] ?? null)
+                            ?? ($tenant->data['selected_modules'] ?? [])
+                        );
                         $productModules = array_values(array_diff($selectedModules, ['core']));
 
                         if (! empty($productModules)) {
                             $products = Product::whereIn('module_code', $productModules)
+                                ->where('is_active', true)
+                                ->get()
+                                ->keyBy('module_code');
+
+                            // Authoritative add-on pricing = module_pricing (the same
+                            // source the signup/plan step quotes from). Reading the
+                            // product row directly let the charged amount drift from the
+                            // quote (e.g. product $29 vs module_pricing $10).
+                            $modulePricing = DB::table('module_pricing')
+                                ->whereIn('module_code', $productModules)
                                 ->where('is_active', true)
                                 ->get()
                                 ->keyBy('module_code');
@@ -556,9 +579,10 @@ class RegistrationController extends Controller
                                     continue;
                                 }
 
+                                $mp = $modulePricing->get($moduleCode);
                                 $moduleAmount = $billingCycle === 'yearly'
-                                    ? $product->yearly_price
-                                    : $product->monthly_price;
+                                    ? ($mp->yearly_price ?? $product->yearly_price)
+                                    : ($mp->monthly_price ?? $product->monthly_price);
 
                                 ProductSubscription::create([
                                     'tenant_id' => $tenant->id,
@@ -580,8 +604,9 @@ class RegistrationController extends Controller
                 return $tenant;
             });
 
-            // Dispatch async provisioning job AFTER transaction commits
-            // Admin will be created after provisioning on tenant domain
+            // Dispatch async provisioning job AFTER transaction commits.
+            // ProvisionTenant pre-creates the tenant admin (verified email, no usable
+            // password) and emails a secure password-set link — no admin-setup step.
             ProvisionTenant::dispatch($tenant)->afterCommit();
 
             $tenant->update([

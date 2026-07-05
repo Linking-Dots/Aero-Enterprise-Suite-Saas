@@ -137,7 +137,7 @@ class EnforceTenantQuotas
             'error' => 'Quota Exceeded',
             'message' => $message,
             'quota_type' => $quotaType,
-            'upgrade_url' => route('billing.plans'),
+            'upgrade_url' => '/subscription/plans',
         ], 402); // 402 Payment Required
     }
 }

@@ -21,13 +21,21 @@
         <env name="APP_KEY" value="base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10="/>
         <!-- Production-faithful: the platform suite runs on real MySQL (not SQLite)
              so FK constraints, migration DDL and the central connection behave
-             exactly as in a live SaaS deployment. -->
+             exactly as in a live SaaS deployment.
+
+             BLAST-RADIUS GUARD (2026-07-04 incident): the suite MUST connect as
+             the restricted `aeos_test` user, whose privileges cover ONLY the
+             aeos_platform_test schema. On 2026-07-02 some test classes escaped
+             the env-based isolation and ran migrate:fresh against the REAL
+             central DB as root, destroying it. With aeos_test, any such escape
+             dies with a permission error instead of data loss. The user is
+             provisioned by tests/bootstrap.php (local) and the CI workflow. -->
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="3306"/>
         <env name="DB_DATABASE" value="aeos_platform_test"/>
-        <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
+        <env name="DB_USERNAME" value="aeos_test"/>
+        <env name="DB_PASSWORD" value="aeos_test"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

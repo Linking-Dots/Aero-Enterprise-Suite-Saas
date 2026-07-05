@@ -51,11 +51,9 @@ export default function StepProvisioning({ tenant = {}, baseDomain = '' }) {
         setPollData(data);
 
         if (data.is_ready) {
-          if (data.needs_admin_setup) {
-            window.location.href = `https://${tenant.subdomain}.${baseDomain}/admin-setup`;
-          } else {
-            router.get(SR.success);
-          }
+          // Admin is pre-created during provisioning + emailed a password-set link;
+          // there is no post-provision admin-setup step. Always show the success page.
+          router.get(SR.success);
           return;
         }
 

@@ -374,8 +374,15 @@ class AdminDashboardService
                     $totalUsed = $this->getDirectorySize($storagePath);
                 }
 
-                // Plan storage limit (from tenant subscription)
-                $totalLimit = $this->getPlanQuota('storage_limit_gb', 5) * 1024 * 1024 * 1024;
+                // Plan storage limit (from tenant subscription). Key is `max_storage_gb`
+                // in the plan `limits` column — the old `storage_limit_gb` key never
+                // matched, so this always fell back to the 5 GB default.
+                // Standalone has no plan: use the deployment's configured cap, or 0 to
+                // signal "no cap" (the widget renders that as unlimited).
+                $limitGb = aero_mode() === 'standalone'
+                    ? (float) config('aero.standalone_storage_limit_gb', 0)
+                    : $this->getPlanQuota('max_storage_gb', 5);
+                $totalLimit = $limitGb * 1024 * 1024 * 1024;
                 $usagePercentage = $totalLimit > 0 ? round(($totalUsed / $totalLimit) * 100, 1) : 0;
 
                 return [
@@ -408,30 +415,48 @@ class AdminDashboardService
     {
         return TenantCache::remember('admin_dashboard.subscription_info', 900, function () {
             try {
+                // Standalone (self-hosted) has no tenant/subscription — presenting the
+                // SaaS "Free plan" defaults there is wrong (dual-mode rule). Surface a
+                // licensed self-hosted identity instead; quotas are uncapped unless the
+                // deployment configures them.
+                if (aero_mode() === 'standalone') {
+                    return [
+                        'plan' => ['name' => 'Self-hosted', 'slug' => 'self-hosted'],
+                        'status' => 'licensed',
+                        'isOnTrial' => false,
+                        'trialEndsAt' => null,
+                        'expiresAt' => null,
+                        'daysRemaining' => null,
+                        'quotaUsage' => $this->getQuotaUsage(),
+                    ];
+                }
+
                 $tenant = tenant();
                 if (! $tenant) {
                     return $this->defaultSubscriptionInfo();
                 }
 
-                $plan = null;
-                $subscription = null;
+                // Authoritative source: the tenant's current (active OR trialing)
+                // subscription — the same one the Subscription & Billing page reads.
+                // Reading `$tenant->plan`/`subscription('default')` was unreliable
+                // (attribute vs method, and a trial-only tenant resolved to null),
+                // which showed "Free" on the dashboard while billing showed the plan.
+                $subscription = $tenant->currentSubscription;
+                $plan = $subscription?->plan;
 
-                if (method_exists($tenant, 'subscription')) {
-                    $subscription = $tenant->subscription;
-                }
-                if (method_exists($tenant, 'plan')) {
-                    $plan = $tenant->plan;
-                }
-
-                $isOnTrial = false;
-                $trialEndsAt = null;
-                if (method_exists($tenant, 'onTrial')) {
-                    $isOnTrial = $tenant->onTrial();
-                }
-                $trialEndsAt = $tenant->subscription('default')?->trial_ends_at;
+                $trialEndsAt = $subscription?->trial_ends_at;
+                // Derive trial state from the subscription we already have — the model
+                // method is isOnTrial() (not onTrial), so the old method_exists('onTrial')
+                // guard was always false and the dashboard never showed the trial state.
+                $isOnTrial = $subscription
+                    && ($subscription->status === 'trialing' || ($trialEndsAt?->isFuture() ?? false));
 
                 $expiresAt = $subscription?->ends_at ?? $trialEndsAt;
-                $daysRemaining = $expiresAt ? now()->diffInDays(Carbon::parse($expiresAt), false) : null;
+                // Whole days (diffInDays returns a float, e.g. 13.9) so the widget
+                // renders "13 days remaining", not "13.913914… days remaining".
+                $daysRemaining = $expiresAt
+                    ? max(0, (int) floor(now()->diffInDays(Carbon::parse($expiresAt), false)))
+                    : null;
 
                 return [
                     'plan' => $plan ? [
@@ -886,10 +911,17 @@ class AdminDashboardService
     protected function getPlanQuota(string $key, mixed $default = null): mixed
     {
         try {
-            $tenant = tenant();
-            if ($tenant && method_exists($tenant, 'plan')) {
-                $plan = $tenant->plan;
-                if ($plan && isset($plan->features[$key])) {
+            // `plan` is a magic attribute (getPlanAttribute → currentSubscription->plan),
+            // NOT a method — method_exists() is always false and silently dropped the
+            // plan's quota, defaulting every limit to "unlimited"/free values.
+            // Quota caps live in the `limits` column (max_users, max_storage_gb);
+            // `features` holds capability flags. Check limits first, then features.
+            $plan = tenant()?->plan;
+            if ($plan) {
+                if (isset($plan->limits[$key])) {
+                    return $plan->limits[$key];
+                }
+                if (isset($plan->features[$key])) {
                     return $plan->features[$key];
                 }
             }

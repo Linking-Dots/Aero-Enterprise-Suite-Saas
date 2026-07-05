@@ -479,8 +479,9 @@ class ModuleAccessService
             return false;
         }
 
-        // For now, if module is allowed, all its children are allowed
-        // In the future, plan_module pivot can include submodule/component restrictions
+        // For now, if module is allowed, all its children are allowed.
+        // Finer submodule/component restrictions would live on the product
+        // subscription's metadata (plans carry no modules).
         return true;
     }
 

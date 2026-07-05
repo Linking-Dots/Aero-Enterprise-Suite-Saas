@@ -60,15 +60,27 @@ export function StoragePlanWidget({
     const loading = storageLoading || subLoading;
     const error   = storageError;
 
-    const usedBytes  = storage?.usedBytes  ?? 0;
-    const totalBytes = storage?.totalBytes ?? 1;
-    const usedPct    = Math.round((usedBytes / totalBytes) * 100);
+    // Self-hosted (standalone) deployments have a license, not a subscription:
+    // quotas are uncapped unless configured (service signals "no cap" via
+    // totalBytes=0 / a non-numeric seat limit).
+    const selfHosted = sub?.plan?.slug === 'self-hosted';
+
+    // Plan/subscription framing is meaningless on a self-hosted install — storage
+    // and license details live under System Health / License Management. Skip the
+    // widget entirely rather than render subscription noise (dual-mode rule).
+    if (selfHosted) return null;
+
+    const usedBytes   = storage?.usedBytes  ?? 0;
+    const totalBytes  = storage?.totalBytes ?? 1;
+    const storageCapped = totalBytes > 0;
+    const usedPct     = storageCapped ? Math.round((usedBytes / totalBytes) * 100) : 0;
 
     // Service shape: subscriptionInfo.quotaUsage.users = { used, limit }.
     const usedSeats  = sub?.quotaUsage?.users?.used ?? 0;
     const seatLimit  = sub?.quotaUsage?.users?.limit;
-    const totalSeats = (typeof seatLimit === 'number' && seatLimit > 0) ? seatLimit : 100;
-    const seatPct    = Math.round((usedSeats / totalSeats) * 100);
+    const seatsCapped = typeof seatLimit === 'number' && seatLimit > 0;
+    const totalSeats = seatsCapped ? seatLimit : 100;
+    const seatPct    = seatsCapped ? Math.round((usedSeats / totalSeats) * 100) : 0;
 
     const isOnTrial  = sub?.isOnTrial   ?? false;
     const daysLeft   = sub?.daysRemaining ?? null;
@@ -84,7 +96,7 @@ export function StoragePlanWidget({
                 <HStack gap={2} align="center">
                     <VStack gap={0}>
                         <Eyebrow tone="primary">Storage &amp; plan</Eyebrow>
-                        <Text size="sm" tone="secondary">Quota and subscription</Text>
+                        <Text size="sm" tone="secondary">{selfHosted ? 'Quota and license' : 'Quota and subscription'}</Text>
                     </VStack>
                     <Box grow />
                     {planName && (
@@ -106,12 +118,12 @@ export function StoragePlanWidget({
                         <MetricMini
                             label="Storage used"
                             value={formatBytes(usedBytes)}
-                            sub={`of ${formatBytes(totalBytes)}`}
+                            sub={storageCapped ? `of ${formatBytes(totalBytes)}` : 'no cap'}
                         />
                         <MetricMini
                             label="User seats"
                             value={usedSeats.toLocaleString()}
-                            sub={`of ${totalSeats.toLocaleString()}`}
+                            sub={seatsCapped ? `of ${totalSeats.toLocaleString()}` : 'unlimited'}
                         />
                     </HStack>
 

@@ -27,6 +27,7 @@ class BenefitsFeatureTest extends TestCase
     {
         return [
             ServiceProvider::class,
+            \Aero\Auth\AeroAuthServiceProvider::class,
             AeroCoreServiceProvider::class,
             HRMACServiceProvider::class,
             AeroHrmServiceProvider::class,

@@ -50,17 +50,9 @@ class PlanCanonicalService
             'features' => $this->normalizeArray($plan->features),
             'limits' => $this->resolveLimitsMap($plan, $quotas),
             'quotas' => $quotas,
-            'modules' => $plan->relationLoaded('modules')
-                ? $plan->modules->map(function ($module) {
-                    return [
-                        'id' => $module->id,
-                        'code' => $module->code,
-                        'name' => $module->name,
-                        'description' => $module->description ?? null,
-                        'is_core' => (bool) ($module->is_core ?? false),
-                    ];
-                })->values()->all()
-                : [],
+            // Plans carry no modules — modules are sold via products
+            // (plan/product subscription split). Kept for DTO shape stability.
+            'modules' => [],
         ];
     }
 

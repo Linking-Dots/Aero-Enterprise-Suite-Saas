@@ -6,9 +6,7 @@ namespace Aero\Platform\Widgets;
 
 use Aero\Platform\Contracts\AbstractPlatformWidget;
 use Aero\Platform\Contracts\PlatformWidgetCategory;
-use Aero\Platform\Models\Plan;
-use Aero\Platform\Models\Subscription;
-use Illuminate\Support\Collection;
+use Aero\Platform\Models\ProductSubscription;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -84,28 +82,20 @@ class ModuleUsageWidget extends AbstractPlatformWidget
     protected function calculateModuleUsage(): array
     {
         $modules = $this->getModuleList();
-        $planModuleAccess = $this->getPlanModuleAccess();
-        $activeSubscriptions = $this->getActiveSubscriptionsByPlan();
 
-        // Calculate module usage based on plan access and active subscriptions
+        // Modules are carried by products: count distinct tenants holding an
+        // active product subscription per module code.
+        $tenantsByModule = $this->getActiveTenantsByModule();
+
         $moduleUsage = [];
 
         foreach ($modules as $code => $module) {
-            $tenantCount = 0;
-
-            // Count tenants that have access to this module through their plan
-            foreach ($planModuleAccess as $planId => $accessibleModules) {
-                if (in_array($code, $accessibleModules)) {
-                    $tenantCount += $activeSubscriptions[$planId] ?? 0;
-                }
-            }
-
             $moduleUsage[] = [
                 'code' => $code,
                 'name' => $module['name'],
                 'icon' => $module['icon'],
                 'color' => $module['color'],
-                'activeCount' => $tenantCount,
+                'activeCount' => $tenantsByModule[$code] ?? 0,
                 'status' => $module['status'] ?? 'active',
             ];
         }
@@ -114,7 +104,9 @@ class ModuleUsageWidget extends AbstractPlatformWidget
         usort($moduleUsage, fn ($a, $b) => $b['activeCount'] <=> $a['activeCount']);
 
         // Get total active tenants for percentage calculation
-        $totalActiveTenants = array_sum($activeSubscriptions);
+        $totalActiveTenants = ProductSubscription::query()->hasAccess()
+            ->distinct('tenant_id')
+            ->count('tenant_id');
 
         return [
             'modules' => $moduleUsage,
@@ -208,65 +200,26 @@ class ModuleUsageWidget extends AbstractPlatformWidget
     }
 
     /**
-     * Get module access by plan.
+     * Distinct active-tenant counts per module code, from product subscriptions.
+     *
+     * @return array<string, int>
      */
-    protected function getPlanModuleAccess(): array
+    protected function getActiveTenantsByModule(): array
     {
-        $planModules = [];
-
         try {
-            // Check if plan_modules table exists
-            if (\Schema::hasTable('plan_modules')) {
-                $access = DB::table('plan_modules')
-                    ->select('plan_id', 'module_code')
-                    ->where('is_enabled', true)
-                    ->get();
-
-                foreach ($access as $row) {
-                    if (! isset($planModules[$row->plan_id])) {
-                        $planModules[$row->plan_id] = [];
-                    }
-                    $planModules[$row->plan_id][] = $row->module_code;
-                }
-
-                return $planModules;
-            }
-
-            // Fallback - get from plan's modules relationship
-            $plans = Plan::with('modules')->get();
-
-            foreach ($plans as $plan) {
-                // Handle as a relationship collection
-                $modules = $plan->modules;
-                if ($modules instanceof Collection || $modules instanceof \Illuminate\Database\Eloquent\Collection) {
-                    $planModules[$plan->id] = $modules->pluck('code')->toArray();
-                } elseif (is_string($modules)) {
-                    // Legacy JSON fallback
-                    $decoded = json_decode($modules, true) ?? [];
-                    $planModules[$plan->id] = is_array($decoded) ? array_keys($decoded) : [];
-                } elseif (is_array($modules)) {
-                    $planModules[$plan->id] = array_keys($modules);
-                } else {
-                    $planModules[$plan->id] = [];
-                }
-            }
+            return ProductSubscription::query()->hasAccess()
+                ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
+                ->select(
+                    'products.module_code',
+                    DB::raw('COUNT(DISTINCT product_subscriptions.tenant_id) as tenants')
+                )
+                ->groupBy('products.module_code')
+                ->pluck('tenants', 'module_code')
+                ->map(fn ($v) => (int) $v)
+                ->all();
         } catch (\Exception $e) {
-            // Return empty if tables don't exist
+            // Return empty if tables don't exist (e.g. standalone mode)
+            return [];
         }
-
-        return $planModules;
-    }
-
-    /**
-     * Get count of active subscriptions by plan.
-     */
-    protected function getActiveSubscriptionsByPlan(): array
-    {
-        return Subscription::query()
-            ->where('status', Subscription::STATUS_ACTIVE)
-            ->groupBy('plan_id')
-            ->selectRaw('plan_id, COUNT(*) as count')
-            ->pluck('count', 'plan_id')
-            ->toArray();
     }
 }

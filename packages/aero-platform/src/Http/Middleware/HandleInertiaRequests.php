@@ -220,7 +220,7 @@ class HandleInertiaRequests extends Middleware
                 'subdomain' => tenant('subdomain'),
                 'status' => tenant('status'),
                 'onTrial' => tenant()?->isOnTrial() ?? false,
-                'trialEndsAt' => tenant()->subscription('default')?->trial_ends_at,
+                'trialEndsAt' => tenant()?->subscription('default')?->trial_ends_at,
             ],
             'app' => [
                 'name' => $companyName,
@@ -511,13 +511,21 @@ class HandleInertiaRequests extends Middleware
 
     protected function getModuleHierarchy(): array
     {
-        return TenantCache::remember('frontend_module_hierarchy', 600, function () {
-            return Module::active()->ordered()
-                ->with(['subModules' => fn ($q) => $q->active()->ordered()->with(['components' => fn ($q) => $q->active()->with('actions')])])
-                ->get()
-                ->map(fn ($m) => $this->transformModuleForHierarchy($m))
-                ->toArray();
-        });
+        try {
+            return TenantCache::remember('frontend_module_hierarchy', 600, function () {
+                return Module::active()->ordered()
+                    ->with(['subModules' => fn ($q) => $q->active()->ordered()->with(['components' => fn ($q) => $q->active()->with('actions')])])
+                    ->get()
+                    ->map(fn ($m) => $this->transformModuleForHierarchy($m))
+                    ->toArray();
+            });
+        } catch (\Throwable) {
+            // The HRMAC Module registry requires a valid HRMAC context (established
+            // after auth). On unauthenticated pages (login/register/reset-password)
+            // it isn't, so a cold cache would 500 this shared Inertia prop. Empty is
+            // the safe fallback — those pages don't render the module nav.
+            return [];
+        }
     }
 
     private function transformModuleForHierarchy($module): array
@@ -558,8 +566,14 @@ class HandleInertiaRequests extends Middleware
 
     protected function getAllModules(): array
     {
-        return TenantCache::remember('all_modules', 3600, fn () => Module::active()->ordered()->get(['id', 'code', 'name', 'description', 'icon', 'category', 'is_core'])->toArray()
-        );
+        try {
+            return TenantCache::remember('all_modules', 3600, fn () => Module::active()->ordered()->get(['id', 'code', 'name', 'description', 'icon', 'category', 'is_core'])->toArray()
+            );
+        } catch (\Throwable) {
+            // See getModuleHierarchy(): the Module registry needs a valid HRMAC
+            // context; return empty on unauthenticated pages instead of 500ing.
+            return [];
+        }
     }
 
     protected function getTenantSubscribedModules(): array
@@ -868,7 +882,10 @@ class HandleInertiaRequests extends Middleware
             return null;
         }
 
-        $upgradeUrl = route('billing.plans');
+        // Tenant-domain-relative path (matches the Subscription hub's own links);
+        // the named route `core.subscription.plans` requires the {tenant} domain
+        // param and `billing.plans` does not exist.
+        $upgradeUrl = '/subscription/plans';
 
         // 1. Already expired — hard block.
         if ($subscription->status === Subscription::STATUS_EXPIRED) {

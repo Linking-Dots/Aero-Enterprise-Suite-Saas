@@ -250,10 +250,19 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      */
     public function currentSubscription(): MorphOne
     {
+        // A trialing subscription is a live subscription — it has a real plan and the
+        // tenant is on it. Filtering to status='active' only made every accessor that
+        // derives from this (getPlanAttribute, dashboard, HandleInertiaRequests, admin)
+        // fall back to "Free" for the entire trial window, diverging from the billing
+        // hub which reads active+trialing. Include both so the plan is consistent
+        // everywhere (landing, provisioning, admin, dashboard, tenant).
         return $this->morphOne(Subscription::class, 'billable')
             ->ofMany(
                 ['created_at' => 'max'],
-                fn ($query) => $query->where('status', 'active')
+                fn ($query) => $query->whereIn('status', [
+                    Subscription::STATUS_ACTIVE,
+                    Subscription::STATUS_TRIALING,
+                ])
             );
     }
 
@@ -412,7 +421,17 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      */
     public function isOnTrial(): bool
     {
-        return $this->subscription('default')?->trial_ends_at?->isFuture() ?? false;
+        // Use the reliable currentSubscription accessor (subscription('default') is
+        // unreliable and returned null). A trialing status OR a future trial end
+        // both mean the tenant is on trial.
+        $sub = $this->currentSubscription;
+
+        if (! $sub) {
+            return false;
+        }
+
+        return $sub->status === Subscription::STATUS_TRIALING
+            || ($sub->trial_ends_at?->isFuture() ?? false);
     }
 
     /**

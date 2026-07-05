@@ -20,8 +20,6 @@ class HrmDemoSeeder extends Seeder
             HrmDisciplinaryActionTypeSeeder::class,
             HrmShiftScheduleSeeder::class,
             HrmSkillSeeder::class,
-            HrmGradeSeeder::class,
-            HrmSalaryComponentSeeder::class,
         ]);
     }
 }

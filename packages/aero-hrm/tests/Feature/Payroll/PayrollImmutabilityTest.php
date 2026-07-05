@@ -24,6 +24,7 @@ class PayrollImmutabilityTest extends TestCase
     {
         return [
             \Inertia\ServiceProvider::class,
+            \Aero\Auth\AeroAuthServiceProvider::class,
             AeroCoreServiceProvider::class,
             HRMACServiceProvider::class,
             AeroHrmServiceProvider::class,

@@ -6,6 +6,7 @@ namespace Aero\HRM\Http\Controllers\Leave;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\HRM\Http\Controllers\Concerns\ProvidesLeaveRailStats;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Http\Requests\Leave\LeaveTypeRequest;
 use Aero\HRM\Models\LeaveType;
@@ -15,6 +16,8 @@ use Inertia\Response;
 
 class LeaveTypeController extends Controller
 {
+    use ProvidesLeaveRailStats;
+
     public function __construct(private readonly AuditServiceInterface $audit) {}
 
     public function index(): Response
@@ -23,6 +26,11 @@ class LeaveTypeController extends Controller
 
         return Inertia::render('HRM/Leave/Types/Index', [
             'types' => LeaveType::query()->orderBy('name')->paginate(20),
+            'stats' => $this->leaveRailStats() + [
+                'types_total'  => LeaveType::count(),
+                'types_active' => LeaveType::where('is_active', true)->count(),
+                'types_paid'   => LeaveType::where('is_paid', true)->count(),
+            ],
         ]);
     }
 

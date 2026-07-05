@@ -6,6 +6,7 @@ namespace Aero\HRM\Http\Controllers\Payroll;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\HRM\Http\Controllers\Concerns\ProvidesPayrollRailStats;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\TaxBracket;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,8 @@ use Inertia\Response;
 
 class TaxSettingController extends Controller
 {
+    use ProvidesPayrollRailStats;
+
     public function __construct(private readonly AuditServiceInterface $audit) {}
 
     public function index(): Response
@@ -31,15 +34,24 @@ class TaxSettingController extends Controller
             ->map(fn (TaxBracket $b) => [
                 'id' => $b->id,
                 'country_code' => $b->country_code,
-                'income_from' => $b->income_from,
-                'income_to' => $b->income_to,
-                'rate' => $b->rate,
+                'income_from' => (float) $b->income_from,
+                'income_to' => $b->income_to !== null ? (float) $b->income_to : null,
+                'rate' => (float) $b->rate,
                 'effective_year' => $b->effective_year,
             ]);
+
+        $defaultCountry = TaxBracket::where('effective_year', $year)->value('country_code')
+            ?? TaxBracket::value('country_code')
+            ?? 'US';
 
         return Inertia::render('HRM/Payroll/Settings/Tax', [
             'brackets' => $brackets,
             'currentYear' => $year,
+            'defaultCountry' => $defaultCountry,
+            'stats' => $this->payrollRailStats() + [
+                'brackets_total' => $brackets->count(),
+                'top_rate'       => (float) ($brackets->max('rate') ?? 0),
+            ],
         ]);
     }
 
@@ -78,6 +90,27 @@ class TaxSettingController extends Controller
                 description: 'Tax brackets updated: '.count($data['brackets']).' bracket(s).',
                 after: ['count' => count($data['brackets'])],
             );
+        });
+
+        return back();
+    }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        Gate::authorize('hrmac', 'hrm.payroll.tax-setup.manage');
+
+        // Tenant route-model binding is broken app-wide; resolve manually.
+        $bracket = TaxBracket::findOrFail($request->route('bracket'));
+
+        DB::transaction(function () use ($bracket): void {
+            $this->audit->log(
+                event: AuditEventType::RECORD_DELETED->value,
+                action: 'deleted',
+                subject: $bracket,
+                description: "Tax bracket {$bracket->country_code} @ ".number_format((float) $bracket->rate * 100, 2).'% deleted.',
+            );
+
+            $bracket->delete();
         });
 
         return back();

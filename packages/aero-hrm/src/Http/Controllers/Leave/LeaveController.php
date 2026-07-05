@@ -84,14 +84,6 @@ class LeaveController extends Controller
         ]);
     }
 
-    public function index2(): \Inertia\Response
-    {
-        return Inertia::render('HRM/LeavesAdmin', [
-            'title' => 'Leaves',
-            'allUsers' => $this->userModel()::all(),
-        ]);
-    }
-
     public function paginate(Request $request): \Illuminate\Http\JsonResponse
     {
         try {

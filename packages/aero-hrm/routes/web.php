@@ -46,7 +46,6 @@ use Aero\HRM\Http\Controllers\Employee\HrAnalyticsController;
 use Aero\HRM\Http\Controllers\Employee\HrDocumentController;
 use Aero\HRM\Http\Controllers\Employee\ManagersController;
 use Aero\HRM\Http\Controllers\Employee\OnboardingController;
-use Aero\HRM\Http\Controllers\Employee\PayrollController;
 use Aero\HRM\Http\Controllers\Employee\ProfileController;
 use Aero\HRM\Http\Controllers\Employee\ProfileImageController;
 use Aero\HRM\Http\Controllers\Employee\SalaryStructureController;
@@ -839,7 +838,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Leave management routes
     Route::middleware(['hrmac:hrm.time-off'])->group(function () {
-        Route::get('/leaves', [LeaveController::class, 'index2'])->name('leaves');
         Route::get('/leave-summary', [LeaveController::class, 'leaveSummary'])->name('leave-summary');
         Route::post('/leave-update-status', [LeaveController::class, 'updateStatus'])->name('leave-update-status');
 
@@ -1568,6 +1566,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/tax', [PayrollTaxSettingController::class, 'store'])
             ->middleware('hrmac:hrm.payroll.tax-setup.manage')
             ->name('tax.store');
+        Route::delete('/tax/{bracket}', [PayrollTaxSettingController::class, 'destroy'])
+            ->middleware('hrmac:hrm.payroll.tax-setup.manage')
+            ->name('tax.destroy');
     });
 
     // =========================================================================

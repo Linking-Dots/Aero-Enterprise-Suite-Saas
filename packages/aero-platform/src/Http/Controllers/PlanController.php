@@ -30,9 +30,7 @@ class PlanController extends Controller
         $shouldPaginate = $perPageParam !== null && $perPageParam !== 'all';
         $perPage = $shouldPaginate ? max((int) $perPageParam, 1) : null;
 
-        $query = Plan::with(['modules' => function ($query) {
-            $query->select('modules.id', 'modules.code', 'modules.name', 'modules.is_core');
-        }, 'planQuotas']);
+        $query = Plan::with(['planQuotas']);
 
         $search = $request->input('search');
         if (is_string($search) && $search !== '') {
@@ -114,10 +112,7 @@ class PlanController extends Controller
     {
         $plans = Plan::where('is_active', true)
             ->where('visibility', 'public')
-            ->with(['modules' => function ($query) {
-                $query->where('is_public', true)
-                    ->select('modules.id', 'modules.code', 'modules.name', 'modules.description');
-            }, 'planQuotas'])
+            ->with(['planQuotas'])
             ->orderBy('sort_order')
             ->get()
             ->map(function (Plan $plan) {
@@ -146,7 +141,7 @@ class PlanController extends Controller
      */
     public function show(Plan $plan): JsonResponse
     {
-        $plan->load(['modules', 'planQuotas']);
+        $plan->load(['planQuotas']);
 
         return response()->json([
             'success' => true,
@@ -182,7 +177,7 @@ class PlanController extends Controller
 
         return response()->json([
             'success' => true,
-            'plan' => $this->planCanonicalService->toDto($plan->load(['modules', 'planQuotas'])),
+            'plan' => $this->planCanonicalService->toDto($plan->load(['planQuotas'])),
             'message' => 'Plan created successfully.',
         ], 201);
     }

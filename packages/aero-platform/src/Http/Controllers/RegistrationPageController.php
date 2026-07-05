@@ -289,26 +289,21 @@ class RegistrationPageController extends Controller
     /**
      * API endpoint to check provisioning status.
      *
-     * Called by the frontend to poll for status updates.
-     * Redirects to admin-setup page instead of login when ready.
+     * Called by the frontend to poll for status updates. Always lands the owner
+     * on /login once ready — the tenant admin is pre-created during provisioning
+     * (bound to the verified signup email, no usable password) and emailed a
+     * single-use password-set link. There is NO post-provisioning admin-setup
+     * step: that public page is a tenant-takeover risk, so we never route to it.
      */
     public function provisioningStatus(Tenant $tenant): JsonResponse
     {
         $baseDomain = config('platform.central_domain');
         $domain = sprintf('%s.%s', $tenant->subdomain, $baseDomain);
 
-        // Check if tenant has already completed admin setup
-        $adminSetupCompleted = $tenant->isAdminSetupComplete();
-
-        // Determine redirect URL based on admin setup status
         $redirectUrl = null;
         if ($tenant->status === Tenant::STATUS_ACTIVE) {
             $scheme = request()->secure() ? 'https' : 'http';
-            // If admin setup is not complete, redirect to admin-setup page
-            // Otherwise redirect to login
-            $redirectUrl = $adminSetupCompleted
-                ? sprintf('%s://%s/login', $scheme, $domain)
-                : sprintf('%s://%s/admin-setup', $scheme, $domain);
+            $redirectUrl = sprintf('%s://%s/login', $scheme, $domain);
         }
 
         return response()->json([
@@ -323,7 +318,9 @@ class RegistrationPageController extends Controller
                 ? ($tenant->data['provisioning_error'] ?? 'Provisioning failed')
                 : null,
             'login_url' => $redirectUrl,
-            'needs_admin_setup' => ! $adminSetupCompleted,
+            // Admin is created during provisioning; there is never a post-provision
+            // admin-setup step (kept in the payload for backward compatibility).
+            'needs_admin_setup' => false,
         ]);
     }
 

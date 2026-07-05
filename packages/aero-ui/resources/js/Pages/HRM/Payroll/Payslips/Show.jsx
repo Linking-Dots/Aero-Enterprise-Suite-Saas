@@ -1,13 +1,16 @@
 import { router } from '@inertiajs/react';
 import App from '@/Pages/App.jsx';
 import {
-  VStack, HStack, Box, Text, Mono, Eyebrow, Button, Badge, Card, DataTable,
+  VStack, HStack, Box, Text, Mono, Eyebrow, Button, Badge, Card, DataTable, Avatar,
 } from '@aero/ui';
+
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 export default function PayslipsShow({ payslip }) {
   const snap   = payslip.employee_snapshot ?? {};
-  const run    = payslip.run ?? {};
-  const name   = `${snap.first_name ?? ''} ${snap.last_name ?? ''}`.trim();
+  const name   = payslip.employee_name || snap.name || 'Employee';
+  const runId  = payslip.payroll_run_id;
   const acct   = payslip.bank_account_number ?? '';
   const masked = acct.length > 4 ? `••••${acct.slice(-4)}` : acct;
 
@@ -38,17 +41,20 @@ export default function PayslipsShow({ payslip }) {
       <VStack gap={6}>
         {/* Header */}
         <div className="payslip-header">
-          <HStack gap={2} align="center">
+          <HStack gap={3} align="center">
+            <Avatar name={name} size={40} />
             <Box grow>
               <VStack gap={1}>
-                <Eyebrow>Payslip</Eyebrow>
-                <Text size="lg">{name || 'Employee'}</Text>
+                <Eyebrow>Payslip{payslip.run_label ? ` · ${payslip.run_label}` : ''}</Eyebrow>
+                <Text size="lg">{name}</Text>
                 <HStack gap={2}>
-                  <Text tone="secondary">{snap.designation}</Text>
-                  {snap.department && (
+                  {snap.designation && <Text tone="secondary">{snap.designation}</Text>}
+                  {snap.designation && snap.department && <Text tone="tertiary">&middot;</Text>}
+                  {snap.department && <Text tone="secondary">{snap.department}</Text>}
+                  {payslip.employee_code && (
                     <>
                       <Text tone="tertiary">&middot;</Text>
-                      <Text tone="secondary">{snap.department}</Text>
+                      <Mono>{payslip.employee_code}</Mono>
                     </>
                   )}
                 </HStack>
@@ -66,7 +72,7 @@ export default function PayslipsShow({ payslip }) {
               <Button
                 intent="ghost"
                 leftIcon="arrowLeft"
-                onClick={() => router.get(route('hrm.payroll.runs.show', run.id ?? payslip.run_id))}
+                onClick={() => router.get(route('hrm.payroll.runs.show', runId))}
               >
                 Back
               </Button>
@@ -79,7 +85,7 @@ export default function PayslipsShow({ payslip }) {
           <div className="payslip-meta-grid">
             <div>
               <Eyebrow tone="secondary">Period</Eyebrow>
-              <Mono>{run.period_start} &rarr; {run.period_end}</Mono>
+              <Text>{fmtDate(payslip.period_start)} &rarr; {fmtDate(payslip.period_end)}</Text>
             </div>
             <div>
               <Eyebrow tone="secondary">Gross Pay</Eyebrow>

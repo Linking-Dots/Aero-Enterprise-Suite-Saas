@@ -6,6 +6,7 @@ namespace Aero\HRM\Http\Controllers\Payroll;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\HRM\Http\Controllers\Concerns\ProvidesPayrollRailStats;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\PayComponent;
 use Aero\HRM\Models\SalaryStructure;
@@ -19,6 +20,8 @@ use Inertia\Response;
 
 class SalaryStructureController extends Controller
 {
+    use ProvidesPayrollRailStats;
+
     public function __construct(private readonly AuditServiceInterface $audit) {}
 
     public function index(): Response
@@ -30,14 +33,19 @@ class SalaryStructureController extends Controller
             ->paginate(20)
             ->withQueryString()
             ->through(fn (SalaryStructure $s) => [
-                'id'     => $s->id,
-                'name'   => $s->name,
-                'basic'  => $s->basic,
-                'active' => $s->active,
+                'id'         => $s->id,
+                'name'       => $s->name,
+                'basic'      => (float) $s->basic,
+                'components' => count($s->component_ids ?? []),
+                'active'     => $s->active,
             ]);
 
         return Inertia::render('HRM/Payroll/Structures/Index', [
             'structures' => $structures,
+            'stats' => $this->payrollRailStats() + [
+                'structures_total'  => SalaryStructure::count(),
+                'structures_active' => SalaryStructure::where('active', true)->count(),
+            ],
         ]);
     }
 

@@ -2,10 +2,11 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
-  IndexPageLayout, DataTable, Button, HStack, Badge, Pagination, Modal, Text,
+  IndexPageLayout, DataTable, Button, HStack, Badge, Pagination, Modal, Text, Stat,
 } from '@aero/ui';
+import PayrollRail from '../PayrollRail.jsx';
 
-export default function StructuresIndex({ structures }) {
+export default function StructuresIndex({ structures, stats }) {
   const [confirmId,   setConfirmId]   = useState(null);
   const [confirmName, setConfirmName] = useState('');
 
@@ -30,7 +31,7 @@ export default function StructuresIndex({ structures }) {
     },
     {
       key: 'components', label: 'Components',
-      render: row => (row.component_ids ?? []).length,
+      render: row => row.components ?? 0,
     },
     {
       key: 'active', label: 'Status',
@@ -64,6 +65,11 @@ export default function StructuresIndex({ structures }) {
       <IndexPageLayout
         title="Payroll Structures"
         breadcrumb={[{ label: 'HRM' }, { label: 'Payroll' }, { label: 'Structures' }]}
+        kpis={[
+          <Stat key="total"    title="Structures" value={stats?.structures_total  ?? 0} icon="layout" />,
+          <Stat key="active"   title="Active"     value={stats?.structures_active ?? 0} icon="checkCircle" iconTone="success" />,
+          <Stat key="inactive" title="Inactive"   value={Math.max(0, (stats?.structures_total ?? 0) - (stats?.structures_active ?? 0))} icon="minus" iconTone="amber" />,
+        ]}
         actions={
           <Button intent="primary" onClick={() => router.get(route('hrm.payroll.structures.create'))}>
             New Structure
@@ -108,4 +114,6 @@ export default function StructuresIndex({ structures }) {
   );
 }
 
-StructuresIndex.layout = page => <App title="Payroll Structures">{page}</App>;
+StructuresIndex.layout = page => (
+  <App title="Payroll Structures" railTitle="Payroll" rail={<PayrollRail />}>{page}</App>
+);

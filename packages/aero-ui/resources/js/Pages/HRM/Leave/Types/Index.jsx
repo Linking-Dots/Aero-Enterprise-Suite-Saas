@@ -3,8 +3,9 @@ import { useState } from 'react';
 import App from '@/Pages/App.jsx';
 import {
   IndexPageLayout, DataTable, Button, HStack, VStack, Field, Input, Select,
-  Pagination, Modal, Badge, Toggle, Text,
+  Pagination, Modal, Badge, Toggle, Text, Stat,
 } from '@aero/ui';
+import LeaveRail from '../LeaveRail.jsx';
 
 const EMPTY_FORM = {
   name:               '',
@@ -19,7 +20,7 @@ const EMPTY_FORM = {
   is_active:          true,
 };
 
-export default function LeaveTypesIndex({ types }) {
+export default function LeaveTypesIndex({ types, stats }) {
   const [modalOpen, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -134,6 +135,11 @@ export default function LeaveTypesIndex({ types }) {
       <IndexPageLayout
         title="Leave Types"
         breadcrumb={[{ label: 'HRM' }, { label: 'Leave' }, { label: 'Types' }]}
+        kpis={[
+          <Stat key="total"  title="Leave Types" value={stats?.types_total  ?? 0} icon="folder" />,
+          <Stat key="active" title="Active"      value={stats?.types_active ?? 0} icon="checkCircle" iconTone="success" />,
+          <Stat key="paid"   title="Paid Types"  value={stats?.types_paid   ?? 0} icon="star" iconTone="amber" />,
+        ]}
         actions={
           <Button intent="primary" onClick={openCreate}>
             New Leave Type
@@ -255,4 +261,6 @@ export default function LeaveTypesIndex({ types }) {
   );
 }
 
-LeaveTypesIndex.layout = page => <App title="Leave Types">{page}</App>;
+LeaveTypesIndex.layout = page => (
+  <App title="Leave Types" railTitle="Leave management" rail={<LeaveRail />}>{page}</App>
+);

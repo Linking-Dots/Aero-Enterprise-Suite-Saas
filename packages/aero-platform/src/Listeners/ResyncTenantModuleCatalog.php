@@ -44,6 +44,16 @@ class ResyncTenantModuleCatalog implements ShouldQueue
             return;
         }
 
+        // During registration/provisioning the tenant database does not exist yet,
+        // and the ProvisionTenant job performs the initial module sync from the
+        // tenant's product subscriptions. Attempting to initialize a non-existent
+        // tenant DB here throws (and then `Tenancy::end()` in finally throws a
+        // secondary "Undefined array key" fatal), which would roll back the
+        // registration transaction. Only resync once the tenant is live.
+        if ($tenant->status !== Tenant::STATUS_ACTIVE) {
+            return;
+        }
+
         // Axis C C2 — bust the per-tenant subscribed-modules cache read on every
         // page load by HandleInertiaRequests, so the new catalog is reflected
         // immediately rather than after the 600s TTL.

@@ -4,12 +4,19 @@ namespace Aero\Platform\Http\Controllers;
 
 use Aero\Core\Support\TenantCache;
 use Aero\Platform\Models\Module;
-use Aero\Platform\Models\Plan;
-use Aero\Platform\Models\Subscription;
+use Aero\Platform\Models\Product;
+use Aero\Platform\Models\ProductSubscription;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Module analytics for the platform admin.
+ *
+ * Modules are carried by PRODUCTS (products.module_code), and a tenant's
+ * module access comes from its active product subscriptions. Plans are a
+ * separate subscription and carry no modules.
+ */
 class ModuleAnalyticsController extends Controller
 {
     /**
@@ -21,7 +28,7 @@ class ModuleAnalyticsController extends Controller
             return [
                 'overview' => $this->getOverviewStats(),
                 'module_adoption' => $this->getModuleAdoption(),
-                'plan_distribution' => $this->getPlanDistribution(),
+                'product_distribution' => $this->getProductDistribution(),
                 'trending_modules' => $this->getTrendingModules(),
             ];
         });
@@ -39,53 +46,32 @@ class ModuleAnalyticsController extends Controller
     {
         $totalModules = Module::where('is_active', true)->count();
         $totalTenants = Tenant::whereNotNull('id')->count();
-        $activeSubscriptions = Subscription::where('status', 'active')->count();
-
-        // Calculate average modules per tenant
-        $avgModulesPerTenant = DB::table('subscriptions')
-            ->join('plan_module', 'subscriptions.plan_id', '=', 'plan_module.plan_id')
-            ->where('subscriptions.status', 'active')
-            ->where('subscriptions.billable_type', Tenant::class)
-            ->where('plan_module.is_enabled', true)
-            ->select('subscriptions.billable_id')
-            ->distinct()
-            ->count();
+        $activeSubscriptions = ProductSubscription::query()->hasAccess()->count();
 
         return [
             'total_modules' => $totalModules,
             'total_tenants' => $totalTenants,
             'active_subscriptions' => $activeSubscriptions,
-            'avg_modules_per_tenant' => $totalTenants > 0 ? round($avgModulesPerTenant / $totalTenants, 2) : 0,
+            // Each active product subscription grants exactly one module.
+            'avg_modules_per_tenant' => $totalTenants > 0 ? round($activeSubscriptions / $totalTenants, 2) : 0,
         ];
     }
 
     /**
-     * Get module adoption rates.
+     * Get module adoption rates from active product subscriptions.
      */
     protected function getModuleAdoption(): array
     {
-        $modules = Module::with(['plans.subscriptions' => function ($query) {
-            $query->where('status', 'active');
-        }])->get();
+        $modules = Module::where('is_active', true)->get();
 
-        $totalActiveTenants = Subscription::where('status', 'active')
-            ->where('billable_type', Tenant::class)
-            ->distinct('billable_id')
-            ->count();
+        $tenantsByModule = $this->activeTenantCountsByModuleCode();
 
-        return $modules->map(function ($module) use ($totalActiveTenants) {
-            $activeTenants = $module->plans()
-                ->whereHas('subscriptions', function ($query) {
-                    $query->where('status', 'active');
-                })
-                ->with(['subscriptions' => function ($query) {
-                    $query->where('status', 'active');
-                }])
-                ->get()
-                ->pluck('subscriptions')
-                ->flatten()
-                ->unique('billable_id')
-                ->count();
+        $totalActiveTenants = ProductSubscription::query()->hasAccess()
+            ->distinct('tenant_id')
+            ->count('tenant_id');
+
+        return $modules->map(function ($module) use ($tenantsByModule, $totalActiveTenants) {
+            $activeTenants = $tenantsByModule[$module->code] ?? 0;
 
             return [
                 'id' => $module->id,
@@ -96,64 +82,63 @@ class ModuleAnalyticsController extends Controller
                 'adoption_rate' => $totalActiveTenants > 0
                     ? round(($activeTenants / $totalActiveTenants) * 100, 2)
                     : 0,
-                'total_plans' => $module->plans()->count(),
+                'total_products' => Product::active()->where('module_code', $module->code)->count(),
             ];
         })->sortByDesc('adoption_rate')->values()->all();
     }
 
     /**
-     * Get plan distribution by modules.
+     * Get subscription distribution by product.
      */
-    protected function getPlanDistribution(): array
+    protected function getProductDistribution(): array
     {
-        $plans = Plan::with('modules')->get();
-
-        return $plans->map(function ($plan) {
-            $activeSubscriptions = Subscription::where('plan_id', $plan->id)
-                ->where('status', 'active')
-                ->count();
-
-            return [
-                'id' => $plan->id,
-                'name' => $plan->name,
-                'billing_cycle' => $plan->billing_cycle,
-                'price' => $plan->price,
-                'module_count' => $plan->modules()->count(),
-                'modules' => $plan->modules->pluck('code')->toArray(),
-                'active_subscriptions' => $activeSubscriptions,
-                'revenue' => $activeSubscriptions * ($plan->price ?? 0),
-            ];
-        })->sortByDesc('active_subscriptions')->values()->all();
+        return Product::active()
+            ->withCount(['subscriptions as active_subscriptions' => fn ($q) => $q->hasAccess()])
+            ->get()
+            ->map(function (Product $product) {
+                return [
+                    'id' => $product->id,
+                    'code' => $product->code,
+                    'name' => $product->name,
+                    'module_code' => $product->module_code,
+                    'monthly_price' => $product->monthly_price,
+                    'active_subscriptions' => $product->active_subscriptions,
+                    'revenue' => ProductSubscription::query()->hasAccess()
+                        ->where('product_id', $product->id)
+                        ->sum('amount'),
+                ];
+            })
+            ->sortByDesc('active_subscriptions')
+            ->values()
+            ->all();
     }
 
     /**
-     * Get trending modules (most recently adopted).
+     * Get trending modules (most recently adopted via product subscriptions).
      */
     protected function getTrendingModules(): array
     {
-        // Get modules with recent subscriptions
-        $trendingData = DB::table('subscriptions')
-            ->join('plan_module', 'subscriptions.plan_id', '=', 'plan_module.plan_id')
-            ->join('modules', 'plan_module.module_id', '=', 'modules.id')
-            ->where('subscriptions.status', 'active')
-            ->where('subscriptions.billable_type', Tenant::class)
-            ->where('subscriptions.created_at', '>=', now()->subDays(30))
+        $trendingData = ProductSubscription::query()->hasAccess()
+            ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
+            ->where('product_subscriptions.created_at', '>=', now()->subDays(30))
             ->select(
-                'modules.id',
-                'modules.code',
-                'modules.name',
-                DB::raw('COUNT(DISTINCT subscriptions.billable_id) as new_adoptions')
+                'products.module_code',
+                DB::raw('COUNT(DISTINCT product_subscriptions.tenant_id) as new_adoptions')
             )
-            ->groupBy('modules.id', 'modules.code', 'modules.name')
+            ->groupBy('products.module_code')
             ->orderByDesc('new_adoptions')
             ->limit(10)
             ->get();
 
-        return $trendingData->map(function ($item) {
+        $modules = Module::whereIn('code', $trendingData->pluck('module_code'))->get()->keyBy('code');
+
+        return $trendingData->map(function ($item) use ($modules) {
+            $module = $modules->get($item->module_code);
+
             return [
-                'id' => $item->id,
-                'code' => $item->code,
-                'name' => $item->name,
+                'id' => $module?->id,
+                'code' => $item->module_code,
+                'name' => $module?->name ?? $item->module_code,
                 'new_adoptions' => $item->new_adoptions,
             ];
         })->toArray();
@@ -165,20 +150,14 @@ class ModuleAnalyticsController extends Controller
     public function show(Module $module)
     {
         $analytics = TenantCache::remember("module_analytics_{$module->id}", 300, function () use ($module) {
-            $module->load(['subModules.components.actions', 'plans.subscriptions']);
+            $module->load(['subModules.components.actions']);
 
-            $activeTenants = $module->plans()
-                ->whereHas('subscriptions', function ($query) {
-                    $query->where('status', 'active');
-                })
-                ->with(['subscriptions' => function ($query) {
-                    $query->where('status', 'active');
-                }])
-                ->get()
-                ->pluck('subscriptions')
-                ->flatten()
-                ->unique('billable_id')
-                ->count();
+            $activeTenants = ProductSubscription::query()->hasAccess()
+                ->whereHas('product', fn ($q) => $q->where('module_code', $module->code))
+                ->distinct('tenant_id')
+                ->count('tenant_id');
+
+            $products = Product::where('module_code', $module->code)->get();
 
             return [
                 'module' => [
@@ -202,11 +181,12 @@ class ModuleAnalyticsController extends Controller
                 ],
                 'usage' => [
                     'active_tenants' => $activeTenants,
-                    'total_plans' => $module->plans()->count(),
-                    'plans' => $module->plans->map(fn ($plan) => [
-                        'id' => $plan->id,
-                        'name' => $plan->name,
-                        'active_subscriptions' => $plan->subscriptions()->where('status', 'active')->count(),
+                    'total_products' => $products->count(),
+                    'products' => $products->map(fn (Product $product) => [
+                        'id' => $product->id,
+                        'code' => $product->code,
+                        'name' => $product->name,
+                        'active_subscriptions' => $product->subscriptions()->hasAccess()->count(),
                     ]),
                 ],
             ];
@@ -219,19 +199,19 @@ class ModuleAnalyticsController extends Controller
     }
 
     /**
-     * Get module usage trends over time.
+     * Get module usage trends over time (active product subscriptions per day).
      */
     public function trends(Request $request)
     {
-        $days = $request->input('days', 30);
+        $days = (int) $request->input('days', 30);
 
         $trends = [];
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->subDays($i)->format('Y-m-d');
 
-            $activeSubs = Subscription::where('status', 'active')
+            $activeSubs = ProductSubscription::whereIn('status', ['active', 'trialing'])
                 ->whereDate('created_at', '<=', $date)
-                ->whereDate(function ($query) use ($date) {
+                ->where(function ($query) use ($date) {
                     $query->whereNull('ends_at')
                         ->orWhereDate('ends_at', '>=', $date);
                 })
@@ -247,5 +227,24 @@ class ModuleAnalyticsController extends Controller
             'success' => true,
             'trends' => $trends,
         ]);
+    }
+
+    /**
+     * Active-tenant counts per module code, from active product subscriptions.
+     *
+     * @return array<string, int>
+     */
+    protected function activeTenantCountsByModuleCode(): array
+    {
+        return ProductSubscription::query()->hasAccess()
+            ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
+            ->select(
+                'products.module_code',
+                DB::raw('COUNT(DISTINCT product_subscriptions.tenant_id) as tenants')
+            )
+            ->groupBy('products.module_code')
+            ->pluck('tenants', 'module_code')
+            ->map(fn ($v) => (int) $v)
+            ->all();
     }
 }

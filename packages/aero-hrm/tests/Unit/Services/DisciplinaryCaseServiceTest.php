@@ -1,13 +1,13 @@
 <?php
 
-namespace AeroHRM\Tests\Unit\Services;
+namespace Aero\HRM\Tests\Unit\Services;
 
-use AeroHRM\Models\DisciplinaryActionType;
-use AeroHRM\Models\DisciplinaryCase;
-use AeroHRM\Models\Employee;
-use AeroHRM\Models\Warning;
-use AeroHRM\Services\DisciplinaryCaseService;
-use AeroHRM\Tests\TestCase;
+use Aero\HRM\Models\DisciplinaryActionType;
+use Aero\HRM\Models\DisciplinaryCase;
+use Aero\HRM\Models\Employee;
+use Aero\HRM\Models\Warning;
+use Aero\HRM\Services\DisciplinaryCaseService;
+use Aero\HRM\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DisciplinaryCaseServiceTest extends TestCase

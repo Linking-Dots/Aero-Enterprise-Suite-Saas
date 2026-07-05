@@ -28,6 +28,10 @@ function statusLabel(run) {
 }
 
 const fmtMoney = (v) => Number(v ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+// Compact for the KPI strip: a full 8-digit figure collides with its title in the
+// rail-narrowed row (command shell). The exact figure stays in the rail Overview.
+const fmtMoneyCompact = (v) =>
+  Number(v ?? 0).toLocaleString(undefined, { notation: 'compact', maximumFractionDigits: 1 });
 
 export default function RunsIndex({ runs, filters, stats }) {
   const canExecute = useHRMAC('hrm.payroll.payroll-run.execute');
@@ -84,7 +88,7 @@ export default function RunsIndex({ runs, filters, stats }) {
       kpis={[
         <Stat key="runs"     title="Payroll Runs" value={stats?.total    ?? 0} icon="calendar" />,
         <Stat key="approved" title="Approved"     value={stats?.approved ?? 0} icon="checkCircle" iconTone="success" />,
-        <Stat key="net"      title="Net Paid"     value={fmtMoney(stats?.net_paid)} icon="trending" iconTone="amber" />,
+        <Stat key="net"      title="Net Paid"     value={fmtMoneyCompact(stats?.net_paid)} icon="trending" iconTone="amber" />,
       ]}
       actions={
         <HStack gap={3} align="center">

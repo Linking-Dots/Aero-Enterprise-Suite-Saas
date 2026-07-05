@@ -6,6 +6,7 @@ namespace Aero\HRM\Http\Controllers\Payroll;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\HRM\Http\Controllers\Concerns\ProvidesPayrollRailStats;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\PayComponent;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class PayComponentController extends Controller
 {
+    use ProvidesPayrollRailStats;
+
     public function __construct(private readonly AuditServiceInterface $audit) {}
 
     public function index(): Response
@@ -34,13 +37,18 @@ class PayComponentController extends Controller
                 'name'      => $c->name,
                 'kind'      => $c->kind,
                 'calc_type' => $c->calc_type,
-                'value'     => $c->value,
+                'value'     => (float) $c->value,
                 'taxable'   => $c->taxable,
                 'active'    => $c->active,
             ]);
 
         return Inertia::render('HRM/Payroll/Components/Index', [
             'components' => $components,
+            'stats' => $this->payrollRailStats() + [
+                'components_total'     => PayComponent::count(),
+                'components_earning'   => PayComponent::where('kind', 'earning')->count(),
+                'components_deduction' => PayComponent::where('kind', 'deduction')->count(),
+            ],
         ]);
     }
 

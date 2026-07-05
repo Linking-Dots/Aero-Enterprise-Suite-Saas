@@ -6,6 +6,7 @@ namespace Aero\HRM\Http\Controllers\Payroll;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\HRM\Http\Controllers\Concerns\ProvidesPayrollRailStats;
 use Aero\HRM\Http\Controllers\Controller;
 use Aero\HRM\Models\Employee;
 use Aero\HRM\Models\PayrollRun;
@@ -21,6 +22,8 @@ use Inertia\Response;
 
 class PayrollRunController extends Controller
 {
+    use ProvidesPayrollRailStats;
+
     public function __construct(
         private readonly PayrollRunGenerator $generator,
         private readonly PayrollApprovalService $approvalService,
@@ -140,6 +143,7 @@ class PayrollRunController extends Controller
                 'deductions_total' => $slip->deductions_total,
                 'net'              => $slip->net,
             ]),
+            'stats' => $this->payrollRailStats(),
         ]);
     }
 

@@ -76,7 +76,6 @@ use Aero\Platform\Http\Controllers\ErrorLogController;
 use Aero\Platform\Http\Controllers\Integrations\WebhookController;
 use Aero\Platform\Http\Controllers\ModuleAnalyticsController;
 use Aero\Platform\Http\Controllers\PlanController;
-use Aero\Platform\Http\Controllers\PlanModuleController;
 use Aero\Platform\Http\Controllers\TenantController;
 use Aero\Platform\Http\Middleware\IdentifyDomainContext;
 use Aero\Platform\Models\Enterprise\Region;
@@ -290,7 +289,7 @@ Route::middleware('admin.domain')->group(function () {
 
             // View Plan Details Page
             Route::get('/{plan}', function (Plan $plan) {
-                $plan->load(['modules', 'subscriptions.tenant']);
+                $plan->load(['subscriptions.tenant']);
 
                 return Inertia::render('Platform/Admin/Plans/PlanShow', [
                     'plan' => $plan,
@@ -304,7 +303,6 @@ Route::middleware('admin.domain')->group(function () {
 
             // Edit Plan Page
             Route::get('/{plan}/edit', function (Plan $plan) {
-                $plan->load(['modules']);
 
                 return Inertia::render('Platform/Admin/Plans/PlanForm', [
                     'plan' => $plan,
@@ -323,7 +321,6 @@ Route::middleware('admin.domain')->group(function () {
 
             // Clone Plan Page (pre-fill form with existing plan data)
             Route::get('/{plan}/clone', function (Plan $plan) {
-                $plan->load(['modules']);
                 $cloneData = $plan->replicate();
                 $cloneData->name = $plan->name.' (Copy)';
                 $cloneData->slug = $plan->slug.'-copy';
@@ -358,22 +355,8 @@ Route::middleware('admin.domain')->group(function () {
                 ->middleware(['hrmac:subscriptions.plans.plan-list.update'])
                 ->name('archive');
 
-            // Plan-Module Management API
-            Route::get('/{plan}/modules', [PlanModuleController::class, 'getPlanModules'])
-                ->middleware(['hrmac:subscriptions.plans.plan-list.view'])
-                ->name('modules.index');
-            Route::post('/{plan}/modules', [PlanModuleController::class, 'attachModules'])
-                ->middleware(['hrmac:subscriptions.plans.plan-list.update'])
-                ->name('modules.attach');
-            Route::delete('/{plan}/modules', [PlanModuleController::class, 'detachModules'])
-                ->middleware(['hrmac:subscriptions.plans.plan-list.update'])
-                ->name('modules.detach');
-            Route::put('/{plan}/modules/sync', [PlanModuleController::class, 'syncModules'])
-                ->middleware(['hrmac:subscriptions.plans.plan-list.update'])
-                ->name('modules.sync');
-            Route::put('/{plan}/modules/{module}', [PlanModuleController::class, 'updateModuleConfig'])
-                ->middleware(['hrmac:subscriptions.plans.plan-list.update'])
-                ->name('modules.update');
+            // Plan-Module Management API removed: plans no longer carry modules
+            // (modules are sold via products — see plan/product subscription split).
 
             // Plan Statistics API
             Route::get('/{plan}/stats', [PlanController::class, 'stats'])

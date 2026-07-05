@@ -185,6 +185,23 @@
   color: var(--aeos-text-secondary);
 }
 
+/* Narrow cards (mobile 2-col KPI grid): the icon|body|meta row squeezes the
+   title into a 2-line wrap that collides with the metric. Restack to
+   [icon] [value] on the first row and the title full-width below. */
+@media (max-width: 640px) {
+  .aeos-stat-card {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "icon meta"
+      "body body";
+    align-items: center;
+    row-gap: var(--aeos-space-2);
+  }
+  .aeos-stat-icon { grid-area: icon; }
+  .aeos-stat-meta { grid-area: meta; align-items: flex-end; }
+  .aeos-stat-body { grid-area: body; }
+}
+
 /* ── Progress Bar ─────────────────────────────────────────────── */
 .aeos-progress {
   width: 100%;
@@ -237,6 +254,16 @@
 }
 
 /* ── Data Table Helpers ──────────────────────────────────────── */
+/* Wrapper is the horizontal scroll container: wide tables scroll instead of
+   clipping (the enclosing .aeos-table-section is overflow:hidden for rounded
+   corners, so the scroll must live on the inner wrap). */
+.aeos-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .aeos-table {
   width: 100%;
   border-collapse: collapse;

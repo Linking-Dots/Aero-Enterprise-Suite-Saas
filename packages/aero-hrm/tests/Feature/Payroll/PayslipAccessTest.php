@@ -25,6 +25,7 @@ class PayslipAccessTest extends TestCase
         return [
             \Inertia\ServiceProvider::class,
             \Spatie\Activitylog\ActivitylogServiceProvider::class,
+            \Aero\Auth\AeroAuthServiceProvider::class,
             AeroCoreServiceProvider::class,
             HRMACServiceProvider::class,
             AeroHrmServiceProvider::class,

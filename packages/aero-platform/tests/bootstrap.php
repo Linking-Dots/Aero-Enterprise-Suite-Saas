@@ -38,6 +38,17 @@ $testDb = 'aeos_platform_test';
 try {
     $provisionPdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     $provisionPdo->exec("CREATE DATABASE IF NOT EXISTS `{$testDb}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+    // BLAST-RADIUS GUARD (2026-07-04 incident): the suite itself connects as
+    // `aeos_test`, whose privileges cover ONLY the throwaway schema. Root is
+    // used exclusively here, to provision. If a test class ever escapes the
+    // env-based DB isolation again, it hits a permission error — not the real
+    // central database.
+    foreach (['localhost', '127.0.0.1', '%'] as $host) {
+        $provisionPdo->exec("CREATE USER IF NOT EXISTS 'aeos_test'@'{$host}' IDENTIFIED BY 'aeos_test'");
+        $provisionPdo->exec("GRANT ALL PRIVILEGES ON `{$testDb}`.* TO 'aeos_test'@'{$host}'");
+    }
+    $provisionPdo->exec('FLUSH PRIVILEGES');
     $provisionPdo = null;
 } catch (\Throwable $e) {
     fwrite(STDERR, "Cannot provision MySQL test schema '{$testDb}' on root@127.0.0.1: {$e->getMessage()}\n");

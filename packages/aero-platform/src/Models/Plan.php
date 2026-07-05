@@ -138,17 +138,6 @@ class Plan extends CentralModel
     }
 
     /**
-     * Get all modules included in this plan.
-     */
-    public function modules(): BelongsToMany
-    {
-        return $this->belongsToMany(Module::class, 'plan_module')
-            ->withPivot('limits', 'is_enabled')
-            ->withTimestamps()
-            ->wherePivot('is_enabled', true);
-    }
-
-    /**
      * Get canonical quota rows for this plan.
      */
     public function planQuotas(): HasMany
@@ -322,13 +311,9 @@ class Plan extends CentralModel
     }
 
     /**
-     * Get the count of modules included in this plan.
-     *
-     * DEPRECATED: the plan↔module pivot (`plan_module`) is gone — plans and products
-     * are SEPARATE subscriptions, and modules are carried by products, not plans.
-     * Returns 0 so legacy callers/serializers don't query the dropped table (which
-     * 500'd the tenants admin page). Slated for removal with the full plan_module
-     * deprecation refactor (move module association to product subscriptions).
+     * Plans carry no modules — plans and products are SEPARATE subscriptions,
+     * and modules are carried by products (products.module_code). Kept so
+     * legacy serializers keep a stable shape.
      */
     public function getModulesCountAttribute(): int
     {

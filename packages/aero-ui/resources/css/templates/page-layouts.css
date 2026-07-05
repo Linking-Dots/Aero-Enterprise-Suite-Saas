@@ -17,7 +17,11 @@
 .aeos-table-section { overflow:hidden; border-radius:var(--aeos-r-lg); border:var(--aeos-border-width) solid var(--aeos-divider); }
 
 /* ── Pagination bar ───────────────────────────────────────────── */
-.aeos-pagination-bar { display:flex; justify-content:flex-end; padding-top:var(--aeos-space-2); }
+/* Scrolls horizontally when the page-number strip is wider than the viewport
+   (mobile) instead of overflowing off-screen. */
+.aeos-pagination-bar { display:flex; justify-content:flex-end; padding-top:var(--aeos-space-2); overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.aeos-pagination-bar > * { flex-shrink:0; }
+@media (max-width:640px) { .aeos-pagination-bar { justify-content:flex-start; } }
 
 /* ── Subscription / Billing hub ───────────────────────────────── */
 .aeos-billing-body  { display:flex; flex-direction:column; gap:var(--aeos-space-5); width:100%; }

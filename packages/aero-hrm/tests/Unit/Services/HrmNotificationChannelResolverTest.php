@@ -47,7 +47,7 @@ class HrmNotificationChannelResolverTest extends TestCase
     {
         $notifiable = new class implements NotifiableUserInterface
         {
-            public function getKey()
+            public function getKey(): int|string
             {
                 return 1;
             }
@@ -58,6 +58,11 @@ class HrmNotificationChannelResolverTest extends TestCase
             }
 
             public function getEmail(): string
+            {
+                return 'test@example.com';
+            }
+
+            public function routeNotificationForMail(): string
             {
                 return 'test@example.com';
             }
@@ -97,7 +102,7 @@ class HrmNotificationChannelResolverTest extends TestCase
     {
         $notifiable = new class implements NotifiableUserInterface
         {
-            public function getKey()
+            public function getKey(): int|string
             {
                 return 1;
             }
@@ -108,6 +113,11 @@ class HrmNotificationChannelResolverTest extends TestCase
             }
 
             public function getEmail(): string
+            {
+                return 'test@example.com';
+            }
+
+            public function routeNotificationForMail(): string
             {
                 return 'test@example.com';
             }

@@ -26,10 +26,10 @@ function ExternalIcon() {
 }
 
 const NEXT_STEPS = [
-  { icon: '🏢', title: 'Complete admin setup',    desc: 'Set your password, timezone, logo, and company profile.',             action: 'admin-setup' },
-  { icon: '👥', title: 'Invite your team',         desc: 'Add team members and assign roles. They\'ll get an email invite.',   action: 'login' },
-  { icon: '📦', title: 'Explore your add-ons',     desc: 'Your selected products are ready. Tour them from the dashboard.',    action: 'login' },
-  { icon: '⚙️', title: 'Configure integrations',  desc: 'Connect email, Slack, or your own tools from the platform settings.', action: 'login' },
+  { icon: '🔑', title: 'Set your password',        desc: 'We emailed a secure, single-use link to your admin email — use it to set your password, then sign in.' },
+  { icon: '👥', title: 'Invite your team',         desc: 'Add team members and assign roles. They\'ll get an email invite.' },
+  { icon: '📦', title: 'Explore your add-ons',     desc: 'Your selected products are ready. Tour them from the dashboard.' },
+  { icon: '⚙️', title: 'Configure integrations',  desc: 'Connect email, Slack, or your own tools from the platform settings.' },
 ];
 
 export default function StepSuccess({ result = {}, baseDomain = '' }) {
@@ -39,11 +39,9 @@ export default function StepSuccess({ result = {}, baseDomain = '' }) {
     trial_ends_at  = null,
     plan_name      = '',
     modules        = [],
-    admin_setup_required = true,
   } = result;
 
   const workspaceUrl  = `https://${subdomain}.${baseDomain}`;
-  const adminSetupUrl = `${workspaceUrl}/admin-setup`;
   const loginUrl      = `${workspaceUrl}/login`;
 
   function formatDate(iso) {
@@ -173,8 +171,8 @@ export default function StepSuccess({ result = {}, baseDomain = '' }) {
                   <Text weight="semibold" as="span">{step.title}</Text>
                   <Text tone="secondary" as="span" size="sm">{step.desc}</Text>
                 </VStack>
-                {i === 0 && admin_setup_required && (
-                  <Badge intent="amber" style={{ flexShrink: 0 }}>Required</Badge>
+                {i === 0 && (
+                  <Badge intent="amber" style={{ flexShrink: 0 }}>Check email</Badge>
                 )}
               </HStack>
             ))}
@@ -185,20 +183,14 @@ export default function StepSuccess({ result = {}, baseDomain = '' }) {
       {/* ── Primary CTA ── */}
       <Button
         as="a"
-        href={admin_setup_required ? adminSetupUrl : loginUrl}
+        href={loginUrl}
         intent="primary"
         fullWidth
         size="lg"
         rightIcon="arrowRight"
       >
-        {admin_setup_required ? 'Complete Setup →' : 'Open Workspace →'}
+        Go to Sign In →
       </Button>
-
-      {admin_setup_required && (
-        <Button as="a" href={loginUrl} intent="ghost" fullWidth>
-          Skip setup — sign in later
-        </Button>
-      )}
 
     </VStack>
   );

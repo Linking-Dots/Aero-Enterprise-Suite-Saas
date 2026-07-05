@@ -9,7 +9,6 @@ use Aero\Contracts\AeroMode;
 use Aero\HRMAC\Models\Role;
 use Aero\Auth\Models\User;
 use Aero\Platform\Models\Plan;
-use Aero\Platform\Models\PlanModule;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -144,19 +143,17 @@ class PlanControllerTest extends TestCase
     }
 
     // =========================================================================
-    // STORE — with module assignment
+    // STORE
     // =========================================================================
 
-    public function test_creates_plan_with_module_assignment(): void
+    public function test_creates_plan(): void
     {
+        // Plans carry no modules — modules are sold via products
+        // (plan/product subscription split).
         $payload = [
             'name'          => 'Gold Plan',
             'price_monthly' => 99.00,
             'currency'      => 'USD',
-            'plan_modules'  => [
-                ['module_code' => 'hrm',     'is_enabled' => true],
-                ['module_code' => 'payroll', 'is_enabled' => true],
-            ],
         ];
 
         $response = $this->actingAs($this->admin, 'landlord')
@@ -166,9 +163,6 @@ class PlanControllerTest extends TestCase
 
         $plan = Plan::where('name', 'Gold Plan')->first();
         $this->assertNotNull($plan, 'Plan should be persisted in the database.');
-
-        $moduleCount = PlanModule::where('plan_id', $plan->id)->count();
-        $this->assertEquals(2, $moduleCount, 'Two plan_modules rows should be created.');
     }
 
     public function test_store_validates_required_name(): void
@@ -257,13 +251,9 @@ class PlanControllerTest extends TestCase
     // CLONE
     // =========================================================================
 
-    public function test_cloned_plan_has_same_modules_different_slug(): void
+    public function test_cloned_plan_has_different_slug(): void
     {
         $plan = Plan::factory()->create(['name' => 'Pro Plan', 'slug' => 'pro-plan']);
-
-        // Attach two modules to the source plan.
-        PlanModule::create(['plan_id' => $plan->id, 'module_code' => 'hrm',     'is_enabled' => true]);
-        PlanModule::create(['plan_id' => $plan->id, 'module_code' => 'payroll', 'is_enabled' => true]);
 
         $response = $this->actingAs($this->admin, 'landlord')
             ->post(route('platform.admin.plans.clone', $plan));
@@ -274,11 +264,6 @@ class PlanControllerTest extends TestCase
         $cloned = Plan::where('name', 'Pro Plan (Copy)')->first();
         $this->assertNotNull($cloned, 'Cloned plan should be persisted.');
         $this->assertNotEquals($plan->slug, $cloned->slug, 'Cloned plan must have a different slug.');
-
-        // Module count must match the source.
-        $sourceModules = PlanModule::where('plan_id', $plan->id)->count();
-        $clonedModules = PlanModule::where('plan_id', $cloned->id)->count();
-        $this->assertEquals($sourceModules, $clonedModules, 'Cloned plan must have the same number of modules.');
     }
 
     public function test_cloned_plan_is_created_as_draft(): void
