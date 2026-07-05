@@ -3,12 +3,17 @@
    The sidebar is a glass pill inset from the viewport edge.
    ══════════════════════════════════════════════════════════════════════════ */
 
-[data-aeos-shell="floating"] {
+/* Scope the LAYOUT to the inner shell element only. The ThemeProvider also
+   stamps data-aeos-shell on <body>; without this guard the flex + gutter +
+   height apply twice and the shell overflows the viewport at the bottom. */
+.aeos-app-chrome-active[data-aeos-shell="floating"] {
+  /* Anchor to the viewport exactly so a stray body margin can't offset it and
+     push the bottom out of view. */
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  min-height: 100dvh;
-  max-height: 100dvh;
+  align-items: stretch;
   overflow: hidden;
   padding: var(--aeos-shell-floating-gutter);
   gap: var(--aeos-shell-floating-gap);
@@ -20,15 +25,13 @@
 [data-aeos-shell="floating"] .aeos-shell-sidebar {
   width: var(--aeos-shell-floating-w);
   flex-shrink: 0;
-  max-height: calc(100dvh - var(--aeos-shell-floating-gutter) * 2);
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   overscroll-behavior: contain;
-  position: sticky;
-  top: var(--aeos-shell-floating-gutter);
   background: var(--aeos-shell-floating-bg);
   border: var(--aeos-border-width) solid var(--aeos-primary-tint);
   border-radius: var(--aeos-r-2xl);
@@ -60,9 +63,9 @@
 }
 
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item {
-  width:  calc(var(--aeos-space-8) * var(--aeos-density-factor));
-  height: calc(var(--aeos-space-8) * var(--aeos-density-factor));
-  border-radius: var(--aeos-r-md);
+  width:  calc(var(--aeos-space-11, 44px) * var(--aeos-density-factor));
+  height: calc(var(--aeos-space-11, 44px) * var(--aeos-density-factor));
+  border-radius: var(--aeos-r-lg);
   background: transparent;
   border: var(--aeos-border-width) solid transparent;
   display: flex;
@@ -90,6 +93,38 @@
   color: var(--aeos-text-primary);
   border-color: var(--aeos-border-subtle);
 }
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item .aeos-shell-nav-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Rail structure: brand (top) · scrollable destinations (middle) · toggle
+   (bottom). The inner scroll owns the overflow so the rail never clips and the
+   brand/toggle never fight for space. */
+[data-aeos-shell="floating"] .aeos-shell-sidebar { overflow: hidden; }
+[data-aeos-shell="floating"] .aeos-shell-sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--aeos-gap-items) * var(--aeos-density-factor));
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: var(--aeos-space-1) 0;
+}
+[data-aeos-shell="floating"] .aeos-shell-sidebar-scroll::-webkit-scrollbar { width: 0; display: none; }
+[data-aeos-shell="floating"] .aeos-nav-item-wrapper { align-items: center; width: 100%; }
+[data-aeos-shell="floating"] .aeos-shell-sidebar-foot {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: var(--aeos-space-2);
+  margin-top: var(--aeos-space-1);
+  border-top: var(--aeos-border-width) solid var(--aeos-divider);
+}
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item.active {
   background: var(--aeos-primary-bg);
   border-color: var(--aeos-primary-border);
@@ -97,6 +132,15 @@
   box-shadow:
     0 0 0 1px var(--aeos-primary-tint) inset,
     0 0 16px -4px color-mix(in srgb, var(--aeos-primary) 40%, transparent);
+}
+/* Active-parent — collapsed floating rail hides the active child, so the
+   parent pill is the only current-section signal. See sidebar.css. */
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item.active-parent {
+  color: var(--aeos-primary);
+}
+[data-aeos-shell="floating"]:not(.sidebar-expanded) .aeos-shell-sidebar-item.active-parent {
+  background: var(--aeos-primary-bg);
+  box-shadow: 0 0 0 1px var(--aeos-primary-tint) inset;
 }
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item.active:hover {
   background: var(--aeos-primary-hover);
@@ -108,7 +152,8 @@
 [data-aeos-shell="floating"] .aeos-nav-active-indicator {
   position: absolute;
   left: -1px;
-  top: 25%;
+  top: 50%;
+  transform: translateY(-50%);
   height: 50%;
   width: 3px;
   background: var(--aeos-primary);
@@ -138,7 +183,7 @@
 [data-aeos-shell="floating"] .aeos-shell-content {
   flex: 1;
   min-height: 0;
-  max-height: calc(100dvh - var(--aeos-shell-floating-gutter) * 2);
+  max-height: 100%;
   background: var(--aeos-shell-panel-bg);
   border: var(--aeos-border-width) solid var(--aeos-border-subtle);
   border-radius: var(--aeos-r-xl);
@@ -191,6 +236,17 @@
   color: inherit;
 }
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-divider { width: 100%; }
+/* Nested-item indentation — see sidebar.css. The base padding resets
+   padding-left, so restate depth indent with equal specificity. */
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-1 {
+  padding-left: calc(var(--aeos-pad-nav-x) + var(--aeos-space-5));
+}
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-2 {
+  padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 2));
+}
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-3 {
+  padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 3));
+}
 
 /* Tablet */
 @media (max-width: 768px) {

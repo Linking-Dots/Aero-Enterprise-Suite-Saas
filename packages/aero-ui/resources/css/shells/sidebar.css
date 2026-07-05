@@ -119,12 +119,25 @@
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active:hover {
   background: var(--aeos-primary-hover);
 }
+/* Active-parent — a collapsible group that contains the current page.
+   In the collapsed icon rail the active child is not rendered, so the parent
+   icon is the ONLY signal of the current section: give it the active
+   treatment. When expanded the child itself is highlighted, so keep the parent
+   subtle (accent tint on icon + label only). */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active-parent {
+  color: var(--aeos-primary);
+}
+[data-aeos-shell="sidebar"]:not(.sidebar-expanded) .aeos-shell-sidebar-item.active-parent {
+  background: var(--aeos-primary-bg);
+  box-shadow: 0 0 0 1px var(--aeos-primary-tint) inset;
+}
 
 /* Active indicator — left-edge glow bar */
 [data-aeos-shell="sidebar"] .aeos-nav-active-indicator {
   position: absolute;
   left: calc(-1 * var(--aeos-border-width));
-  top: 25%;
+  top: 50%;
+  transform: translateY(-50%);
   height: 50%;
   width: 3px;
   min-width: 3px;
@@ -204,6 +217,31 @@
 }
 [data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-label {
   display: block;
+  color: inherit;
+}
+/* Nested items must indent from their parent so the hierarchy reads at a
+   glance (UX standard: sub-items indented ~16–24px per level, max 3 levels).
+   The base expanded-item rule above uses `padding: 0 X` which resets
+   padding-left, so the depth indent is restated here with equal specificity
+   to win. Applies to the desktop expanded rail and the mobile drawer. */
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-1,
+[data-aeos-shell="sidebar"].mobile-open    .aeos-shell-sidebar-item.aeos-nav-depth-1 {
+  padding-left: calc(var(--aeos-pad-nav-x) + var(--aeos-space-5));
+}
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-2,
+[data-aeos-shell="sidebar"].mobile-open    .aeos-shell-sidebar-item.aeos-nav-depth-2 {
+  padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 2));
+}
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-3,
+[data-aeos-shell="sidebar"].mobile-open    .aeos-shell-sidebar-item.aeos-nav-depth-3 {
+  padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 3));
+}
+/* Sub-items are visually subordinate: lighter label until active/hover. */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item[class*="aeos-nav-depth"] .aeos-shell-sidebar-label {
+  color: var(--aeos-text-secondary);
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item[class*="aeos-nav-depth"].active .aeos-shell-sidebar-label,
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item[class*="aeos-nav-depth"]:hover .aeos-shell-sidebar-label {
   color: inherit;
 }
 [data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-divider {

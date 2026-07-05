@@ -21,7 +21,7 @@
   --aeos-shell-topnav-h:           var(--aeos-h-topbar);   /* density-aware: 48px default */
 
   /* ── Floating / inset pill shell ──────────────────────────────────────── */
-  --aeos-shell-floating-w:         56px;                    /* collapsed pill width */
+  --aeos-shell-floating-w:         72px;                    /* collapsed rail width (MD3 navigation-rail = 72dp) */
   --aeos-shell-floating-w-exp:     220px;                   /* expanded floating sidebar */
   --aeos-shell-floating-gutter:    var(--aeos-space-4);     /* all-around padding (16px) */
   --aeos-shell-floating-gap:       var(--aeos-gap-card);    /* gap between pill and content */
@@ -38,7 +38,9 @@
   --aeos-shell-topbar-blur:        0px;                     /* default: off; shell sets per variant */
 
   /* ── Page layout ──────────────────────────────────────────────────────── */
-  --aeos-page-max-w:               1400px;
+  /* Main content fills the available width in every shell (consistent, no
+     centred side-gaps). Pages needing a reading cap set their own max-width. */
+  --aeos-page-max-w:               none;
   --aeos-page-pad-y:               var(--aeos-space-6);    /* 24px */
   --aeos-page-pad-x:               var(--aeos-space-6);    /* 24px */
 
@@ -76,13 +78,5 @@ body[data-density="spacious"] {
     --aeos-shell-floating-w-exp:   240px;
     --aeos-shell-cmd-nav-w:        200px;
     --aeos-shell-rail-w:           280px;
-    --aeos-page-max-w:             1600px;
-  }
-}
-
-/* ── Ultra-wide (≥ 1920px): max-out page container ───────────────────────── */
-@media (min-width: 1920px) {
-  :root {
-    --aeos-page-max-w:             1800px;
   }
 }

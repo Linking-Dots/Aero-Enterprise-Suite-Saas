@@ -133,6 +133,8 @@ export default function Infrastructure({ hosting }) {
                     <Input
                       id="cpanel_api_token"
                       type="password"
+                      name="cpanel_api_token"
+                      autoComplete="new-password"
                       value={form.data.cpanel_api_token}
                       onChange={e => form.setData('cpanel_api_token', e.target.value)}
                       placeholder={hosting?.cpanel_api_token_set ? '••••••••' : 'Paste API token'}

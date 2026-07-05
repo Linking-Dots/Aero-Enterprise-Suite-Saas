@@ -58,12 +58,20 @@ export function DetailPageLayout({
 /* ── FormPageLayout — create/edit pages with sticky mobile footer ─ */
 export function FormPageLayout({
   title, breadcrumb, description, actions,
-  maxWidth, size = 'md', children,
+  maxWidth, size = 'md', onSubmit, children,
 }) {
+  // When an onSubmit handler is supplied the layout must be a real <form> so
+  // that a `<Button type="submit">` inside `children`/`actions` actually
+  // submits it. Without this the handler is dropped and the save silently
+  // no-ops (no request, no toast, no persistence).
+  const Wrapper = onSubmit ? 'form' : 'div';
+  const wrapperProps = onSubmit ? { onSubmit, noValidate: true } : {};
+
   return (
-    <div
+    <Wrapper
       className={cx('aeos-page-layout aeos-page-layout-form', `aeos-page-layout-form-${size}`)}
       style={maxWidth ? { maxWidth } : undefined}
+      {...wrapperProps}
     >
       <PageHeader
         breadcrumb={breadcrumb}
@@ -72,7 +80,7 @@ export function FormPageLayout({
       />
       <div className="aeos-form-sections">{children}</div>
       {actions && <div className="aeos-form-actions">{actions}</div>}
-    </div>
+    </Wrapper>
   );
 }
 

@@ -118,6 +118,9 @@ class HandleInertiaRequests extends Middleware
             'maintenance' => fn () => $this->getAdminMaintenanceStatus(),
             // Navigation is heavy, keep it lazy
             'navigation' => fn () => $this->getNavigationProps($user),
+            // Grouped variant powers the Command shell — without it the platform
+            // admin Command shell renders an empty nav.
+            'navigationGroups' => fn () => $this->getNavigationGroupProps($user),
             'aero' => [
                 'mode' => aero_mode() ?? 'saas',
                 'subscriptions' => [], // Admin accesses everything
@@ -443,7 +446,20 @@ class HandleInertiaRequests extends Middleware
             return [];
         }
 
-        return app(NavigationRegistry::class)->toFrontend('platform');
+        return app(NavigationRegistry::class)->toFrontend('platform', $user);
+    }
+
+    /**
+     * Section-grouped navigation for the Command shell variant. Platform admin
+     * is not a tenant, so no subscription filtering applies here.
+     */
+    protected function getNavigationGroupProps($user): array
+    {
+        if (! $user || ! app()->bound(NavigationRegistry::class)) {
+            return [];
+        }
+
+        return app(NavigationRegistry::class)->toFrontendGroups('platform', $user);
     }
 
     protected function getAdminMaintenanceStatus(): array

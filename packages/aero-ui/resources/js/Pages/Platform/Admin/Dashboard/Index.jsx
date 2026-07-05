@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { Card, CardBody } from '@aero/ui';
 
-import AppLayout   from '@/layouts/AppLayout';
+import App         from '@/Pages/App.jsx';
 import CommandBar  from './widgets/CommandBar';
 import KpiStrip    from './widgets/KpiStrip';
 import MrrTrendWidget              from './widgets/MrrTrendWidget';
@@ -136,8 +136,7 @@ export default function Index({
   ];
 
   return (
-    <AppLayout title="Dashboard">
-      <div className="aeos-dashboard">
+    <div className="aeos-dashboard">
 
         {/* ── 1. Command bar — always on top, never draggable ── */}
         <div className="aeos-dashboard__command-bar">
@@ -171,6 +170,7 @@ export default function Index({
         />
 
       </div>
-    </AppLayout>
   );
 }
+
+Index.layout = page => <App title="Dashboard">{page}</App>;

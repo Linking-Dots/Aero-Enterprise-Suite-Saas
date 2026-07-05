@@ -1,14 +1,20 @@
 /**
- * AppLayout - authenticated app shell stub.
- * The actual sidebar/nav shell is provided by Inertia's HandleInertiaRequests
- * middleware (shared props) and the tenant shell React root. This component
- * exists as a passthrough for pages that import it directly.
+ * AppLayout — authenticated app shell.
+ *
+ * Delegates to the canonical <App> layout so that any page which wraps its
+ * body in <AppLayout> (rather than using `Page.layout = page => <App>{page}</App>`)
+ * STILL gets the real sidebar/topbar shell. Previously this was a passthrough
+ * stub that rendered {children} with no shell — a silent trap that left pages
+ * shell-less. Prefer the canonical `Page.layout` pattern for new pages (it lets
+ * Inertia persist the shell across visits); use this wrapper only for legacy
+ * pages that render their layout inside the component body.
  */
-export default function AppLayout({ children, title }) {
+import App from '@/Pages/App.jsx';
+
+export default function AppLayout({ children, title, rail, railTitle }) {
   return (
-    <>
-      {title && <title>{title}</title>}
+    <App title={title} rail={rail} railTitle={railTitle}>
       {children}
-    </>
+    </App>
   );
 }

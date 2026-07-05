@@ -28,6 +28,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useRef,
 } from 'react';
 
 /* ── Storage key ────────────────────────────────────────────────────── */
@@ -145,7 +146,14 @@ function applyPrefs(p) {
   body.className = [...existingNonAeos, ...newClasses].join(' ');
 
   /* 2. Data attributes ─────────────────────────────────────────────── */
-  body.dataset.aeosShell  = p.shell;
+  // Below the mobile breakpoint every desktop shell variant collapses to the
+  // single "mobile" shell (see AppShell/MobileShell). The body attribute drives
+  // the variant CSS, so it must switch to "mobile" too — otherwise the desktop
+  // grid/layout rules (e.g. sidebar's two-column grid) leak onto the phone.
+  const isMobile = typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(max-width: 768px)').matches
+    : false;
+  body.dataset.aeosShell  = isMobile ? 'mobile' : p.shell;
   body.dataset.cardStyle  = p.cardStyle;
   body.dataset.density    = p.density;
   body.dataset.radius     = p.radius;
@@ -245,6 +253,16 @@ export function ThemeProvider({ children, initialPrefs }) {
     savePrefs(prefs);
   }, [prefs]);
 
+  // Re-apply when crossing the mobile breakpoint so the body shell attribute
+  // flips between the desktop variant and "mobile".
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(max-width: 768px)');
+    const on = () => applyPrefs(prefs);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [prefs]);
+
   /* ── Patch helper ─────────────────────────────────────────────────── */
 
   /**
@@ -289,6 +307,29 @@ export function ThemeProvider({ children, initialPrefs }) {
     });
   }, [update]);
 
+  /* ── Live preview (hover-to-try, no persistence) ──────────────────────
+   * `preview` applies a patch to the DOM transiently WITHOUT touching state
+   * or storage, so the whole app shows the change instantly. `endPreview`
+   * re-applies the committed prefs to revert. Clicking a control still calls
+   * `update` to persist. */
+  const prefsRef = useRef(prefs);
+  useEffect(() => { prefsRef.current = prefs; }, [prefs]);
+
+  // Shell is chosen by React (AppShell), not just CSS, so previewing a shell
+  // needs a transient state the shell router reads — otherwise only the CSS
+  // layout attribute flips and the preview is incomplete.
+  const [previewShell, setPreviewShell] = useState(null);
+
+  const preview = useCallback((patch) => {
+    if (patch && 'shell' in patch) setPreviewShell(patch.shell);
+    applyPrefs({ ...prefsRef.current, ...patch });
+  }, []);
+
+  const endPreview = useCallback(() => {
+    setPreviewShell(null);
+    applyPrefs(prefsRef.current);
+  }, []);
+
   /* ── Context value ────────────────────────────────────────────────── */
 
   const value = useMemo(() => ({
@@ -298,6 +339,9 @@ export function ThemeProvider({ children, initialPrefs }) {
     // Generic helpers
     update,
     reset,
+    preview,
+    endPreview,
+    previewShell,
 
     // Convenience setters
     setMode,
@@ -330,6 +374,9 @@ export function ThemeProvider({ children, initialPrefs }) {
     setMotion,
     setFonts,
     setFontScale,
+    preview,
+    endPreview,
+    previewShell,
   ]);
 
   return (

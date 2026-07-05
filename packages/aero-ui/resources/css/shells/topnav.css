@@ -52,8 +52,11 @@
   display: flex;
   align-items: stretch;
   height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  /* Priority+ (JS) keeps the row within width and moves the rest into "More",
+     so no horizontal scroll is needed. */
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
   scrollbar-width: none;
   gap: 0;
   padding-left: var(--aeos-space-4);
@@ -106,6 +109,109 @@
   font-family: var(--aeos-font-mono);
 }
 
+/* ── Dropdown for top-nav groups (nested items) ──────────────────────────── */
+[data-aeos-shell="topnav"] .aeos-topnav-dropdown {
+  display: inline-flex;
+  align-items: stretch;
+  height: 100%;
+}
+[data-aeos-shell="topnav"] .aeos-topnav-dropdown .aeos-shell-nav-chevron {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--aeos-space-1);
+  transition: transform var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+[data-aeos-shell="topnav"] .aeos-topnav-dropdown .aeos-shell-nav-chevron svg {
+  width: 12px;
+  height: 12px;
+}
+[data-aeos-shell="topnav"] .aeos-topnav-dropdown .aeos-shell-nav-chevron.is-open {
+  transform: rotate(180deg);
+}
+[data-aeos-shell="topnav"] .aeos-shell-nav-item.active-parent { color: var(--aeos-primary); }
+
+/* Flyout panel — position:fixed (set inline) so it escapes the nav's
+   overflow-x scroll container. */
+.aeos-topnav-menu {
+  z-index: var(--aeos-z-popover, 1200);
+  min-width: 200px;
+  max-width: 280px;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  margin-top: var(--aeos-space-1);
+  padding: var(--aeos-space-1-5);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--aeos-shell-panel-bg, var(--aeos-surface));
+  border: var(--aeos-border-width) solid var(--aeos-divider);
+  border-radius: var(--aeos-r-lg);
+  box-shadow: var(--aeos-shadow-elevated);
+  animation: aeos-anim-fade-in var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-topnav-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  padding: var(--aeos-space-2) var(--aeos-space-3);
+  border-radius: var(--aeos-r-md);
+  font-size: var(--aeos-text-sm);
+  color: var(--aeos-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: none;
+  text-align: left;
+}
+.aeos-topnav-menu-item:hover {
+  background: var(--aeos-bg-hover);
+  color: var(--aeos-text-primary);
+}
+.aeos-topnav-menu-item.active {
+  background: var(--aeos-primary-bg);
+  color: var(--aeos-primary);
+}
+.aeos-topnav-menu-item .aeos-shell-nav-icon { width: var(--aeos-icon-sm); height: var(--aeos-icon-sm); }
+
+/* Off-screen width-probe for Priority+ overflow (measures the full item list
+   without affecting layout). Same item styling as the real nav so widths match. */
+[data-aeos-shell="topnav"] .aeos-topnav-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  display: flex;
+  height: var(--aeos-shell-topnav-h);
+  white-space: nowrap;
+}
+[data-aeos-shell="topnav"] .aeos-topnav-measure .aeos-shell-nav-chevron {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--aeos-space-1);
+}
+[data-aeos-shell="topnav"] .aeos-topnav-measure .aeos-shell-nav-chevron svg { width: 12px; height: 12px; }
+
+/* "More" overflow entry sits at the end and never shrinks away. */
+[data-aeos-shell="topnav"] .aeos-topnav-more { flex-shrink: 0; }
+
+/* The nav flex-grows to claim the space between brand and actions; actions use
+   margin-left:auto, so the shared flex spacer would only steal measurable width
+   from Priority+. */
+[data-aeos-shell="topnav"] .aeos-shell-flex-spacer { display: none; }
+
+/* More-menu group headers (a collapsed group keeps its label + children). */
+.aeos-topnav-menu-group + .aeos-topnav-menu-group { margin-top: var(--aeos-space-1); }
+.aeos-topnav-menu-grouplabel {
+  padding: var(--aeos-space-1) var(--aeos-space-3);
+  font-size: var(--aeos-text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--aeos-text-tertiary, var(--aeos-text-secondary));
+}
+
 [data-aeos-shell="topnav"] .aeos-shell-actions {
   display: flex;
   align-items: center;
@@ -138,40 +244,83 @@
   overscroll-behavior: contain;
 }
 
-@media (max-width: 640px) {
+/* Hamburger + drawer are desktop-hidden; the Priority+ strip is the desktop nav. */
+[data-aeos-shell="topnav"] .aeos-topnav-burger { display: none; }
+[data-aeos-shell="topnav"] .aeos-topnav-drawer { display: none; }
+
+/* ── Mobile: hamburger → full nav drawer (Priority+ strip is hidden) ───────── */
+@media (max-width: 768px) {
+  [data-aeos-shell="topnav"] .aeos-topnav-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  [data-aeos-shell="topnav"] .aeos-shell-nav,
+  [data-aeos-shell="topnav"] .aeos-topnav-measure {
+    display: none;
+  }
+  [data-aeos-shell="topnav"] .aeos-shell-brand { flex: 1; margin-left: var(--aeos-space-1); }
+
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    inset: var(--aeos-shell-topnav-h) auto 0 0;
+    width: min(88vw, 320px);
+    height: calc(100dvh - var(--aeos-shell-topnav-h));
+    z-index: var(--aeos-z-sidebar);
+    padding: var(--aeos-space-3);
+    gap: 2px;
+    background: var(--aeos-shell-sidebar-bg, var(--aeos-surface));
+    border-right: var(--aeos-border-width) solid var(--aeos-divider);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform var(--aeos-dur-base) var(--aeos-ease-out);
+  }
+  [data-aeos-shell="topnav"].mobile-open .aeos-topnav-drawer { transform: translateX(0); }
+
+  /* RecursiveNavItem renders `.aeos-shell-sidebar-item`; those styles are scoped
+     to the sidebar shell, so restate the essentials for the top-nav drawer. */
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: var(--aeos-space-3);
+    width: 100%;
+    height: calc(var(--aeos-h-nav-item) * var(--aeos-density-factor));
+    padding: 0 var(--aeos-pad-nav-x);
+    border-radius: var(--aeos-r-md);
+    color: var(--aeos-text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: var(--aeos-text-sm);
+  }
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item:hover {
+    background: var(--aeos-bg-hover);
+    color: var(--aeos-text-primary);
+  }
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.active {
+    background: var(--aeos-primary-bg);
+    color: var(--aeos-primary);
+  }
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.active-parent { color: var(--aeos-primary); }
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-label { display: block; }
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.aeos-nav-depth-1 {
+    padding-left: calc(var(--aeos-pad-nav-x) + var(--aeos-space-5));
+  }
+  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.aeos-nav-depth-2 {
+    padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 2));
+  }
+
   [data-aeos-shell="topnav"] .aeos-shell-topbar {
-    flex-wrap: wrap;
-    height: auto;
-    min-height: var(--aeos-shell-topnav-h);
-    padding: var(--aeos-space-3) var(--aeos-space-4);
+    height: var(--aeos-shell-topnav-h);
+    padding: 0 var(--aeos-space-4);
     gap: var(--aeos-space-2);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  [data-aeos-shell="topnav"] .aeos-shell-brand { flex: 1; }
-  [data-aeos-shell="topnav"] .aeos-shell-nav {
-    order: 3;
-    width: 100%;
-    padding-left: 0;
-    border-left: none;
-    margin-left: 0;
-    border-top: var(--aeos-border-width) solid var(--aeos-divider);
-    padding-top: var(--aeos-space-1);
-    padding-bottom: var(--aeos-space-1);
-    gap: var(--aeos-space-1);
-  }
-  [data-aeos-shell="topnav"] .aeos-shell-nav-item {
-    padding: 0 var(--aeos-space-3);
-    height: 36px;
-    font-size: var(--aeos-text-xs);
-    border-radius: var(--aeos-r-md);
-  }
-  [data-aeos-shell="topnav"] .aeos-shell-nav-item.active {
-    background: var(--aeos-primary-bg);
-    border-radius: var(--aeos-r-md);
-  }
-  [data-aeos-shell="topnav"] .aeos-shell-nav-item::after { display: none; }
-  [data-aeos-shell="topnav"] .aeos-shell-actions { margin-left: 0; }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {

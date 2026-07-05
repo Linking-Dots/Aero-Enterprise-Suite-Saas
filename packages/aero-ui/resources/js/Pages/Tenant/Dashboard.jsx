@@ -17,7 +17,6 @@
  */
 
 import App            from '@/Pages/App.jsx';
-import DashboardLayout from '@/layouts/AppLayout.jsx';
 import DashboardRail   from './Dashboard/DashboardRail.jsx';
 import { PageHeader }  from '@aero/ui';
 
@@ -94,6 +93,6 @@ export default function Dashboard({
 
 Dashboard.layout = page => (
     <App title="Dashboard" railTitle="At a glance" rail={<DashboardRail />}>
-        <DashboardLayout>{page}</DashboardLayout>
+        {page}
     </App>
 );

@@ -11,6 +11,13 @@
    • WCAG 2.1 AA: focus-visible rings, skip-link, reduced-motion compliance.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* ── Reset: the app shells own the full viewport; a stray body margin offsets
+   them and creates a phantom page scrollbar. ─────────────────────────────── */
+body:has(> .aeos-app-chrome-active),
+body:has(.aeos-app-chrome-active) {
+  margin: 0;
+}
+
 /* ── Skip navigation link (accessibility) ────────────────────────────────── */
 .aeos-skip-link {
   position: absolute;
@@ -39,19 +46,19 @@ body[data-aeos-shell] {
   height: 100dvh;
 }
 
-/* ── Page container — max-width centering inside content regions ─────────── */
+/* ── Page container — the single main-content wrapper for EVERY shell ──────
+   Consistent across sidebar / topnav / command / floating / mobile: fills the
+   available content width (no centred max-width gap) with one padding value.
+   A page can still opt into a narrower reading width by setting
+   `--aeos-page-max-w` (e.g. forms), in which case it is centred. */
 .aeos-page-container {
   width: 100%;
-  max-width: var(--aeos-page-max-w, 1400px);
+  max-width: var(--aeos-page-max-w, none);
+  margin-inline: auto;
   padding: var(--aeos-page-pad-y, var(--aeos-space-6)) var(--aeos-page-pad-x, var(--aeos-space-6));
   box-sizing: border-box;
   /* Query container so content (e.g. the dashboard grid) can adapt to the actual
      available width per shell via @container, instead of the viewport. */
-  container-type: inline-size;
-}
-/* Command shell renders content directly in .aeos-shell-content (no page-container),
-   so make it a query container too. */
-[data-aeos-shell="command"] .aeos-shell-content {
   container-type: inline-size;
 }
 @media (max-width: 640px) {
@@ -135,6 +142,24 @@ body[data-aeos-shell] {
   background: var(--aeos-bg-wash);
 }
 
+/* Nav rails scroll but WITHOUT a visible scrollbar — a bar in a narrow icon
+   rail looks cramped/broken. Content keeps its thin bar (users need the scroll
+   affordance in the main area). */
+.aeos-shell-sidebar,
+.aeos-shell-left,
+.aeos-mobile-drawer,
+.aeos-topnav-drawer {
+  scrollbar-width: none;
+}
+.aeos-shell-sidebar::-webkit-scrollbar,
+.aeos-shell-left::-webkit-scrollbar,
+.aeos-mobile-drawer::-webkit-scrollbar,
+.aeos-topnav-drawer::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 /* ── Focus-visible ring (all interactive shell elements) ─────────────────── */
 .aeos-shell-sidebar-item:focus-visible,
 .aeos-shell-nav-item:focus-visible,
@@ -156,6 +181,118 @@ body[data-aeos-shell] {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   animation: aeos-anim-fade-in var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MobileShell — the single mobile layout every desktop variant collapses to.
+   (Rendered by AppShell below 768px, regardless of the chosen shell variant.)
+   ══════════════════════════════════════════════════════════════════════════ */
+[data-aeos-shell="mobile"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  background: var(--aeos-bg-page);
+  font-family: var(--aeos-font-body);
+}
+[data-aeos-shell="mobile"] .aeos-shell-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  height: 56px;
+  flex-shrink: 0;
+  padding: 0 var(--aeos-space-3);
+  background: var(--aeos-shell-topbar-bg);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+  position: sticky;
+  top: 0;
+  z-index: 320;
+}
+[data-aeos-shell="mobile"] .aeos-shell-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  text-decoration: none;
+  color: var(--aeos-text-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+[data-aeos-shell="mobile"] .aeos-shell-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  margin-left: auto;
+}
+[data-aeos-shell="mobile"] .aeos-shell-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  background: var(--aeos-bg-page);
+}
+[data-aeos-shell="mobile"] .aeos-page-container {
+  width: 100%;
+  max-width: none;
+  padding: var(--aeos-space-4);
+  box-sizing: border-box;
+}
+[data-aeos-shell="mobile"] .aeos-mobile-drawer {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  bottom: 0;
+  width: min(86vw, 320px);
+  z-index: 310;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--aeos-space-3);
+  background: var(--aeos-shell-sidebar-bg, var(--aeos-surface));
+  border-right: var(--aeos-border-width) solid var(--aeos-divider);
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform var(--aeos-dur-base) var(--aeos-ease-out);
+}
+[data-aeos-shell="mobile"].mobile-open .aeos-mobile-drawer { transform: translateX(0); }
+[data-aeos-shell="mobile"] .aeos-shell-mobile-backdrop { display: none; }
+[data-aeos-shell="mobile"].mobile-open .aeos-shell-mobile-backdrop {
+  display: block;
+  inset: 56px 0 0 0;
+  z-index: 305;
+}
+/* Drawer entries — RecursiveNavItem renders `.aeos-shell-sidebar-item`, whose
+   styles are scoped to the sidebar shell, so restate them for the mobile drawer. */
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-3);
+  width: 100%;
+  height: calc(var(--aeos-h-nav-item) * var(--aeos-density-factor));
+  padding: 0 var(--aeos-pad-nav-x);
+  border-radius: var(--aeos-r-md);
+  color: var(--aeos-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: var(--aeos-text-sm);
+}
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-item:hover { background: var(--aeos-bg-hover); color: var(--aeos-text-primary); }
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-item.active { background: var(--aeos-primary-bg); color: var(--aeos-primary); }
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-item.active-parent { color: var(--aeos-primary); }
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-label { display: block; }
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-item.aeos-nav-depth-1 { padding-left: calc(var(--aeos-pad-nav-x) + var(--aeos-space-5)); }
+[data-aeos-shell="mobile"] .aeos-shell-sidebar-item.aeos-nav-depth-2 { padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 2)); }
+[data-aeos-shell="mobile"] .aeos-shell-nav-icon { width: var(--aeos-icon-sm); height: var(--aeos-icon-sm); flex-shrink: 0; }
+[data-aeos-shell="mobile"] .aeos-shell-nav-chevron { margin-left: auto; display: inline-flex; align-items: center; }
+[data-aeos-shell="mobile"] .aeos-shell-nav-chevron svg { width: 14px; height: 14px; transition: transform var(--aeos-dur-fast) var(--aeos-ease-out); }
+[data-aeos-shell="mobile"] .aeos-shell-nav-chevron.is-open svg { transform: rotate(90deg); }
+
+/* Shell switcher is meaningless on mobile (all variants collapse to one). */
+@media (max-width: 768px) {
+  .aeos-theme-section--desktop-only { display: none; }
 }
 
 /* ── Reduced-motion: strip all shell animations ──────────────────────────── */

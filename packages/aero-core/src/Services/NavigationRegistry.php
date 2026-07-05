@@ -216,7 +216,7 @@ class NavigationRegistry implements NavigationRegistryInterface
         $navigationItems = [];
 
         // 1. Add dynamic dashboard navigation first (priority 1)
-        $dashboardNav = $this->getDashboardNavigation($user);
+        $dashboardNav = $this->getDashboardNavigation($user, $scope);
         if ($dashboardNav) {
             // Filter dashboard children by subscription
             if ($subscribedModules !== null && ! empty($dashboardNav['children'])) {
@@ -361,10 +361,51 @@ class NavigationRegistry implements NavigationRegistryInterface
         // automatically once their route is registered.
         $navigationItems = $this->pruneUnnavigable($navigationItems);
 
+        // Collapse duplicate top-level entries. A config authoring slip (the
+        // same submodule declared twice — e.g. two "Security Center" or two
+        // "Access Logs" blocks) would otherwise render the group twice in the
+        // sidebar. Key on the stable access code, falling back to path/name, and
+        // keep the first occurrence. No-op when there are no duplicates.
+        $navigationItems = $this->dedupeTopLevel($navigationItems);
+
         // Sort by priority
         usort($navigationItems, fn ($a, $b) => ($a['priority'] ?? 999) <=> ($b['priority'] ?? 999));
 
         return $navigationItems;
+    }
+
+    /**
+     * Remove duplicate top-level navigation entries, keyed by access code
+     * (falling back to path, then name). Section dividers / spacers and items
+     * with no identifying key are always kept. Children are left untouched —
+     * duplication only occurs at the module level.
+     *
+     * @param  array<int, array>  $items
+     * @return array<int, array>
+     */
+    protected function dedupeTopLevel(array $items): array
+    {
+        $seen = [];
+        $kept = [];
+
+        foreach ($items as $item) {
+            $key = $item['access'] ?? $item['path'] ?? $item['name'] ?? null;
+
+            if ($key === null || $key === '') {
+                $kept[] = $item;
+
+                continue;
+            }
+
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $kept[] = $item;
+        }
+
+        return array_values($kept);
     }
 
     /**
@@ -560,9 +601,13 @@ class NavigationRegistry implements NavigationRegistryInterface
      * - If user has access to 2+ dashboards: Returns "Dashboards" parent with children
      *
      * @param  User|null  $user  User to filter by permissions
+     * @param  string|null  $scope  Nav scope: 'platform' (landlord admin) or 'tenant'. In
+     *                              the platform scope only platform/core dashboards may
+     *                              surface — tenant module dashboards (HRM, Employee,
+     *                              Finance, …) must never appear in the landlord nav.
      * @return array|null Navigation item or null if no dashboards available
      */
-    public function getDashboardNavigation($user = null): ?array
+    public function getDashboardNavigation($user = null, ?string $scope = null): ?array
     {
         // Check if DashboardRegistry is available
         if (! app()->bound(DashboardRegistry::class)) {
@@ -581,6 +626,18 @@ class NavigationRegistry implements NavigationRegistryInterface
 
         // Get all available dashboards filtered by user permissions
         $availableDashboards = $dashboardRegistry->getDashboardOptions($user);
+
+        // Scope guard: the platform (landlord) admin is not a tenant and never
+        // subscribes to tenant products, so its nav must only surface
+        // platform/core dashboards. Without this a platform super-admin — who
+        // bypasses every permission check — sees HRM, Employee and every other
+        // tenant module dashboard leak into the landlord sidebar.
+        if ($scope === 'platform') {
+            $availableDashboards = array_filter(
+                $availableDashboards,
+                fn ($dashboard) => in_array($dashboard['module'] ?? '', ['core', 'platform'], true)
+            );
+        }
 
         // Filter to only include dashboards with valid routes
         $validDashboards = array_filter($availableDashboards, function ($dashboard) {

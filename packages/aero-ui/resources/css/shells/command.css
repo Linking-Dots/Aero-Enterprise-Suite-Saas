@@ -101,10 +101,14 @@
   color: var(--aeos-primary);
 }
 [data-aeos-shell="command"] .aeos-shell-nav-item.active:hover { background: var(--aeos-primary-hover); }
+/* Active-parent — accent the group whose child is the current page. */
+[data-aeos-shell="command"] .aeos-shell-nav-item.active-parent { color: var(--aeos-primary); }
 
 [data-aeos-shell="command"] .aeos-nav-active-indicator {
   position: absolute;
-  left: 0; top: 25%;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   height: 50%; width: 3px;
   background: var(--aeos-primary);
   border-radius: 0 var(--aeos-r-sm) var(--aeos-r-sm) 0;
@@ -221,8 +225,30 @@
 @media (max-width: 900px) {
   [data-aeos-shell="command"] { grid-template-columns: 160px 1fr; }
 }
+/* Hamburger is desktop-hidden (the left panel is always visible on desktop). */
+[data-aeos-shell="command"] .aeos-cmd-burger { display: none; }
+
 @media (max-width: 768px) {
   [data-aeos-shell="command"] { grid-template-columns: 1fr; }
-  [data-aeos-shell="command"] .aeos-shell-left { display: none; }
   [data-aeos-shell="command"] .aeos-shell-main { max-height: 100dvh; }
+  [data-aeos-shell="command"] .aeos-cmd-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: var(--aeos-space-2);
+  }
+  /* Left panel becomes a slide-in drawer instead of vanishing (which left the
+     Command shell with no navigation at all on mobile). */
+  [data-aeos-shell="command"] .aeos-shell-left {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(88vw, 320px);
+    height: 100dvh;
+    z-index: var(--aeos-z-sidebar);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform var(--aeos-dur-base) var(--aeos-ease-out);
+  }
+  [data-aeos-shell="command"].mobile-open .aeos-shell-left { transform: translateX(0); }
 }

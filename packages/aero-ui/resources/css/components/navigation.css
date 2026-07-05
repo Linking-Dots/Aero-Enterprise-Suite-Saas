@@ -66,10 +66,14 @@
   height: var(--aeos-icon-sm);
   opacity: 0.8;
 }
-/* Nav item wrapper — full-width column container */
+/* Nav item wrapper — full-width column container. Centre its children so a
+   collapsed rail's fixed-width icon items sit in the middle of the rail instead
+   of hugging the left edge. (Expanded items are width:100%, so centring is a
+   no-op there.) */
 .aeos-nav-item-wrapper {
   display: flex;
   flex-direction: column;
+  align-items: center;
   width: 100%;
 }
 /* Count badge in command shell with sibling spacing */
