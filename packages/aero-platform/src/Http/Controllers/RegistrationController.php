@@ -629,6 +629,24 @@ class RegistrationController extends Controller
             // Store idempotency key to prevent duplicate submissions (valid for 1 hour)
             Cache::put($idempotencyKey, $tenant->id, now()->addHour());
 
+            // Remember the success summary NOW (all data is at hand). Async provisioning
+            // finishes minutes later via the queue; when the provisioning page polls
+            // "ready" and navigates to /success, this is what it reads — without it
+            // pullSuccess() is null and success() bounces the user back to /signup.
+            // Derive only from in-scope vars ($payload session + $tenant).
+            $successPlan = $payload['plan'] ?? [];
+            $successPlanName = ($pid = $successPlan['plan_id'] ?? null)
+                ? (Plan::whereKey($pid)->value('name'))
+                : null;
+            $successModules = array_values(array_diff((array) ($successPlan['modules'] ?? []), ['core']));
+            $this->registrationSession->rememberSuccess([
+                'name' => $tenant->name,
+                'subdomain' => $tenant->subdomain,
+                'plan_name' => $successPlanName,
+                'trial_ends_at' => optional($tenant->currentSubscription)->trial_ends_at,
+                'modules' => $successModules,
+            ]);
+
             // Check if tenant is already active (synchronous provisioning)
             if ($tenant->status === Tenant::STATUS_ACTIVE) {
                 return to_route('platform.register.success')
