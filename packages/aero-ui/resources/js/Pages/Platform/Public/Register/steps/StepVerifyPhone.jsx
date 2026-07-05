@@ -107,6 +107,17 @@ export default function StepVerifyPhone({ phone = '', companyName = '' }) {
           </Button>
         </HStack>
 
+        {/* Phone verification is OPTIONAL — email verification (previous step,
+            server-enforced) is the required identity check. */}
+        <Button
+          type="button"
+          intent="soft"
+          fullWidth
+          onClick={() => router.get(SR.plan)}
+        >
+          Skip for now — verify later
+        </Button>
+
         <div className="rl-nav">
           <Button type="button" intent="ghost" leftIcon="arrowLeft" onClick={() => router.get(SR.verifyEmail)}>
             Back

@@ -382,6 +382,19 @@ class RegistrationController extends Controller
             return to_route('platform.register.index');
         }
 
+        // Email verification is REQUIRED (phone optional/skippable). The session
+        // 'verification' step only proves a code was SENT — check the tenant row's
+        // verified timestamp so a crafted POST cannot bypass it.
+        $verification = $this->registrationSession->getStep('verification');
+        $verifiedTenantId = $verification['tenant_id'] ?? null;
+        $emailVerified = $verifiedTenantId && Tenant::query()
+            ->whereKey($verifiedTenantId)
+            ->whereNotNull('company_email_verified_at')
+            ->exists();
+        if (! config('app.debug') && ! $emailVerified) {
+            return to_route('platform.register.verify-email');
+        }
+
         $payload = $request->validated();
 
         // Store selected modules in tenant data for later seeding via tenant_module

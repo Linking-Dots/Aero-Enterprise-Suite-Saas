@@ -117,6 +117,13 @@ class RegistrationPageController extends Controller
             return SafeRedirect::toRoute('platform.register.index', [], 'platform.register.index');
         }
 
+        // Email verification is REQUIRED to proceed past the verify steps (phone is
+        // optional/skippable). Enforced server-side: without this, typing the /plan
+        // URL bypassed verification entirely — the wizard UI was the only gate.
+        if (! config('app.debug') && ! $this->companyEmailVerified()) {
+            return SafeRedirect::toRoute('platform.register.verify-email', [], 'platform.register.verify-email');
+        }
+
         // Fetch sellable modules from module_pricing table (authoritative source for products)
         // Enrich with metadata from ModuleDiscoveryService for names, descriptions, icons
         $discoveredModules = $this->getSellableModules();
@@ -371,6 +378,25 @@ class RegistrationPageController extends Controller
                 'yearly' => (float) $row->yearly_price,
             ])
             ->all();
+    }
+
+    /**
+     * True when the registration session's pending tenant has a verified
+     * company email. Email verification is the REQUIRED identity check
+     * (phone is optional) — see plan().
+     */
+    private function companyEmailVerified(): bool
+    {
+        $verification = $this->registrationSession->getStep('verification');
+        $tenantId = $verification['tenant_id'] ?? null;
+        if (! $tenantId) {
+            return false;
+        }
+
+        return Tenant::query()
+            ->whereKey($tenantId)
+            ->whereNotNull('company_email_verified_at')
+            ->exists();
     }
 
     private function renderStep(string $currentStep, array $props = []): Response
