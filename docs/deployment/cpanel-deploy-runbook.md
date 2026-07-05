@@ -1,7 +1,7 @@
 # AEOS365 · cPanel Production Deploy Runbook (aeos365.com)
 
 **Target:** cPanel shared hosting · Cloudflare DNS · SaaS host only (standalone stays local).
-**Outcome:** the same demoable state as local — public site → signup → provisioning, `admin.aeos365.com`, and the seeded **democorp** tenant at `democorp.aeos365.com` (250 employees, leave, payroll, attendance through Jul 17).
+**Outcome:** the same demoable state as local — public site → signup → provisioning, `admin.aeos365.com`, and the seeded **democorp** tenant at `demo.aeos365.com` (250 employees, leave, payroll, attendance through Jul 17).
 
 The host repo ships **vendor/ and public/build committed**, so the server needs **no Composer and no Node** — deploy is: get code → env → import DBs → wire domains → cron.
 
@@ -30,7 +30,7 @@ The host repo ships **vendor/ and public/build committed**, so the server needs 
 | `mail` | A/CNAME | per cPanel mail settings | **DNS only** (grey — SMTP is not proxied) |
 
 - SSL/TLS mode: **Full** (use a **Cloudflare Origin Certificate** installed in cPanel, or cPanel AutoSSL for the apex — Universal SSL covers `*.aeos365.com` at the edge for free).
-- Cloudflare Universal SSL covers only FIRST-level wildcards — `democorp.aeos365.com` ✅, `x.y.aeos365.com` ❌ (we don't use those).
+- Cloudflare Universal SSL covers only FIRST-level wildcards — `demo.aeos365.com` ✅, `x.y.aeos365.com` ❌ (we don't use those).
 
 ## 2. cPanel setup
 
@@ -49,7 +49,7 @@ The host repo ships **vendor/ and public/build committed**, so the server needs 
 1. Create DBs: `aeos365_platform` and `aeos365_tdemocorp`. Assign user `aeos365_emamhosen` with **ALL PRIVILEGES** to both.
 2. Import `central_aeos365.sql` → **aeos365_platform**.
 3. Import `tenant_democorp.sql` → **aeos365_tdemocorp**.
-4. Run `post_import_central.sql` against **aeos365_platform** (SQL tab). This: keeps only democorp, sets its domain to `democorp.aeos365.com`, points it at `aeos365_tdemocorp`, refreshes the trial window, clears cache/sessions.
+4. Run `post_import_central.sql` against **aeos365_platform** (SQL tab). This: keeps only democorp, sets its domain to `demo.aeos365.com`, points it at `aeos365_tdemocorp`, refreshes the trial window, clears cache/sessions.
 5. **Signup-provisioning privilege check** (decides if live signup works on this host): SQL tab →
    ```sql
    CREATE DATABASE aeos365_tprivtest; DROP DATABASE aeos365_tprivtest;
@@ -78,7 +78,7 @@ The queue worker matters: **provisioning + emails are queued in production** (lo
 ## 6. Post-deploy verification (I run this once you say it's live)
 
 1. `https://aeos365.com` — landing renders, pricing shows $29/$79/$149, 0 console errors.
-2. `https://democorp.aeos365.com/login` → `admin@democorp.com` / `Aeos365!Admin` → Dashboard shows **Starter · Trial · 10 GB**.
+2. `https://demo.aeos365.com/login` → `admin@democorp.com` / `Aeos365!Admin` → Dashboard shows **Starter · Trial · 10 GB**.
 3. HRM: Employees (250), Attendance (data on weekdays through Jul 17), Leave, Payroll (3 runs · Net 36.1M KPI).
 4. Signup flow: register a test tenant end-to-end (only if the §3.5 privilege check passed) — confirm password-set email arrives (SMTP), tenant provisions, HRM nav appears.
 5. `https://admin.aeos365.com` — platform admin loads (landlord: `landlord@aeos365.test` / `Password123!` — change it).
