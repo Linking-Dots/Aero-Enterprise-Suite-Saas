@@ -344,7 +344,7 @@ class UserAdminController extends Controller
 
         return [
             'routePrefix' => $defaults['hrmac_route_prefix'] ?? 'core.users',
-            'hrmacNamespace' => $defaults['hrmac_namespace'] ?? 'core.user_management',
+            'hrmacNamespace' => $defaults['hrmac_namespace'] ?? 'auth.user_management',
             'scope' => $scope,
             'dashboardRoute' => $defaults['hrmac_dashboard_route']
                 ?? ($scope === 'platform' ? 'platform.admin.dashboard' : 'core.dashboard'),

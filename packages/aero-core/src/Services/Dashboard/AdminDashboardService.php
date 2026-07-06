@@ -694,9 +694,9 @@ class AdminDashboardService
                 [
                     'group' => 'Users',
                     'items' => [
-                        ['label' => 'Add User', 'icon' => 'UserPlusIcon', 'route' => 'core.users.index', 'permission' => 'core.user_management.users.create'],
-                        ['label' => 'Invite User', 'icon' => 'EnvelopeIcon', 'route' => 'core.users.index', 'permission' => 'core.user_management.user_invitations.invite'],
-                        ['label' => 'Manage Roles', 'icon' => 'ShieldCheckIcon', 'route' => 'core.roles.index', 'permission' => 'core.roles_permissions.roles.view'],
+                        ['label' => 'Add User', 'icon' => 'UserPlusIcon', 'route' => 'core.users.index', 'permission' => 'auth.user_management.users.create'],
+                        ['label' => 'Invite User', 'icon' => 'EnvelopeIcon', 'route' => 'core.users.index', 'permission' => 'auth.user_management.user_invitations.invite'],
+                        ['label' => 'Manage Roles', 'icon' => 'ShieldCheckIcon', 'route' => 'core.roles.index', 'permission' => 'hrmac.roles_permissions.roles.view'],
                     ],
                 ],
                 [

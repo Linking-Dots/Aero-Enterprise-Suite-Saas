@@ -306,7 +306,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // USER MANAGEMENT ROUTES
     // ========================================================================
-    Route::prefix('api/users')->name('core.api.users.')->middleware('hrmac:core.user_management.users.view')->group(function () {
+    Route::prefix('api/users')->name('core.api.users.')->middleware('hrmac:auth.user_management.users.view')->group(function () {
         // List & View
         Route::get('/', [CoreUserController::class, 'index'])->name('index');
         Route::get('/paginate', [CoreUserController::class, 'paginate'])->name('paginate');
