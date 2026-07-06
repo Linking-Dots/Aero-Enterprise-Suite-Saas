@@ -958,15 +958,10 @@ class ModuleController extends Controller
         }
 
         try {
+            // Context-free: the role is fetched by id on the active connection, so a
+            // found role is already in-context (no hardcoded 'web' guard gate — platform
+            // roles use the 'landlord' guard).
             $role = Role::findOrFail($roleId);
-
-            // Verify role belongs to correct guard
-            $isPlatform = false;
-            $expectedGuard = 'web';
-
-            if ($role->guard_name !== $expectedGuard) {
-                return response()->json(['error' => 'Role not found in current context'], 404);
-            }
 
             // Check if role is protected (Super Administrator)
             if ($role->is_protected) {
