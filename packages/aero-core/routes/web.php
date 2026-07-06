@@ -9,6 +9,7 @@ use Aero\Core\Http\Controllers\Admin\AuditLogController;
 use Aero\Core\Http\Controllers\Admin\BackupConfigController;
 use Aero\Core\Http\Controllers\Admin\BackupController;
 use Aero\Core\Http\Controllers\Admin\CommentController;
+use Aero\Auth\Http\Controllers\Admin\UserAdminController;
 use Aero\Core\Http\Controllers\Admin\CoreUserController;
 use Aero\Core\Http\Controllers\Admin\ExportImportController;
 use Aero\Core\Http\Controllers\Admin\ExtensionsController;
@@ -1137,61 +1138,65 @@ Route::middleware('auth:web')->group(function () {
     // USER MANAGEMENT — Inertia/RedirectResponse routes (CA-1)
     // These complement the existing JSON API user routes above.
     // ========================================================================
+    // Tenant users render the SHARED Pages/Shared/UserManagement/Users pages (tenant
+    // context) via the shared aero-auth UserAdminController, driven by route defaults,
+    // under the unified auth.user_management.* HRMAC namespace. Invitations + in-tenant
+    // impersonation are BOTH on for tenants.
     Route::prefix('users')->name('core.users.')->group(function () {
-        Route::get('/', [CoreUserController::class, 'index'])
-            ->name('index')
-            ->middleware('hrmac:core.user_management.users.view');
-        Route::post('/', [CoreUserController::class, 'store'])
-            ->name('store')
-            ->middleware('hrmac:core.user_management.users.create');
-        Route::get('/create', [CoreUserController::class, 'create'])
-            ->name('create')
-            ->middleware('hrmac:core.user_management.users.create');
-        Route::get('/invitations', [CoreUserController::class, 'invitations'])
-            ->name('invitations.index')
-            ->middleware('hrmac:core.user_management.user_invitations.view');
-        Route::post('/invitations', [CoreUserController::class, 'invite'])
-            ->name('invitations.store')
-            ->middleware('hrmac:core.user_management.user_invitations.invite');
-        Route::post('/invitations/{id}/resend', [CoreUserController::class, 'resendInvitation'])
-            ->name('invitations.resend')
-            ->middleware('hrmac:core.user_management.user_invitations.resend');
-        Route::delete('/invitations/{id}', [CoreUserController::class, 'cancelInvitation'])
-            ->name('invitations.cancel')
-            ->middleware('hrmac:core.user_management.user_invitations.cancel');
-        Route::post('/bulk-delete', [CoreUserController::class, 'bulkDelete'])
-            ->name('bulk-delete')
-            ->middleware('hrmac:core.user_management.users.bulk_delete');
-        Route::post('/bulk-assign-roles', [CoreUserController::class, 'bulkAssignRoles'])
-            ->name('bulk-assign-roles')
-            ->middleware('hrmac:core.user_management.users.bulk_assign_roles');
-        Route::post('/stop-impersonating', [CoreUserController::class, 'stopImpersonating'])
-            ->name('stop-impersonating');
-        // withTrashed(): active/inactive is managed via SoftDeletes, so these
-        // actions must resolve inactive (soft-deleted) users too.
-        Route::get('/{user}', [CoreUserController::class, 'show'])
-            ->name('show')
-            ->withTrashed()
-            ->middleware('hrmac:core.user_management.users.view');
-        Route::get('/{user}/edit', [CoreUserController::class, 'edit'])
-            ->name('edit')
-            ->withTrashed()
-            ->middleware('hrmac:core.user_management.users.edit');
-        Route::put('/{user}', [CoreUserController::class, 'update'])
-            ->name('update')
-            ->withTrashed()
-            ->middleware('hrmac:core.user_management.users.edit');
-        Route::delete('/{user}', [CoreUserController::class, 'destroy'])
-            ->name('destroy')
-            ->withTrashed()
-            ->middleware('hrmac:core.user_management.users.delete');
-        Route::post('/{user}/toggle-status', [CoreUserController::class, 'toggleStatus'])
-            ->name('toggle-status')
-            ->withTrashed()
-            ->middleware('hrmac:core.user_management.users.activate');
-        Route::post('/{user}/impersonate', [CoreUserController::class, 'impersonate'])
-            ->name('impersonate')
-            ->middleware('hrmac:core.user_management.users.impersonate');
+        $tenantUserCtx = [
+            'hrmac_route_prefix' => 'core.users',
+            'hrmac_namespace' => 'auth.user_management',
+            'hrmac_scope' => 'tenant',
+            'hrmac_dashboard_route' => 'core.dashboard',
+            'hrmac_user_impersonation' => true,
+            'hrmac_user_invitations' => true,
+        ];
+
+        Route::get('/', [UserAdminController::class, 'index'])->name('index')
+            ->middleware('hrmac:auth.user_management.users.view')
+            ->setDefaults($tenantUserCtx + ['hrmac_user_view' => 'Shared/UserManagement/Users/Index']);
+        Route::get('/create', [UserAdminController::class, 'create'])->name('create')
+            ->middleware('hrmac:auth.user_management.users.create')
+            ->setDefaults($tenantUserCtx + ['hrmac_user_create_view' => 'Shared/UserManagement/Users/Create']);
+        Route::post('/', [UserAdminController::class, 'store'])->name('store')
+            ->middleware('hrmac:auth.user_management.users.create');
+
+        Route::get('/invitations', [UserAdminController::class, 'invitations'])->name('invitations.index')
+            ->middleware('hrmac:auth.user_management.user_invitations.view')
+            ->setDefaults($tenantUserCtx + ['hrmac_user_invitations_view' => 'Shared/UserManagement/Users/Invitations/Index']);
+        Route::post('/invitations', [UserAdminController::class, 'invite'])->name('invitations.store')
+            ->middleware('hrmac:auth.user_management.user_invitations.invite')
+            ->defaults('hrmac_user_invitations', true);
+        Route::post('/invitations/{invitationId}/resend', [UserAdminController::class, 'resendInvitation'])->name('invitations.resend')->whereNumber('invitationId')
+            ->middleware('hrmac:auth.user_management.user_invitations.resend')
+            ->defaults('hrmac_user_invitations', true);
+        Route::delete('/invitations/{invitationId}', [UserAdminController::class, 'cancelInvitation'])->name('invitations.cancel')->whereNumber('invitationId')
+            ->middleware('hrmac:auth.user_management.user_invitations.cancel')
+            ->defaults('hrmac_user_invitations', true);
+
+        Route::post('/bulk/delete', [UserAdminController::class, 'bulkDelete'])->name('bulk.delete')
+            ->middleware('hrmac:auth.user_management.users.bulk_delete');
+        Route::post('/bulk/toggle-status', [UserAdminController::class, 'bulkToggleStatus'])->name('bulk.toggle-status')
+            ->middleware('hrmac:auth.user_management.users.edit');
+        Route::post('/bulk/assign-roles', [UserAdminController::class, 'bulkAssignRoles'])->name('bulk.assign-roles')
+            ->middleware('hrmac:auth.user_management.users.edit');
+        Route::post('/stop-impersonating', [UserAdminController::class, 'stopImpersonating'])->name('stop-impersonating');
+
+        Route::get('/{id}', [UserAdminController::class, 'show'])->name('show')->whereNumber('id')
+            ->middleware('hrmac:auth.user_management.users.view')
+            ->setDefaults($tenantUserCtx + ['hrmac_user_show_view' => 'Shared/UserManagement/Users/Show']);
+        Route::get('/{id}/edit', [UserAdminController::class, 'edit'])->name('edit')->whereNumber('id')
+            ->middleware('hrmac:auth.user_management.users.edit')
+            ->setDefaults($tenantUserCtx + ['hrmac_user_edit_view' => 'Shared/UserManagement/Users/Edit']);
+        Route::put('/{id}', [UserAdminController::class, 'update'])->name('update')->whereNumber('id')
+            ->middleware('hrmac:auth.user_management.users.edit');
+        Route::delete('/{id}', [UserAdminController::class, 'destroy'])->name('destroy')->whereNumber('id')
+            ->middleware('hrmac:auth.user_management.users.delete');
+        Route::post('/{id}/toggle-status', [UserAdminController::class, 'toggleStatus'])->name('toggle-status')->whereNumber('id')
+            ->middleware('hrmac:auth.user_management.users.edit');
+        Route::post('/{id}/impersonate', [UserAdminController::class, 'impersonate'])->name('impersonate')->whereNumber('id')
+            ->middleware('hrmac:auth.user_management.users.impersonate')
+            ->defaults('hrmac_user_impersonation', true);
     });
 
     // ========================================================================

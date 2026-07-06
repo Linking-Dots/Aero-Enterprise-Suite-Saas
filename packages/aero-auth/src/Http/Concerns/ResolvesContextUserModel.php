@@ -7,17 +7,15 @@ namespace Aero\Auth\Http\Concerns;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Resolves the authenticated-user Eloquent model class from the guard that
- * actually authenticated the current request — never a hardcoded tenant or
- * platform class.
+ * Identity is ONE shared model — `Aero\Auth\Models\User` (Boss's Auth-Identity
+ * Unification). Both guards resolve to it (`web` via the legacy
+ * `Aero\Core\Models\User` class_alias; `landlord` directly), and the model is
+ * connection-agnostic, so tenancy alone decides whether a query hits the tenant
+ * DB or the central DB — the CLASS never changes between contexts. There is no
+ * per-context user model.
  *
- * This mirrors the context-free pattern aero-hrmac's RoleController already
- * proves out (`config('hrmac.models.user') ?: config('auth.providers.users.model')`),
- * generalised to ANY guard: `web` resolves the tenant `users` provider,
- * `landlord` resolves the central provider — today both point at the same
- * unified `Aero\Auth\Models\User` (Boss's Auth-Identity Unification), but
- * this controller makes zero assumption of that and would keep working if a
- * guard/provider ever diverges again.
+ * What genuinely differs per context is the GUARD (web vs landlord), which
+ * impersonation needs to log the target user into the correct guard.
  */
 trait ResolvesContextUserModel
 {
@@ -38,14 +36,13 @@ trait ResolvesContextUserModel
     }
 
     /**
-     * The Eloquent user model class backing the resolved guard's provider.
+     * The one shared user model. Connection-agnostic — tenancy swaps the default
+     * connection, so the same class serves tenant and platform.
+     *
+     * @return class-string<\Illuminate\Database\Eloquent\Model>
      */
     protected function resolveUserModel(): string
     {
-        $guard = $this->resolveGuardName();
-        $provider = config("auth.guards.{$guard}.provider");
-        $model = $provider ? config("auth.providers.{$provider}.model") : null;
-
-        return $model ?: config('auth.providers.users.model');
+        return \Aero\Auth\Models\User::class;
     }
 }
