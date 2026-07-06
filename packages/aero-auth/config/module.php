@@ -171,5 +171,59 @@ return [
                 ],
             ],
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | User Management Submodule (Phase 2 T4 — consolidated from
+        | aero-core `user_management` + aero-platform `platform-users`)
+        |--------------------------------------------------------------------------
+        |
+        | Canonical source of truth for the `users` and `user_invitations`
+        | permission surface across BOTH tenant (aero-core) and platform
+        | (aero-platform) contexts. Action set is the UNION of:
+        |   - aero-core config/module.php: user_management.users
+        |   - aero-platform config/module.php: platform-users.landlord-user-list
+        | The aero-core/aero-platform duplicate declarations are retired in a
+        | later consolidation task; do not re-add them there.
+        */
+        [
+            'code' => 'user_management',
+            'name' => 'User Management',
+            'description' => 'User accounts, authentication, and invitations',
+            'icon' => 'UserGroupIcon',
+            'route' => '/users',
+            'priority' => 12,
+            'components' => [
+                [
+                    'code' => 'users', 'name' => 'Users', 'type' => 'page', 'route' => '/users',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Users'],
+                        ['code' => 'create', 'name' => 'Create User'],
+                        ['code' => 'edit', 'name' => 'Edit User'],
+                        ['code' => 'delete', 'name' => 'Delete User'],
+                        ['code' => 'bulk_delete', 'name' => 'Bulk Delete Users'],
+                        ['code' => 'activate', 'name' => 'Activate User'],
+                        ['code' => 'deactivate', 'name' => 'Deactivate User'],
+                        ['code' => 'bulk_toggle_status', 'name' => 'Bulk Toggle Status'],
+                        ['code' => 'bulk_assign_roles', 'name' => 'Bulk Assign Roles'],
+                        ['code' => 'reset_password', 'name' => 'Reset Password'],
+                        ['code' => 'lock_account', 'name' => 'Lock Account'],
+                        ['code' => 'unlock_account', 'name' => 'Unlock Account'],
+                        ['code' => 'impersonate', 'name' => 'Impersonate User'],
+                        ['code' => 'export', 'name' => 'Export Users'],
+                        ['code' => 'import', 'name' => 'Import Users'],
+                    ],
+                ],
+                [
+                    'code' => 'user_invitations', 'name' => 'User Invitations', 'type' => 'page', 'route' => '/users/invitations',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Invitations'],
+                        ['code' => 'invite', 'name' => 'Invite User'],
+                        ['code' => 'resend', 'name' => 'Resend Invitation'],
+                        ['code' => 'cancel', 'name' => 'Cancel Invitation'],
+                    ],
+                ],
+            ],
+        ],
     ],
 ];
