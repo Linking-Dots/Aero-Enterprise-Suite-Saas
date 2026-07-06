@@ -138,6 +138,7 @@ class HRMACServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SyncModuleHierarchy::class,
+                \Aero\HRMAC\Console\Commands\MigrateAuthAccessGrants::class,
             ]);
 
             // Publish configuration
