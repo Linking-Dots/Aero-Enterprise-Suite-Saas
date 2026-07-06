@@ -125,6 +125,29 @@ class AeroAuthServiceProvider extends ServiceProvider
         // Auth views (e.g. the user-invitation email markdown template).
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'aero-auth');
 
+        // Shared "Users" navigation — registered HERE (the identity owner) so it
+        // appears in EVERY context (tenant + platform + standalone) without living
+        // in a consumer's config/module.php. The path resolves to core.users.index
+        // (tenant/standalone) or platform.admin.users.index (platform); scope 'all'
+        // shows it in both. Deferred to 'booted' because aero-core (which binds the
+        // NavigationRegistry) boots AFTER this package.
+        $this->app->booted(function () {
+            if (! $this->app->bound(\Aero\Core\Services\NavigationRegistry::class)) {
+                return;
+            }
+
+            $this->app->make(\Aero\Core\Services\NavigationRegistry::class)->register('auth', [
+                [
+                    'name' => 'Users',
+                    'path' => '/users',
+                    'icon' => 'UserGroupIcon',
+                    'access' => 'auth.user_management.users',
+                    'priority' => 3,
+                    'type' => 'page',
+                ],
+            ], 3, 'all');
+        });
+
         // Tenant auth routes — wrapped in the 'web' middleware group so that
         // HandleInertiaRequests, session, CSRF, and all web-group middleware run.
         Route::middleware(['web'])

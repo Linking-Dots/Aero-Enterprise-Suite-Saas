@@ -269,19 +269,20 @@ class NavigationRegistry implements NavigationRegistryInterface
         foreach ($sortedModules as $moduleCode => $moduleData) {
             // Filter by scope if specified
             $moduleScope = $moduleData['scope'] ?? 'tenant';
-            if ($scope !== null && $moduleScope !== $scope) {
+            if ($scope !== null && $moduleScope !== 'all' && $moduleScope !== $scope) {
                 continue;
             }
 
             // Filter by subscription: core/platform always allowed, others must be subscribed
-            if ($subscribedModules !== null && $moduleCode !== 'core' && $moduleCode !== 'platform') {
+            if ($subscribedModules !== null && ! in_array($moduleCode, ['core', 'platform', 'auth', 'hrmac'], true)) {
                 if (! in_array($moduleCode, $subscribedModules, true)) {
                     continue;
                 }
             }
 
-            // Track non-core modules
-            if ($moduleCode !== 'core' && $moduleCode !== 'platform') {
+            // Track non-core modules (auth + hrmac are shared infrastructure, treated
+            // like core/platform — always shown, flattened, never subscription-gated).
+            if (! in_array($moduleCode, ['core', 'platform', 'auth', 'hrmac'], true)) {
                 $nonCoreModules[] = $moduleCode;
             }
         }
@@ -292,21 +293,21 @@ class NavigationRegistry implements NavigationRegistryInterface
         foreach ($sortedModules as $moduleCode => $moduleData) {
             // Filter by scope if specified
             $moduleScope = $moduleData['scope'] ?? 'tenant';
-            if ($scope !== null && $moduleScope !== $scope) {
+            if ($scope !== null && $moduleScope !== 'all' && $moduleScope !== $scope) {
                 continue;
             }
 
             // Filter by subscription: core/platform always allowed, others must be subscribed
-            if ($subscribedModules !== null && $moduleCode !== 'core' && $moduleCode !== 'platform') {
+            if ($subscribedModules !== null && ! in_array($moduleCode, ['core', 'platform', 'auth', 'hrmac'], true)) {
                 if (! in_array($moduleCode, $subscribedModules, true)) {
                     continue;
                 }
             }
 
             foreach ($moduleData['items'] as $item) {
-                // Core/Platform modules: flatten children (submodules) to top level
-                // BUT skip Dashboard and Self-Service submodules - they are handled separately
-                if ($moduleCode === 'core' || $moduleCode === 'platform') {
+                // Core/Platform/Auth/HRMAC (infrastructure) modules: flatten children
+                // (submodules) to top level BUT skip Dashboard and Self-Service submodules.
+                if (in_array($moduleCode, ['core', 'platform', 'auth', 'hrmac'], true)) {
                     if (! empty($item['children'])) {
                         foreach ($item['children'] as $child) {
                             // Skip dashboard items - they come from DashboardRegistry

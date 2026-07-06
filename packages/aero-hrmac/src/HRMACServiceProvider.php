@@ -110,6 +110,30 @@ class HRMACServiceProvider extends ServiceProvider
         // previously duplicated across aero-core + aero-platform; consolidated here.)
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
+        // Shared "Roles & Access" navigation — registered HERE (the access-control
+        // owner) so it appears in EVERY context (tenant + platform + standalone)
+        // without living in a consumer's config/module.php. The path resolves to
+        // core.roles.index (tenant/standalone) or platform.admin.roles.index
+        // (platform); per-role module access is edited inline via the access Drawer.
+        // Deferred to 'booted' because aero-core (which binds the NavigationRegistry)
+        // boots AFTER this package.
+        $this->app->booted(function () {
+            if (! $this->app->bound(\Aero\Core\Services\NavigationRegistry::class)) {
+                return;
+            }
+
+            $this->app->make(\Aero\Core\Services\NavigationRegistry::class)->register('hrmac', [
+                [
+                    'name' => 'Roles & Access',
+                    'path' => '/roles',
+                    'icon' => 'ShieldCheckIcon',
+                    'access' => 'hrmac.roles_permissions.roles',
+                    'priority' => 5,
+                    'type' => 'page',
+                ],
+            ], 5, 'all');
+        });
+
         // Register commands
         if ($this->app->runningInConsole()) {
             $this->commands([
