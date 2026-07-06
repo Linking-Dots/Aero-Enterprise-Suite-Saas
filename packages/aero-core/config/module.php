@@ -196,49 +196,17 @@ return [
         |--------------------------------------------------------------------------
         */
         [
+            // User + invitation ADMINISTRATION moved to the shared aero-auth module
+            // (auth.user_management.*) — see the consolidation plan. Only self-service
+            // "My Profile" remains here (core-owned, not the admin surface).
             'code' => 'user_management',
-            'name' => 'User Management',
-            'description' => 'User accounts, authentication, and invitations',
+            'name' => 'My Profile',
+            'description' => 'Self-service profile for the signed-in user',
             'icon' => 'UserGroupIcon',
-            'route' => '/users',
+            'route' => '/profile',
             'priority' => 3,
 
             'components' => [
-                [
-                    'code' => 'users',
-                    'name' => 'Users',
-                    'type' => 'page',
-                    'route' => '/users',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Users'],
-                        ['code' => 'create', 'name' => 'Create User'],
-                        ['code' => 'edit', 'name' => 'Edit User'],
-                        ['code' => 'delete', 'name' => 'Delete User'],
-                        ['code' => 'bulk_delete', 'name' => 'Bulk Delete Users'],
-                        ['code' => 'activate', 'name' => 'Activate User'],
-                        ['code' => 'deactivate', 'name' => 'Deactivate User'],
-                        ['code' => 'bulk_toggle_status', 'name' => 'Bulk Toggle Status'],
-                        ['code' => 'bulk_assign_roles', 'name' => 'Bulk Assign Roles'],
-                        ['code' => 'reset_password', 'name' => 'Reset Password'],
-                        ['code' => 'lock_account', 'name' => 'Lock Account'],
-                        ['code' => 'unlock_account', 'name' => 'Unlock Account'],
-                        ['code' => 'impersonate', 'name' => 'Impersonate User'], // Added: High value feature
-                        ['code' => 'export', 'name' => 'Export Users'],
-                        ['code' => 'import', 'name' => 'Import Users'],
-                    ],
-                ],
-                [
-                    'code' => 'user_invitations',
-                    'name' => 'User Invitations',
-                    'type' => 'page',
-                    'route' => '/users/invitations',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Invitations'],
-                        ['code' => 'invite', 'name' => 'Invite User'],
-                        ['code' => 'resend', 'name' => 'Resend Invitation'],
-                        ['code' => 'cancel', 'name' => 'Cancel Invitation'],
-                    ],
-                ],
                 [
                     'code' => 'user_profile',
                     'name' => 'User Profile',
@@ -335,45 +303,11 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 1.4 Roles & Permissions
+        | 1.4 Roles & Permissions — MOVED to the shared aero-hrmac module
+        |     (hrmac.roles_permissions.{roles,module_access}.*). Declared once there
+        |     so tenant + platform share one access-control source of truth.
         |--------------------------------------------------------------------------
         */
-        [
-            'code' => 'roles_permissions',
-            'name' => 'Roles & Module Access',
-            'description' => 'Role-based access control and module permissions',
-            'icon' => 'ShieldCheckIcon',
-            'route' => '/roles',
-            'priority' => 5,
-
-            'components' => [
-                [
-                    'code' => 'roles',
-                    'name' => 'Roles',
-                    'type' => 'page',
-                    'route' => '/roles',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Roles'],
-                        ['code' => 'create', 'name' => 'Create Role'],
-                        ['code' => 'edit', 'name' => 'Edit Role'],
-                        ['code' => 'delete', 'name' => 'Delete Role'],
-                        ['code' => 'assign', 'name' => 'Assign Role to Users'],
-                        ['code' => 'permissions', 'name' => 'Manage Permissions'], // Added explicit permission management
-                    ],
-                ],
-                [
-                    'code' => 'module_access',
-                    'name' => 'Module Access',
-                    'type' => 'page',
-                    'route' => '/modules',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Modules'],
-                        ['code' => 'configure', 'name' => 'Configure Module Access'],
-                        ['code' => 'toggle', 'name' => 'Enable/Disable Module'],
-                    ],
-                ],
-            ],
-        ],
 
         /*
         |--------------------------------------------------------------------------

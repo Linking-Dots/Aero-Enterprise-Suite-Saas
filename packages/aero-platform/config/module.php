@@ -411,49 +411,13 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | 9. Platform Users (Landlord)
+        | 9. Platform Users (Landlord) — MOVED to the shared foundations:
+        |    user administration → aero-auth (auth.user_management.*),
+        |    roles + module-access → aero-hrmac (hrmac.roles_permissions.*).
+        |    Declared once there so tenant + platform share one identity + one
+        |    access-control source of truth (no platform-users.* duplication).
         |--------------------------------------------------------------------------
         */
-        [
-            'code' => 'platform-users',
-            'name' => 'Platform Users',
-            'description' => 'Manage platform administrators',
-            'icon' => 'UserGroupIcon',
-            'route' => '/users',
-            'priority' => 9,
-
-            'components' => [
-                [
-                    'code' => 'landlord-user-list',
-                    'name' => 'All Users',
-                    'route' => '/users',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Users'],
-                        ['code' => 'create', 'name' => 'Create User'],
-                        ['code' => 'edit', 'name' => 'Edit User'],
-                        ['code' => 'delete', 'name' => 'Delete User'],
-                    ],
-                ],
-                [
-                    'code' => 'landlord-roles',
-                    'name' => 'Roles',
-                    'route' => '/roles',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Roles'],
-                        ['code' => 'manage', 'name' => 'Manage Roles'],
-                    ],
-                ],
-                [
-                    'code' => 'module-access',
-                    'name' => 'Module Access',
-                    'route' => '/module-access',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Module Access'],
-                        ['code' => 'manage', 'name' => 'Manage Module Access'],
-                    ],
-                ],
-            ],
-        ],
 
         /*
         |--------------------------------------------------------------------------
