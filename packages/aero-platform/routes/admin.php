@@ -43,6 +43,7 @@ use Aero\Platform\Http\Controllers\Admin\Infra\SecurityCenterController;
 use Aero\Platform\Http\Controllers\Admin\Infra\StatusPageController;
 use Aero\Platform\Http\Controllers\Admin\Infra\WhiteLabelController;
 use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
+use Aero\HRMAC\Http\Controllers\ModuleController as HrmacModuleController;
 use Aero\HRMAC\Http\Controllers\RoleController;
 use Aero\Platform\Http\Controllers\Admin\LandlordUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
@@ -1395,15 +1396,25 @@ Route::middleware('admin.domain')->group(function () {
         // a role is edited through the HRMAC module-access surface, not a JSON picker.
         Route::prefix('roles')->name('platform.admin.roles.')
             ->group(function () {
-                Route::middleware('hrmac:platform-users.landlord-roles.view')
+                // Renders the shared Pages/Shared/AccessControl/Roles/Index (platform
+                // context), driven by route defaults. Access-control HRMAC lives in aero-hrmac.
+                Route::middleware('hrmac:hrmac.roles_permissions.roles.view')
                     ->get('/', [RoleController::class, 'index'])
-                    ->defaults('hrmac_role_view', 'Platform/Admin/Roles/Index')
+                    ->defaults('hrmac_role_view', 'Shared/AccessControl/Roles/Index')
+                    ->defaults('hrmac_route_prefix', 'platform.admin.roles')
+                    ->defaults('hrmac_module_access_prefix', 'platform.admin.modules')
+                    ->defaults('hrmac_namespace', 'hrmac.roles_permissions')
+                    ->defaults('hrmac_scope', 'platform')
+                    ->defaults('hrmac_dashboard_route', 'platform.admin.dashboard')
                     ->name('index');
-                Route::middleware('hrmac:platform-users.landlord-roles.manage')->group(function () {
-                    Route::post('/', [RoleController::class, 'store'])->name('store');
-                    Route::put('/{role}', [RoleController::class, 'update'])->name('update');
-                    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
-                });
+                Route::middleware('hrmac:hrmac.roles_permissions.roles.create')
+                    ->post('/', [RoleController::class, 'store'])->name('store');
+                Route::middleware('hrmac:hrmac.roles_permissions.roles.edit')
+                    ->put('/{role}', [RoleController::class, 'update'])->name('update');
+                Route::middleware('hrmac:hrmac.roles_permissions.roles.delete')
+                    ->delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+                Route::middleware('hrmac:hrmac.roles_permissions.roles.assign')
+                    ->post('/assign-user', [RoleController::class, 'assignUser'])->name('assign-user');
             });
 
         // Module Management (P-4)
@@ -1416,6 +1427,13 @@ Route::middleware('admin.domain')->group(function () {
                 ->put('/{module}/config', [ModuleAdminController::class, 'configure'])->name('configure');
             Route::middleware('hrmac:module-management.module-pricing.edit')
                 ->put('/{module}/pricing', [ModuleAdminController::class, 'updatePricing'])->name('pricing');
+
+            // Per-role module-access data contract for the shared RBAC access Drawer
+            // (platform context). Backed by the shared aero-hrmac ModuleController.
+            Route::middleware('hrmac:hrmac.roles_permissions.module_access.view')
+                ->get('/role-access/{roleId}', [HrmacModuleController::class, 'getRoleAccess'])->name('role-access.show');
+            Route::middleware('hrmac:hrmac.roles_permissions.module_access.configure')
+                ->post('/role-access/{roleId}/sync', [HrmacModuleController::class, 'syncRoleAccess'])->name('role-access.sync');
         });
 
         // =========================================================================

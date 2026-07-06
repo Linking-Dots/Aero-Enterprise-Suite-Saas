@@ -51,9 +51,12 @@ class RoleController extends Controller
             ->pluck('c', 'role_id');
         $roles->each(fn (Role $r) => $r->users_count = (int) ($assignmentCounts[$r->id] ?? 0));
 
-        // The consuming route decides which page renders this role list (tenant vs
-        // platform shell) via a route default — HRMAC names no specific view.
-        $view = $request->route()?->defaults['hrmac_role_view'] ?? 'Core/Roles/Index';
+        // The consuming route supplies its context via route defaults — HRMAC names no
+        // specific view, prefix, or namespace. Both tenant and platform now render the
+        // shared Pages/Shared/AccessControl/Roles/Index, parameterized by these props.
+        $defaults = $request->route()?->defaults ?? [];
+        $view = $defaults['hrmac_role_view'] ?? 'Shared/AccessControl/Roles/Index';
+        $scope = $defaults['hrmac_scope'] ?? 'tenant';
 
         $props = [
             'roles' => $roles,
@@ -62,17 +65,23 @@ class RoleController extends Controller
             // tenant-scoped User model on the platform), where this surface isn't used.
             'users' => $this->assignableUsers(),
             'can_manage_super_admin' => $this->isSuperAdmin($request->user()),
+            // Context wiring for the shared page (prop-driven route/HRMAC strings).
+            'routePrefix' => $defaults['hrmac_route_prefix'] ?? 'core.roles',
+            'moduleAccessRoutePrefix' => $defaults['hrmac_module_access_prefix'] ?? 'core.modules',
+            'hrmacNamespace' => $defaults['hrmac_namespace'] ?? 'hrmac.roles_permissions',
+            'scope' => $scope,
+            'dashboardRoute' => $defaults['hrmac_dashboard_route']
+                ?? ($scope === 'platform' ? 'platform.admin.dashboard' : 'core.dashboard'),
         ];
 
-        // The unified tenant RBAC page edits per-role module access inline (the access
-        // Drawer), so it also needs the module tree, the available action scopes, and
-        // the registry counts. The platform role view is a different component that
-        // neither needs nor renders these, so we only attach them for the core view —
-        // and never run the tenant-scoped module query in the platform context.
-        if ($view === 'Core/Roles/Index') {
-            $props['modules'] = $this->moduleTree('tenant');
+        // The shared RBAC page edits per-role module access inline (the access Drawer),
+        // so it needs the scoped module tree, the available action scopes, and the
+        // registry counts. Attached for the shared page (both contexts) and the legacy
+        // core page. The scope selects the tenant vs platform module tree.
+        if (in_array($view, ['Shared/AccessControl/Roles/Index', 'Core/Roles/Index'], true)) {
+            $props['modules'] = $this->moduleTree($scope);
             $props['accessScopes'] = RoleModuleAccess::ACCESS_SCOPES;
-            $props['statistics'] = $this->moduleStatistics('tenant');
+            $props['statistics'] = $this->moduleStatistics($scope);
         }
 
         return Inertia::render($view, $props);

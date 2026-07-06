@@ -368,7 +368,7 @@ Route::middleware('auth:web')->group(function () {
     // ========================================================================
     // CRITICAL: Authorization middleware added for security
     // Only users with 'manage-modules' capability can access these routes
-    Route::prefix('modules')->name('core.modules.')->middleware('hrmac:core.roles_permissions.module_access.view')->group(function () {
+    Route::prefix('modules')->name('core.modules.')->middleware('hrmac:hrmac.roles_permissions.module_access.view')->group(function () {
         // View — module access is now edited inline on the unified RBAC page (per-role
         // access Drawer), so the standalone tree page redirects there. The JSON
         // role-access.show|sync endpoints below remain the editor's data contract.
@@ -1200,21 +1200,29 @@ Route::middleware('auth:web')->group(function () {
     // index page. Authorization via HRMAC module-access middleware.
     // ========================================================================
     Route::prefix('roles')->name('core.roles.')->group(function () {
+        // Renders the shared Pages/Shared/AccessControl/Roles/Index (tenant context),
+        // driven by route defaults. Access-control HRMAC now lives in aero-hrmac.
         Route::get('/', [RoleController::class, 'index'])
             ->name('index')
-            ->middleware('hrmac:core.roles_permissions.roles.view');
+            ->middleware('hrmac:hrmac.roles_permissions.roles.view')
+            ->defaults('hrmac_role_view', 'Shared/AccessControl/Roles/Index')
+            ->defaults('hrmac_route_prefix', 'core.roles')
+            ->defaults('hrmac_module_access_prefix', 'core.modules')
+            ->defaults('hrmac_namespace', 'hrmac.roles_permissions')
+            ->defaults('hrmac_scope', 'tenant')
+            ->defaults('hrmac_dashboard_route', 'core.dashboard');
         Route::post('/', [RoleController::class, 'store'])
             ->name('store')
-            ->middleware('hrmac:core.roles_permissions.roles.create');
+            ->middleware('hrmac:hrmac.roles_permissions.roles.create');
         Route::put('/{role}', [RoleController::class, 'update'])
             ->name('update')
-            ->middleware('hrmac:core.roles_permissions.roles.edit');
+            ->middleware('hrmac:hrmac.roles_permissions.roles.edit');
         Route::delete('/{role}', [RoleController::class, 'destroy'])
             ->name('destroy')
-            ->middleware('hrmac:core.roles_permissions.roles.delete');
+            ->middleware('hrmac:hrmac.roles_permissions.roles.delete');
         Route::post('/assign-user', [RoleController::class, 'assignUser'])
             ->name('assign-user')
-            ->middleware('hrmac:core.roles_permissions.roles.assign');
+            ->middleware('hrmac:hrmac.roles_permissions.roles.assign');
     });
 
     // ========================================================================

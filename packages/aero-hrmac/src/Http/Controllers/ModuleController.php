@@ -55,7 +55,22 @@ class ModuleController extends Controller
     {
         $user = $this->getCurrentUser();
 
-        return $user?->hasRole('Super Administrator') ?? false;
+        if (! $user || ! method_exists($user, 'roles')) {
+            return false;
+        }
+
+        // Context-free: honor every configured super-admin role name (tenant AND
+        // platform — e.g. "Super Administrator", "Super Platform Admin"), not a
+        // single hardcoded tenant role. Mirrors RoleController::isSuperAdmin.
+        $rolesConfig = config('hrmac.super_admin_roles', []);
+        $superRoles = [];
+        array_walk_recursive($rolesConfig, function ($role) use (&$superRoles) {
+            if (is_string($role) && $role !== '') {
+                $superRoles[] = $role;
+            }
+        });
+
+        return $user->roles()->whereIn('name', $superRoles)->exists();
     }
 
     /**
@@ -867,15 +882,10 @@ class ModuleController extends Controller
         }
 
         try {
+            // Context-free: the role is fetched by id on the active connection
+            // (central for platform, tenant DB for tenant), so a found role is already
+            // in-context. No hardcoded guard gate (that assumed the tenant 'web' guard).
             $role = Role::findOrFail($roleId);
-
-            // Verify role belongs to correct guard
-            $isPlatform = false;
-            $expectedGuard = 'web';
-
-            if ($role->guard_name !== $expectedGuard) {
-                return response()->json(['error' => 'Role not found in current context'], 404);
-            }
 
             $accessTree = $this->roleModuleAccessService->getRoleAccessTree($role);
 
