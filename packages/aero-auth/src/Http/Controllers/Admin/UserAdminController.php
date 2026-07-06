@@ -78,10 +78,7 @@ class UserAdminController extends Controller
                 'inactive' => $modelClass::onlyTrashed()->count(),
                 'pending' => $invitations->count(),
             ],
-            'capabilities' => [
-                'impersonation' => $this->impersonationAllowed($request),
-                'invitations' => $invitationsAllowed,
-            ],
+            ...$this->contextProps($request),
         ]);
     }
 
@@ -91,6 +88,7 @@ class UserAdminController extends Controller
 
         return Inertia::render($view, [
             'roles' => Role::orderBy('name')->get(['id', 'name']),
+            ...$this->contextProps($request),
         ]);
     }
 
@@ -120,7 +118,7 @@ class UserAdminController extends Controller
 
         $view = $request->route()?->defaults['hrmac_user_show_view'] ?? 'Core/Users/Show';
 
-        return Inertia::render($view, ['user' => $user]);
+        return Inertia::render($view, ['user' => $user, ...$this->contextProps($request)]);
     }
 
     public function edit(Request $request, int $id): Response
@@ -132,6 +130,7 @@ class UserAdminController extends Controller
         return Inertia::render($view, [
             'user' => $user->load('roles'),
             'roles' => Role::orderBy('name')->get(['id', 'name']),
+            ...$this->contextProps($request),
         ]);
     }
 
@@ -174,6 +173,27 @@ class UserAdminController extends Controller
         $count = $this->users->bulkDelete($data['ids'], $request->user());
 
         return back()->with('success', "{$count} users deleted.");
+    }
+
+    public function bulkToggleStatus(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'user_ids' => ['required', 'array'],
+            'user_ids.*' => ['integer'],
+            'active' => ['required', 'boolean'],
+        ]);
+
+        // Set each selected user to the requested active state (SoftDeletes-based),
+        // only toggling those that differ — so the bulk action honors the intent
+        // rather than blindly flipping.
+        foreach ($this->newUserQuery()->whereIn('id', $data['user_ids'])->get() as $user) {
+            $isActive = ! (method_exists($user, 'trashed') && $user->trashed());
+            if ($isActive !== $data['active']) {
+                $this->users->toggleStatus($user, $request->user());
+            }
+        }
+
+        return back()->with('success', 'User statuses updated.');
     }
 
     public function bulkAssignRoles(Request $request): RedirectResponse
@@ -273,7 +293,7 @@ class UserAdminController extends Controller
 
         $view = $request->route()?->defaults['hrmac_user_invitations_view'] ?? 'Core/Users/Invitations/Index';
 
-        return Inertia::render($view, ['invitations' => $invitations]);
+        return Inertia::render($view, ['invitations' => $invitations, ...$this->contextProps($request)]);
     }
 
     public function invite(Request $request): RedirectResponse
@@ -308,6 +328,31 @@ class UserAdminController extends Controller
         $this->invitations->cancel($invitationId, $request->user());
 
         return back()->with('success', 'Invitation cancelled.');
+    }
+
+    /**
+     * Shared context wiring for the prop-driven Shared/UserManagement pages: the
+     * consuming route supplies its prefix/namespace/scope/capabilities via route
+     * defaults so ONE page component serves both tenant and platform.
+     *
+     * @return array<string, mixed>
+     */
+    private function contextProps(Request $request): array
+    {
+        $defaults = $request->route()?->defaults ?? [];
+        $scope = $defaults['hrmac_scope'] ?? 'tenant';
+
+        return [
+            'routePrefix' => $defaults['hrmac_route_prefix'] ?? 'core.users',
+            'hrmacNamespace' => $defaults['hrmac_namespace'] ?? 'core.user_management',
+            'scope' => $scope,
+            'dashboardRoute' => $defaults['hrmac_dashboard_route']
+                ?? ($scope === 'platform' ? 'platform.admin.dashboard' : 'core.dashboard'),
+            'capabilities' => [
+                'impersonation' => $this->impersonationAllowed($request),
+                'invitations' => $this->invitationsAllowed($request),
+            ],
+        ];
     }
 
     private function impersonationAllowed(Request $request): bool
