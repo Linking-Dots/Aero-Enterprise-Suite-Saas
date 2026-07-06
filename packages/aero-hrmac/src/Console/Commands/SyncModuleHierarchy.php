@@ -142,9 +142,13 @@ class SyncModuleHierarchy extends Command
                 $progressBar->setFormat('verbose');
 
                 foreach ($modules as $moduleDef) {
-                    // Filter by scope
+                    // Filter by scope. Shared foundations (scope 'infrastructure' or
+                    // 'shared' — e.g. aero-auth, aero-hrmac) belong to BOTH the tenant
+                    // and platform permission sets, so they match every scoped run;
+                    // only marketplace/context modules ('tenant' | 'platform') are gated.
                     $moduleScope = $moduleDef['scope'] ?? 'tenant';
-                    if ($scope && $scope !== 'all' && $moduleScope !== $scope) {
+                    $isSharedScope = in_array($moduleScope, ['infrastructure', 'shared'], true);
+                    if ($scope && $scope !== 'all' && ! $isSharedScope && $moduleScope !== $scope) {
                         $progressBar->advance();
 
                         continue;
