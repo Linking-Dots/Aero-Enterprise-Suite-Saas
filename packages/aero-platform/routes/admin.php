@@ -46,7 +46,6 @@ use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceContro
 use Aero\HRMAC\Http\Controllers\ModuleController as HrmacModuleController;
 use Aero\HRMAC\Http\Controllers\RoleController;
 use Aero\Auth\Http\Controllers\Admin\UserAdminController;
-use Aero\Platform\Http\Controllers\Admin\LandlordUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\MaintenanceWindowController;
 use Aero\Platform\Http\Controllers\Admin\ModuleAdminController;
