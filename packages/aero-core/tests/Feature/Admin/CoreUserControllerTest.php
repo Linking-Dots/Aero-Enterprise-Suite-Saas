@@ -31,7 +31,7 @@ class CoreUserControllerTest extends PackageTestCase
             ->get(route('core.users.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Core/Users/Index', false)
+                ->component('Shared/UserManagement/Users/Index', false)
                 ->has('users')
             );
     }
@@ -54,7 +54,7 @@ class CoreUserControllerTest extends PackageTestCase
             ->get(route('core.users.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Core/Users/Create', false)
+                ->component('Shared/UserManagement/Users/Create', false)
                 ->has('roles')
             );
     }
@@ -77,7 +77,7 @@ class CoreUserControllerTest extends PackageTestCase
                 'password'              => 'Password1!',
                 'password_confirmation' => 'Password1!',
             ])
-            ->assertRedirect(route('core.users.index'));
+            ->assertRedirect(); // shared UserAdminController returns back() after store/destroy
 
         $this->assertDatabaseHas('users', ['email' => 'newuser@example.com']);
     }
@@ -139,7 +139,7 @@ class CoreUserControllerTest extends PackageTestCase
 
         $this->actingAs($admin)
             ->delete(route('core.users.destroy', $target))
-            ->assertRedirect(route('core.users.index'));
+            ->assertRedirect(); // shared UserAdminController returns back() after store/destroy
 
         $this->assertDatabaseMissing('users', ['id' => $target->id]);
     }

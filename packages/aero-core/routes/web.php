@@ -304,63 +304,11 @@ Route::middleware('auth:web')->group(function () {
     // Locale switching is now handled by aero-i18n package (route: i18n.locale.update)
 
     // ========================================================================
-    // USER MANAGEMENT ROUTES
+    // USER MANAGEMENT ROUTES — moved to the shared aero-auth UserAdminController
+    // (core.users.* below, auth.user_management.* HRMAC). The former
+    // `core.api.users.*` block routed to CoreUserController methods that no longer
+    // exist (paginate/stats/restore/forceDelete/lock/…) — a latent bug, removed.
     // ========================================================================
-    Route::prefix('api/users')->name('core.api.users.')->middleware('hrmac:auth.user_management.users.view')->group(function () {
-        // List & View
-        Route::get('/', [CoreUserController::class, 'index'])->name('index');
-        Route::get('/paginate', [CoreUserController::class, 'paginate'])->name('paginate');
-        Route::get('/stats', [CoreUserController::class, 'stats'])->name('stats');
-
-        // Create
-        Route::post('/', [CoreUserController::class, 'store'])
-            ->middleware(['precognitive', 'quota:users'])
-            ->name('store');
-
-        // Update
-        Route::put('/{id}', [CoreUserController::class, 'update'])
-            ->middleware(['precognitive'])
-            ->name('update');
-        Route::put('/{id}/toggle-status', [CoreUserController::class, 'toggleStatus'])->name('toggleStatus');
-        Route::post('/{id}/roles', [CoreUserController::class, 'updateUserRole'])->name('updateRole');
-
-        // Delete
-        Route::delete('/{id}', [CoreUserController::class, 'destroy'])->name('destroy');
-
-        // Restore soft-deleted user
-        Route::post('/{id}/restore', [CoreUserController::class, 'restore'])->name('restore');
-
-        // Force delete (permanent)
-        Route::delete('/{id}/force', [CoreUserController::class, 'forceDelete'])->name('forceDelete');
-
-        // Bulk operations
-        Route::post('/bulk/toggle-status', [CoreUserController::class, 'bulkToggleStatus'])->name('bulk.toggleStatus');
-        Route::post('/bulk/assign-roles', [CoreUserController::class, 'bulkAssignRoles'])->name('bulk.assignRoles');
-        Route::post('/bulk/delete', [CoreUserController::class, 'bulkDelete'])->name('bulk.delete');
-
-        // Export
-        Route::post('/export', [CoreUserController::class, 'exportUsers'])->name('export');
-
-        // Account Security
-        Route::post('/{id}/lock', [CoreUserController::class, 'lockAccount'])->name('lock');
-        Route::post('/{id}/unlock', [CoreUserController::class, 'unlockAccount'])->name('unlock');
-        Route::post('/{id}/force-password-reset', [CoreUserController::class, 'forcePasswordReset'])->name('forcePasswordReset');
-
-        // Email Verification
-        Route::post('/{id}/resend-verification', [CoreUserController::class, 'resendEmailVerification'])->name('resendVerification');
-
-        // Invitations
-        Route::post('/invite', [CoreUserController::class, 'sendInvitation'])->name('invite');
-        Route::get('/invitations/pending', [CoreUserController::class, 'pendingInvitations'])->name('invitations.pending');
-        Route::post('/invitations/{invitation}/resend', [CoreUserController::class, 'resendInvitation'])->name('invitations.resend');
-        Route::delete('/invitations/{invitation}', [CoreUserController::class, 'cancelInvitation'])->name('invitations.cancel');
-
-        // Impersonation
-        Route::post('/{id}/impersonate', [CoreUserController::class, 'startImpersonation'])->name('impersonate');
-    });
-
-    // Impersonation Stop (separate from user management group - needs to work while impersonating)
-    Route::post('/impersonation/stop', [CoreUserController::class, 'stopImpersonation'])->name('core.impersonation.stop');
 
     // Device management routes are registered by AeroAuthServiceProvider.
 

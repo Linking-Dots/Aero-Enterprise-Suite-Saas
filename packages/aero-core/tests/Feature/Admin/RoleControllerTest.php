@@ -32,7 +32,7 @@ class RoleControllerTest extends PackageTestCase
             ->get(route('core.roles.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Core/Roles/Index', false)
+                ->component('Shared/AccessControl/Roles/Index', false)
                 ->has('roles')
             );
     }
