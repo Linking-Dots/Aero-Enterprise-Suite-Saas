@@ -784,6 +784,14 @@ class PlatformDemoSeeder extends Seeder
                 }
             }
 
+            // Smooth growth ramp so the 6-month revenue trend rises to today's
+            // true MRR (~0.68x at the window start -> 1.0x today) rather than a
+            // flat line. Progress = position within the 180-day window.
+            $progress = min(1.0, max(0.0, $start->diffInDays($d) / 180));
+            $ramp = 0.68 + 0.32 * $progress;
+            $planMrr = round($planMrr * $ramp, 2);
+            $prodMrr = round($prodMrr * $ramp, 2);
+
             $mrr = round($planMrr + $prodMrr, 2);
             $arr = round($mrr * 12, 2);
             // daily revenue = invoices marked paid that day
