@@ -31,5 +31,6 @@ abstract class PackageTestCase extends TestCase
         $app['config']->set('aeon.providers.gemini.model', 'gemini-flash-latest');
         $app['config']->set('aeon.providers.gemini.endpoint', 'https://generativelanguage.googleapis.com/v1beta');
         $app['config']->set('aeon.providers.gemini.timeout', 30);
+        $app['config']->set('aeon.providers.gemini.retry_base_ms', 0); // no real sleep in tests
     }
 }

@@ -45,25 +45,66 @@ class GeminiProvider implements AiProvider
             $payload['systemInstruction'] = ['parts' => [['text' => $system]]];
         }
 
-        try {
-            $res = Http::withHeaders(['x-goog-api-key' => $this->key])
-                ->timeout($this->timeout)
-                ->post("{$this->endpoint}/models/{$this->model}:generateContent", $payload);
+        // Try the primary model, then fall back to alternates when a model is
+        // rate-limited (429) or overloaded (503) — Google throttles/overloads
+        // individual models transiently, so an alternate usually answers.
+        $attempts = (int) config('aeon.providers.gemini.retries', 2);
+        $baseMs = (int) config('aeon.providers.gemini.retry_base_ms', 500);
+        $lastStatus = null;
 
-            if ($res->failed()) {
-                return AiChatResult::failed('Gemini HTTP '.$res->status(), $this->model);
+        foreach ($this->modelChain() as $model) {
+            try {
+                $res = null;
+                for ($i = 0; $i <= $attempts; $i++) {
+                    $res = Http::withHeaders(['x-goog-api-key' => $this->key])
+                        ->timeout($this->timeout)
+                        ->post("{$this->endpoint}/models/{$model}:generateContent", $payload);
+
+                    if (! in_array($res->status(), [429, 503], true)) {
+                        break;
+                    }
+                    if ($i < $attempts) {
+                        usleep($baseMs * 1000 * ($i + 1)); // 500ms, 1000ms, …
+                    }
+                }
+
+                $lastStatus = $res->status();
+
+                if (in_array($lastStatus, [429, 503], true)) {
+                    continue; // this model is busy — try the next in the chain
+                }
+
+                if ($res->failed()) {
+                    return AiChatResult::failed('Gemini HTTP '.$lastStatus, $model);
+                }
+
+                $json = $res->json();
+                $text = data_get($json, 'candidates.0.content.parts.0.text', '');
+                $tokens = (int) data_get($json, 'usageMetadata.totalTokenCount', 0);
+
+                return new AiChatResult(content: (string) $text, tokensUsed: $tokens, model: $model);
+            } catch (\Throwable $e) {
+                Log::error('Aeon GeminiProvider chat failed', ['model' => $model, 'error' => $e->getMessage()]);
+                $lastStatus = $lastStatus ?? 0;
             }
-
-            $json = $res->json();
-            $text = data_get($json, 'candidates.0.content.parts.0.text', '');
-            $tokens = (int) data_get($json, 'usageMetadata.totalTokenCount', 0);
-
-            return new AiChatResult(content: (string) $text, tokensUsed: $tokens, model: $this->model);
-        } catch (\Throwable $e) {
-            Log::error('Aeon GeminiProvider chat failed', ['error' => $e->getMessage()]);
-
-            return AiChatResult::failed($e->getMessage(), $this->model);
         }
+
+        return AiChatResult::failed('Gemini unavailable (HTTP '.$lastStatus.')', $this->model);
+    }
+
+    /**
+     * Primary model followed by de-duplicated fallbacks.
+     *
+     * @return array<int,string>
+     */
+    private function modelChain(): array
+    {
+        $fallbacks = config('aeon.providers.gemini.fallback_models', []);
+        if (is_string($fallbacks)) {
+            $fallbacks = array_filter(array_map('trim', explode(',', $fallbacks)));
+        }
+
+        return array_values(array_unique(array_merge([$this->model], (array) $fallbacks)));
     }
 
     public function embed(array $texts, array $options = []): array
