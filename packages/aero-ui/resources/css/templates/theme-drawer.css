@@ -2,7 +2,7 @@
 /* Gear "sticker": peeks in from the right edge, 50% opacity at rest; on hover it
    slides fully in at full opacity as a solid gray button. z-index sits below all
    overlays (modal/overlay/toast = 500-900) so any drawer/backdrop covers it. */
-.aeos-theme-drawer-trigger { position:fixed; top:var(--aeos-space-4); right:0; transform:translateX(35%); width:var(--aeos-space-10); height:var(--aeos-space-10); border-radius:50% 0 0 50%; background:#6b7280; border:none; color:#fff; cursor:pointer; opacity:.5; z-index:var(--aeos-z-sticky); display:none; align-items:center; justify-content:center; box-shadow:var(--aeos-shadow-lift, 0 2px 10px rgba(0,0,0,.25)); transition:transform var(--aeos-dur-fast),opacity var(--aeos-dur-fast),background var(--aeos-dur-fast); }
+.aeos-theme-drawer-trigger { position:fixed; top:calc(var(--aeos-h-topbar, 3.5rem) + var(--aeos-space-4)); right:0; transform:translateX(35%); width:var(--aeos-space-10); height:var(--aeos-space-10); border-radius:var(--aeos-r-lg); background:#6b7280; border:1px solid rgba(255,255,255,.14); color:#fff; cursor:pointer; opacity:.5; z-index:var(--aeos-z-sticky); display:none; align-items:center; justify-content:center; box-shadow:var(--aeos-shadow-lift, 0 2px 10px rgba(0,0,0,.25)); transition:transform var(--aeos-dur-fast),opacity var(--aeos-dur-fast),background var(--aeos-dur-fast); }
 /* Show trigger only when an authenticated shell is rendered as a DOM sibling */
 [data-aeos-shell] ~ .aeos-theme-drawer-trigger { display:flex; }
 .aeos-theme-drawer-trigger:hover { opacity:1; transform:translateX(0); background:#4b5563; }
