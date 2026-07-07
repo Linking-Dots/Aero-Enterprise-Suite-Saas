@@ -160,6 +160,31 @@ stack (MySQL, Laravel 12, @aero/ui, real hosted LLM API).
   `basic_chat`, `conversation_history`, `rag_powered`, `perform_actions`, `max_messages_per_day` —
   wired to the plan + product subscription model. Standalone = all features on by module install.
 
+### 4.5 Generative UI (model-driven `@aero/ui` blocks)
+Aeon replies are **not** plain text blobs and **never** raw HTML/JS. Each assistant turn returns a
+**constrained, whitelisted list of typed blocks**; a frontend `BlockRenderer` maps each block to a
+real `@aero/ui` component. The model *composes* UI from the design system — it cannot invent markup.
+Secure (no XSS), theme-reactive, accessible by construction. (Pattern: model-/server-driven UI.)
+
+- **Block contract** (bounded set, ~6–8 types): `text`, `stat` (KPI/stat card), `table`,
+  `chart` (reuses `@aero/ui` primitives AreaTrend/AreaSpark/BarMini/Donut — see
+  [[aero-ui-chart-primitives]]), `entityCard` (e.g. employee w/ avatar), `form`
+  (schema-driven fields), `options` (pickable cards for disambiguation), `chips` (suggested
+  next-action buttons). Unknown/unsupported type → **graceful degrade to `text`**.
+- **`form` blocks are schema-driven:** rendered from a tool's JSON parameter schema, so a new tool
+  gets a proper `@aero/ui` form/preview **for free** — this is what makes the tool registry
+  "evolving" without per-tool UI work.
+- **Where each block earns its place:**
+  - Data Q&A answers → `stat` / `table` / `chart` instead of prose (M2).
+  - Guided write prefill/confirm → schema-driven `form` preview (M3).
+  - Entity disambiguation ("which Rahim?") → `options` cards (M3).
+  - Missing-field prompts → inline `form` mini-inputs (date picker, select) (M3).
+  - Post-answer suggestions → `chips` (M2/M3).
+- **Guardrail (YAGNI):** whitelist only — NOT open-ended code generation. New block types are added
+  deliberately in the registry, never emitted ad hoc by the model.
+- **Foundation lands in M1** (BlockRenderer + registry; M1 uses `text` only); richer blocks light up
+  in M2/M3. Mostly wiring existing components, not new UI.
+
 ---
 
 ## 5. Data model (MySQL, tenant-scoped)
@@ -167,7 +192,7 @@ stack (MySQL, Laravel 12, @aero/ui, real hosted LLM API).
 | Table | Key columns | Notes |
 |---|---|---|
 | `aeon_conversations` | `id, user_id, title, context_json, archived_at, timestamps` | extends TenantModel |
-| `aeon_messages` | `id, conversation_id, role, content, tool_calls_json, tokens, provider, model, timestamps` | role ∈ user/assistant/tool |
+| `aeon_messages` | `id, conversation_id, role, content, blocks_json, tool_calls_json, tokens, provider, model, timestamps` | role ∈ user/assistant/tool; `blocks_json` = rendered generative-UI blocks (§4.5) |
 | `aeon_embeddings` | `id, source_type, module, context_scope, chunk_text, vector_json, dims, checksum, timestamps` | vector as JSON; indexed by (source_type, module) |
 | `aeon_usage_logs` | `id, user_id, conversation_id, provider, model, prompt_tokens, completion_tokens, latency_ms, created_at` | analytics + quota |
 
@@ -184,6 +209,8 @@ stack (MySQL, Laravel 12, @aero/ui, real hosted LLM API).
 - **Prefill bridge** — a small mechanism to open an existing page with its form pre-populated from
   Aeon's proposed values (the "Guided" write model); the page's own Save button commits.
 - **/aeon page** — full-height chat + conversation history sidebar; archive/delete.
+- **BlockRenderer** — renders the model's whitelisted `@aero/ui` block list (§4.5); the shared
+  rendering path for drawer + `/aeon` page.
 - **useAeon()** hook — open/close, send, stream, conversation state.
 - **Command-mode rail** entry so it renders in the command shell too.
 - All theme-drawer settings apply (mode/card-style/density/radius/borders/motion/accent).
@@ -223,13 +250,16 @@ Other providers use analogous blocks (`OPENAI_*`, `ANTHROPIC_*`, `AEON_COMPAT_EN
 ## 8. Build milestones (each independently shippable)
 
 1. **M1 — Provider layer + chat MVP:** `AiProvider` contract, `GeminiProvider`, `AeonService` chat
-   turn, `aeon_conversations`/`aeon_messages`, minimal drawer, `/aeon` page. No RAG, no tools.
+   turn, `aeon_conversations`/`aeon_messages`, minimal drawer, `/aeon` page, **BlockRenderer +
+   block registry (text-only for now)**. No RAG, no tools.
    → "Ask Aeon anything" works end-to-end against Gemini.
-2. **M2 — RAG guide:** `aeon_embeddings`, `RagService`, `aeon:index`, source citations.
-   → Aeon answers AEOS-specific how-to from indexed docs/modules.
+2. **M2 — RAG guide + rich answer blocks:** `aeon_embeddings`, `RagService`, `aeon:index`, source
+   citations; light up `stat`/`table`/`chart`/`chips` blocks for answers.
+   → Aeon answers AEOS-specific how-to + data questions with real UI, not prose.
 3. **M3 — Agentic tools:** `ToolRegistry`, `AssistantTool`, read/nav tools + **Guided** write tools
    (navigate-and-prefill bridge → user Saves via real page), clarifying-question flow, entity
-   resolution, audit wiring. → Aeon performs tasks safely, in-context.
+   resolution, audit wiring; schema-driven `form` + `options` blocks (disambiguation, missing-field
+   inputs, prefill preview). → Aeon performs tasks safely, in-context.
 4. **M4 — Access & gating:** `aeon.*` HRMAC module, plan-tier flags, usage logs + quota guard,
    admin surface (index management). → production-grade governance.
 
