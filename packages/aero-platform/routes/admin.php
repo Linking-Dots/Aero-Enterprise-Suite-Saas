@@ -372,9 +372,11 @@ Route::middleware('admin.domain')->group(function () {
 
         // Billing & Invoices
         Route::middleware(['hrmac:subscriptions'])->prefix('billing')->name('admin.billing.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Billing/Dashboard');
-            })->middleware(['hrmac:subscriptions.tenant-subscriptions'])->name('index');
+            // Base /billing IS the billing command center (the nav "Billing"
+            // link targets this). Serve it through the real controller so it
+            // renders with data instead of a bare, empty component.
+            Route::get('/', [BillingDashboardController::class, 'index'])
+                ->middleware(['hrmac:subscriptions.tenant-subscriptions'])->name('index');
 
             Route::get('/subscriptions', function () {
                 return Inertia::render('Platform/Admin/Billing/Subscriptions');
