@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useContext, createContext } from 'react';
 import { useTheme } from './ThemeProvider.jsx';
-import { SparklesIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { cx } from '../components/Primitives.jsx';
 
 /* While a tile is hovered, the drawer fades to transparent so the whole app's
@@ -193,7 +193,7 @@ export default function ThemeDrawer() {
         aria-label="Open Theme Studio"
         aria-expanded={open}
       >
-        <SparklesIcon className="w-4.5 h-4.5" />
+        <Cog6ToothIcon className="w-4.5 h-4.5" />
       </button>
 
       {open && (

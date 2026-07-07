@@ -75,10 +75,14 @@ a {
 /* ── Aeon AI assistant ─────────────────────────────────────────── */
 .aeon-fab {
   position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
-  z-index: 60;
+  right: var(--aeos-space-6, 1.5rem);
+  bottom: var(--aeos-space-6, 1.5rem);
+  /* Below all overlays (modal/overlay/toast = 500-900) so any drawer/backdrop covers it. */
+  z-index: var(--aeos-z-sticky, 100);
+  opacity: 0.5;
+  transition: opacity var(--aeos-dur-fast, 0.15s) ease;
 }
+.aeon-fab:hover { opacity: 1; }
 .aeon-composer { width: 100%; }
 .aeon-composer .aeos-input { flex: 1; }
 .aeon-msg--user {
