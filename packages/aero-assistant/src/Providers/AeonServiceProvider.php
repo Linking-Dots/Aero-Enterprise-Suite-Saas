@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Aero\Assistant\Providers;
 
+use Aero\Assistant\Console\Commands\IndexKnowledge;
 use Aero\Assistant\Providers\Models\GeminiProvider;
 use Aero\Assistant\Services\AeonService;
+use Aero\Assistant\Services\IndexingService;
+use Aero\Assistant\Services\RagService;
 use Aero\Contracts\Ai\AiProvider;
 use Aero\Contracts\Providers\AbstractModuleProvider;
 
@@ -31,6 +34,15 @@ class AeonServiceProvider extends AbstractModuleProvider
             };
         });
 
+        $this->app->singleton(RagService::class);
+        $this->app->singleton(IndexingService::class);
         $this->app->singleton(AeonService::class);
+    }
+
+    protected function bootModule(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([IndexKnowledge::class]);
+        }
     }
 }

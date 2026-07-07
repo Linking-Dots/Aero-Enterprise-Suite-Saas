@@ -60,6 +60,13 @@ return [
         ],
     ],
 
+    'rag' => [
+        'enabled'        => env('AEON_RAG_ENABLED', true),
+        'top_k'          => (int) env('AEON_RAG_TOP_K', 5),
+        'threshold'      => (float) env('AEON_RAG_THRESHOLD', 0.55),
+        'knowledge_path' => env('AEON_KNOWLEDGE_PATH', __DIR__.'/../knowledge'),
+    ],
+
     'ui' => [
         'floating_button' => env('AEON_FLOATING_BUTTON', true),
     ],
