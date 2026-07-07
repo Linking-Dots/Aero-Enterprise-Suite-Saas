@@ -95,18 +95,18 @@ function mapItem(item, activeHref) {
 // contexts fall back to administration/modules. Unknown sections bucket under
 // 'modules'. Keep this in sync with NavigationRegistry::toFrontendGroups().
 const NAV_SECTIONS = [
-  { key: 'dashboards',     title: null },
-  { key: 'my-workspace',   title: 'My Workspace' },
-  { key: 'ov',             title: 'Overview' },
-  { key: 'tn',             title: 'Tenants & Onboarding' },
-  { key: 'rv',             title: 'Revenue & Catalog' },
-  { key: 'gr',             title: 'Growth & Marketing' },
-  { key: 'ac',             title: 'Access & Security' },
-  { key: 'cf',             title: 'Configuration' },
-  { key: 'op',             title: 'Operations & Reliability' },
-  { key: 'cs',             title: 'Customer Success' },
-  { key: 'administration', title: 'Administration' },
-  { key: 'modules',        title: 'Modules' },
+  { key: 'dashboards',     title: null,                        icon: null },
+  { key: 'my-workspace',   title: 'My Workspace',              icon: 'UserCircleIcon' },
+  { key: 'ov',             title: 'Overview',                  icon: 'Squares2X2Icon' },
+  { key: 'tn',             title: 'Tenants & Onboarding',      icon: 'BuildingOffice2Icon' },
+  { key: 'rv',             title: 'Revenue & Catalog',         icon: 'CurrencyDollarIcon' },
+  { key: 'gr',             title: 'Growth & Marketing',        icon: 'MegaphoneIcon' },
+  { key: 'ac',             title: 'Access & Security',         icon: 'ShieldCheckIcon' },
+  { key: 'cf',             title: 'Configuration',             icon: 'Cog6ToothIcon' },
+  { key: 'op',             title: 'Operations & Reliability',  icon: 'BoltIcon' },
+  { key: 'cs',             title: 'Customer Success',          icon: 'LifebuoyIcon' },
+  { key: 'administration', title: 'Administration',            icon: 'RectangleGroupIcon' },
+  { key: 'modules',        title: 'Modules',                   icon: 'CubeIcon' },
 ];
 const NAV_SECTION_KEYS = new Set(NAV_SECTIONS.map(s => s.key));
 
@@ -121,11 +121,22 @@ function transformNavigation(backendNav, activeHref) {
   }
 
   const result = [];
-  for (const { key, title } of NAV_SECTIONS) {
+  for (const { key, title, icon } of NAV_SECTIONS) {
     const items = buckets[key];
     if (!items?.length) continue;
-    if (title) result.push({ heading: title });
-    result.push(...items);
+    if (!title) {
+      // Untitled section (dashboards) — pinned at the top, no wrapper.
+      result.push(...items);
+      continue;
+    }
+    // Titled section — a collapsible header grouping its modules.
+    result.push({
+      label: title,
+      icon: icon ? mapIcon(icon) : undefined,
+      isSection: true,
+      hasActiveChild: items.some(it => it.active || it.hasActiveChild),
+      children: items,
+    });
   }
 
   return result.length ? result : null;

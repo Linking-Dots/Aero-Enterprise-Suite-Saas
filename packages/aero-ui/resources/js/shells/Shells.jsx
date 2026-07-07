@@ -43,7 +43,8 @@ function saveShellPrefs(patch) {
 
 /* ─── RecursiveNavItem ──────────────────────────────────────────────────── */
 function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true }) {
-  const [isOpen, setIsOpen] = useState(item.hasActiveChild ?? false);
+  // Section groups start open; module accordions start closed unless active.
+  const [isOpen, setIsOpen] = useState(item.isSection ? true : (item.hasActiveChild ?? false));
   const hasChildren = Array.isArray(item.children) && item.children.length > 0;
 
   if (item.divider) return <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
@@ -54,6 +55,17 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
     return (expanded || isCommand)
       ? <div className="aeos-shell-sidebar-heading">{item.heading}</div>
       : <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
+  }
+  // A collapsible section on an icon-only rail has no room for its header —
+  // render the modules directly so the rail stays usable.
+  if (item.isSection && !expanded && !isCommand) {
+    return (
+      <>
+        {(item.children ?? []).map((child, i) => (
+          <RecursiveNavItem key={i} item={child} depth={0} isCommand={isCommand} expanded={expanded} />
+        ))}
+      </>
+    );
   }
 
   const toggle = useCallback((e) => {
@@ -72,6 +84,7 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
   const baseClass = isCommand ? 'aeos-shell-nav-item' : 'aeos-shell-sidebar-item';
   const itemClass = cx(
     baseClass,
+    item.isSection                && 'is-section',
     item.active && !hasChildren && 'active',
     item.hasActiveChild           && 'active-parent',
     depthClass,

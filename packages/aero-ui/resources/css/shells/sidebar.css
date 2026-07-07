@@ -99,6 +99,7 @@
     border-color var(--aeos-dur-fast) var(--aeos-ease-out),
     color        var(--aeos-dur-fast) var(--aeos-ease-out),
     box-shadow   var(--aeos-dur-fast) var(--aeos-ease-out),
+    transform    var(--aeos-dur-base) cubic-bezier(0.34, 1.56, 0.64, 1),
     width        var(--aeos-dur-base) var(--aeos-ease-out),
     height       var(--aeos-dur-base) var(--aeos-ease-out),
     padding      var(--aeos-dur-base) var(--aeos-ease-out),
@@ -330,4 +331,70 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background: var(--aeos-shell-sidebar-bg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Living nav — collapsible section headers + floating, animated active states
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Section header (collapsible group toggle) */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.is-section {
+  margin-top: var(--aeos-space-3);
+  color: var(--aeos-text-tertiary);
+  background: transparent;
+  border-color: transparent;
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.is-section:hover {
+  background: var(--aeos-bg-hover);
+  color: var(--aeos-text-secondary);
+  transform: none;
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.is-section .aeos-shell-sidebar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: var(--aeos-font-display, inherit);
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.is-section .aeos-shell-nav-icon {
+  color: var(--aeos-primary);
+  opacity: 0.9;
+}
+
+/* Icon micro-interaction: gentle scale on hover / active */
+[data-aeos-shell="sidebar"] .aeos-shell-nav-icon {
+  transition: transform var(--aeos-dur-fast) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item:not(.is-section):hover .aeos-shell-nav-icon,
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active .aeos-shell-nav-icon {
+  transform: scale(1.14);
+}
+
+/* Floating active pill + hover lift (expanded rail has horizontal room) */
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item.active {
+  box-shadow:
+    0 0 0 1px var(--aeos-primary-tint) inset,
+    0 6px 18px -6px var(--aeos-primary-tint),
+    0 2px 6px -2px rgba(0, 0, 0, 0.28);
+  transform: translateX(3px);
+}
+[data-aeos-shell="sidebar"].sidebar-expanded .aeos-shell-sidebar-item:not(.is-section):not(.active):hover {
+  transform: translateX(4px);
+}
+
+/* Living accent indicator — gentle breathing glow (motion only) */
+@media (prefers-reduced-motion: no-preference) {
+  [data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active .aeos-nav-active-indicator {
+    animation: aeos-nav-pulse 2.6s ease-in-out infinite;
+  }
+}
+@keyframes aeos-nav-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--aeos-primary-tint); height: 50%; }
+  50%      { box-shadow: 0 0 16px var(--aeos-primary); height: 62%; }
+}
+
+/* Honour reduced-motion: no transforms */
+@media (prefers-reduced-motion: reduce) {
+  [data-aeos-shell="sidebar"] .aeos-shell-sidebar-item,
+  [data-aeos-shell="sidebar"] .aeos-shell-nav-icon { transform: none !important; }
 }
