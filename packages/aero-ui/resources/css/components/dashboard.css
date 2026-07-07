@@ -470,10 +470,14 @@
 
 /* ── Billing revenue command center ─────────────────────────────────────── */
 .bill-heroes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--aeos-space-3);}
-.bill-2col{display:grid;grid-template-columns:1.4fr 1fr;gap:var(--aeos-space-3);align-items:stretch;}
-.bill-gw{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--aeos-space-2);}
-@container (max-width:1000px){ .bill-heroes{grid-template-columns:1fr 1fr;} .bill-2col{grid-template-columns:1fr;} }
-@container (max-width:560px){ .bill-heroes{grid-template-columns:1fr;} .bill-gw{grid-template-columns:1fr;} }
+.bill-gw{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--aeos-space-2);}
+/* Heroes mirror the lcc-band responsive steps (viewport @media, like the main
+   dashboard) so the whole Billing page shares one breakpoint system. */
+@media (max-width:1200px){ .bill-heroes{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:640px){ .bill-heroes{grid-template-columns:1fr;} .bill-gw{grid-template-columns:1fr;} }
+.bill-hero-lab{flex-wrap:wrap;row-gap:4px;}
+.bill-rn{flex:1;min-width:0;}
+.bill-tcell{display:flex;align-items:center;gap:8px;}
 
 .bill-hero{position:relative;overflow:hidden;background:var(--aeos-bg-card);border:var(--aeos-border-width) solid var(--aeos-border);border-radius:var(--aeos-r-lg);padding:var(--aeos-space-4);display:flex;flex-direction:column;gap:var(--aeos-space-2);min-height:104px;}
 .bill-hero--accent{background:linear-gradient(160deg,color-mix(in srgb,var(--aeos-primary) 12%,transparent),transparent 60%),var(--aeos-bg-card);border-color:color-mix(in srgb,var(--aeos-primary) 35%,var(--aeos-border));}
@@ -496,9 +500,9 @@
 .bill-frow{display:flex;align-items:center;gap:11px;}
 .bill-frow .fl{width:84px;font-size:var(--aeos-text-xs);color:var(--aeos-text-secondary);flex:0 0 auto;}
 .bill-fbar{flex:1;height:26px;border-radius:var(--aeos-r-sm);background:var(--aeos-bg-active);position:relative;overflow:hidden;}
-.bill-fbar span{position:absolute;inset:0 auto 0 0;border-radius:var(--aeos-r-sm);display:flex;align-items:center;padding:0 9px;font-size:var(--aeos-text-xs);font-weight:600;color:#08110d;min-width:26px;}
-.bill-fbar--active span{background:linear-gradient(90deg,var(--aeos-success),color-mix(in srgb,var(--aeos-success) 60%,#000));}
-.bill-fbar--trial span{background:linear-gradient(90deg,var(--aeos-info,var(--aeos-primary)),color-mix(in srgb,var(--aeos-info,var(--aeos-primary)) 55%,#000));}
+.bill-fbar span{position:absolute;inset:0 auto 0 0;border-radius:var(--aeos-r-sm);display:flex;align-items:center;padding:0 9px;font-size:var(--aeos-text-xs);font-weight:600;color:var(--aeos-obsidian);min-width:26px;}
+.bill-fbar--active span{background:linear-gradient(90deg,var(--aeos-success),color-mix(in srgb,var(--aeos-success) 60%,var(--aeos-obsidian)));}
+.bill-fbar--trial span{background:linear-gradient(90deg,var(--aeos-info,var(--aeos-primary)),color-mix(in srgb,var(--aeos-info,var(--aeos-primary)) 55%,var(--aeos-obsidian)));}
 .bill-fbar--cancel span{background:var(--aeos-text-tertiary);color:var(--aeos-text-primary);}
 
 .bill-donut-wrap{display:flex;align-items:center;gap:18px;}
