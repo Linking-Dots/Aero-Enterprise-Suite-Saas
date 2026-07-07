@@ -45,6 +45,13 @@ function saveShellPrefs(patch) {
 function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true }) {
   // Section groups start open; module accordions start closed unless active.
   const [isOpen, setIsOpen] = useState(item.isSection ? true : (item.hasActiveChild ?? false));
+  // Hooks must run unconditionally before any early return (React rules-of-hooks):
+  // `expanded` changes at runtime, so a return above this would drop a hook.
+  const toggle = useCallback((e) => {
+    e.preventDefault();
+    if (expanded || isCommand) setIsOpen(v => !v);
+  }, [expanded, isCommand]);
+
   const hasChildren = Array.isArray(item.children) && item.children.length > 0;
 
   if (item.divider) return <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
@@ -67,11 +74,6 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
       </>
     );
   }
-
-  const toggle = useCallback((e) => {
-    e.preventDefault();
-    if (expanded || isCommand) setIsOpen(v => !v);
-  }, [expanded, isCommand]);
 
   const isLink     = Boolean(item.href) && !hasChildren;
   const isInternal = isLink && !/^(https?:|\/\/|mailto:|tel:)/.test(item.href);

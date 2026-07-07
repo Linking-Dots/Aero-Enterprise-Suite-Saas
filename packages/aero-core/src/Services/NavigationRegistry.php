@@ -369,11 +369,16 @@ class NavigationRegistry implements NavigationRegistryInterface
         // keep the first occurrence. No-op when there are no duplicates.
         $navigationItems = $this->dedupeTopLevel($navigationItems);
 
-        // Platform admin: shelve the ~40 flat 'administration' modules into the
-        // 8 approved sections (Overview, Tenants, Revenue, …) so both shells
-        // render a short scannable list instead of one endless group.
-        if ($scope === 'platform') {
-            $navigationItems = $this->applyPlatformSections($navigationItems);
+        // Shelve the flat 'administration' modules into a small set of titled IA
+        // sections (per scope) so both shells render a short scannable list
+        // instead of one endless group.
+        $sectionMap = match ($scope) {
+            'platform' => self::PLATFORM_SECTION_MAP,
+            'tenant'   => self::TENANT_SECTION_MAP,
+            default    => null,
+        };
+        if ($sectionMap !== null) {
+            $navigationItems = $this->applySections($navigationItems, $sectionMap);
         }
 
         // Sort by priority
@@ -399,14 +404,31 @@ class NavigationRegistry implements NavigationRegistryInterface
     ];
 
     /**
-     * Reassign each top-level platform module to one of the 8 IA sections by the
-     * first segment of its path (falling back to its first child's href). Items
-     * already in a special section (dashboards / my-workspace) are left alone.
+     * Tenant + standalone CORE IA sections, keyed by a module's first path
+     * segment. Products (hrm, crm, …) are intentionally NOT listed here — they
+     * follow the product-grouping rule (single = flat, 2+ = grouped) and render
+     * BELOW the core sections. See [[module-grouping-rule]].
+     */
+    private const TENANT_SECTION_MAP = [
+        'users' => 'pa', 'roles' => 'pa', 'organization' => 'pa',
+        'files' => 'cd', 'i18n' => 'cd', 'tags' => 'cd', 'saved-views' => 'cd', 'search' => 'cd', 'export-import' => 'cd', 'numbering' => 'cd', 'print-templates' => 'cd',
+        'notifications' => 'cm', 'email' => 'cm', 'announcements' => 'cm',
+        'audit-logs' => 'mh', 'activity' => 'mh', 'system-health' => 'mh', 'retention-policies' => 'mh', 'trash' => 'mh',
+        'settings' => 'cf', 'api' => 'cf', 'backup' => 'cf', 'license' => 'cf', 'mobile-pwa' => 'cf', 'maintenance-mode' => 'cf', 'help' => 'cf',
+        'subscription' => 'bill',
+    ];
+
+    /**
+     * Reassign each top-level module to one of the IA sections by the first
+     * segment of its path (falling back to its first child's href). Items already
+     * in a special section (dashboards / my-workspace) are left alone; segments
+     * not in the map keep their existing section.
      *
      * @param  array<int, array>  $items
+     * @param  array<string, string>  $map  segment => section-key
      * @return array<int, array>
      */
-    private function applyPlatformSections(array $items): array
+    private function applySections(array $items, array $map): array
     {
         foreach ($items as &$item) {
             $current = $item['section'] ?? null;
@@ -415,8 +437,8 @@ class NavigationRegistry implements NavigationRegistryInterface
             }
             $path = $item['path'] ?? ($item['children'][0]['path'] ?? '');
             $seg = strtolower(trim(explode('/', ltrim((string) $path, '/'))[0] ?? ''));
-            if ($seg !== '' && isset(self::PLATFORM_SECTION_MAP[$seg])) {
-                $item['section'] = self::PLATFORM_SECTION_MAP[$seg];
+            if ($seg !== '' && isset($map[$seg])) {
+                $item['section'] = $map[$seg];
             }
         }
 
@@ -572,23 +594,30 @@ class NavigationRegistry implements NavigationRegistryInterface
         $sectionTitles = [
             'dashboards'      => 'Dashboards',
             'my-workspace'    => 'My Workspace',
-            // 8-part platform-admin IA
             'ov'              => 'Overview',
+            // platform-admin IA
             'tn'              => 'Tenants & Onboarding',
             'rv'              => 'Revenue & Catalog',
             'gr'              => 'Growth & Marketing',
             'ac'              => 'Access & Security',
-            'cf'              => 'Configuration',
             'op'              => 'Operations & Reliability',
             'cs'              => 'Customer Success',
-            // tenant / fallback
+            // tenant / standalone IA
+            'wf'              => 'Workforce',
+            'pa'              => 'People & Access',
+            'cd'              => 'Content & Data',
+            'cm'              => 'Communications',
+            'mh'              => 'Monitoring & Health',
+            'bill'            => 'Billing',
+            // shared + fallback
+            'cf'              => 'Configuration',
             'administration'  => 'Administration',
             'modules'         => 'Modules',
         ];
 
         $sectionOrder = [
-            'dashboards', 'my-workspace',
-            'ov', 'tn', 'rv', 'gr', 'ac', 'cf', 'op', 'cs',
+            'dashboards', 'my-workspace', 'ov',
+            'tn', 'wf', 'rv', 'pa', 'gr', 'ac', 'cd', 'cm', 'cf', 'op', 'mh', 'cs', 'bill',
             'administration', 'modules',
         ];
 
