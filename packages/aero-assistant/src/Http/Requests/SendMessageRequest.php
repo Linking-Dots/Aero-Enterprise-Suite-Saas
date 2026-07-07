@@ -18,6 +18,8 @@ class SendMessageRequest extends FormRequest
         return [
             'message' => ['required', 'string', 'max:4000'],
             'conversation_id' => ['nullable', 'integer'],
+            'context' => ['nullable', 'array'],
+            'context.page' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

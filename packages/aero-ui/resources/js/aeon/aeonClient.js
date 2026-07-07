@@ -16,7 +16,11 @@ export async function sendAeonMessage({ message, conversationId }) {
       'X-Requested-With': 'XMLHttpRequest',
       'X-XSRF-TOKEN': xsrf(),
     },
-    body: JSON.stringify({ message, conversation_id: conversationId ?? null }),
+    body: JSON.stringify({
+      message,
+      conversation_id: conversationId ?? null,
+      context: { page: window.location.pathname },
+    }),
   });
   if (!res.ok) throw new Error(`Aeon request failed (${res.status})`);
   return res.json(); // { conversation_id, reply: { role, content, blocks } }

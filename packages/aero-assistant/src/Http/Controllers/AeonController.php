@@ -16,10 +16,20 @@ class AeonController extends Controller
 
     public function message(SendMessageRequest $request): JsonResponse
     {
+        $user = $request->user();
+        $context = [
+            'page' => (string) $request->input('context.page', ''),
+            'user_name' => $user?->name,
+        ];
+        if ($user && method_exists($user, 'getRoleNames')) {
+            $context['roles'] = $user->getRoleNames()->all();
+        }
+
         $out = $this->aeon->send(
             (int) auth()->id(),
             $request->integer('conversation_id') ?: null,
             (string) $request->string('message'),
+            $context,
         );
 
         $reply = $out['reply'];
