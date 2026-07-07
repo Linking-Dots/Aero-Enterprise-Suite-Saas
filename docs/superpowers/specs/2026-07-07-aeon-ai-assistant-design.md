@@ -126,15 +126,30 @@ stack (MySQL, Laravel 12, @aero/ui, real hosted LLM API).
   - Provider returns tool call(s).
   - `hrmac()` gate checked against the *current user*; denied → tool refuses (Aeon explains it can't).
   - **Read / navigation tools** (`requiresConfirmation=false`) execute immediately, feed results back.
-  - **Write tools** (`requiresConfirmation=true`) do **not** run; they return a **ProposedAction**
-    (human-readable summary + exact args) rendered as a confirm card. On user confirm, the tool runs
-    inside `DB::transaction()` + `AuditService::log()`.
+  - **Write tools** (`requiresConfirmation=true`) do **not** auto-run. See execution model below.
+
+- **Write execution model — "Guided" (default; decided 2026-07-07):**
+  Aeon resolves the task, **asks the user only for genuinely-missing/ambiguous fields**, defaults
+  the rest from our system (e.g. attendance date=today, times from the employee's assigned shift),
+  then returns a **navigate-and-prefill directive**: the frontend routes to the *real* existing page
+  (e.g. `/hrm/attendance`) with the target row/form **pre-filled** with the proposed values. The user
+  reviews in context and clicks the page's own **Save** → goes through the normal controller +
+  Form Request validation + `DB::transaction()` + `AuditService::log()`.
+  - **Why:** best UX (visible, in-context, user keeps final control, uses genuine validation) *and*
+    best performance/maintainability — **reuses existing pages/forms, no parallel headless write
+    path** to build or audit separately.
+  - **Fallback:** for trivial/bulk actions where opening a page adds no value, an inline
+    **confirm-card** performs the same service call directly (still transactional + audited).
+  - **Rejected:** full DOM/RPA "robot" automation — slow, fragile to UI changes, hard to audit.
+  - Ambiguity handling: entity resolution (name → employee the user can see; disambiguate if
+    multiple), plus current-state check (e.g. warns if the person isn't actually marked absent).
 - **Starter tool set (proof of pattern):**
   - `navigate_to` (route the user to a page) — read.
   - `search` (global search over entities the user can see) — read.
   - `explain_page` (context-aware help for current route) — read.
-  - `hrm.create_employee` — write (confirm).
-  - `hrm.apply_leave` — write (confirm).
+  - `hrm.create_employee` — write (Guided: navigate to create form pre-filled → user Saves).
+  - `hrm.apply_leave` — write (Guided).
+  - `hrm.mark_attendance` — write (Guided: open attendance page, row pre-filled → user Saves).
 - **Extensible:** registry is open — any module registers its own tools via its provider →
   "evolving." Tools discovered through `AbstractModuleProvider`.
 
@@ -163,8 +178,11 @@ stack (MySQL, Laravel 12, @aero/ui, real hosted LLM API).
 ## 6. Frontend (@aero/ui, both shells)
 
 - **FloatingAeonButton** — ✨ bottom-right on every authenticated page (feature-flagged).
-- **AeonDrawer** — slide-over chat: streaming responses, markdown, **source citations**,
-  **ProposedActionCard** (summary + Confirm/Cancel) for write tools, "thinking" state.
+- **AeonDrawer** — slide-over chat: streaming responses, markdown, **source citations**, clarifying
+  questions for missing fields, and for writes a **navigate-and-prefill directive** (default) or an
+  inline **ProposedActionCard** confirm (fallback). "thinking" state.
+- **Prefill bridge** — a small mechanism to open an existing page with its form pre-populated from
+  Aeon's proposed values (the "Guided" write model); the page's own Save button commits.
 - **/aeon page** — full-height chat + conversation history sidebar; archive/delete.
 - **useAeon()** hook — open/close, send, stream, conversation state.
 - **Command-mode rail** entry so it renders in the command shell too.
@@ -209,8 +227,9 @@ Other providers use analogous blocks (`OPENAI_*`, `ANTHROPIC_*`, `AEON_COMPAT_EN
    → "Ask Aeon anything" works end-to-end against Gemini.
 2. **M2 — RAG guide:** `aeon_embeddings`, `RagService`, `aeon:index`, source citations.
    → Aeon answers AEOS-specific how-to from indexed docs/modules.
-3. **M3 — Agentic tools:** `ToolRegistry`, `AssistantTool`, read tools + confirm-gated write tools,
-   ProposedActionCard, audit wiring. → Aeon performs tasks safely.
+3. **M3 — Agentic tools:** `ToolRegistry`, `AssistantTool`, read/nav tools + **Guided** write tools
+   (navigate-and-prefill bridge → user Saves via real page), clarifying-question flow, entity
+   resolution, audit wiring. → Aeon performs tasks safely, in-context.
 4. **M4 — Access & gating:** `aeon.*` HRMAC module, plan-tier flags, usage logs + quota guard,
    admin surface (index management). → production-grade governance.
 
