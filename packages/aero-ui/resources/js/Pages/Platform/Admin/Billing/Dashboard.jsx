@@ -101,8 +101,10 @@ export default function BillingDashboard({ overview }) {
   const gateways = o.gateways ?? [];
   const recent = o.recent ?? [];
 
+  // Refresh the whole overview (the only prop the page reads) so a poll can never
+  // leave the page data-less.
   const poll = useCallback(() => {
-    router.reload({ only: ['live'], preserveScroll: true, preserveState: true });
+    router.reload({ only: ['overview'], preserveScroll: true, preserveState: true });
   }, []);
   usePolling(poll, 30000);
 

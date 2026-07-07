@@ -19,10 +19,9 @@ class BillingDashboardController extends Controller
     public function index(): Response
     {
         return Inertia::render('Platform/Admin/Billing/Dashboard', [
-            // overview loads on full render; live is refreshed by the page's ~30s
-            // poll via a partial reload (only: ['live']).
+            // Single source of truth; the page's ~30s poll refreshes it via a
+            // partial reload (only: ['overview']).
             'overview' => fn () => $this->svc->overview(),
-            'live'     => fn () => $this->svc->live(),
         ]);
     }
 
