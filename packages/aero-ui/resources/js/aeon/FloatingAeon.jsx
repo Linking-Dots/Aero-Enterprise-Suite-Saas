@@ -41,6 +41,7 @@ export default function FloatingAeon() {
         messages={aeon.messages}
         sending={aeon.sending}
         onSend={aeon.send}
+        user={user}
       />
     </>
   );

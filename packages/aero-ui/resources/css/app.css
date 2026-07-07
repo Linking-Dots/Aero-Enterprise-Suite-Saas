@@ -127,7 +127,11 @@ a {
 .aeon-turn.is-me { flex-direction: row-reverse; }
 .aeon-av { width: 28px; height: 28px; border-radius: 9px; flex-shrink: 0; display: grid; place-items: center; font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 11px; font-weight: 600; }
 .aeon-av.is-ai { background: conic-gradient(from 200deg, var(--aeos-primary, #22e3ff), #8c6bff, #ff66c4, var(--aeos-primary, #22e3ff)); color: #04121a; box-shadow: 0 0 16px rgba(40,230,255,.35); }
-.aeon-av.is-me { background: var(--aeos-glass-2, rgba(255,255,255,.07)); border: 1px solid var(--aeos-border-strong, rgba(255,255,255,.16)); color: var(--aeos-text-muted, #8593a6); }
+.aeon-av.is-me { background: var(--aeos-glass-2, rgba(255,255,255,.07)); border: 1px solid var(--aeos-border-strong, rgba(255,255,255,.16)); color: var(--aeos-text-muted, #8593a6); overflow: hidden; }
+.aeon-av-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aeon-caret { display: inline-block; width: 2px; height: 1em; margin-left: 1px; vertical-align: -0.15em; background: var(--aeos-primary, #22e3ff); animation: aeon-caret 0.9s steps(1) infinite; }
+@keyframes aeon-caret { 50% { opacity: 0; } }
+.aeon-typed { white-space: pre-wrap; }
 .aeon-bubble { border-radius: 16px; padding: 12px 14px; font-size: 14px; line-height: 1.55; max-width: 82%; border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); background: var(--aeos-glass, rgba(255,255,255,.045)); color: var(--aeos-text-base, #e9f1fa); }
 .aeon-turn.is-me .aeon-bubble { background: color-mix(in srgb, var(--aeos-primary, #22e3ff) 12%, transparent); border-color: color-mix(in srgb, var(--aeos-primary, #22e3ff) 30%, transparent); }
 .aeon-blocks { display: flex; flex-direction: column; gap: 11px; }

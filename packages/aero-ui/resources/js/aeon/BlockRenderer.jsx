@@ -1,5 +1,33 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Text } from '@aero/ui';
+
+// Reveals text one letter at a time (eased) on first mount; instant under
+// reduced-motion. Used for Aeon's replies so answers "type" in.
+function TypewriterText({ text }) {
+  const full = text ?? '';
+  const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [n, setN] = useState(reduce ? full.length : 0);
+  const done = n >= full.length;
+
+  useEffect(() => {
+    if (reduce) { setN(full.length); return; }
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setN(i);
+      if (i >= full.length) clearInterval(id);
+    }, 16);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [full]);
+
+  return (
+    <Text>
+      <span className="aeon-typed">{full.slice(0, n)}</span>
+      {!done ? <span className="aeon-caret" aria-hidden="true" /> : null}
+    </Text>
+  );
+}
 
 // Sparkline for `chart` blocks — dependency-free inline SVG.
 function Spark({ points = [], unit = '' }) {
@@ -27,7 +55,7 @@ function Spark({ points = [], unit = '' }) {
   );
 }
 
-function Block({ block, onAction }) {
+function Block({ block, onAction, animate }) {
   switch (block.type) {
     case 'stats':
       return (
@@ -88,15 +116,16 @@ function Block({ block, onAction }) {
       );
     case 'text':
     default:
-      return <Text>{block.text ?? ''}</Text>;
+      return animate ? <TypewriterText text={block.text ?? ''} /> : <Text>{block.text ?? ''}</Text>;
   }
 }
 
 // Renders Aeon's generative-UI blocks into @aero/ui-styled components.
-export default function BlockRenderer({ blocks = [], onAction }) {
+// `animate` types text blocks in letter-by-letter (used for Aeon's replies).
+export default function BlockRenderer({ blocks = [], onAction, animate = false }) {
   return (
     <div className="aeon-blocks">
-      {blocks.map((block, i) => <Block key={i} block={block} onAction={onAction} />)}
+      {blocks.map((block, i) => <Block key={i} block={block} onAction={onAction} animate={animate} />)}
     </div>
   );
 }
