@@ -87,6 +87,8 @@ function mapItem(item, activeHref) {
     active,
     hasActiveChild,
     children,
+    // Count badge on any group (Guardian pattern).
+    count: children && children.length ? children.length : undefined,
     // Semantic sub-group within a product section (see transformNavigation).
     group: item.nav_group ?? null,
     groupLabel: item.nav_group_label ?? null,
@@ -164,12 +166,14 @@ function transformNavigation(backendNav, activeHref, sections) {
       result.push(...items);
       continue;
     }
+    const children = subGroup(items);
     result.push({
       label: title,
       icon: icon ? mapIcon(icon) : undefined,
       isSection: true,
+      count: children.filter((c) => !c.heading).length,
       hasActiveChild: items.some((it) => it.active || it.hasActiveChild),
-      children: subGroup(items),
+      children,
     });
   }
 
@@ -197,6 +201,7 @@ function subGroup(items) {
       icon: g.icon ? mapIcon(g.icon) : undefined,
       isSection: true,
       isSubSection: true,
+      count: g.items.length,
       hasActiveChild: g.items.some((it) => it.active || it.hasActiveChild),
       children: g.items,
     });
@@ -204,15 +209,31 @@ function subGroup(items) {
   return out;
 }
 
-function transformNavigationGroups(backendGroups, activeHref) {
-  if (!backendGroups?.length) return null;
-
-  return backendGroups
-    .map(group => ({
-      title: group.title ?? '',
-      items: (group.items ?? []).map(item => mapItem(item, activeHref)),
-    }))
-    .filter(g => g.items.length > 0);
+/**
+ * Exactly ONE leaf may light up as active. Backend nav can list the same href
+ * under several groups (e.g. a module landing page doubling as "Directory");
+ * path-equality would mark them ALL active. Document-order first wins; every
+ * ancestor's active/hasActiveChild is recomputed from the surviving leaf.
+ */
+function dedupeActive(items) {
+  let found = false;
+  const walk = (list) => {
+    let subtreeActive = false;
+    for (const it of list ?? []) {
+      if (it.children && it.children.length) {
+        const childActive = walk(it.children);
+        it.hasActiveChild = childActive;
+        it.active = childActive;
+        if (childActive) subtreeActive = true;
+      } else if (it.active) {
+        if (found) it.active = false;
+        else { found = true; subtreeActive = true; }
+      }
+    }
+    return subtreeActive;
+  };
+  walk(items);
+  return items;
 }
 
 const FALLBACK_NAV = [
@@ -258,15 +279,12 @@ export default function App({ title, rail, railTitle = 'Context', children }) {
     url: currentUrl,
   });
 
-  const isCommand = theme.shell === 'command';
   // Section titles/icons/order come from the package-owned catalog (props.navSections).
   const sections = buildSections(navSections);
-  // Flat nav is the canonical list; the command shell uses grouped nav, but the
-  // mobile shell always wants the flat tree regardless of the desktop variant.
-  const flatNav = transformNavigation(navigation, activeHref, sections) ?? buildFallbackNav(activeHref);
-  const nav = isCommand
-    ? (transformNavigationGroups(navigationGroups, activeHref) ?? [])
-    : flatNav;
+  // ONE canonical nav tree for EVERY shell (sidebar / floating / command /
+  // topnav / mobile): sections are collapsible folder items with count badges
+  // (Guardian pattern), so all shells render the identical structure.
+  const nav = dedupeActive(transformNavigation(navigation, activeHref, sections) ?? buildFallbackNav(activeHref));
 
   return (
     <>
@@ -274,7 +292,7 @@ export default function App({ title, rail, railTitle = 'Context', children }) {
       <AppShell
         brand={<AppBrand href="/dashboard" size={28} />}
         nav={nav}
-        mobileNav={flatNav}
+        mobileNav={nav}
         topbar={<AppTopbarTitle title={title} />}
         actions={<GlobalActions user={auth?.user} />}
         rail={rail}

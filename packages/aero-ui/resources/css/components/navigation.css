@@ -26,10 +26,10 @@
 .aeos-nav-item-label { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .aeos-nav-item-count { font-family:var(--aeos-font-mono); font-size:var(--aeos-text-2xs); color:var(--aeos-text-tertiary); }
 .aeos-nav-item.is-indented { padding-left:var(--aeos-space-7); }
-/* Depth-based indentation for recursive nav trees in shells */
-.aeos-nav-depth-1 { padding-left: var(--aeos-space-7); }                              /* 28px */
-.aeos-nav-depth-2 { padding-left: calc(var(--aeos-space-7) + var(--aeos-space-5)); } /* 48px */
-.aeos-nav-depth-3 { padding-left: calc(var(--aeos-space-7) + var(--aeos-space-10)); }/* 68px */
+/* Recursive nav trees: indent comes ONLY from the .aeos-shell-sidebar-children
+   container (margin-left + guide line + padding-left, per shell). The old
+   global .aeos-nav-depth-N padding rules doubled the indent — removed.
+   The .aeos-nav-depth-N class is still emitted for styling hooks (label tint). */
 /* Active indicator bar (left-side 3px highlight) */
 .aeos-nav-active-indicator {
   position: absolute;
@@ -76,8 +76,27 @@
   align-items: center;
   width: 100%;
 }
-/* Count badge in command shell with sibling spacing */
-.aeos-shell-cmd-nav-count--spaced { margin-right: var(--aeos-space-2); }
+/* Count badge — shared base for EVERY shell (sidebar/floating/command/topnav/
+   mobile). Labels are flex:1, so badges align to one right edge on all rows.
+   Shell files may refine colors; this guarantees the badge is never unstyled. */
+.aeos-shell-cmd-nav-count {
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--aeos-r-full);
+  background: var(--aeos-bg-active);
+  color: var(--aeos-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+/* Badge→chevron spacing comes from the row's flex gap — no extra margin
+   (extra margin stole label width in the fixed-width rail). */
+.aeos-shell-cmd-nav-count--spaced { margin-right: 0; }
 .aeos-nav-group { margin-bottom:var(--aeos-space-4); }
 .aeos-nav-group-title { font-size:var(--aeos-text-2xs); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--aeos-text-tertiary); padding:0 var(--aeos-pad-nav-x); margin-bottom:var(--aeos-space-1); }
 .aeos-nav-group-items { display:flex; flex-direction:column; gap:var(--aeos-space-0-5); }

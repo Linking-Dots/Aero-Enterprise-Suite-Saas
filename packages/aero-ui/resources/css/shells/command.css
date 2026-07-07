@@ -115,24 +115,45 @@
   box-shadow: 0 0 8px var(--aeos-primary-tint);
 }
 
-[data-aeos-shell="command"] .aeos-shell-cmd-nav-count {
-  margin-left: auto;
-  font-family: var(--aeos-font-mono);
-  font-size: var(--aeos-text-2xs);
-  color: var(--aeos-text-tertiary);
-  background: var(--aeos-bg-hover);
-  padding: 1px 5px;
-  border-radius: var(--aeos-r-full);
-  flex-shrink: 0;
-}
+/* Count badge inherits the shared base (components/navigation.css) so it looks
+   identical to every other shell. Active tint only. */
 [data-aeos-shell="command"] .aeos-shell-nav-item.active .aeos-shell-cmd-nav-count {
   background: var(--aeos-primary-bg);
   color: var(--aeos-primary);
 }
 
-[data-aeos-shell="command"] .aeos-nav-depth-1 { padding-left: var(--aeos-space-7); }
-[data-aeos-shell="command"] .aeos-nav-depth-2 { padding-left: calc(var(--aeos-space-7) + var(--aeos-space-5)); }
-[data-aeos-shell="command"] .aeos-nav-depth-3 { padding-left: calc(var(--aeos-space-7) + var(--aeos-space-10)); }
+/* Label flex:1 → count badges + chevrons align to ONE right edge. */
+[data-aeos-shell="command"] .aeos-shell-nav-item-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Folder-style group items — identical pattern to the sidebar shells. */
+[data-aeos-shell="command"] .aeos-shell-nav-item.is-section,
+[data-aeos-shell="command"] .aeos-shell-nav-item.is-subsection {
+  color: var(--aeos-text-primary);
+  font-weight: 600;
+}
+[data-aeos-shell="command"] .aeos-shell-nav-item.is-section .aeos-shell-nav-icon,
+[data-aeos-shell="command"] .aeos-shell-nav-item.is-subsection .aeos-shell-nav-icon {
+  color: var(--aeos-primary);
+  opacity: 0.95;
+}
+
+/* SINGLE indent source: nested children container gets the margin + guide
+   line + padding — items carry NO per-depth padding (see sidebar.css). */
+[data-aeos-shell="command"] .aeos-shell-sidebar-children {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  overflow: visible;
+  border-left: var(--aeos-border-width) solid var(--aeos-divider);
+  margin-left: calc(var(--aeos-pad-nav-x) + 2px);
+  padding-left: var(--aeos-space-1-5);
+}
 
 .aeos-shell-nav-chevron {
   display: flex; align-items: center;
@@ -212,12 +233,7 @@
 
 [data-aeos-shell="command"] .aeos-shell-cmd-footer { grid-column: 1 / -1; }
 
-@media (min-width: 1600px) {
-  [data-aeos-shell="command"] {
-    --aeos-shell-rail-w: 280px;
-    --aeos-shell-cmd-nav-w: 200px;
-  }
-}
+/* (Wide-desktop widths come from tokens/shell-dimensions.css.) */
 @media (max-width: 1200px) {
   [data-aeos-shell="command"] { grid-template-columns: var(--aeos-shell-cmd-nav-w-md) 1fr; }
   [data-aeos-shell="command"] .aeos-shell-right { display: none; }

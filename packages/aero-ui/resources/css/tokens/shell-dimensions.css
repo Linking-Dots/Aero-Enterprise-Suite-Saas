@@ -13,7 +13,7 @@
 
   /* ── Sidebar shell ────────────────────────────────────────────────────── */
   --aeos-shell-sidebar-w:          56px;                    /* collapsed icon rail */
-  --aeos-shell-sidebar-w-exp:      240px;                   /* expanded labeled sidebar */
+  --aeos-shell-sidebar-w-exp:      268px;                   /* expanded labeled sidebar */
   --aeos-shell-sidebar-brand-h:    var(--aeos-space-12);    /* 48px brand area */
   --aeos-sidebar-glass-blur:       12px;                    /* backdrop blur strength */
 
@@ -28,7 +28,7 @@
   --aeos-floating-glass-blur:      20px;                    /* pill backdrop blur strength */
 
   /* ── Command (3-panel) shell ──────────────────────────────────────────── */
-  --aeos-shell-cmd-nav-w:          180px;                   /* left nav panel default */
+  --aeos-shell-cmd-nav-w:          220px;                   /* left nav panel default (fits the 4-level folder tree) */
   --aeos-shell-cmd-nav-w-md:       160px;                   /* left nav at ≤900px breakpoint */
   --aeos-shell-rail-w:             240px;                   /* right context rail default */
   --aeos-shell-rail-w-min:         200px;                   /* minimum JS-resizable width */
@@ -49,7 +49,7 @@
 /* ── Density: compact — shrink shell spacing by 0.85× ────────────────────── */
 body[data-density="compact"] {
   --aeos-shell-sidebar-w:          48px;
-  --aeos-shell-sidebar-w-exp:      220px;
+  --aeos-shell-sidebar-w-exp:      252px;
   --aeos-shell-floating-w:         44px;
   --aeos-shell-floating-gutter:    var(--aeos-space-3);    /* 12px */
   --aeos-shell-cmd-nav-w:          160px;
@@ -61,7 +61,7 @@ body[data-density="compact"] {
 /* ── Density: spacious — expand shell spacing by 1.15× ───────────────────── */
 body[data-density="spacious"] {
   --aeos-shell-sidebar-w:          64px;
-  --aeos-shell-sidebar-w-exp:      260px;
+  --aeos-shell-sidebar-w-exp:      288px;
   --aeos-shell-floating-w:         64px;
   --aeos-shell-floating-gutter:    var(--aeos-space-6);    /* 24px */
   --aeos-shell-floating-gap:       var(--aeos-space-6);
@@ -74,9 +74,9 @@ body[data-density="spacious"] {
 /* ── Wide desktop (≥ 1600px): unlock wider expanded widths ───────────────── */
 @media (min-width: 1600px) {
   :root {
-    --aeos-shell-sidebar-w-exp:    260px;
+    --aeos-shell-sidebar-w-exp:    272px;
     --aeos-shell-floating-w-exp:   240px;
-    --aeos-shell-cmd-nav-w:        200px;
+    --aeos-shell-cmd-nav-w:        240px;
     --aeos-shell-rail-w:           280px;
   }
 }

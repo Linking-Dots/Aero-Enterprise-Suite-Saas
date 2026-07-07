@@ -258,7 +258,7 @@
 
   /* Shell dimensions */
   --aeos-shell-sidebar-w:     56px;
-  --aeos-shell-sidebar-w-exp: max-content;
+  --aeos-shell-sidebar-w-exp: 268px; /* FIXED width — never max-content (rail must not vary with content/resolution) */
   --aeos-shell-topnav-h:      48px;
 
   /* Shell chrome backgrounds (token-driven, overridden per theme)

@@ -201,8 +201,16 @@
    from Priority+. */
 [data-aeos-shell="topnav"] .aeos-shell-flex-spacer { display: none; }
 
-/* More-menu group headers (a collapsed group keeps its label + children). */
+/* Menu group headers (a group keeps its label + children; groups nest for the
+   deep product trees — nested groups indent with a guide line, matching the
+   sidebar's single-source indent pattern). */
 .aeos-topnav-menu-group + .aeos-topnav-menu-group { margin-top: var(--aeos-space-1); }
+.aeos-topnav-menu-group .aeos-topnav-menu-group {
+  margin-left: var(--aeos-space-3);
+  border-left: var(--aeos-border-width) solid var(--aeos-divider);
+  padding-left: var(--aeos-space-1-5);
+}
+.aeos-topnav-menu-group > .aeos-topnav-menu-item { margin-left: var(--aeos-space-2); }
 .aeos-topnav-menu-grouplabel {
   padding: var(--aeos-space-1) var(--aeos-space-3);
   font-size: var(--aeos-text-2xs);
@@ -307,12 +315,6 @@
   }
   [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.active-parent { color: var(--aeos-primary); }
   [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-label { display: block; }
-  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.aeos-nav-depth-1 {
-    padding-left: calc(var(--aeos-pad-nav-x) + var(--aeos-space-5));
-  }
-  [data-aeos-shell="topnav"] .aeos-topnav-drawer .aeos-shell-sidebar-item.aeos-nav-depth-2 {
-    padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 2));
-  }
 
   [data-aeos-shell="topnav"] .aeos-shell-topbar {
     height: var(--aeos-shell-topnav-h);

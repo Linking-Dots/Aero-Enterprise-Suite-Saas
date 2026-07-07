@@ -74,7 +74,10 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
   // unless they contain the active page).
   const [isOpen, setIsOpen] = useState(() => {
     const saved = navKey ? loadNavState()[navKey] : undefined;
-    return saved !== undefined ? saved : (item.isSection ? true : (item.hasActiveChild ?? false));
+    if (saved !== undefined) return saved;
+    // Industry-standard (Guardian) default: everything collapsed except the
+    // branch that contains the current page.
+    return item.hasActiveChild ?? false;
   });
   // Hooks must run unconditionally before any early return (React rules-of-hooks):
   // `expanded` changes at runtime, so a return above this would drop a hook.
@@ -84,6 +87,12 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
       setIsOpen(v => { const next = !v; saveNavState(navKey, next); return next; });
     }
   }, [expanded, isCommand, navKey]);
+  // Guardian pattern: navigating INTO a branch auto-expands it so the active
+  // item is always visible. Ephemeral (not persisted) — a user's explicit
+  // collapse while on the page sticks until they navigate into it again.
+  useEffect(() => {
+    if (item.hasActiveChild) setIsOpen(true);
+  }, [item.hasActiveChild]);
 
   if (item.divider) return <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
   if (item.spacer)  return <div className="aeos-shell-sidebar-spacer"  aria-hidden="true" />;
@@ -118,6 +127,7 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
   const itemClass = cx(
     baseClass,
     item.isSection                && 'is-section',
+    item.isSubSection             && 'is-subsection',
     item.active && !hasChildren && 'active',
     item.hasActiveChild           && 'active-parent',
     depthClass,
@@ -175,24 +185,14 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
     <div className="aeos-nav-item-wrapper">
       {content}
 
-      {hasChildren && (expanded || isCommand) && (
-        <div
-          className="aeos-shell-sidebar-children"
-          // Collapsed children are visually clipped (grid 0fr) but stay in the DOM.
-          // `inert` removes them from tab order, pointer hit-testing and the a11y
-          // tree so a collapsed group can't steal focus or intercept clicks.
-          {...(isOpen ? {} : { inert: '' })}
-          style={{
-            display: 'grid',
-            gridTemplateRows: isOpen ? '1fr' : '0fr',
-            transition: 'grid-template-rows var(--aeos-dur-base) var(--aeos-ease-out)',
-          }}
-        >
-          <div style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            {item.children.map((child, i) => (
-              <RecursiveNavItem key={i} item={child} depth={depth + 1} isCommand={isCommand} expanded={expanded} />
-            ))}
-          </div>
+      {/* Children render only when open — a conditional (not an overflow:hidden
+          collapse) so nothing clips horizontally and the rail can auto-size to
+          the widest, deepest item. A light fade-in stands in for the slide. */}
+      {hasChildren && (expanded || isCommand) && isOpen && (
+        <div className="aeos-shell-sidebar-children aeos-nav-children-reveal">
+          {item.children.map((child, i) => (
+            <RecursiveNavItem key={i} item={child} depth={depth + 1} isCommand={isCommand} expanded={expanded} />
+          ))}
         </div>
       )}
     </div>
@@ -400,6 +400,27 @@ function TopNavLink({ item, role, className, onNavigate }) {
   );
 }
 
+/* Recursive dropdown body — nested sub-groups render as labelled groups so a
+   3rd/4th-level item (e.g. HR → People → Employees → …) is never dropped. */
+function TopNavMenuItems({ items, onNavigate }) {
+  return items.map((child, i) =>
+    (Array.isArray(child.children) && child.children.length > 0) ? (
+      <div key={i} className="aeos-topnav-menu-group">
+        <div className="aeos-topnav-menu-grouplabel">{child.label}</div>
+        <TopNavMenuItems items={child.children} onNavigate={onNavigate} />
+      </div>
+    ) : (
+      <TopNavLink
+        key={i}
+        item={child}
+        role="menuitem"
+        className={cx('aeos-topnav-menu-item', child.active && 'active')}
+        onNavigate={onNavigate}
+      />
+    )
+  );
+}
+
 function TopNavItem({ item }) {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState(null);
@@ -463,15 +484,7 @@ function TopNavItem({ item }) {
           role="menu"
           style={{ position: 'fixed', left: coords.left, top: coords.top }}
         >
-          {item.children.map((child, i) => (
-            <TopNavLink
-              key={i}
-              item={child}
-              role="menuitem"
-              className={cx('aeos-topnav-menu-item', child.active && 'active')}
-              onNavigate={() => setOpen(false)}
-            />
-          ))}
+          <TopNavMenuItems items={item.children} onNavigate={() => setOpen(false)} />
         </div>
       )}
     </div>
@@ -544,30 +557,7 @@ function MoreMenu({ items }) {
           role="menu"
           style={{ position: 'fixed', left: coords.left, top: coords.top }}
         >
-          {items.map((it, i) => (
-            (Array.isArray(it.children) && it.children.length > 0) ? (
-              <div key={i} className="aeos-topnav-menu-group">
-                <div className="aeos-topnav-menu-grouplabel">{it.label}</div>
-                {it.children.map((c, j) => (
-                  <TopNavLink
-                    key={j}
-                    item={c}
-                    role="menuitem"
-                    className={cx('aeos-topnav-menu-item', c.active && 'active')}
-                    onNavigate={() => setOpen(false)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <TopNavLink
-                key={i}
-                item={it}
-                role="menuitem"
-                className={cx('aeos-topnav-menu-item', (it.active || it.hasActiveChild) && 'active')}
-                onNavigate={() => setOpen(false)}
-              />
-            )
-          ))}
+          <TopNavMenuItems items={items} onNavigate={() => setOpen(false)} />
         </div>
       )}
     </div>

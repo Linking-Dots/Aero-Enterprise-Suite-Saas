@@ -173,8 +173,12 @@
   flex: 1;
   min-height: var(--aeos-space-4);
 }
+/* Label flex:1 → badges/chevrons align to one right edge (see sidebar.css). */
 [data-aeos-shell="floating"] .aeos-shell-sidebar-label {
   display: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -209,8 +213,16 @@
 }
 
 [data-aeos-shell="floating"] .aeos-shell-sidebar-children {
-  width: 100%;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  overflow: visible; /* never clip the active pill horizontally */
+}
+/* SINGLE indent source per level — see sidebar.css. */
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-children {
+  border-left: var(--aeos-border-width) solid var(--aeos-divider);
+  margin-left: calc(var(--aeos-pad-nav-x) + 2px);
+  padding-left: var(--aeos-space-1-5);
 }
 
 /* Expanded */
@@ -229,23 +241,33 @@
   height: calc(var(--aeos-h-nav-item) * var(--aeos-density-factor));
   justify-content: flex-start;
   padding: 0 var(--aeos-pad-nav-x);
-  gap: var(--aeos-space-3);
+  gap: var(--aeos-space-2);
 }
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-label {
   display: block;
   color: inherit;
 }
 [data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-divider { width: 100%; }
-/* Nested-item indentation — see sidebar.css. The base padding resets
-   padding-left, so restate depth indent with equal specificity. */
-[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-1 {
-  padding-left: calc(var(--aeos-pad-nav-x) + var(--aeos-space-5));
+/* Nesting indent comes ONLY from .aeos-shell-sidebar-children (guide line) —
+   no per-item depth padding (it doubled the indent). */
+
+/* Folder-style group items (is-section / is-subsection) — same pattern as the
+   classic sidebar so every shell reads identically. */
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item.is-section,
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item.is-subsection {
+  color: var(--aeos-text-primary);
 }
-[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-2 {
-  padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 2));
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.is-section .aeos-shell-sidebar-label,
+[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.is-subsection .aeos-shell-sidebar-label {
+  font-size: var(--aeos-text-sm);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
 }
-[data-aeos-shell="floating"].sidebar-expanded .aeos-shell-sidebar-item.aeos-nav-depth-3 {
-  padding-left: calc(var(--aeos-pad-nav-x) + (var(--aeos-space-5) * 3));
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item.is-section .aeos-shell-nav-icon,
+[data-aeos-shell="floating"] .aeos-shell-sidebar-item.is-subsection .aeos-shell-nav-icon {
+  color: var(--aeos-primary);
+  opacity: 0.95;
 }
 
 /* Tablet */
