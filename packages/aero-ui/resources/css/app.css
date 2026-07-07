@@ -71,3 +71,22 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* ── Aeon AI assistant ─────────────────────────────────────────── */
+.aeon-fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 60;
+}
+.aeon-composer { width: 100%; }
+.aeon-composer .aeos-input { flex: 1; }
+.aeon-msg--user {
+  margin-left: auto;
+  max-width: 85%;
+  background: var(--aeos-surface-2, rgba(127, 127, 127, 0.08));
+}
+.aeon-msg--assistant {
+  margin-right: auto;
+  max-width: 85%;
+}

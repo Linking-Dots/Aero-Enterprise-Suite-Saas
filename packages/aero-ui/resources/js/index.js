@@ -122,6 +122,11 @@ export {
   ShareViewDialog,
 }                                           from './components/SavedViews.jsx';
 
+// ── Aeon (AI assistant) ──────────────────────────────────────────
+export { default as FloatingAeon }      from './aeon/FloatingAeon.jsx';
+export { default as AeonBlockRenderer } from './aeon/BlockRenderer.jsx';
+export { useAeon }                      from './aeon/useAeon.js';
+
 // ── Public (Marketing) Components ────────────────────────────────
 export {
   Section, Container,

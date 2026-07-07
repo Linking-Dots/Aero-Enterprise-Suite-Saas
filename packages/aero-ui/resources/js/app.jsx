@@ -17,6 +17,7 @@ import { createRoot } from 'react-dom/client';
 
 import { ThemeProvider } from './theme/ThemeProvider.jsx';
 import ThemeDrawer       from './theme/ThemeDrawer.jsx';
+import FloatingAeon      from './aeon/FloatingAeon.jsx';
 import { AeosErrorBoundary, EngineErrorPanel } from './components/AeosErrorBoundary.jsx';
 import '../css/app.css';
 
@@ -29,6 +30,8 @@ function AeosEngine({ App, props }) {
         <App {...props} />
       </AeosErrorBoundary>
       <ThemeDrawer />
+      {/* Aeon AI assistant — self-hides for unauthenticated pages */}
+      <FloatingAeon />
     </ThemeProvider>
   );
 }
