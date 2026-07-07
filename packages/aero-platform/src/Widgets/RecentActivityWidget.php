@@ -128,7 +128,7 @@ class RecentActivityWidget extends AbstractPlatformWidget
                     'message' => "New tenant \"{$tenant->name}\" registered",
                     'time' => $tenant->created_at->diffForHumans(),
                     'timestamp' => $tenant->created_at->toIso8601String(),
-                    'href' => route('admin.tenants.show', $tenant->id),
+                    'href' => route('platform.admin.tenants.show', $tenant->id),
                 ];
             });
     }
@@ -157,7 +157,7 @@ class RecentActivityWidget extends AbstractPlatformWidget
                 'message' => "{$sub->tenant?->name} subscribed to {$sub->plan?->name} plan",
                 'time' => $sub->created_at->diffForHumans(),
                 'timestamp' => $sub->created_at->toIso8601String(),
-                'href' => route('admin.tenants.show', $sub->tenant_id),
+                'href' => route('platform.admin.tenants.show', $sub->tenant_id),
             ]);
         }
 
@@ -179,7 +179,7 @@ class RecentActivityWidget extends AbstractPlatformWidget
                 'message' => "{$sub->tenant?->name} cancelled their subscription",
                 'time' => $sub->cancelled_at->diffForHumans(),
                 'timestamp' => $sub->cancelled_at->toIso8601String(),
-                'href' => route('admin.tenants.show', $sub->tenant_id),
+                'href' => route('platform.admin.tenants.show', $sub->tenant_id),
             ]);
         }
 
@@ -205,7 +205,7 @@ class RecentActivityWidget extends AbstractPlatformWidget
                     'message' => "Provisioning failed for \"{$tenant->name}\"",
                     'time' => $tenant->updated_at->diffForHumans(),
                     'timestamp' => $tenant->updated_at->toIso8601String(),
-                    'href' => route('admin.tenants.show', $tenant->id),
+                    'href' => route('platform.admin.tenants.show', $tenant->id),
                 ];
             });
     }

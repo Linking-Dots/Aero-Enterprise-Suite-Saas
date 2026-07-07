@@ -13,6 +13,7 @@ import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import { AppShell, AppBrand, AppTopbarTitle, GlobalActions, SearchOverlay } from '@aero/ui';
 import { useTheme } from '../theme/ThemeProvider.jsx';
+import { useTourEngine } from '../tour/useTour.jsx';
 
 import * as HeroIcons from '@heroicons/react/24/outline';
 
@@ -158,6 +159,14 @@ export default function App({ title, rail, railTitle = 'Context', children }) {
   // leaf highlights (longest-match-wins), regardless of which shell renders.
   const groupItems = (navigationGroups ?? []).flatMap(g => g.items ?? []);
   const activeHref = computeActiveHref(currentUrl, navigation ?? [], groupItems, FALLBACK_NAV);
+
+  // Guided live-demo tour: auto-start once per browser on the demo tenant,
+  // and resume across Inertia navigations. No-op on non-demo tenants.
+  useTourEngine({
+    isDemo: page.props.tenant?.demo === true,
+    reduced: theme.motion !== 'full',
+    url: currentUrl,
+  });
 
   const isCommand = theme.shell === 'command';
   // Flat nav is the canonical list; the command shell uses grouped nav, but the

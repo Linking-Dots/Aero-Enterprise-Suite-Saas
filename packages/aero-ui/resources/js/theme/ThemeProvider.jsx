@@ -52,9 +52,12 @@ const DEFAULTS = {
   radius:      'balanced',      // 'sharp' | 'balanced' | 'soft'
   borders:     'standard',      // 'hairline' | 'standard' | 'bold'
   accent:      '#00E5FF',       // CSS hex color
-  fontDisplay: 'Syne',
-  fontBody:    'DM Sans',
-  fontMono:    'JetBrains Mono',
+  // One typeface drives display + body + mono (the Theme Studio picker sets all
+  // three together). Keep them equal here so a fresh load / "Reset to Defaults"
+  // uses a single consistent face everywhere, with no leftover secondary font.
+  fontDisplay: 'Geist',
+  fontBody:    'Geist',
+  fontMono:    'Geist',
   fontScale:   1,               // numeric multiplier
   motion:      'full',          // 'full' | 'reduced' | 'off'
 };

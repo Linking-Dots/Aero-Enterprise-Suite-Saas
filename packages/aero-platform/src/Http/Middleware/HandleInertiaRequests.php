@@ -224,6 +224,7 @@ class HandleInertiaRequests extends Middleware
                 'status' => tenant('status'),
                 'onTrial' => tenant()?->isOnTrial() ?? false,
                 'trialEndsAt' => tenant()?->subscription('default')?->trial_ends_at,
+                'demo' => (bool) tenant('is_demo'),
             ],
             'app' => [
                 'name' => $companyName,

@@ -8,6 +8,11 @@
   font-feature-settings: "ss01","cv11";
 }
 .aeos *, .aeos *::before, .aeos *::after { box-sizing: border-box; }
+/* Form controls (button/input/select/textarea) don't inherit font-family by UA
+   default — they fall back to a system font (Arial). Force them onto the theme
+   typeface so, e.g., expandable nav PARENTS (rendered as <button>) match their
+   child links and all text. Keeps the whole UI on the single Theme Studio font. */
+.aeos button, .aeos input, .aeos select, .aeos textarea, .aeos optgroup { font-family: inherit; }
 
 /* System-preference dark mode (for .aeos--system)
    Dark palette is the canonical :root default — no overrides needed. */

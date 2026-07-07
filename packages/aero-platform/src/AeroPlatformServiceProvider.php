@@ -454,6 +454,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 ProcessSubscriptionRenewals::class,
                 ExpireGracePeriods::class,
                 PurgeSuspendedRoleAccess::class, // D17: daily hard-delete after 30-day grace
+                \Aero\Platform\Console\Commands\DemoResetCommand::class,
             ]);
         }
 

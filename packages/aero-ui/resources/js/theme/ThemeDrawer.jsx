@@ -336,11 +336,14 @@ export default function ThemeDrawer() {
                 </div>
               </Section>
 
-              {/* Font pair — sample in-face */}
+              {/* Typeface — a single pick drives display (headings), body (all
+                  running text) AND mono so the chosen face applies uniformly
+                  across the whole app and shell, with no leftover secondary font. */}
               <Section title="Typeface" cols={3}>
                 {FONT_PAIRS.map(p => (
-                  <Tile key={p.value} label={p.label} sublabel={p.note} active={theme.fontDisplay === p.value}
-                    previewPatch={{ fontDisplay: p.value }} onSelect={() => theme.setFonts({ display: p.value })}>
+                  <Tile key={p.value} label={p.label} sublabel={p.note} active={theme.fontBody === p.value}
+                    previewPatch={{ fontDisplay: p.value, fontBody: p.value, fontMono: p.value }}
+                    onSelect={() => theme.setFonts({ display: p.value, body: p.value, mono: p.value })}>
                     <span className="aeos-ts-font" style={{ fontFamily: `"${p.value}", var(--aeos-font-display)` }} aria-hidden="true">Aa</span>
                   </Tile>
                 ))}

@@ -195,6 +195,7 @@ class HandleInertiaRequests extends Middleware
                 'subdomain' => tenant('subdomain'),
                 'status' => tenant('status'),
                 'modules' => tenant('modules') ?? [],
+                'demo' => (bool) tenant('is_demo'),
             ];
             $props['aero'] = [
                 'mode' => 'saas',

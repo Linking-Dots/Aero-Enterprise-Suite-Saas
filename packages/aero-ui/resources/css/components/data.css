@@ -188,7 +188,12 @@
 /* Narrow cards (mobile 2-col KPI grid): the icon|body|meta row squeezes the
    title into a 2-line wrap that collides with the metric. Restack to
    [icon] [value] on the first row and the title full-width below. */
-@media (max-width: 640px) {
+/* Restack based on the CARD's own width (via the .aeos-kpi-col container),
+   not the viewport — a sidebar/rail can make a card narrow at any viewport.
+   Below ~260px the horizontal [icon][title][value] row can't hold "Recurring
+   revenue" + "$1.9k" without colliding, so drop to [icon][value] on row 1 and
+   the title full-width below. */
+@container (max-width: 260px) {
   .aeos-stat-card {
     grid-template-columns: auto 1fr;
     grid-template-areas:
@@ -200,6 +205,12 @@
   .aeos-stat-icon { grid-area: icon; }
   .aeos-stat-meta { grid-area: meta; align-items: flex-end; }
   .aeos-stat-body { grid-area: body; }
+}
+
+/* Fallback for stat cards used outside a KPI container (no container context):
+   keep the viewport-based restack so standalone Stats still behave on phones. */
+@media (max-width: 640px) {
+  .aeos-kpi-row { grid-template-columns: 1fr; }
 }
 
 /* ── Progress Bar ─────────────────────────────────────────────── */

@@ -26,6 +26,7 @@ class TenantController extends Controller
     {
         return Inertia::render('Platform/Admin/Tenants/Index', [
             'tenants' => $this->svc->list($request->only(['status', 'plan_id', 'search'])),
+            'stats' => $this->svc->stats(),
             'filters' => $request->only(['status', 'plan_id', 'search']),
             'plans' => Plan::orderBy('name')->get(['id', 'name']),
         ]);

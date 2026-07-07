@@ -7,13 +7,44 @@
 .aeos-page-layout { display:flex; flex-direction:column; gap:var(--aeos-space-6); width:100%; padding:var(--aeos-space-6); box-sizing:border-box; }
 @media (max-width:640px) { .aeos-page-layout { padding:var(--aeos-space-4); gap:var(--aeos-space-4); } }
 
-/* ── KPI row ──────────────────────────────────────────────────── */
-.aeos-kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--aeos-space-4); }
-.aeos-kpi-col { min-width:0; }
-@media (max-width:640px) { .aeos-kpi-row { grid-template-columns:repeat(2,1fr); } }
+/* ── KPI row ──────────────────────────────────────────────────────────────
+   auto-fit + a realistic min track (240px) degrades 3→2→1 based on the actual
+   content width (not the viewport), so the strip never squeezes cards below a
+   legible width when a sidebar/rail is eating horizontal space. Each column is
+   an inline-size container so the stat card can restack on its own width. */
+.aeos-kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:var(--aeos-space-4); align-items:stretch; }
+.aeos-kpi-col { min-width:0; container-type:inline-size; display:flex; }
+/* Cards fill the row's stretched height so KPI tiles are always the same size
+   regardless of how many lines each description wraps to. */
+.aeos-kpi-col > .aeos-stat-card { width:100%; height:100%; }
 
 /* ── Filters bar ──────────────────────────────────────────────── */
 .aeos-filters-bar { display:flex; align-items:center; gap:var(--aeos-space-3); flex-wrap:wrap; }
+/* The toolbar's inner flex row (an HStack) fills the bar's full width and may
+   wrap; without this its search field collapses to an icon-sized square while
+   empty space sits to the right. */
+.aeos-filters-bar > * { flex:1 1 100%; min-width:0; flex-wrap:wrap; }
+
+/* Desktop: the search field grows to absorb the free space; selects and action
+   buttons sit inline at a natural width. Selects need an explicit flex-basis
+   (not auto) because .aeos-input defaults to width:100% — with basis auto that
+   100% would win and force each control onto its own full-width row. */
+@media (min-width:561px) {
+  .aeos-filters-bar > * > .aeos-input-group,
+  .aeos-filters-bar > * > input.aeos-input { flex:1 1 240px; min-width:220px; }
+  .aeos-filters-bar > * > .aeos-input-group .aeos-input { width:100%; }
+  .aeos-filters-bar > * > select.aeos-input { flex:0 1 auto; width:auto; min-width:150px; }
+  .aeos-filters-bar > * > button { flex:0 0 auto; width:auto; }
+}
+
+/* Mobile: stack — search takes its own row; the two selects share a row; the
+   actions share a row. */
+@media (max-width:560px) {
+  .aeos-filters-bar { align-items:stretch; }
+  .aeos-filters-bar > * > * { flex:1 1 100%; min-width:0; }
+  .aeos-filters-bar > * > select { flex:1 1 42%; }
+  .aeos-filters-bar > * > button { flex:1 1 42%; }
+}
 
 /* ── Table section ────────────────────────────────────────────── */
 .aeos-table-section { overflow:hidden; border-radius:var(--aeos-r-lg); border:var(--aeos-border-width) solid var(--aeos-divider); }

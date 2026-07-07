@@ -100,6 +100,7 @@ export default function RunsIndex({ runs, filters, stats }) {
           {canExecute && (
             <Button
               intent="primary"
+              data-tour="payroll-run"
               onClick={() => router.get(route('hrm.payroll.runs.create'))}
             >
               New Run

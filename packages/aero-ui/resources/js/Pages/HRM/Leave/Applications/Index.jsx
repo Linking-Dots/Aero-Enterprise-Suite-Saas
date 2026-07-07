@@ -170,11 +170,13 @@ export default function ApplicationsIndex({ applications, filters, leaveTypes, s
           </HStack>
         }
         table={
-          <DataTable
-            columns={columns}
-            rows={applications.data ?? []}
-            empty="No leave applications found."
-          />
+          <div data-tour="leave-approve">
+            <DataTable
+              columns={columns}
+              rows={applications.data ?? []}
+              empty="No leave applications found."
+            />
+          </div>
         }
         pagination={
           totalPages > 1 && (

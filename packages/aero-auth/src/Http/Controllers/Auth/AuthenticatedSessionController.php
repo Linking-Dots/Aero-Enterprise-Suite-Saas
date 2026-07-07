@@ -19,9 +19,18 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
+        // On the demo tenant, expose the login credentials so a visitor arriving
+        // from the marketing "See Demo" CTA can enter with one click.
+        $isDemo = function_exists('tenant') && tenant() && (bool) tenant('is_demo');
+        $demo = $isDemo ? [
+            'email' => config('aero.demo.email', 'admin@democorp.com'),
+            'password' => config('aero.demo.password', 'Aeos365!Admin'),
+        ] : null;
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => true,
             'status' => session('status'),
+            'demo' => $demo,
         ]);
     }
 

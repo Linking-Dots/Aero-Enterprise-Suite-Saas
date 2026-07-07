@@ -1,173 +1,375 @@
-/* ==========================================================================
-   Platform Admin Dashboard — Scoped Responsive Styles
-   Breakpoints mirror @aero/ui shell-dimensions.css:
-     xs  < 480px
-     sm  480px – 639px
-     md  640px – 767px
-     lg  768px – 1023px
-     xl  1024px – 1279px
-     2xl 1280px+
-   ========================================================================== */
+/* ============================================================================
+   Living Command Center — platform-admin dashboard
+   Theme-reactive (all colors/spacing/radius via --aeos-* tokens).
+   All motion is gated on <body data-motion>. reduced/off → no animation.
+   ========================================================================= */
 
-/* ── Root wrapper ────────────────────────────────────────────────────────── */
-.aeos-dashboard {
+.lcc {
   display: flex;
   flex-direction: column;
   gap: var(--aeos-space-5);
   width: 100%;
   min-width: 0;
-  box-sizing: border-box;
+  max-width: 1720px;
+  margin-inline: auto;
 }
 
-/* ── Command bar ─────────────────────────────────────────────────────────── */
-.aeos-dashboard__command-bar {
-  width: 100%;
-  min-width: 0;
+/* ── Command strip ───────────────────────────────────────────────────── */
+.lcc-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-4);
+  flex-wrap: wrap;
+  row-gap: var(--aeos-space-3);
+}
+.lcc-strip__id { min-width: 0; }
+.lcc-strip__greet {
+  font-size: var(--aeos-text-xl);
+  font-weight: 650;
+  color: var(--aeos-text-primary);
+  line-height: 1.15;
+}
+.lcc-strip__sub {
+  font-size: var(--aeos-text-sm);
+  color: var(--aeos-text-tertiary);
+  font-family: var(--aeos-font-mono);
+  margin-top: 2px;
+}
+.lcc-strip__spacer { flex: 1 1 auto; min-width: var(--aeos-space-4); }
+.lcc-strip__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.lcc-clock {
+  font-family: var(--aeos-font-mono);
+  font-size: var(--aeos-text-sm);
+  color: var(--aeos-text-secondary);
+  font-variant-numeric: tabular-nums;
+  padding: 4px 10px;
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-subtle);
 }
 
-/* ── KPI strip ───────────────────────────────────────────────────────────── */
-.aeos-dashboard__kpi-strip {
-  width: 100%;
-  min-width: 0;
-}
-
-/* ── Generic 2-col grid (main + sidebar) ─────────────────────────────────── */
-.aeos-dashboard__grid-2 {
-  display: grid;
-  grid-template-columns: 1fr;          /* stack on mobile */
-  gap: var(--aeos-space-5);
-  width: 100%;
-  min-width: 0;
-  align-items: start;
-}
-
-/* ── Row that pairs two equal-width cards ─────────────────────────────────── */
-.aeos-dashboard__grid-equal {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--aeos-space-5);
-  width: 100%;
-  min-width: 0;
-  align-items: start;
-}
-
-/* ── Full-width rows ─────────────────────────────────────────────────────── */
-.aeos-dashboard__full {
-  width: 100%;
-  min-width: 0;
-}
-
-/* ── Bottom pair (activity + quick-actions) ───────────────────────────────── */
-.aeos-dashboard__grid-bottom {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--aeos-space-5);
-  width: 100%;
-  min-width: 0;
-  align-items: start;
-}
-
-/* ── Section label ───────────────────────────────────────────────────────── */
-.aeos-dashboard__section-label {
+/* ── Pulse dot ───────────────────────────────────────────────────────── */
+.lcc-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aeos-space-2);
+  padding: 4px 12px 4px 10px;
+  border-radius: var(--aeos-r-full);
   font-size: var(--aeos-text-xs);
-  font-weight: 500;
+  font-weight: 600;
+  border: var(--aeos-border-width) solid var(--aeos-border-subtle);
+  background: var(--aeos-bg-subtle);
+  color: var(--aeos-text-secondary);
+  white-space: nowrap;
+}
+.lcc-pulse__dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+  background: var(--aeos-success);
+}
+.lcc-pulse__dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: lcc-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.lcc-pulse.is-warning  .lcc-pulse__dot { background: var(--aeos-warning); }
+.lcc-pulse.is-critical .lcc-pulse__dot { background: var(--aeos-danger); }
+.lcc-pulse.is-critical { color: var(--aeos-danger); border-color: color-mix(in srgb, var(--aeos-danger) 40%, transparent); }
+.lcc-pulse.is-warning  { color: var(--aeos-warning); }
+
+@keyframes lcc-ping {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  70%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ── Hero KPI band ───────────────────────────────────────────────────── */
+.lcc-band {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--aeos-space-4);
+}
+.lcc-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--aeos-space-2);
+  padding: var(--aeos-space-4);
+  min-width: 0;
+  height: 100%;
+}
+.lcc-hero__label {
+  font-size: var(--aeos-text-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--aeos-text-tertiary);
-  margin: 0 0 var(--aeos-space-2);
+  font-family: var(--aeos-font-mono);
+}
+.lcc-hero__value {
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.15rem);
+  font-weight: 700;
+  color: var(--aeos-text-primary);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.lcc-hero__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--aeos-space-2);
+  margin-top: auto;
+  flex-wrap: wrap;
+  row-gap: var(--aeos-space-2);
+}
+/* Sparkline bars are flex:1 with no intrinsic width — give the sparkline a
+   basis so it doesn't collapse to 0, but allow it to shrink on narrow cards. */
+.lcc-hero__foot .aeos-sparkline {
+  flex: 1 1 72px;
+  width: auto;
+  max-width: 92px;
+  min-width: 44px;
 }
 
-/* ── Module chart / list toggle ──────────────────────────────────────────── */
-.dash-module-chart { display: block; }
-.dash-module-list  { display: none;  }
+/* ── Delta chip ──────────────────────────────────────────────────────── */
+.lcc-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--aeos-text-xs);
+  font-weight: 650;
+  font-family: var(--aeos-font-mono);
+  color: var(--aeos-text-tertiary);
+}
+.lcc-delta.is-up   { color: var(--aeos-success); }
+.lcc-delta.is-down { color: var(--aeos-danger); }
+.lcc-delta svg { width: 12px; height: 12px; }
 
-/* ==========================================================================
-   sm  ≥ 480px — 2-col KPI, equal grids still stacked
-   ========================================================================== */
-@media (min-width: 480px) {
-  /* KPI tiles: 2-per-row on xs→sm */
-  .aeos-dashboard__kpi-strip > div {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ── Layout rows ─────────────────────────────────────────────────────── */
+.lcc-row {
+  display: grid;
+  gap: var(--aeos-space-5);
+  min-width: 0;
+}
+.lcc-row.split-60 { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+.lcc-row.split-50 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+.lcc-card-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--aeos-space-3);
+  margin-bottom: var(--aeos-space-4);
+  flex-wrap: wrap;
+  row-gap: var(--aeos-space-2);
+}
+.lcc-card-h__title {
+  font-size: var(--aeos-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aeos-text-tertiary);
+  font-family: var(--aeos-font-mono);
 }
 
-/* ==========================================================================
-   md  ≥ 640px — 3-col KPI, equal pairs become side-by-side
-   ========================================================================== */
-@media (min-width: 640px) {
-  .aeos-dashboard__kpi-strip > div {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .aeos-dashboard__grid-equal {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .aeos-dashboard__grid-bottom {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  /* Module adoption — horizontal bar chart is readable */
-  .dash-module-chart { display: block; }
-  .dash-module-list  { display: none;  }
+/* ── Chart shell ─────────────────────────────────────────────────────── */
+.lcc-chart { width: 100%; height: 200px; min-width: 0; }
+.lcc-foot-metrics {
+  display: flex;
+  gap: var(--aeos-space-5);
+  flex-wrap: wrap;
+  row-gap: var(--aeos-space-2);
+  margin-top: var(--aeos-space-4);
+  padding-top: var(--aeos-space-4);
+  border-top: var(--aeos-border-width) solid var(--aeos-divider);
+}
+.lcc-foot-metrics__item { min-width: 0; }
+.lcc-foot-metrics__k { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); }
+.lcc-foot-metrics__v {
+  font-size: var(--aeos-text-sm);
+  font-weight: 650;
+  color: var(--aeos-primary);
+  font-family: var(--aeos-font-mono);
+  margin-left: 4px;
 }
 
-/* ==========================================================================
-   lg  ≥ 768px — 6-col KPI strip, 2-col main/sidebar layout
-   ========================================================================== */
-@media (min-width: 768px) {
-  .aeos-dashboard__kpi-strip > div {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .aeos-dashboard__grid-2 {
-    /* MRR trend takes ~60%, sidebar ~40% */
-    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  }
+/* ── Funnel ──────────────────────────────────────────────────────────── */
+.lcc-funnel { display: flex; flex-direction: column; gap: var(--aeos-space-3); }
+.lcc-funnel__row { display: flex; flex-direction: column; gap: 5px; }
+.lcc-funnel__meta {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: var(--aeos-text-sm);
+}
+.lcc-funnel__stage { color: var(--aeos-text-secondary); }
+.lcc-funnel__count { color: var(--aeos-text-primary); font-weight: 650; font-family: var(--aeos-font-mono); }
+.lcc-funnel__track {
+  height: 10px;
+  border-radius: var(--aeos-r-full);
+  background: var(--aeos-bg-subtle);
+  overflow: hidden;
+}
+.lcc-funnel__fill {
+  height: 100%;
+  border-radius: var(--aeos-r-full);
+  background: linear-gradient(90deg, var(--aeos-primary), color-mix(in srgb, var(--aeos-primary) 55%, var(--aeos-secondary)));
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ==========================================================================
-   xl  ≥ 1024px — fine-tune proportions for widescreen
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .aeos-dashboard {
-    gap: var(--aeos-space-6);
-  }
+/* ── Pipeline chips ──────────────────────────────────────────────────── */
+.lcc-pipeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--aeos-space-2);
+  margin-top: var(--aeos-space-4);
+  padding-top: var(--aeos-space-4);
+  border-top: var(--aeos-border-width) solid var(--aeos-divider);
+}
+.lcc-chip {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: var(--aeos-space-2) var(--aeos-space-3);
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-subtle);
+}
+.lcc-chip__n { font-size: var(--aeos-text-lg); font-weight: 700; color: var(--aeos-text-primary); font-variant-numeric: tabular-nums; }
+.lcc-chip__l { font-size: var(--aeos-text-xs); color: var(--aeos-text-tertiary); text-transform: capitalize; }
 
-  .aeos-dashboard__grid-2 {
-    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-    gap: var(--aeos-space-6);
-  }
+/* ── Ops pulse ───────────────────────────────────────────────────────── */
+.lcc-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: var(--aeos-space-2); }
+.lcc-service {
+  display: flex; align-items: center; gap: var(--aeos-space-2);
+  padding: var(--aeos-space-2) var(--aeos-space-3);
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-subtle);
+  font-size: var(--aeos-text-xs);
+  color: var(--aeos-text-secondary);
+}
+.lcc-service__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--aeos-success); flex-shrink: 0; }
+.lcc-service.is-degraded .lcc-service__dot { background: var(--aeos-warning); }
+.lcc-service.is-down .lcc-service__dot { background: var(--aeos-danger); }
 
-  .aeos-dashboard__grid-equal {
-    gap: var(--aeos-space-6);
-  }
-
-  .aeos-dashboard__grid-bottom {
-    /* activity feed wider than quick actions */
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: var(--aeos-space-6);
-  }
+.lcc-errtrend { display: flex; align-items: flex-end; gap: 3px; height: 44px; margin-top: var(--aeos-space-3); }
+.lcc-errtrend__bar {
+  flex: 1;
+  min-height: 3px;
+  border-radius: var(--aeos-r-sm);
+  background: color-mix(in srgb, var(--aeos-danger) 60%, transparent);
 }
 
-/* ==========================================================================
-   2xl  ≥ 1280px — max content width guard (set by shell, not needed here)
-   ========================================================================== */
-@media (min-width: 1280px) {
-  .aeos-dashboard__grid-2 {
-    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-  }
+/* ── Alerts list ─────────────────────────────────────────────────────── */
+.lcc-alerts { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.lcc-alert {
+  display: flex; gap: var(--aeos-space-3); align-items: flex-start;
+  padding: var(--aeos-space-3);
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-subtle);
+  border-left: 3px solid var(--aeos-info);
+}
+.lcc-alert.is-critical { border-left-color: var(--aeos-danger); }
+.lcc-alert.is-warning  { border-left-color: var(--aeos-warning); }
+.lcc-alert__t { font-size: var(--aeos-text-sm); font-weight: 600; color: var(--aeos-text-primary); }
+.lcc-alert__d { font-size: var(--aeos-text-xs); color: var(--aeos-text-tertiary); margin-top: 2px; }
+
+/* ── Growth / sources ────────────────────────────────────────────────── */
+.lcc-kv { display: flex; flex-direction: column; gap: var(--aeos-space-3); }
+.lcc-kv__row { display: flex; align-items: center; justify-content: space-between; gap: var(--aeos-space-3); }
+.lcc-kv__bar-wrap { flex: 1; height: 8px; border-radius: var(--aeos-r-full); background: var(--aeos-bg-subtle); overflow: hidden; }
+.lcc-kv__bar { height: 100%; background: var(--aeos-primary); border-radius: var(--aeos-r-full); }
+.lcc-kv__label { font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); min-width: 92px; text-transform: capitalize; }
+/* Feature-usage labels: monospace, may be long — truncate rather than overflow. */
+.lcc-kv__label.is-feature {
+  font-family: var(--aeos-font-mono);
+  font-size: var(--aeos-text-xs);
+  text-transform: none;
+  min-width: 0;
+  flex: 0 1 128px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lcc-kv__val { font-size: var(--aeos-text-sm); font-weight: 650; color: var(--aeos-text-primary); font-family: var(--aeos-font-mono); min-width: 32px; text-align: right; }
+
+/* ── Live stream ─────────────────────────────────────────────────────── */
+.lcc-stream { display: flex; flex-direction: column; gap: var(--aeos-space-1); max-height: 360px; overflow-y: auto; }
+.lcc-stream__item {
+  display: flex; gap: var(--aeos-space-3); align-items: flex-start;
+  padding: var(--aeos-space-3) var(--aeos-space-2);
+  border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
+  animation: lcc-slide-in 0.4s ease both;
+}
+.lcc-stream__item:last-child { border-bottom: none; }
+.lcc-stream__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--aeos-primary); margin-top: 6px; flex-shrink: 0; }
+.lcc-stream__body { min-width: 0; flex: 1; }
+.lcc-stream__text { font-size: var(--aeos-text-sm); color: var(--aeos-text-primary); }
+.lcc-stream__meta { font-size: var(--aeos-text-xs); color: var(--aeos-text-tertiary); font-family: var(--aeos-font-mono); margin-top: 2px; }
+
+@keyframes lcc-slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================================================
-   xs  < 480px — single column, narrow overrides
-   ========================================================================== */
-@media (max-width: 479px) {
-  .aeos-dashboard {
-    gap: var(--aeos-space-4);
-  }
-
-  /* On very narrow screens swap bar chart for progress-bar list */
-  .dash-module-chart { display: none;  }
-  .dash-module-list  { display: block; }
+/* ── Quick actions ───────────────────────────────────────────────────── */
+.lcc-actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--aeos-space-3); }
+.lcc-action {
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--aeos-space-2);
+  padding: var(--aeos-space-4);
+  border-radius: var(--aeos-r-md);
+  background: var(--aeos-bg-subtle);
+  border: var(--aeos-border-width) solid transparent;
+  color: var(--aeos-text-primary);
+  font-size: var(--aeos-text-sm);
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
+.lcc-action:hover { border-color: var(--aeos-primary); background: var(--aeos-bg-hover); transform: translateY(-2px); }
+.lcc-action__icon { color: var(--aeos-primary); }
+
+/* ── Count-up shimmer on first paint ─────────────────────────────────── */
+.lcc-hero__value.is-loading {
+  color: transparent;
+  border-radius: var(--aeos-r-sm);
+  background: linear-gradient(90deg, var(--aeos-bg-subtle) 25%, var(--aeos-bg-hover) 37%, var(--aeos-bg-subtle) 63%);
+  background-size: 400% 100%;
+  animation: lcc-shimmer 1.4s ease infinite;
+}
+@keyframes lcc-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .lcc-band { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lcc-row.split-60, .lcc-row.split-50 { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  /* Welcome / command strip stacks: identity above, actions wrap below. */
+  .lcc-strip { flex-direction: column; align-items: stretch; }
+  .lcc-strip__spacer { display: none; }
+  .lcc-strip__actions { width: 100%; justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  .lcc-band { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lcc-strip__greet { font-size: var(--aeos-text-lg); }
+  .lcc-clock { display: none; }
+  /* Keep action buttons/pulse from forcing horizontal overflow. */
+  .lcc-strip__actions > * { flex: 0 1 auto; min-width: 0; }
+  .lcc-pulse { max-width: 100%; }
+}
+@media (max-width: 420px) {
+  .lcc-band { grid-template-columns: 1fr; }
+}
+
+/* ── Motion gating ───────────────────────────────────────────────────── */
+body[data-motion="reduced"] .lcc *,
+body[data-motion="off"] .lcc * {
+  animation: none !important;
+  transition: none !important;
+}
+body[data-motion="off"] .lcc-pulse__dot::after { display: none; }

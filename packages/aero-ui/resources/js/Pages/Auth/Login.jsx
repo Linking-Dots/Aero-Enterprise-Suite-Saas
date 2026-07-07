@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, Link } from '@inertiajs/react';
 import AuthLayout from './AuthLayout.jsx';
-import { Field, Input, Toggle, Button, Alert, Text, HStack } from '@aero/ui';
+import { Field, Input, Toggle, Button, Alert, Text, HStack, VStack, Mono } from '@aero/ui';
 
 function uuidv4() {
   // crypto.randomUUID() only exists in secure contexts (HTTPS or localhost).
@@ -41,10 +41,11 @@ export default function Login({
   deviceBlocked,
   deviceMessage,
   blockedDeviceInfo,
+  demo = null,
 }) {
   const { data, setData, post, processing, errors, reset } = useForm({
-    email:     '',
-    password:  '',
+    email:     demo?.email ?? '',
+    password:  demo?.password ?? '',
     remember:  false,
     device_id: '',
   });
@@ -61,6 +62,21 @@ export default function Login({
   return (
     <AuthLayout title="Sign in to your account">
       <form className="al-form" onSubmit={submit} noValidate>
+        {demo && (
+          <Alert intent="info" title="Live demo — no sign-up needed">
+            <VStack gap={2}>
+              <Text size="sm">Credentials are pre-filled. Click below to explore AEOS365.</Text>
+              <HStack gap={4} wrap="wrap">
+                <Text size="sm" tone="secondary">Email&nbsp;<Mono>{demo.email}</Mono></Text>
+                <Text size="sm" tone="secondary">Password&nbsp;<Mono>{demo.password}</Mono></Text>
+              </HStack>
+              <Button type="button" intent="primary" onClick={submit} disabled={processing}>
+                Enter the demo
+              </Button>
+            </VStack>
+          </Alert>
+        )}
+
         {status && <Alert intent="info">{status}</Alert>}
 
         {deviceBlocked && (

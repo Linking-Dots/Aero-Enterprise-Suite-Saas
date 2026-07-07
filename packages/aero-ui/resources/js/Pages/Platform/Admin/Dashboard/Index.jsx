@@ -1,176 +1,117 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { router } from '@inertiajs/react';
-import { Card, CardBody } from '@aero/ui';
 
-import App         from '@/Pages/App.jsx';
-import CommandBar  from './widgets/CommandBar';
-import KpiStrip    from './widgets/KpiStrip';
-import MrrTrendWidget              from './widgets/MrrTrendWidget';
-import SystemAlertsWidget          from './widgets/SystemAlertsWidget';
-import TenantPipelineWidget        from './widgets/TenantPipelineWidget';
-import SubscriptionDistributionWidget from './widgets/SubscriptionDistributionWidget';
-import RecentTenantsWidget         from './widgets/RecentTenantsWidget';
-import SystemHealthWidget          from './widgets/SystemHealthWidget';
-import ModuleAdoptionWidget        from './widgets/ModuleAdoptionWidget';
-import RecentActivityWidget        from './widgets/RecentActivityWidget';
-import QuickActionsWidget          from './widgets/QuickActionsWidget';
-import DraggableDashboard          from './widgets/DraggableDashboard';
+import App from '@/Pages/App.jsx';
+import { Card, CardBody, Icon } from '@aero/ui';
+
+import CommandStrip     from './sections/CommandStrip.jsx';
+import HeroBand         from './sections/HeroBand.jsx';
+import RevenueTrend     from './sections/RevenueTrend.jsx';
+import LifecycleFunnel  from './sections/LifecycleFunnel.jsx';
+import OpsPulse         from './sections/OpsPulse.jsx';
+import GrowthPanel      from './sections/GrowthPanel.jsx';
+import EngagementPanel  from './sections/EngagementPanel.jsx';
+import LiveStream       from './sections/LiveStream.jsx';
+import QuickActions     from './sections/QuickActions.jsx';
+import RecentTenants    from './sections/RecentTenants.jsx';
+import { PulseDot, usePolling, fmtCurrency, fmtNumber } from './lib.jsx';
 
 import './dashboard.css';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Derive overall system status from health + alert data */
-function resolveSystemStatus(systemHealth, systemAlerts) {
-  if (systemAlerts?.hasCritical) return 'critical';
-  const h = systemHealth ?? {};
-  const cpu    = Number(h.cpu    ?? h.cpuUsage    ?? 0);
-  const memory = Number(h.memory ?? h.memoryUsage ?? 0);
-  const disk   = Number(h.disk   ?? h.diskUsage   ?? 0);
-  if (cpu >= 90 || memory >= 90 || disk >= 90) return 'critical';
-  if (cpu >= 70 || memory >= 75 || disk >= 75)  return 'degraded';
-  return 'operational';
-}
-
-// ─── Component ───────────────────────────────────────────────────────────────
-
-/**
- * Platform Admin Dashboard — Index
- *
- * Props (all optional with safe fallbacks):
- *  - welcome                  : { greeting, userName, date }
- *  - stats                    : PlatformStatsWidget data
- *  - billingOverview          : BillingOverviewWidget data  { revenue, trends }
- *  - systemAlerts             : SystemAlertsWidget data    { alerts[], totalCount, hasCritical }
- *  - systemHealth             : SystemHealthWidget data    { cpu, memory, disk, services }
- *  - recentTenants            : RecentTenantsWidget data   Tenant[]
- *  - moduleUsage              : ModuleUsageWidget data     { modules[], totalTenants }
- *  - subscriptionDistribution : SubscriptionDistributionWidget data { plans[] }
- *  - recentActivity           : RecentActivityWidget data  { activities[] }
- *  - quickActions             : QuickActionsWidget data    { actions[] }
- */
-export default function Index({
-  welcome,
-  stats,
-  billingOverview,
-  systemAlerts,
-  systemHealth,
-  recentTenants,
-  moduleUsage,
-  subscriptionDistribution,
-  recentActivity,
-  quickActions,
-}) {
-  const reloadRef = useRef(false);
-
-  const handleRefresh = useCallback(() => {
-    if (reloadRef.current) return;
-    reloadRef.current = true;
-    router.reload({
-      only: [
-        'stats',
-        'billingOverview',
-        'systemAlerts',
-        'systemHealth',
-        'recentTenants',
-        'moduleUsage',
-        'subscriptionDistribution',
-        'recentActivity',
-      ],
-      onFinish: () => { reloadRef.current = false; },
-    });
-  }, []);
-
-  const systemStatus   = resolveSystemStatus(systemHealth, systemAlerts);
-  const alertCount     = systemAlerts?.totalCount ?? 0;
-
-  // ── Sortable widget definitions ──────────────────────────────────────────
-  //    Each entry has a stable `id` and the rendered `node`.
-  //    The top-pinned rows (command bar + KPI strip) are NOT draggable.
-
-  const draggableItems = [
-    {
-      id: 'mrr-alerts',
-      node: (
-        <div className="aeos-dashboard__grid-2">
-          <MrrTrendWidget billingOverview={billingOverview} stats={stats} />
-          <SystemAlertsWidget systemAlerts={systemAlerts} />
-        </div>
-      ),
-    },
-    {
-      id: 'pipeline-dist',
-      node: (
-        <div className="aeos-dashboard__grid-equal">
-          <TenantPipelineWidget stats={stats} />
-          <SubscriptionDistributionWidget subscriptionDistribution={subscriptionDistribution} />
-        </div>
-      ),
-    },
-    {
-      id: 'tenants-health',
-      node: (
-        <div className="aeos-dashboard__grid-2">
-          <RecentTenantsWidget recentTenants={recentTenants} />
-          <SystemHealthWidget systemHealth={systemHealth} />
-        </div>
-      ),
-    },
-    {
-      id: 'module-adoption',
-      node: (
-        <div className="aeos-dashboard__full">
-          <ModuleAdoptionWidget moduleUsage={moduleUsage} />
-        </div>
-      ),
-    },
-    {
-      id: 'activity-actions',
-      node: (
-        <div className="aeos-dashboard__grid-bottom">
-          <RecentActivityWidget recentActivity={recentActivity} />
-          <QuickActionsWidget quickActions={quickActions} />
-        </div>
-      ),
-    },
+/* Command-shell context rail — mirrors the OVERVIEW + QUICK-LINKS pattern. */
+function DashboardRail({ kpis, pulse, lifecycle }) {
+  const byKey = Object.fromEntries((kpis ?? []).map((k) => [k.key, k]));
+  const total = lifecycle?.total ?? 0;
+  const links = [
+    { label: 'All tenants', href: '/tenants', icon: 'users' },
+    { label: 'Billing', href: '/billing', icon: 'folder' },
+    { label: 'Analytics', href: '/analytics', icon: 'trending' },
+    { label: 'Error logs', href: '/error-logs', icon: 'document' },
   ];
-
   return (
-    <div className="aeos-dashboard">
-
-        {/* ── 1. Command bar — always on top, never draggable ── */}
-        <div className="aeos-dashboard__command-bar">
-          <Card>
-            <CardBody style={{ padding: 'var(--aeos-space-3) var(--aeos-pad-card)' }}>
-              <CommandBar
-                welcome={welcome}
-                systemStatus={systemStatus}
-                alertCount={alertCount}
-                onRefresh={handleRefresh}
-              />
-            </CardBody>
-          </Card>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--aeos-space-4)' }}>
+      <PulseDot status={pulse?.status ?? 'operational'} />
+      <div>
+        <div className="lcc-card-h__title" style={{ marginBottom: 'var(--aeos-space-3)' }}>Overview</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--aeos-space-2)' }}>
+          {[
+            ['MRR', fmtCurrency(byKey.mrr?.value)],
+            ['Active tenants', fmtNumber(byKey.active?.value)],
+            ['Total tenants', fmtNumber(total)],
+          ].map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--aeos-text-sm)' }}>
+              <span style={{ color: 'var(--aeos-text-secondary)' }}>{k}</span>
+              <span style={{ color: 'var(--aeos-text-primary)', fontWeight: 600, fontFamily: 'var(--aeos-font-mono)' }}>{v}</span>
+            </div>
+          ))}
         </div>
-
-        {/* ── 2. KPI strip — always pinned below command bar ── */}
-        <div className="aeos-dashboard__kpi-strip">
-          <KpiStrip stats={stats} billingOverview={billingOverview} />
-        </div>
-
-        {/* ── 3–7. Draggable widget rows ── */}
-        <DraggableDashboard
-          items={draggableItems}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--aeos-space-5)',
-            width: '100%',
-            minWidth: 0,
-          }}
-        />
-
       </div>
+      <div>
+        <div className="lcc-card-h__title" style={{ marginBottom: 'var(--aeos-space-3)' }}>Quick links</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--aeos-space-1)' }}>
+          {links.map((l) => (
+            <button key={l.href} type="button" className="lcc-action" style={{ flexDirection: 'row', alignItems: 'center', padding: 'var(--aeos-space-2) var(--aeos-space-3)' }} onClick={() => router.visit(l.href)}>
+              <span className="lcc-action__icon"><Icon name={l.icon} size={16} /></span>
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
-Index.layout = page => <App title="Dashboard">{page}</App>;
+export default function Index({ welcome, overview, live }) {
+  const o = overview ?? {};
+  const l = live ?? {};
+
+  // Poll the volatile "live" subset every 30s (visibility-gated inside the hook).
+  const poll = useCallback(() => {
+    router.reload({ only: ['live'], preserveScroll: true, preserveState: true });
+  }, []);
+  usePolling(poll, 30000);
+
+  const handleRefresh = useCallback(() => {
+    router.reload({ only: ['overview', 'live'], preserveScroll: true, preserveState: true });
+  }, []);
+
+  return (
+    <div className="lcc">
+      <CommandStrip welcome={welcome} pulse={l.pulse} onRefresh={handleRefresh} />
+
+      <HeroBand kpis={o.heroKpis} />
+
+      <div className="lcc-row split-60">
+        <RevenueTrend revenue={o.revenueTrend} />
+        <LifecycleFunnel lifecycle={o.lifecycle} />
+      </div>
+
+      <div className="lcc-row split-50">
+        <OpsPulse ops={l.ops} pulse={l.pulse} />
+        <GrowthPanel growth={o.growth} />
+      </div>
+
+      <EngagementPanel engagement={o.engagement} />
+
+      <div className="lcc-row split-60">
+        <LiveStream stream={l.stream} />
+        <QuickActions />
+      </div>
+
+      <RecentTenants tenants={o.recentTenants} />
+    </div>
+  );
+}
+
+Index.layout = (page) => {
+  const { overview, live } = page.props;
+  return (
+    <App
+      title="Dashboard"
+      railTitle="Command Center"
+      rail={<DashboardRail kpis={overview?.heroKpis} pulse={live?.pulse} lifecycle={overview?.lifecycle} />}
+    >
+      {page}
+    </App>
+  );
+};

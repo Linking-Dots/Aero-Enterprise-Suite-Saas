@@ -8,11 +8,14 @@ import {
   Eyebrow,
   Card, CardBody,
   useToast,
+  useTheme,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import { startTour as startGuidedTour } from '@/tour/useTour.jsx';
 
 export default function OnboardingTours({ tours = [] }) {
   const toast = useToast();
+  const theme = useTheme();
 
   const startTour = id => {
     router.post(`/help/tours/${id}/start`, {}, {
@@ -33,9 +36,14 @@ export default function OnboardingTours({ tours = [] }) {
       ]}
       description="Step-by-step guides to help you get up and running quickly."
       actions={
-        <Button intent="ghost" leftIcon="arrowLeft" onClick={() => router.get('/help')}>
-          Back to Help Center
-        </Button>
+        <HStack gap={2}>
+          <Button intent="primary" leftIcon="sparkles" onClick={() => startGuidedTour(theme.motion !== 'full')}>
+            Start interactive tour
+          </Button>
+          <Button intent="ghost" leftIcon="arrowLeft" onClick={() => router.get('/help')}>
+            Back to Help Center
+          </Button>
+        </HStack>
       }
       table={
         <VStack gap={4}>

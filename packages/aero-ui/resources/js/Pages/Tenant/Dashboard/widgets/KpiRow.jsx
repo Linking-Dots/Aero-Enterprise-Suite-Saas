@@ -106,7 +106,7 @@ export function KpiRow({ coreStats: initialStats, userActivity: initialActivity 
     return (
         <>
             {tiles.map((tile, i) => (
-                <Card key={i} className="dash-kpi-card">
+                <Card key={i} className="dash-kpi-card" data-tour={i === 0 ? 'dashboard-kpis' : undefined}>
                     <HStack gap={0} align="center" justify="end" className="dash-kpi-header">
                         <RefreshButton onRefresh={refreshStats} loading={statsLoading} />
                     </HStack>

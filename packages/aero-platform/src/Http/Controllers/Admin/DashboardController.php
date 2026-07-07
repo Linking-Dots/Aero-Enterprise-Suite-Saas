@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
+use Aero\Platform\Services\DashboardOverviewService;
 use Aero\Platform\Services\PlatformDashboardService;
 use Aero\Platform\Widgets\BillingOverviewWidget;
 use Aero\Platform\Widgets\ModuleUsageWidget;
@@ -21,6 +22,7 @@ use Inertia\Response;
 class DashboardController extends Controller
 {
     public function __construct(
+        private DashboardOverviewService    $overview,
         private PlatformDashboardService    $svc,
         private BillingOverviewWidget       $billingWidget,
         private ModuleUsageWidget           $moduleWidget,
@@ -36,35 +38,15 @@ class DashboardController extends Controller
     {
         return Inertia::render('Platform/Admin/Dashboard/Index', [
 
-            /* Welcome / command bar */
-            'welcome' => $this->buildWelcome(),
+            /* Command strip greeting */
+            'welcome'  => $this->buildWelcome(),
 
-            /* KPI strip + MRR trend */
-            'stats' => Inertia::lazy(fn () => $this->svc->stats()),
+            /* Full above-the-fold payload (Living Command Center). Closure so the
+               ~30s poll (only:['live']) doesn't recompute it. Evaluated on full load. */
+            'overview' => fn () => $this->overview->overview(),
 
-            /* Billing overview — MRR/ARR breakdown + 6-month trend */
-            'billingOverview' => Inertia::lazy(fn () => $this->billingWidget->getData()),
-
-            /* System alerts — severity-ranked */
-            'systemAlerts' => Inertia::lazy(fn () => $this->buildSystemAlerts()),
-
-            /* System health — CPU/Mem/Disk + services */
-            'systemHealth' => Inertia::lazy(fn () => $this->buildSystemHealth()),
-
-            /* Recent tenants table */
-            'recentTenants' => Inertia::lazy(fn () => $this->buildRecentTenants()),
-
-            /* Module adoption bar chart */
-            'moduleUsage' => Inertia::lazy(fn () => $this->moduleWidget->getData()),
-
-            /* Subscription donut */
-            'subscriptionDistribution' => Inertia::lazy(fn () => $this->distWidget->getData()),
-
-            /* Activity timeline */
-            'recentActivity' => Inertia::lazy(fn () => $this->activityWidget->getData()),
-
-            /* Quick actions grid */
-            'quickActions' => Inertia::lazy(fn () => $this->quickActionsWidget->getData()),
+            /* Volatile subset — refreshed by the ~30s poll via only:['live'] */
+            'live'     => fn () => $this->overview->live(),
         ]);
     }
 

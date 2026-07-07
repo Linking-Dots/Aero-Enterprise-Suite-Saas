@@ -89,7 +89,7 @@
 .aeos-app-user-role {
   font-size: var(--aeos-text-2xs); color: var(--aeos-text-tertiary);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-family: var(--aeos-font-mono);
+  font-family: var(--aeos-font-body);
 }
 
 .aeos-icon-btn-wrap { position: relative; display: inline-flex; }

@@ -26,7 +26,10 @@ class PlatformDashboardService
             // Plan subscriptions and product subscriptions are independent revenue streams.
             return [
                 'mrr' => (float) ($latest->mrr ?? 0),
-                'mrr_growth' => $this->growth($latest?->mrr, $prev?->mrr),
+                'mrr_growth' => $this->growth(
+                    $latest !== null ? (float) $latest->mrr : null,
+                    $prev !== null ? (float) $prev->mrr : null,
+                ),
                 'plan_mrr' => (float) ($latest->plan_mrr ?? 0),
                 'product_mrr' => (float) ($latest->product_mrr ?? 0),
                 'arr' => (float) ($latest->arr ?? 0),

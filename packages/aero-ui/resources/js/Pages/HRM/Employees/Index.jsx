@@ -125,11 +125,13 @@ export default function EmployeesIndex({ employees, filters, departments, status
         </HStack>
       }
       table={
-        <DataTable
-          columns={columns}
-          rows={employees.data ?? []}
-          empty="No employees match the current filters."
-        />
+        <div data-tour="employees-table">
+          <DataTable
+            columns={columns}
+            rows={employees.data ?? []}
+            empty="No employees match the current filters."
+          />
+        </div>
       }
       pagination={
         totalPages > 1 && (

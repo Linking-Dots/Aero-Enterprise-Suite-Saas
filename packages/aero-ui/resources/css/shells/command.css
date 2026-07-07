@@ -54,7 +54,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: var(--aeos-font-mono);
+  font-family: var(--aeos-font-body);
   font-size: var(--aeos-text-2xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -183,7 +183,7 @@
   padding-bottom: var(--aeos-space-3);
   border-bottom: var(--aeos-border-width) solid var(--aeos-divider);
   margin-bottom: var(--aeos-space-3);
-  font-family: var(--aeos-font-mono);
+  font-family: var(--aeos-font-body);
   font-size: var(--aeos-text-xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -202,7 +202,7 @@
   flex-shrink: 0;
 }
 .aeos-shell-widget-title {
-  font-family: var(--aeos-font-mono);
+  font-family: var(--aeos-font-body);
   font-size: var(--aeos-text-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;

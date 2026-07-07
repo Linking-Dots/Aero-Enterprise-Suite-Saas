@@ -202,6 +202,15 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/trial-expirations.log'));
 
+        // Nightly restore of the live-demo tenant(s) so public visitors always
+        // land on a clean, realistic state (Asia/Dhaka).
+        $schedule->command('demo:reset')
+            ->dailyAt('03:30')
+            ->timezone('Asia/Dhaka')
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/demo-reset.log'));
+
         $schedule->command('invoices:process-overdue')
             ->dailyAt('01:45')
             ->timezone(config('app.timezone', 'UTC'))
