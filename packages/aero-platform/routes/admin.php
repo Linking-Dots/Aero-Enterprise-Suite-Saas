@@ -180,15 +180,12 @@ Route::middleware('admin.domain')->group(function () {
                 return Inertia::render('Platform/Admin/Tenants/Create');
             })->middleware(['hrmac:tenants.tenant-list.tenant-management.create'])->name('create');
 
-            // Domain Management (MUST be before /{tenant} to avoid being matched as tenant ID)
-            Route::get('/domains', function () {
-                return Inertia::render('Platform/Admin/Tenants/Domains');
-            })->middleware(['hrmac:tenants.domains'])->name('domains');
-
-            // Database Management (MUST be before /{tenant} to avoid being matched as tenant ID)
-            Route::get('/databases', function () {
-                return Inertia::render('Platform/Admin/Tenants/Databases');
-            })->middleware(['hrmac:tenants.databases'])->name('databases');
+            // Domain & Database management pages are not built yet. Per the nav
+            // consistency rule, unbuilt features stay in config/module.php (HRMAC +
+            // roadmap) but expose NO route, so the nav prunes them instead of
+            // rendering a link to a missing component (blank page). Re-add these
+            // routes together with their Tenants/Domains + Tenants/Databases pages
+            // when the feature is built.
 
             // Tenant Management (bulk operations) (MUST be before /{tenant} to avoid being matched as tenant ID)
             Route::get('/management', function () {
@@ -589,7 +586,7 @@ Route::middleware('admin.domain')->group(function () {
             })->middleware(['hrmac:platform-integrations.global-connectors'])->name('connectors');
 
             Route::get('/api', function () {
-                return Inertia::render('Platform/Admin/Integrations/Api');
+                return Inertia::render('Platform/Admin/Integrations/ApiKeys');
             })->middleware(['hrmac:platform-integrations.api-management'])->name('api');
 
             Route::get('/webhooks', function () {
