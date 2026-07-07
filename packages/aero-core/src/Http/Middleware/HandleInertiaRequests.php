@@ -9,6 +9,7 @@ use Aero\Core\Models\SystemSetting;
 use Aero\Core\Services\NavigationRegistry;
 use Aero\HRMAC\Models\ModuleComponentAction;
 use Aero\HRMAC\Models\ModuleComponent;
+use Aero\Core\Services\Module\ModuleEntitlementService;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Illuminate\Database\QueryException;
@@ -291,15 +292,12 @@ class HandleInertiaRequests extends Middleware
             if (app()->bound(NavigationRegistry::class)) {
                 $registry = app(NavigationRegistry::class);
 
-                // Determine subscribed modules for plan-based filtering
-                $subscribedModules = null;
-                $isSaaSMode = function_exists('aero_mode') && aero_mode() === 'saas';
+                // Entitled modules — ONE resolver feeds every context: SaaS
+                // (product subscriptions) AND standalone (module licenses).
+                // null = unrestricted (no filter).
+                $subscribedModules = app(ModuleEntitlementService::class)->entitledModuleCodes();
 
-                if ($isSaaSMode && function_exists('tenant') && tenant()) {
-                    $subscribedModules = $this->getSubscribedModuleCodes();
-                }
-
-                // Tenant context: only return tenant-scoped navigation filtered by subscription
+                // Tenant context: only return tenant-scoped navigation filtered by entitlement
                 $navigation = $registry->toFrontend('tenant', $user, $subscribedModules);
 
                 // Debug: Log navigation data
@@ -331,13 +329,8 @@ class HandleInertiaRequests extends Middleware
             if (app()->bound(NavigationRegistry::class)) {
                 $registry = app(NavigationRegistry::class);
 
-                // Determine subscribed modules for plan-based filtering
-                $subscribedModules = null;
-                $isSaaSMode = function_exists('aero_mode') && aero_mode() === 'saas';
-
-                if ($isSaaSMode && function_exists('tenant') && tenant()) {
-                    $subscribedModules = $this->getSubscribedModuleCodes();
-                }
+                // Same unified entitlement source as the flat nav (SaaS + standalone).
+                $subscribedModules = app(ModuleEntitlementService::class)->entitledModuleCodes();
 
                 return $registry->toFrontendGroups('tenant', $user, $subscribedModules);
             }
@@ -554,49 +547,8 @@ class HandleInertiaRequests extends Middleware
      */
     protected function getSubscribedModuleCodes(): array
     {
-        // Axis C C2 — cache per tenant; this runs on EVERY authenticated page load.
-        // Invalidated on ProductSubscriptionChanged (see ResyncTenantModuleCatalog).
-        $tenantId = (function_exists('tenant') && tenant()) ? tenant()->getTenantKey() : 'none';
-
-        return Cache::remember("tenant_subscribed_modules:{$tenantId}", 600, function (): array {
-            return $this->computeSubscribedModuleCodes();
-        });
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected function computeSubscribedModuleCodes(): array
-    {
-        try {
-            // Always include core modules
-            $modules = ['core', 'platform'];
-
-            // Add core DB modules
-            if (class_exists(Module::class)) {
-                $coreModules = Module::where('is_core', true)->where('is_active', true)->pluck('code')->toArray();
-                $modules = array_merge($modules, $coreModules);
-            }
-
-            // Add subscribed product modules. Canonical source: Tenant::getSubscribedProductModules
-            // (baseline + active/trialing product_subscriptions). This replaces both the
-            // hand-rolled product query and the tenant_module pivot override — the override's
-            // ->where('is_active', true) on the joined pivot raised an ambiguous-column SQL
-            // error (modules.is_active vs tenant_module.is_active) that made this whole method
-            // fail closed, so the nav only ever rendered core modules.
-            $tenant = tenant();
-            if ($tenant) {
-                $modules = array_merge($modules, $tenant->subscribed_product_modules);
-            }
-
-            $result = array_values(array_unique($modules));
-            Log::debug('Subscribed module codes resolved', ['modules' => $result]);
-
-            return $result;
-        } catch (Throwable $e) {
-            Log::warning('Failed to get subscribed module codes', ['error' => $e->getMessage()]);
-
-            return [];
-        }
+        // Delegates to the single ModuleEntitlementService (SaaS + standalone).
+        // Kept for back-compat callers; null (unrestricted) collapses to [].
+        return app(ModuleEntitlementService::class)->entitledModuleCodes() ?? [];
     }
 }
