@@ -48,6 +48,11 @@ export {
   ProgressRow, DataTable, EmptyState,
 }                                           from './components/Data.jsx';
 
+// ── Charts ────────────────────────────────────────────────────────
+export {
+  AreaTrend, AreaSpark, BarMini, Donut,
+}                                           from './components/Charts.jsx';
+
 // ── Navigation ────────────────────────────────────────────────────
 export {
   Tabs, Breadcrumb,

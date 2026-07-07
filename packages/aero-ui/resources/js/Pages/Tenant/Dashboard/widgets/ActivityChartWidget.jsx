@@ -3,37 +3,30 @@
  *
  * Three-series area chart (logins, activeUsers, newUsers) with a
  * period switcher (week / month / quarter). Uses the existing
- * GET /dashboard/user-activity?period= endpoint for live switching
- * and GET /dashboard/widget/userActivity for the refresh button.
+ * GET /dashboard/widget/userActivity?period= endpoint for live switching
+ * and the refresh button.
  *
- * Conventions:
- *   • No inline style={} except single computed values (gradient stop colors).
- *   • Period switching via direct fetch to the dedicated endpoint (not the
- *     generic widget endpoint) so the controller can validate the period param.
+ * Renders the shared, dependency-free @aero/ui AreaTrend (no recharts) so it
+ * matches the platform dashboards and stays fully theme-reactive.
  */
 
-import { useState, useCallback } from 'react';
-import {
-    AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-} from 'recharts';
+import { useState, useCallback, useMemo } from 'react';
 import {
     Card, CardHeader,
     HStack, VStack, Box,
     Text, Eyebrow, Badge,
-    Skeleton,
+    Skeleton, AreaTrend,
 } from '@aero/ui';
 import { useWidgetRefresh } from '@/hooks/useWidgetRefresh.js';
 import { RefreshButton }    from './WidgetShell.jsx';
 
 const PERIOD_LABELS = { week: '7 days', month: '30 days', quarter: '90 days' };
 
-const CHART_TOOLTIP_STYLE = {
-    background:   'var(--aeos-bg-elevated)',
-    border:       '1px solid var(--aeos-border)',
-    borderRadius: 'var(--aeos-r-md)',
-    fontSize:     12,
-    color:        'var(--aeos-text-primary)',
-};
+const LEGEND = [
+    { key: 'logins',      color: 'var(--aeos-primary)',   label: 'Logins' },
+    { key: 'activeUsers', color: 'var(--aeos-success)',   label: 'Active users' },
+    { key: 'newUsers',    color: 'var(--aeos-secondary)', label: 'New users' },
+];
 
 export function ActivityChartWidget({ userActivity: initialActivity }) {
     const [period, setPeriod] = useState('week');
@@ -49,11 +42,19 @@ export function ActivityChartWidget({ userActivity: initialActivity }) {
 
     const chartData = activity?.chartData ?? [];
 
+    const hasData = chartData.some(d => (d.logins || 0) + (d.activeUsers || 0) + (d.newUsers || 0) > 0);
+    const labels = useMemo(() => chartData.map(d => (d.date ?? '').slice(5)), [chartData]);
+    const series = useMemo(() => LEGEND.map(l => ({
+        key: l.key,
+        label: l.label,
+        color: l.color,
+        fill: l.key === 'logins',
+        values: chartData.map(d => Number(d[l.key] ?? 0)),
+    })), [chartData]);
+
     const switchPeriod = useCallback(async (p) => {
         if (p === period) return;
         setPeriod(p);
-        // Switching period triggers the hook's extraParams change on next
-        // refresh; we call refresh immediately so the chart updates now.
         await refresh();
     }, [period, refresh]);
 
@@ -88,71 +89,14 @@ export function ActivityChartWidget({ userActivity: initialActivity }) {
 
             {loading ? (
                 <Skeleton h={120} />
-            ) : !chartData.some(d => (d.logins || 0) + (d.activeUsers || 0) + (d.newUsers || 0) > 0) ? (
+            ) : !hasData ? (
                 <div className="dash-widget-empty">No activity in this period yet.</div>
             ) : (
-                <ResponsiveContainer width="100%" height={120}>
-                    <AreaChart data={chartData} margin={{ top: 4, right: 0, left: -32, bottom: 0 }}>
-                        <defs>
-                            <linearGradient id="lgLogins" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%"  stopColor="var(--aeos-primary)" stopOpacity={0.28} />
-                                <stop offset="95%" stopColor="var(--aeos-primary)" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="lgActive" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%"  stopColor="var(--aeos-success)" stopOpacity={0.24} />
-                                <stop offset="95%" stopColor="var(--aeos-success)" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="lgNew" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%"  stopColor="var(--aeos-secondary)" stopOpacity={0.20} />
-                                <stop offset="95%" stopColor="var(--aeos-secondary)" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <XAxis
-                            dataKey="date"
-                            tick={{ fontSize: 10, fill: 'var(--aeos-text-tertiary)' }}
-                            tickFormatter={v => v?.slice(5) ?? v}
-                            axisLine={false}
-                            tickLine={false}
-                        />
-                        <YAxis hide />
-                        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-                        <Area
-                            type="monotone"
-                            dataKey="logins"
-                            name="Logins"
-                            stroke="var(--aeos-primary)"
-                            strokeWidth={1.5}
-                            fill="url(#lgLogins)"
-                            dot={false}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="activeUsers"
-                            name="Active users"
-                            stroke="var(--aeos-success)"
-                            strokeWidth={1.5}
-                            fill="url(#lgActive)"
-                            dot={false}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="newUsers"
-                            name="New users"
-                            stroke="var(--aeos-secondary)"
-                            strokeWidth={1.5}
-                            fill="url(#lgNew)"
-                            dot={false}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
+                <AreaTrend series={series} labels={labels} height={130} ariaLabel="User activity trend" />
             )}
 
             <HStack gap={4} className="aeos-mt-2">
-                {[
-                    { color: 'var(--aeos-primary)',   label: 'Logins' },
-                    { color: 'var(--aeos-success)',   label: 'Active users' },
-                    { color: 'var(--aeos-secondary)', label: 'New users' },
-                ].map(({ color, label }) => (
+                {LEGEND.map(({ color, label }) => (
                     <HStack key={label} gap={1} align="center">
                         <span className="dash-legend-swatch" style={{ background: color }} aria-hidden="true" />
                         <Text size="xs" tone="tertiary">{label}</Text>

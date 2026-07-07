@@ -377,3 +377,32 @@
 }
 .rbac-chevron:hover { background: var(--aeos-bg-hover); color: var(--aeos-text-primary); }
 .rbac-empty { padding: var(--aeos-space-1) var(--aeos-space-2); }
+
+/* ── Charts (@aero/ui Charts.jsx) ─────────────────────────────────── */
+/* Dependency-free SVG charts. Series colours come from the component;
+   structural colours below stay theme-reactive. */
+.aeos-chart { inline-size: 100%; }
+.aeos-chart svg { display: block; inline-size: 100%; height: auto; }
+.aeos-chart--empty {
+  display: flex; align-items: center; justify-content: center;
+  min-block-size: 120px;
+  color: var(--aeos-text-tertiary);
+  font-size: var(--aeos-text-sm);
+}
+.aeos-chart-grid { stroke: var(--aeos-divider); stroke-width: 1; }
+.aeos-chart-xlab { fill: var(--aeos-text-tertiary); font-size: 10px; }
+.aeos-chart-end { stroke: var(--aeos-bg-card); stroke-width: 2; }
+.aeos-bar { transition: opacity var(--aeos-motion-fast, 120ms) ease; }
+.aeos-bar:hover { opacity: 0.82; }
+.aeos-spark { display: block; inline-size: 100%; height: 38px; }
+
+.aeos-donut { position: relative; flex: 0 0 auto; }
+.aeos-donut svg { display: block; inline-size: 100%; height: 100%; }
+.aeos-donut-track { stroke: var(--aeos-bg-active); }
+.aeos-donut-mid {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; text-align: center;
+}
+.aeos-donut-mid b { font-size: var(--aeos-text-xl); font-weight: 700; color: var(--aeos-text-primary); line-height: 1; }
+.aeos-donut-mid small { font-size: var(--aeos-text-xs); color: var(--aeos-text-tertiary); }

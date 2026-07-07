@@ -373,3 +373,17 @@ body[data-motion="off"] .lcc * {
   transition: none !important;
 }
 body[data-motion="off"] .lcc-pulse__dot::after { display: none; }
+
+/* Revenue-trend view tabs + split legend (shared AreaTrend consumer) */
+.lcc-tab-row { display: flex; gap: var(--aeos-space-1); }
+.lcc-legend {
+  display: flex; flex-wrap: wrap; gap: var(--aeos-space-4);
+  margin-top: var(--aeos-space-2);
+}
+.lcc-legend span {
+  display: inline-flex; align-items: center; gap: var(--aeos-space-2);
+  font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary);
+}
+.lcc-legend__dot { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
+.lcc-legend__dot--primary { background: var(--aeos-primary); }
+.lcc-legend__dot--success { background: var(--aeos-success); }
