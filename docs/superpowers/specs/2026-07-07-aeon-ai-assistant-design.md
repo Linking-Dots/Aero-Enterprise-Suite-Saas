@@ -49,8 +49,11 @@ stack (MySQL, Laravel 12, @aero/ui, real hosted LLM API).
 
 - Gemini key format `AQ.…` is **valid** (Google's newer key format); auth via `x-goog-api-key`
   header or `?key=` query param — both HTTP 200.
-- **Chat model:** `gemini-2.5-flash` confirmed working (also available: `gemini-2.0-flash`,
-  `gemini-2.5-pro`, gemini-3 previews). **Default = `gemini-2.5-flash`.**
+- **Chat model:** confirmed working — `gemini-2.5-flash`, `gemini-3-flash-preview`,
+  `gemini-flash-latest`. **Default = `gemini-flash-latest`** (auto-tracks newest flash; Boss has a
+  Google AI Pro subscription and wants latest). ⚠️ `gemini-2.5-pro` / `gemini-3-pro-preview`
+  returned **429** on this key — Gemini *API* quota for pro models is billing-gated separately from
+  the consumer Pro subscription. Pro model = one env change once API quota is enabled.
 - **Embeddings:** `gemini-embedding-001` works, native **3072 dims**, supports
   `outputDimensionality`. `text-embedding-004` is **404 / not available** on this key.
   **Default embedding = `gemini-embedding-001` @ `outputDimensionality=768`** (lean JSON storage,
@@ -179,7 +182,7 @@ AEON_ENABLED=true
 
 # Gemini (default, free-tier)
 GEMINI_API_KEY=************            # host .env only, gitignored
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-flash-latest       # verified; pins: gemini-2.5-flash / gemini-3-flash-preview
 GEMINI_EMBED_MODEL=gemini-embedding-001
 GEMINI_EMBED_DIMS=768
 
@@ -217,8 +220,9 @@ Each milestone: TDD, then live verification in a host app, then review.
 
 ## 9. Open questions / assumptions
 
-- **Assumption:** default chat model `gemini-2.5-flash` is acceptable on free quota; we can drop to
-  `gemini-2.0-flash-lite` if rate limits bite. (Confirm during M1.)
+- **Resolved:** default chat model `gemini-flash-latest` (verified working; Boss on Google AI Pro).
+  Pro models (`gemini-2.5-pro` / `gemini-3-pro-preview`) are API-quota-gated (429) — enable later
+  via one env change. Fallback `gemini-2.5-flash-lite` if rate limits bite.
 - **Assumption:** starter write tools = HRM (create employee, apply leave), since HRM is the
   deepest-seeded module. Other modules add tools later.
 - **Assumption:** conversations persist per-user, tenant-scoped; no cross-tenant memory.
