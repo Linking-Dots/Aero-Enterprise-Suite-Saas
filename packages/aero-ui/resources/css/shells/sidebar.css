@@ -168,6 +168,15 @@
   min-height: var(--aeos-space-4);
 }
 
+/* ── Section headings (only rendered when the rail is expanded) ───────────── */
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-heading {
+  flex: 0 0 auto;
+  line-height: 1.6;
+  padding: calc(var(--aeos-space-3) * var(--aeos-density-factor)) var(--aeos-space-3) var(--aeos-space-1);
+  overflow: visible;
+}
+[data-aeos-shell="sidebar"] .aeos-shell-sidebar-heading:first-child { padding-top: var(--aeos-space-1); }
+
 /* ── Children accordion ──────────────────────────────────────────────────── */
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-children {
   width: 100%;

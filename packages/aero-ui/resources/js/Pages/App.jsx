@@ -90,26 +90,43 @@ function mapItem(item, activeHref) {
   };
 }
 
+// Section order + titles for the sidebar. `dashboards` is pinned at the top
+// with no heading; the 8 keys (ov…cs) are the platform-admin IA; the tenant
+// contexts fall back to administration/modules. Unknown sections bucket under
+// 'modules'. Keep this in sync with NavigationRegistry::toFrontendGroups().
+const NAV_SECTIONS = [
+  { key: 'dashboards',     title: null },
+  { key: 'my-workspace',   title: 'My Workspace' },
+  { key: 'ov',             title: 'Overview' },
+  { key: 'tn',             title: 'Tenants & Onboarding' },
+  { key: 'rv',             title: 'Revenue & Catalog' },
+  { key: 'gr',             title: 'Growth & Marketing' },
+  { key: 'ac',             title: 'Access & Security' },
+  { key: 'cf',             title: 'Configuration' },
+  { key: 'op',             title: 'Operations & Reliability' },
+  { key: 'cs',             title: 'Customer Success' },
+  { key: 'administration', title: 'Administration' },
+  { key: 'modules',        title: 'Modules' },
+];
+const NAV_SECTION_KEYS = new Set(NAV_SECTIONS.map(s => s.key));
+
 function transformNavigation(backendNav, activeHref) {
   if (!backendNav?.length) return null;
 
-  const buckets = { dashboards: [], 'my-workspace': [], administration: [], modules: [], others: [] };
-
+  const buckets = {};
   for (const item of backendNav) {
-    const section = item.section ?? 'others';
-    if (Object.prototype.hasOwnProperty.call(buckets, section)) {
-      buckets[section].push(mapItem(item, activeHref));
-    } else {
-      buckets.modules.push(mapItem(item, activeHref));
-    }
+    let section = item.section ?? 'modules';
+    if (!NAV_SECTION_KEYS.has(section)) section = 'modules';
+    (buckets[section] ??= []).push(mapItem(item, activeHref));
   }
 
   const result = [];
-  if (buckets.dashboards.length)             result.push(...buckets.dashboards);
-  if (buckets['my-workspace'].length)        { if (result.length) result.push({ divider: true }); result.push(...buckets['my-workspace']); }
-  if (buckets.administration.length)         { if (result.length) result.push({ divider: true }); result.push(...buckets.administration); }
-  if (buckets.modules.length)               { if (result.length) result.push({ divider: true }); result.push(...buckets.modules); }
-  if (buckets.others.length)                result.push(...buckets.others);
+  for (const { key, title } of NAV_SECTIONS) {
+    const items = buckets[key];
+    if (!items?.length) continue;
+    if (title) result.push({ heading: title });
+    result.push(...items);
+  }
 
   return result.length ? result : null;
 }

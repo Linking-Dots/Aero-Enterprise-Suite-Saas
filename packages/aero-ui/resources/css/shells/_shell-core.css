@@ -290,6 +290,21 @@ body[data-aeos-shell] {
 [data-aeos-shell="mobile"] .aeos-shell-nav-chevron svg { width: 14px; height: 14px; transition: transform var(--aeos-dur-fast) var(--aeos-ease-out); }
 [data-aeos-shell="mobile"] .aeos-shell-nav-chevron.is-open svg { transform: rotate(90deg); }
 
+/* ── Sidebar section heading (shell-agnostic base; sidebar refines it) ─────── */
+.aeos-shell-sidebar-heading {
+  display: block;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--aeos-text-secondary);
+  padding: 12px 12px 5px;
+  white-space: nowrap;
+  font-family: var(--aeos-font-display, inherit);
+}
+
 /* Shell switcher is meaningless on mobile (all variants collapse to one). */
 @media (max-width: 768px) {
   .aeos-theme-section--desktop-only { display: none; }

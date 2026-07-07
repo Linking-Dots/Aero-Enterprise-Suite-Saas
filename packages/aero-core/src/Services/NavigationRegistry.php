@@ -369,10 +369,58 @@ class NavigationRegistry implements NavigationRegistryInterface
         // keep the first occurrence. No-op when there are no duplicates.
         $navigationItems = $this->dedupeTopLevel($navigationItems);
 
+        // Platform admin: shelve the ~40 flat 'administration' modules into the
+        // 8 approved sections (Overview, Tenants, Revenue, …) so both shells
+        // render a short scannable list instead of one endless group.
+        if ($scope === 'platform') {
+            $navigationItems = $this->applyPlatformSections($navigationItems);
+        }
+
         // Sort by priority
         usort($navigationItems, fn ($a, $b) => ($a['priority'] ?? 999) <=> ($b['priority'] ?? 999));
 
         return $navigationItems;
+    }
+
+    /**
+     * Section keys for the 8-part platform-admin IA, keyed by the first segment
+     * of a module's path. Order/titles live in {@see toFrontendGroups()} and the
+     * frontend nav adapter. Modules not listed keep their existing section.
+     */
+    private const PLATFORM_SECTION_MAP = [
+        'analytics' => 'ov', 'product-analytics' => 'ov',
+        'tenants' => 'tn', 'onboarding' => 'tn', 'quotas' => 'tn', 'provisioning' => 'tn',
+        'plans' => 'rv', 'billing' => 'rv', 'modules' => 'rv', 'licenses' => 'rv', 'contracts' => 'rv',
+        'leads' => 'gr', 'newsletter' => 'gr', 'affiliates' => 'gr', 'partners' => 'gr', 'seo' => 'gr', 'social-auth' => 'gr',
+        'users' => 'ac', 'roles' => 'ac', 'security' => 'ac', 'security-center' => 'ac', 'secrets' => 'ac',
+        'settings' => 'cf', 'integrations' => 'cf', 'feature-flags' => 'cf', 'white-label' => 'cf', 'developer' => 'cf', 'releases' => 'cf',
+        'error-logs' => 'op', 'audit-logs' => 'op', 'access-logs' => 'op', 'backup' => 'op', 'status' => 'op', 'observability' => 'op', 'disaster-recovery' => 'op', 'api-gateway' => 'op',
+        'customer-success' => 'cs', 'help-center' => 'cs', 'enterprise-scim' => 'cs',
+    ];
+
+    /**
+     * Reassign each top-level platform module to one of the 8 IA sections by the
+     * first segment of its path (falling back to its first child's href). Items
+     * already in a special section (dashboards / my-workspace) are left alone.
+     *
+     * @param  array<int, array>  $items
+     * @return array<int, array>
+     */
+    private function applyPlatformSections(array $items): array
+    {
+        foreach ($items as &$item) {
+            $current = $item['section'] ?? null;
+            if (in_array($current, ['dashboards', 'my-workspace'], true)) {
+                continue;
+            }
+            $path = $item['path'] ?? ($item['children'][0]['path'] ?? '');
+            $seg = strtolower(trim(explode('/', ltrim((string) $path, '/'))[0] ?? ''));
+            if ($seg !== '' && isset(self::PLATFORM_SECTION_MAP[$seg])) {
+                $item['section'] = self::PLATFORM_SECTION_MAP[$seg];
+            }
+        }
+
+        return $items;
     }
 
     /**
@@ -524,11 +572,25 @@ class NavigationRegistry implements NavigationRegistryInterface
         $sectionTitles = [
             'dashboards'      => 'Dashboards',
             'my-workspace'    => 'My Workspace',
+            // 8-part platform-admin IA
+            'ov'              => 'Overview',
+            'tn'              => 'Tenants & Onboarding',
+            'rv'              => 'Revenue & Catalog',
+            'gr'              => 'Growth & Marketing',
+            'ac'              => 'Access & Security',
+            'cf'              => 'Configuration',
+            'op'              => 'Operations & Reliability',
+            'cs'              => 'Customer Success',
+            // tenant / fallback
             'administration'  => 'Administration',
             'modules'         => 'Modules',
         ];
 
-        $sectionOrder = ['dashboards', 'my-workspace', 'administration', 'modules'];
+        $sectionOrder = [
+            'dashboards', 'my-workspace',
+            'ov', 'tn', 'rv', 'gr', 'ac', 'cf', 'op', 'cs',
+            'administration', 'modules',
+        ];
 
         $grouped = collect($flat)->groupBy(fn ($item) => $item['section'] ?? 'others');
 

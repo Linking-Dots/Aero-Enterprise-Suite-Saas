@@ -48,6 +48,13 @@ function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true 
 
   if (item.divider) return <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
   if (item.spacer)  return <div className="aeos-shell-sidebar-spacer"  aria-hidden="true" />;
+  // Section heading. Collapsed (icon-only) rail can't show text, so degrade to a
+  // divider; the command shell (isCommand) always has room for the label.
+  if (item.heading) {
+    return (expanded || isCommand)
+      ? <div className="aeos-shell-sidebar-heading">{item.heading}</div>
+      : <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
+  }
 
   const toggle = useCallback((e) => {
     e.preventDefault();
