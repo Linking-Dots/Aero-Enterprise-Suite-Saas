@@ -266,6 +266,17 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
             $submoduleCode = $submodule['code'] ?? '';
             $submoduleIcon = $submodule['icon'] ?? null;
 
+            // IA section for this submodule, from the package's own config
+            // (explicit nav_section, else nav_section_map keyed by first route
+            // segment). nav_group carries the product's semantic sub-grouping.
+            $navRoute = $submodule['route'] ?? '';
+            $navSeg = strtolower(trim(explode('/', ltrim((string) $navRoute, '/'))[0] ?? ''));
+            $navSection = $submodule['nav_section'] ?? ($config['nav_section_map'][$navSeg] ?? null);
+            // Product sub-group (semantic grouping within the product section),
+            // keyed by submodule code since a product's routes share a prefix.
+            $navGroup = $submodule['nav_group'] ?? ($config['nav_group_map'][$submoduleCode] ?? null);
+            $navGroupMeta = $navGroup ? ($config['nav_groups'][$navGroup] ?? null) : null;
+
             // collapse_nav: render this submodule as a single leaf link (no child
             // pages in the nav). The component HRMAC actions are still defined in
             // config and synced independently — collapsing only hides the child
@@ -290,16 +301,27 @@ abstract class AbstractModuleProvider extends ServiceProvider implements ModuleP
             }
 
             $submoduleNav[] = [
-                'name'     => $submodule['name'] ?? ucfirst($submoduleCode),
-                'path'     => $submodule['route'] ?? '',
-                'icon'     => $submoduleIcon,
-                'access'   => $this->moduleCode.'.'.$submoduleCode,
-                'priority' => $submodule['priority'] ?? 100,
-                'children' => $componentNav,
+                'name'      => $submodule['name'] ?? ucfirst($submoduleCode),
+                'path'      => $submodule['route'] ?? '',
+                'icon'      => $submoduleIcon,
+                'access'    => $this->moduleCode.'.'.$submoduleCode,
+                'priority'  => $submodule['priority'] ?? 100,
+                'children'  => $componentNav,
+                'nav_section' => $navSection,
+                'nav_group' => $navGroup,
+                'nav_group_label' => $navGroupMeta['label'] ?? ($navGroup ? ucfirst((string) $navGroup) : null),
+                'nav_group_order' => $navGroupMeta['order'] ?? 500,
+                'nav_group_icon' => $navGroupMeta['icon'] ?? null,
             ];
         }
 
         usort($submoduleNav, fn ($a, $b) => ($a['priority'] ?? 100) <=> ($b['priority'] ?? 100));
+
+        // Publish this package's IA section catalog (core sections and/or the
+        // product's own section + semantic sub-groups) to the generic aggregator.
+        if (! empty($config['nav_sections']) && method_exists($navRegistry, 'registerSections')) {
+            $navRegistry->registerSections($config['scope'] ?? 'tenant', $config['nav_sections']);
+        }
 
         $navRegistry->register($this->moduleCode, [
             [

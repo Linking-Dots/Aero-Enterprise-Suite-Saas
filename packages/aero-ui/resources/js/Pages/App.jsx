@@ -87,66 +87,121 @@ function mapItem(item, activeHref) {
     active,
     hasActiveChild,
     children,
+    // Semantic sub-group within a product section (see transformNavigation).
+    group: item.nav_group ?? null,
+    groupLabel: item.nav_group_label ?? null,
+    groupOrder: item.nav_group_order ?? 500,
+    groupIcon: item.nav_group_icon ?? null,
   };
 }
 
-// Section order + titles for the sidebar. `dashboards` is pinned at the top
-// with no heading; the 8 keys (ov…cs) are the platform-admin IA; the tenant
-// contexts fall back to administration/modules. Unknown sections bucket under
-// 'modules'. Keep this in sync with NavigationRegistry::toFrontendGroups().
-const NAV_SECTIONS = [
-  { key: 'dashboards',     title: null,                        icon: null },
-  { key: 'my-workspace',   title: 'My Workspace',              icon: 'UserCircleIcon' },
-  { key: 'ov',             title: 'Overview',                  icon: 'Squares2X2Icon' },
-  // platform-admin IA
-  { key: 'tn',             title: 'Tenants & Onboarding',      icon: 'BuildingOffice2Icon' },
-  { key: 'wf',             title: 'Workforce',                 icon: 'BriefcaseIcon' },
-  { key: 'rv',             title: 'Revenue & Catalog',         icon: 'CurrencyDollarIcon' },
-  { key: 'pa',             title: 'People & Access',           icon: 'UserGroupIcon' },
-  { key: 'gr',             title: 'Growth & Marketing',        icon: 'MegaphoneIcon' },
-  { key: 'ac',             title: 'Access & Security',         icon: 'ShieldCheckIcon' },
-  { key: 'cd',             title: 'Content & Data',            icon: 'FolderIcon' },
-  { key: 'cm',             title: 'Communications',            icon: 'EnvelopeIcon' },
-  { key: 'cf',             title: 'Configuration',             icon: 'Cog6ToothIcon' },
-  { key: 'op',             title: 'Operations & Reliability',  icon: 'BoltIcon' },
-  { key: 'mh',             title: 'Monitoring & Health',       icon: 'HeartIcon' },
-  { key: 'cs',             title: 'Customer Success',          icon: 'LifebuoyIcon' },
-  { key: 'bill',           title: 'Billing',                   icon: 'CreditCardIcon' },
-  { key: 'administration', title: 'Administration',            icon: 'RectangleGroupIcon' },
-  { key: 'modules',        title: 'Modules',                   icon: 'CubeIcon' },
+// Sections framing the package-owned catalog (props.navSections): dashboards +
+// my-workspace pin to the top; administration/modules are the tail fallbacks.
+// The middle (core sections + subscribed-product sections) is data-driven, so
+// adding a product/section needs no frontend change.
+const PINNED_SECTIONS = [
+  { key: 'dashboards',   title: null,           icon: null,             order: -100 },
+  { key: 'my-workspace', title: 'My Workspace', icon: 'UserCircleIcon', order: -50 },
 ];
-const NAV_SECTION_KEYS = new Set(NAV_SECTIONS.map(s => s.key));
+const TAIL_SECTIONS = [
+  { key: 'administration', title: 'Administration', icon: 'RectangleGroupIcon', order: 9000 },
+  { key: 'modules',        title: 'Modules',        icon: 'CubeIcon',           order: 9100 },
+];
 
-function transformNavigation(backendNav, activeHref) {
+const humanize = (k) => String(k).replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+/** Ordered section list built from the backend catalog (props.navSections). */
+function buildSections(catalog) {
+  const mid = (catalog ?? []).map((s) => ({ key: s.key, title: s.label, icon: s.icon, order: s.order ?? 500 }));
+  return [...PINNED_SECTIONS, ...mid, ...TAIL_SECTIONS].sort((a, b) => (a.order ?? 500) - (b.order ?? 500));
+}
+
+function transformNavigation(backendNav, activeHref, sections) {
   if (!backendNav?.length) return null;
 
+  const meta = new Map(sections.map((s) => [s.key, s]));
   const buckets = {};
   for (const item of backendNav) {
-    let section = item.section ?? 'modules';
-    if (!NAV_SECTION_KEYS.has(section)) section = 'modules';
-    (buckets[section] ??= []).push(mapItem(item, activeHref));
+    const section = item.section ?? 'modules';
+    // The self-service items arrive pre-aggregated under a single "My Workspace"
+    // parent. That parent would sit inside the "My Workspace" section header —
+    // doubled — so flatten its children directly under the header instead.
+    if (section === 'my-workspace' && Array.isArray(item.children) && item.children.length) {
+      for (const child of item.children) (buckets[section] ??= []).push(mapItem(child, activeHref));
+    } else {
+      (buckets[section] ??= []).push(mapItem(item, activeHref));
+    }
   }
 
+  // Catalog sections render in their declared order; any section not in the
+  // catalog (e.g. a product with no declared section) sorts at 8000 — just
+  // after the core catalog — so products always fall below core.
+  const ordered = Object.keys(buckets)
+    .map((key) => {
+      const m = meta.get(key);
+      return { key, title: m ? m.title : humanize(key), icon: m?.icon, order: m ? (m.order ?? 500) : 8000 };
+    })
+    .sort((a, b) => (a.order ?? 500) - (b.order ?? 500));
+
+  // Drop a leaf that already appeared in an earlier section (e.g. "My Profile"
+  // exists both as a self-service item and a top-level submodule). Earlier
+  // section wins, so My Workspace keeps it.
+  const seen = new Set();
+  const dedup = (items) => items.filter((it) => {
+    if (it.href && !(it.children && it.children.length)) {
+      if (seen.has(it.href)) return false;
+      seen.add(it.href);
+    }
+    return true;
+  });
+
   const result = [];
-  for (const { key, title, icon } of NAV_SECTIONS) {
-    const items = buckets[key];
-    if (!items?.length) continue;
+  for (const { key, title, icon } of ordered) {
+    const items = dedup(buckets[key] ?? []);
+    if (!items.length) continue;
     if (!title) {
       // Untitled section (dashboards) — pinned at the top, no wrapper.
       result.push(...items);
       continue;
     }
-    // Titled section — a collapsible header grouping its modules.
     result.push({
       label: title,
       icon: icon ? mapIcon(icon) : undefined,
       isSection: true,
-      hasActiveChild: items.some(it => it.active || it.hasActiveChild),
-      children: items,
+      hasActiveChild: items.some((it) => it.active || it.hasActiveChild),
+      children: subGroup(items),
     });
   }
 
   return result.length ? result : null;
+}
+
+// Regroup a product section's features into its declared semantic sub-groups
+// (nav_group). Each sub-group is itself a collapsible, icon'd section nested
+// under the product header. Ungrouped items stay directly under the header.
+function subGroup(items) {
+  if (!items.some((it) => it.group)) return items;
+  const groups = new Map();
+  const ungrouped = [];
+  for (const it of items) {
+    if (!it.group) { ungrouped.push(it); continue; }
+    if (!groups.has(it.group)) {
+      groups.set(it.group, { label: it.groupLabel ?? humanize(it.group), order: it.groupOrder ?? 500, icon: it.groupIcon, items: [] });
+    }
+    groups.get(it.group).items.push(it);
+  }
+  const out = [...ungrouped];
+  for (const g of [...groups.values()].sort((a, b) => (a.order ?? 500) - (b.order ?? 500))) {
+    out.push({
+      label: g.label,
+      icon: g.icon ? mapIcon(g.icon) : undefined,
+      isSection: true,
+      isSubSection: true,
+      hasActiveChild: g.items.some((it) => it.active || it.hasActiveChild),
+      children: g.items,
+    });
+  }
+  return out;
 }
 
 function transformNavigationGroups(backendGroups, activeHref) {
@@ -181,7 +236,7 @@ function buildFallbackNav(activeHref) {
 // ─── App layout ───────────────────────────────────────────────────────────────
 export default function App({ title, rail, railTitle = 'Context', children }) {
   const page = usePage();
-  const { auth, navigation, navigationGroups } = page.props;
+  const { auth, navigation, navigationGroups, navSections } = page.props;
   const theme = useTheme();
   // Inertia's top-level `page.url` is the request PATH (e.g. "/tenants?p=2"),
   // whereas `page.props.url` is the FULL absolute URL from HandleInertiaRequests.
@@ -204,9 +259,11 @@ export default function App({ title, rail, railTitle = 'Context', children }) {
   });
 
   const isCommand = theme.shell === 'command';
+  // Section titles/icons/order come from the package-owned catalog (props.navSections).
+  const sections = buildSections(navSections);
   // Flat nav is the canonical list; the command shell uses grouped nav, but the
   // mobile shell always wants the flat tree regardless of the desktop variant.
-  const flatNav = transformNavigation(navigation, activeHref) ?? buildFallbackNav(activeHref);
+  const flatNav = transformNavigation(navigation, activeHref, sections) ?? buildFallbackNav(activeHref);
   const nav = isCommand
     ? (transformNavigationGroups(navigationGroups, activeHref) ?? [])
     : flatNav;

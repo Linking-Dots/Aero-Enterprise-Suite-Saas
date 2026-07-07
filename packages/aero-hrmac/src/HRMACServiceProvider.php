@@ -130,6 +130,8 @@ class HRMACServiceProvider extends ServiceProvider
                     'access' => 'hrmac.roles_permissions.roles',
                     'priority' => 5,
                     'type' => 'page',
+                    // Access & Security (platform) / People & Access (tenant).
+                    'nav_section' => 'access',
                 ],
             ], 5, 'all');
         });

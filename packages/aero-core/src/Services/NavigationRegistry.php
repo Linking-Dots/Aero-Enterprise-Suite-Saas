@@ -42,6 +42,14 @@ class NavigationRegistry implements NavigationRegistryInterface
     protected array $selfServiceItems = [];
 
     /**
+     * IA section catalogs by scope. Each package publishes its own sections
+     * (label/icon/order) via registerSections(); core never hardcodes them.
+     *
+     * @var array<string, array<int, array{key:string,label:string,icon:?string,order:int}>>
+     */
+    protected array $sectionCatalog = [];
+
+    /**
      * Cached set of registered GET route URIs (normalised with a leading slash),
      * used to prune nav links whose route does not resolve. Null until built.
      *
@@ -100,6 +108,43 @@ class NavigationRegistry implements NavigationRegistryInterface
 
         // Clear cache when navigation changes
         $this->clearCache();
+    }
+
+    /**
+     * Publish a package's IA section catalog. Sections are merged across all
+     * packages for a scope; a later registration for the same key overrides.
+     *
+     * @param  string  $scope  'platform' | 'tenant'
+     * @param  array<int, array{key:string,label:string,icon?:string,order?:int}>  $sections
+     */
+    public function registerSections(string $scope, array $sections): void
+    {
+        foreach ($sections as $s) {
+            if (empty($s['key'])) {
+                continue;
+            }
+            $this->sectionCatalog[$scope][$s['key']] = [
+                'key' => $s['key'],
+                'label' => $s['label'] ?? ucfirst((string) $s['key']),
+                'icon' => $s['icon'] ?? null,
+                'order' => (int) ($s['order'] ?? 500),
+            ];
+        }
+    }
+
+    /**
+     * The ordered IA section catalog for a scope (for the frontend to render
+     * section headers/order without hardcoding). Product sections are appended
+     * dynamically by toFrontend/toFrontendGroups.
+     *
+     * @return array<int, array{key:string,label:string,icon:?string,order:int}>
+     */
+    public function getSectionCatalog(?string $scope = null): array
+    {
+        $sections = array_values($this->sectionCatalog[$scope] ?? []);
+        usort($sections, fn ($a, $b) => $a['order'] <=> $b['order']);
+
+        return $sections;
     }
 
     /**
@@ -318,8 +363,9 @@ class NavigationRegistry implements NavigationRegistryInterface
                             if ($this->isSelfServiceItem($child)) {
                                 continue;
                             }
-                            // Add section for administration items
-                            $child['section'] = 'administration';
+                            // Section comes from the package's own config
+                            // (nav_section); 'administration' is the safe default.
+                            $child['section'] = $child['nav_section'] ?? 'administration';
                             $navigationItems[] = $child;
                         }
                     } else {
@@ -331,25 +377,22 @@ class NavigationRegistry implements NavigationRegistryInterface
                         if ($this->isSelfServiceItem($item)) {
                             continue;
                         }
-                        // Add section for administration items
-                        $item['section'] = 'administration';
+                        $item['section'] = $item['nav_section'] ?? 'administration';
                         $navigationItems[] = $item;
                     }
                 } else {
-                    if ($isSingleModule && $moduleCode === $singleModuleCode) {
-                        // Single module: flatten its children directly under the module section
-                        if (! empty($item['children'])) {
-                            foreach ($item['children'] as $child) {
-                                $child['section'] = $moduleCode;
-                                $navigationItems[] = $child;
-                            }
-                        } else {
-                            $item['section'] = $moduleCode;
-                            $navigationItems[] = $item;
+                    // Products: each product IS a section header (its moduleCode).
+                    // Flatten the product's features under that header — whether the
+                    // tenant has one product or several — so every product reads as
+                    // its own titled group. A submodule may override via nav_section
+                    // (used for the product's own semantic sub-groups).
+                    if (! empty($item['children'])) {
+                        foreach ($item['children'] as $child) {
+                            $child['section'] = $child['nav_section'] ?? $moduleCode;
+                            $navigationItems[] = $child;
                         }
                     } else {
-                        // Multiple modules: keep as collapsible parent under 'modules' section
-                        $item['section'] = 'modules';
+                        $item['section'] = $item['nav_section'] ?? $moduleCode;
                         $navigationItems[] = $item;
                     }
                 }
@@ -369,18 +412,6 @@ class NavigationRegistry implements NavigationRegistryInterface
         // keep the first occurrence. No-op when there are no duplicates.
         $navigationItems = $this->dedupeTopLevel($navigationItems);
 
-        // Shelve the flat 'administration' modules into a small set of titled IA
-        // sections (per scope) so both shells render a short scannable list
-        // instead of one endless group.
-        $sectionMap = match ($scope) {
-            'platform' => self::PLATFORM_SECTION_MAP,
-            'tenant'   => self::TENANT_SECTION_MAP,
-            default    => null,
-        };
-        if ($sectionMap !== null) {
-            $navigationItems = $this->applySections($navigationItems, $sectionMap);
-        }
-
         // Sort by priority
         usort($navigationItems, fn ($a, $b) => ($a['priority'] ?? 999) <=> ($b['priority'] ?? 999));
 
@@ -392,59 +423,6 @@ class NavigationRegistry implements NavigationRegistryInterface
      * of a module's path. Order/titles live in {@see toFrontendGroups()} and the
      * frontend nav adapter. Modules not listed keep their existing section.
      */
-    private const PLATFORM_SECTION_MAP = [
-        'analytics' => 'ov', 'product-analytics' => 'ov',
-        'tenants' => 'tn', 'onboarding' => 'tn', 'quotas' => 'tn', 'provisioning' => 'tn',
-        'plans' => 'rv', 'billing' => 'rv', 'modules' => 'rv', 'licenses' => 'rv', 'contracts' => 'rv',
-        'leads' => 'gr', 'newsletter' => 'gr', 'affiliates' => 'gr', 'partners' => 'gr', 'seo' => 'gr', 'social-auth' => 'gr',
-        'users' => 'ac', 'roles' => 'ac', 'security' => 'ac', 'security-center' => 'ac', 'secrets' => 'ac',
-        'settings' => 'cf', 'integrations' => 'cf', 'feature-flags' => 'cf', 'white-label' => 'cf', 'developer' => 'cf', 'releases' => 'cf',
-        'error-logs' => 'op', 'audit-logs' => 'op', 'access-logs' => 'op', 'backup' => 'op', 'status' => 'op', 'observability' => 'op', 'disaster-recovery' => 'op', 'api-gateway' => 'op',
-        'customer-success' => 'cs', 'help-center' => 'cs', 'enterprise-scim' => 'cs',
-    ];
-
-    /**
-     * Tenant + standalone CORE IA sections, keyed by a module's first path
-     * segment. Products (hrm, crm, …) are intentionally NOT listed here — they
-     * follow the product-grouping rule (single = flat, 2+ = grouped) and render
-     * BELOW the core sections. See [[module-grouping-rule]].
-     */
-    private const TENANT_SECTION_MAP = [
-        'users' => 'pa', 'roles' => 'pa', 'organization' => 'pa',
-        'files' => 'cd', 'i18n' => 'cd', 'tags' => 'cd', 'saved-views' => 'cd', 'search' => 'cd', 'export-import' => 'cd', 'numbering' => 'cd', 'print-templates' => 'cd',
-        'notifications' => 'cm', 'email' => 'cm', 'announcements' => 'cm',
-        'audit-logs' => 'mh', 'activity' => 'mh', 'system-health' => 'mh', 'retention-policies' => 'mh', 'trash' => 'mh',
-        'settings' => 'cf', 'api' => 'cf', 'backup' => 'cf', 'license' => 'cf', 'mobile-pwa' => 'cf', 'maintenance-mode' => 'cf', 'help' => 'cf',
-        'subscription' => 'bill',
-    ];
-
-    /**
-     * Reassign each top-level module to one of the IA sections by the first
-     * segment of its path (falling back to its first child's href). Items already
-     * in a special section (dashboards / my-workspace) are left alone; segments
-     * not in the map keep their existing section.
-     *
-     * @param  array<int, array>  $items
-     * @param  array<string, string>  $map  segment => section-key
-     * @return array<int, array>
-     */
-    private function applySections(array $items, array $map): array
-    {
-        foreach ($items as &$item) {
-            $current = $item['section'] ?? null;
-            if (in_array($current, ['dashboards', 'my-workspace'], true)) {
-                continue;
-            }
-            $path = $item['path'] ?? ($item['children'][0]['path'] ?? '');
-            $seg = strtolower(trim(explode('/', ltrim((string) $path, '/'))[0] ?? ''));
-            if ($seg !== '' && isset($map[$seg])) {
-                $item['section'] = $map[$seg];
-            }
-        }
-
-        return $items;
-    }
-
     /**
      * Remove duplicate top-level navigation entries, keyed by access code
      * (falling back to path, then name). Section dividers / spacers and items
@@ -591,52 +569,33 @@ class NavigationRegistry implements NavigationRegistryInterface
     {
         $flat = $this->toFrontend($scope, $user, $subscribedModules);
 
-        $sectionTitles = [
-            'dashboards'      => 'Dashboards',
-            'my-workspace'    => 'My Workspace',
-            'ov'              => 'Overview',
-            // platform-admin IA
-            'tn'              => 'Tenants & Onboarding',
-            'rv'              => 'Revenue & Catalog',
-            'gr'              => 'Growth & Marketing',
-            'ac'              => 'Access & Security',
-            'op'              => 'Operations & Reliability',
-            'cs'              => 'Customer Success',
-            // tenant / standalone IA
-            'wf'              => 'Workforce',
-            'pa'              => 'People & Access',
-            'cd'              => 'Content & Data',
-            'cm'              => 'Communications',
-            'mh'              => 'Monitoring & Health',
-            'bill'            => 'Billing',
-            // shared + fallback
-            'cf'              => 'Configuration',
-            'administration'  => 'Administration',
-            'modules'         => 'Modules',
-        ];
-
-        $sectionOrder = [
-            'dashboards', 'my-workspace', 'ov',
-            'tn', 'wf', 'rv', 'pa', 'gr', 'ac', 'cd', 'cm', 'cf', 'op', 'mh', 'cs', 'bill',
-            'administration', 'modules',
-        ];
+        // Titles + order come from the aggregated (package-owned) catalog. Special
+        // sections framing the catalog: dashboards/my-workspace on top; product
+        // (moduleCode) sections and the administration/modules fallbacks after the
+        // core catalog. Product sections that declared a catalog entry use it.
+        $titles = ['dashboards' => 'Dashboards', 'my-workspace' => 'My Workspace', 'administration' => 'Administration', 'modules' => 'Modules'];
+        $order = ['dashboards' => -20, 'my-workspace' => -10, 'administration' => 9000, 'modules' => 9100];
+        foreach ($this->getSectionCatalog($scope) as $s) {
+            $titles[$s['key']] = $s['label'];
+            $order[$s['key']] = $s['order'];
+        }
 
         $grouped = collect($flat)->groupBy(fn ($item) => $item['section'] ?? 'others');
 
-        // Sort groups by known section order, then alphabetical for module codes
-        $sortedKeys = $grouped->keys()->sortBy(fn ($key) => array_search($key, $sectionOrder, true) !== false
-            ? array_search($key, $sectionOrder, true)
-            : 999 + ord($key[0] ?? 'z')
-        )->values();
+        // Unknown keys (product moduleCode sections with no declared catalog entry)
+        // sort just after the core catalog (5000+), alphabetically, so products
+        // always render below core.
+        $sortedKeys = $grouped->keys()->sortBy(fn ($key) => $order[$key] ?? (5000 + ord($key[0] ?? 'z')))->values();
 
-        return $sortedKeys->map(function ($section) use ($grouped, $sectionTitles) {
+        return $sortedKeys->map(function ($section) use ($grouped, $titles) {
             $items = $grouped->get($section);
             if (empty($items)) {
                 return null;
             }
 
             return [
-                'title' => $sectionTitles[$section] ?? ucfirst(str_replace('-', ' ', $section)),
+                'key'   => $section,
+                'title' => $titles[$section] ?? ucfirst(str_replace(['-', '_'], ' ', $section)),
                 'items' => $items->values()->toArray(),
             ];
         })->filter()->values()->toArray();

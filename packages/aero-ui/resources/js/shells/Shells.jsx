@@ -41,18 +41,49 @@ function saveShellPrefs(patch) {
   } catch { /* quota / private mode — non-fatal */ }
 }
 
+// Per-group open/closed state (nav sections + module accordions), persisted so a
+// user's collapse choices survive reloads and Inertia navigations. Keyed by a
+// stable id ('sec:<label>' / 'mod:<href|label>'); value is the explicit isOpen.
+const NAV_STATE_KEY = 'aeos-nav-state';
+
+function loadNavState() {
+  try {
+    const raw = typeof localStorage !== 'undefined' && localStorage.getItem(NAV_STATE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveNavState(key, open) {
+  if (!key) return;
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(NAV_STATE_KEY, JSON.stringify({ ...loadNavState(), [key]: open }));
+    }
+  } catch { /* non-fatal */ }
+}
+
 /* ─── RecursiveNavItem ──────────────────────────────────────────────────── */
 function RecursiveNavItem({ item, depth = 0, isCommand = false, expanded = true }) {
-  // Section groups start open; module accordions start closed unless active.
-  const [isOpen, setIsOpen] = useState(item.isSection ? true : (item.hasActiveChild ?? false));
+  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+  // Stable key for persisting this group's open/closed state.
+  const navKey = item.isSection
+    ? (item.label ? `sec:${item.label}` : null)
+    : (hasChildren ? `mod:${item.href ?? item.label ?? ''}` : null);
+
+  // Restore the saved open state; else default (sections open, modules closed
+  // unless they contain the active page).
+  const [isOpen, setIsOpen] = useState(() => {
+    const saved = navKey ? loadNavState()[navKey] : undefined;
+    return saved !== undefined ? saved : (item.isSection ? true : (item.hasActiveChild ?? false));
+  });
   // Hooks must run unconditionally before any early return (React rules-of-hooks):
   // `expanded` changes at runtime, so a return above this would drop a hook.
   const toggle = useCallback((e) => {
     e.preventDefault();
-    if (expanded || isCommand) setIsOpen(v => !v);
-  }, [expanded, isCommand]);
-
-  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+    if (expanded || isCommand) {
+      setIsOpen(v => { const next = !v; saveNavState(navKey, next); return next; });
+    }
+  }, [expanded, isCommand, navKey]);
 
   if (item.divider) return <div className="aeos-shell-sidebar-divider" aria-hidden="true" />;
   if (item.spacer)  return <div className="aeos-shell-sidebar-spacer"  aria-hidden="true" />;
@@ -709,8 +740,13 @@ export function FloatingShell({
 
 /* ─── CommandSection ────────────────────────────────────────────────────── */
 function CommandSection({ group }) {
-  const [isOpen, setIsOpen] = useState(true);
-  const toggle = useCallback(() => setIsOpen(v => !v), []);
+  // Share the persisted open state with the sidebar (same 'sec:<title>' key).
+  const navKey = group.title ? `sec:${group.title}` : null;
+  const [isOpen, setIsOpen] = useState(() => {
+    const saved = navKey ? loadNavState()[navKey] : undefined;
+    return saved !== undefined ? saved : true;
+  });
+  const toggle = useCallback(() => setIsOpen(v => { const next = !v; saveNavState(navKey, next); return next; }), [navKey]);
 
   return (
     <div className="aeos-shell-cmd-nav-group">

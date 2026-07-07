@@ -28,6 +28,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Navigation IA — core (tenant) sections, package-owned
+    |--------------------------------------------------------------------------
+    | Core sections always render at the TOP of the tenant/standalone nav;
+    | subscribed products render their own section headers BELOW these.
+    */
+    'nav_sections' => [
+        ['key' => 'access', 'label' => 'People & Access',    'icon' => 'UserGroupIcon',  'order' => 20],
+        ['key' => 'cd',     'label' => 'Content & Data',     'icon' => 'FolderIcon',     'order' => 40],
+        ['key' => 'cm',     'label' => 'Communications',     'icon' => 'EnvelopeIcon',   'order' => 50],
+        ['key' => 'mh',     'label' => 'Monitoring & Health','icon' => 'HeartIcon',      'order' => 60],
+        ['key' => 'cf',     'label' => 'Configuration',      'icon' => 'Cog6ToothIcon',  'order' => 70],
+        ['key' => 'bill',   'label' => 'Billing',            'icon' => 'CreditCardIcon', 'order' => 80],
+    ],
+    'nav_section_map' => [
+        'organization' => 'access', 'users' => 'access', 'roles' => 'access', 'profile' => 'access',
+        'files' => 'cd', 'file-manager' => 'cd', 'i18n' => 'cd', 'tags' => 'cd', 'saved-views' => 'cd', 'search' => 'cd', 'export-import' => 'cd', 'numbering' => 'cd', 'print-templates' => 'cd',
+        'notifications' => 'cm', 'email' => 'cm', 'announcements' => 'cm',
+        'audit-logs' => 'mh', 'activity' => 'mh', 'system-health' => 'mh', 'retention-policies' => 'mh', 'trash' => 'mh',
+        'settings' => 'cf', 'api' => 'cf', 'backup' => 'cf', 'license' => 'cf', 'mobile-pwa' => 'cf', 'maintenance-mode' => 'cf', 'help' => 'cf',
+        'subscription' => 'bill',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Self-Service Navigation Items
     |--------------------------------------------------------------------------
     |

@@ -183,6 +183,23 @@ class AeroPlatformServiceProvider extends ServiceProvider
             // CRITICAL: This registers event listeners for TenancyInitialized which
             // runs the DatabaseTenancyBootstrapper to switch DB connections
             $this->app->register(TenancyBootstrapServiceProvider::class);
+
+            // Demo guardrail: a live-demo tenant must never send real email/SMS to
+            // the fake addresses visitors enter. On every tenancy init (web AND
+            // queue), if the tenant is a demo, route mail to the log driver and flag
+            // demo mode so any outbound-send code can no-op. Reset heals data; this
+            // protects real inboxes.
+            \Illuminate\Support\Facades\Event::listen(
+                \Stancl\Tenancy\Events\TenancyInitialized::class,
+                function () {
+                    if (function_exists('tenant') && tenant() && (bool) tenant('is_demo')) {
+                        config([
+                            'mail.default' => 'log',
+                            'aero.demo.active' => true,
+                        ]);
+                    }
+                }
+            );
         }
 
         // Override Core's migrator to ONLY use platform migrations on landlord database
@@ -563,6 +580,13 @@ class AeroPlatformServiceProvider extends ServiceProvider
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
             $components = $submodule['components'] ?? [];
 
+            // Resolve the IA section for this submodule from the package's own
+            // config (explicit nav_section, else the nav_section_map keyed by the
+            // first route segment). Core aggregates this generically.
+            $navRoute = $submodule['route'] ?? ($components[0]['route'] ?? '');
+            $navSeg = strtolower(trim(explode('/', ltrim((string) $navRoute, '/'))[0] ?? ''));
+            $navSection = $submodule['nav_section'] ?? ($config['nav_section_map'][$navSeg] ?? null);
+
             // If submodule has only ONE component, use it directly as the menu item
             if (count($components) === 1) {
                 $component = $components[0];
@@ -573,6 +597,7 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     'access' => 'platform.'.$submoduleCode.'.'.($component['code'] ?? ''),
                     'priority' => $submodule['priority'] ?? 100,
                     'type' => $component['type'] ?? 'page',
+                    'nav_section' => $navSection,
                     // No children - single component becomes the page
                 ];
             } else {
@@ -596,12 +621,16 @@ class AeroPlatformServiceProvider extends ServiceProvider
                     'access' => 'platform.'.$submoduleCode,
                     'priority' => $submodule['priority'] ?? 100,
                     'children' => $componentNav, // Include children for submenu
+                    'nav_section' => $navSection,
                 ];
             }
         }
 
         // Sort submodules by priority
         usort($submoduleNav, fn ($a, $b) => ($a['priority'] ?? 100) <=> ($b['priority'] ?? 100));
+
+        // Publish this package's section catalog to the generic aggregator.
+        $registry->registerSections('platform', $config['nav_sections'] ?? []);
 
         // Register platform navigation with highest priority (0)
         // Platform is is_core=true so its children flatten to top level in admin context

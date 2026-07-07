@@ -178,6 +178,10 @@ class HandleInertiaRequests extends Middleware
                 : []),
             'navigation' => fn () => $this->getNavigationProps($user),
             'navigationGroups' => fn () => $this->getNavigationGroupsProps($user),
+            // Package-owned IA section catalog (label/icon/order) for the shell.
+            'navSections' => fn () => app()->bound(NavigationRegistry::class)
+                ? app(NavigationRegistry::class)->getSectionCatalog('tenant')
+                : [],
             'userNavMetadata' => fn () => $user ? app(NavigationRegistry::class)->getUserNavigationMetadata($user) : null,
             'flash' => [
                 'success' => $request->session()->get('success'),

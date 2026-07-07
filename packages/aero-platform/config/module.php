@@ -38,6 +38,36 @@ return [
     'release_date' => '2024-01-01',
     'enabled' => true,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Navigation IA — package-owned (core aggregates generically)
+    |--------------------------------------------------------------------------
+    | `nav_sections`   : this package's section catalog (label/icon/order).
+    | `nav_section_map`: which section each submodule falls under, keyed by the
+    |                    first segment of its route. Core reads these; it never
+    |                    hardcodes platform/product knowledge.
+    */
+    'nav_sections' => [
+        ['key' => 'ov', 'label' => 'Overview',                 'icon' => 'Squares2X2Icon',      'order' => 10],
+        ['key' => 'tn', 'label' => 'Tenants & Onboarding',     'icon' => 'BuildingOffice2Icon', 'order' => 20],
+        ['key' => 'rv', 'label' => 'Revenue & Catalog',        'icon' => 'CurrencyDollarIcon',  'order' => 30],
+        ['key' => 'gr', 'label' => 'Growth & Marketing',       'icon' => 'MegaphoneIcon',       'order' => 40],
+        ['key' => 'access', 'label' => 'Access & Security',        'icon' => 'ShieldCheckIcon',     'order' => 50],
+        ['key' => 'cf', 'label' => 'Configuration',            'icon' => 'Cog6ToothIcon',       'order' => 60],
+        ['key' => 'op', 'label' => 'Operations & Reliability', 'icon' => 'BoltIcon',            'order' => 70],
+        ['key' => 'cs', 'label' => 'Customer Success',         'icon' => 'LifebuoyIcon',        'order' => 80],
+    ],
+    'nav_section_map' => [
+        'analytics' => 'ov', 'product-analytics' => 'ov',
+        'tenants' => 'tn', 'onboarding' => 'tn', 'quotas' => 'tn', 'provisioning' => 'tn',
+        'plans' => 'rv', 'billing' => 'rv', 'modules' => 'rv', 'licenses' => 'rv', 'contracts' => 'rv',
+        'leads' => 'gr', 'newsletter' => 'gr', 'affiliates' => 'gr', 'partners' => 'gr', 'seo' => 'gr', 'social-auth' => 'gr',
+        'users' => 'access', 'roles' => 'access', 'security' => 'access', 'security-center' => 'access', 'secrets' => 'access',
+        'settings' => 'cf', 'integrations' => 'cf', 'feature-flags' => 'cf', 'white-label' => 'cf', 'developer' => 'cf', 'releases' => 'cf',
+        'error-logs' => 'op', 'audit-logs' => 'op', 'access-logs' => 'op', 'backup' => 'op', 'status' => 'op', 'observability' => 'op', 'disaster-recovery' => 'op', 'api-gateway' => 'op',
+        'customer-success' => 'cs', 'help-center' => 'cs', 'enterprise-scim' => 'cs',
+    ],
+
     'submodules' => [
         /*
         |--------------------------------------------------------------------------

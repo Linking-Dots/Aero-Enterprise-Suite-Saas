@@ -121,6 +121,11 @@ class HandleInertiaRequests extends Middleware
             // Grouped variant powers the Command shell — without it the platform
             // admin Command shell renders an empty nav.
             'navigationGroups' => fn () => $this->getNavigationGroupProps($user),
+            // Package-owned IA section catalog (label/icon/order) so the shell
+            // renders section headers without hardcoding them.
+            'navSections' => fn () => app()->bound(NavigationRegistry::class)
+                ? app(NavigationRegistry::class)->getSectionCatalog('platform')
+                : [],
             'aero' => [
                 'mode' => aero_mode() ?? 'saas',
                 'subscriptions' => [], // Admin accesses everything

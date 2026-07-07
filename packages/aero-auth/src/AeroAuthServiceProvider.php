@@ -144,6 +144,8 @@ class AeroAuthServiceProvider extends ServiceProvider
                     'access' => 'auth.user_management.users',
                     'priority' => 3,
                     'type' => 'page',
+                    // Access & Security (platform) / People & Access (tenant).
+                    'nav_section' => 'access',
                 ],
             ], 3, 'all');
         });

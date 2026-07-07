@@ -18,6 +18,38 @@ return [
     'dependencies' => ['core'],
     'release_date' => '2024-01-01',
 
+    // This module is a sellable PRODUCT: it renders as one section header
+    // ("Human Resources") BELOW the tenant's core sections, only when subscribed.
+    // The section key must equal the module code ('hrm'), which is the section
+    // its flattened features are assigned to. `order` (>100) keeps products below
+    // core sections (order 20–80).
+    'is_product' => true,
+    'nav_sections' => [
+        ['key' => 'hrm', 'label' => 'Human Resources', 'icon' => 'UserGroupIcon', 'order' => 200],
+    ],
+    // Semantic sub-groups rendered UNDER the "Human Resources" section header so
+    // its ~28 features read as a clean IA instead of one long list. nav_groups =
+    // the sub-group catalog (label/order); nav_group_map = submodule-code =>
+    // sub-group key.
+    'nav_groups' => [
+        'people'    => ['label' => 'People',             'order' => 10, 'icon' => 'UsersIcon'],
+        'time'      => ['label' => 'Time & Attendance',  'order' => 20, 'icon' => 'ClockIcon'],
+        'pay'       => ['label' => 'Payroll & Benefits', 'order' => 30, 'icon' => 'BanknotesIcon'],
+        'talent'    => ['label' => 'Talent',             'order' => 40, 'icon' => 'AcademicCapIcon'],
+        'workplace' => ['label' => 'Workplace',          'order' => 50, 'icon' => 'ShieldExclamationIcon'],
+        'insights'  => ['label' => 'Insights',           'order' => 60, 'icon' => 'ChartBarIcon'],
+        'admin'     => ['label' => 'Administration',     'order' => 70, 'icon' => 'Cog6ToothIcon'],
+    ],
+    'nav_group_map' => [
+        'employees' => 'people', 'org-structure' => 'people', 'onboarding' => 'people', 'documents' => 'people',
+        'attendance' => 'time', 'leaves' => 'time', 'overtime' => 'time',
+        'payroll' => 'pay', 'compensation-planning' => 'pay', 'benefits' => 'pay', 'expenses' => 'pay', 'assets' => 'pay',
+        'recruitment' => 'talent', 'performance' => 'talent', 'training' => 'talent', 'career-pathing' => 'talent', 'feedback-360' => 'talent', 'succession-planning' => 'talent', 'pulse-surveys' => 'talent',
+        'disciplinary' => 'workplace', 'grievances' => 'workplace', 'safety' => 'workplace', 'exit-interviews' => 'workplace', 'events' => 'workplace',
+        'hr-analytics' => 'insights', 'ai-analytics' => 'insights', 'workforce-planning' => 'insights',
+        'settings' => 'admin',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Self-Service Navigation Items

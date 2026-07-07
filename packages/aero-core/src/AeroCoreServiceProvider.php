@@ -1030,6 +1030,12 @@ class AeroCoreServiceProvider extends ServiceProvider
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
             $components = $submodule['components'] ?? [];
 
+            // IA section from core's own config (nav_section, else nav_section_map
+            // keyed by first route segment).
+            $navRoute = $submodule['route'] ?? ($components[0]['route'] ?? '');
+            $navSeg = strtolower(trim(explode('/', ltrim((string) $navRoute, '/'))[0] ?? ''));
+            $navSection = $submodule['nav_section'] ?? ($config['nav_section_map'][$navSeg] ?? null);
+
             // collapse_nav: render as a single leaf link (no child pages). The
             // component HRMAC actions are still defined/synced; collapsing only
             // hides the child links so an in-page rail owns sub-navigation
@@ -1042,6 +1048,7 @@ class AeroCoreServiceProvider extends ServiceProvider
                     'access' => 'core.'.$submoduleCode,
                     'priority' => $submodule['priority'] ?? 100,
                     'type' => 'page',
+                    'nav_section' => $navSection,
                     // No children - the in-page rail handles sub-navigation.
                 ];
             } elseif (count($components) === 1) {
@@ -1053,6 +1060,7 @@ class AeroCoreServiceProvider extends ServiceProvider
                     'access' => 'core.'.$submoduleCode.'.'.($component['code'] ?? ''),
                     'priority' => $submodule['priority'] ?? 100,
                     'type' => $component['type'] ?? 'page',
+                    'nav_section' => $navSection,
                     // No children - single component becomes the page
                 ];
             } else {
@@ -1076,12 +1084,18 @@ class AeroCoreServiceProvider extends ServiceProvider
                     'access' => 'core.'.$submoduleCode,
                     'priority' => $submodule['priority'] ?? 100,
                     'children' => $componentNav, // Include children for submenu
+                    'nav_section' => $navSection,
                 ];
             }
         }
 
         // Sort submodules by priority
         usort($submoduleNav, fn ($a, $b) => ($a['priority'] ?? 100) <=> ($b['priority'] ?? 100));
+
+        // Publish core's tenant section catalog to the generic aggregator.
+        if (! empty($config['nav_sections'])) {
+            $registry->registerSections('tenant', $config['nav_sections']);
+        }
 
         // Register core navigation with highest priority (1)
         // Core uses is_core=true so its children flatten to top level
