@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Text } from '@aero/ui';
+import React, { useEffect, useState } from 'react';
+import Markdown from './Markdown.jsx';
 
-// Reveals text one letter at a time (eased) on first mount; instant under
-// reduced-motion. Used for Aeon's replies so answers "type" in.
+// Reveals a markdown reply one letter at a time (eased) on first mount; markdown
+// renders progressively as it streams. Instant under reduced-motion.
 function TypewriterText({ text }) {
   const full = text ?? '';
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16,16 +16,15 @@ function TypewriterText({ text }) {
       i += 1;
       setN(i);
       if (i >= full.length) clearInterval(id);
-    }, 16);
+    }, 14);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [full]);
 
   return (
-    <Text>
-      <span className="aeon-typed">{full.slice(0, n)}</span>
-      {!done ? <span className="aeon-caret" aria-hidden="true" /> : null}
-    </Text>
+    <div className={`aeon-typing ${done ? 'is-done' : ''}`}>
+      <Markdown text={full.slice(0, n)} />
+    </div>
   );
 }
 
@@ -116,7 +115,7 @@ function Block({ block, onAction, animate }) {
       );
     case 'text':
     default:
-      return animate ? <TypewriterText text={block.text ?? ''} /> : <Text>{block.text ?? ''}</Text>;
+      return animate ? <TypewriterText text={block.text ?? ''} /> : <Markdown text={block.text ?? ''} />;
   }
 }
 

@@ -40,7 +40,13 @@ class GeminiProvider implements AiProvider
             ];
         }
 
-        $payload = ['contents' => $contents];
+        $payload = [
+            'contents' => $contents,
+            'generationConfig' => [
+                'temperature' => (float) ($options['temperature'] ?? config('aeon.providers.gemini.temperature', 0.6)),
+                'maxOutputTokens' => (int) ($options['max_tokens'] ?? config('aeon.providers.gemini.max_tokens', 1200)),
+            ],
+        ];
         if ($system) {
             $payload['systemInstruction'] = ['parts' => [['text' => $system]]];
         }
