@@ -1,40 +1,21 @@
 {
     "name": "aero/assistant",
-    "description": "Aero AI Assistant Module - RAG-based intelligent assistant for user guidance and task automation",
+    "description": "Aeon — AEOS365 built-in AI assistant (provider-agnostic; Gemini default)",
     "type": "library",
     "license": "MIT",
-    "keywords": [
-        "aero",
-        "assistant",
-        "ai",
-        "rag",
-        "chatbot",
-        "laravel",
-        "module"
-    ],
-    "authors": [
-        {
-            "name": "Aero Team",
-            "email": "support@aerosuite.com"
-        }
-    ],
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.0|^12.0",
-        "aero/core": "^1.0",
-        "aero/contracts": "^1.0",
-        "guzzlehttp/guzzle": "^7.8",
-        "pgvector/pgvector": "^0.2"
+        "laravel/framework": "^12.0",
+        "aero/core": "@dev",
+        "aero/contracts": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0",
-        "orchestra/testbench": "^9.0"
+        "orchestra/testbench": "^10.0"
     },
     "autoload": {
         "psr-4": {
-            "Aero\\Assistant\\": "src/",
-            "Aero\\Assistant\\Database\\Factories\\": "database/factories/",
-            "Aero\\Assistant\\Database\\Seeders\\": "database/seeders/"
+            "Aero\\Assistant\\": "src/"
         }
     },
     "autoload-dev": {
@@ -45,21 +26,19 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Aero\\Assistant\\Providers\\AssistantModuleProvider"
+                "Aero\\Assistant\\Providers\\AeonServiceProvider"
             ]
         },
         "aero": {
             "package": "assistant",
             "version": "1.0.0",
             "category": "product",
-            "description": "AI-powered assistant with RAG capabilities for user guidance, task automation, and contextual help",
             "tier": "product"
         }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
-        "sort-packages": true,
-        "optimize-autoloader": true
+        "sort-packages": true
     }
 }

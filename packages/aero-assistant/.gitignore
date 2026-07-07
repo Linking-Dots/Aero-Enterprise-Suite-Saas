@@ -1,9 +1,0 @@
-vendor/
-node_modules/
-.env
-.env.local
-.DS_Store
-*.log
-.phpunit.result.cache
-composer.lock
-package-lock.json
