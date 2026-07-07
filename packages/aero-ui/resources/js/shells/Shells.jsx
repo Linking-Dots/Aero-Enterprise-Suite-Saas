@@ -400,15 +400,42 @@ function TopNavLink({ item, role, className, onNavigate }) {
   );
 }
 
-/* Recursive dropdown body — nested sub-groups render as labelled groups so a
-   3rd/4th-level item (e.g. HR → People → Employees → …) is never dropped. */
+/* A collapsible group inside the top-nav dropdown — same folder-item pattern as
+   the rest of the nav (icon + label + count badge + chevron), not a static
+   uppercase label. Default collapsed unless it holds the active page. */
+function TopNavMenuGroup({ item, onNavigate }) {
+  const [open, setOpen] = useState(item.hasActiveChild ?? false);
+  return (
+    <div className="aeos-topnav-menu-group">
+      <button
+        type="button"
+        className={cx('aeos-topnav-menu-item aeos-topnav-menu-groupbtn', item.hasActiveChild && 'active-parent')}
+        aria-expanded={open}
+        onClick={() => setOpen(v => !v)}
+      >
+        {item.icon && <item.icon className="aeos-shell-nav-icon" aria-hidden="true" />}
+        <span className="aeos-shell-nav-item-label">{item.label}</span>
+        {item.count != null && <span className="aeos-shell-cmd-nav-count">{item.count}</span>}
+        <span className={cx('aeos-shell-nav-chevron', open && 'is-open')} aria-hidden="true">
+          <ChevronRightIcon />
+        </span>
+      </button>
+      {open && (
+        <div className="aeos-topnav-menu-children">
+          <TopNavMenuItems items={item.children} onNavigate={onNavigate} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Recursive dropdown body — nested sub-groups render as collapsible folder
+   groups (consistent with the sidebar), so a 3rd/4th-level item (HR → People →
+   Employees → …) is grouped, not dropped. */
 function TopNavMenuItems({ items, onNavigate }) {
   return items.map((child, i) =>
     (Array.isArray(child.children) && child.children.length > 0) ? (
-      <div key={i} className="aeos-topnav-menu-group">
-        <div className="aeos-topnav-menu-grouplabel">{child.label}</div>
-        <TopNavMenuItems items={child.children} onNavigate={onNavigate} />
-      </div>
+      <TopNavMenuGroup key={i} item={child} onNavigate={onNavigate} />
     ) : (
       <TopNavLink
         key={i}

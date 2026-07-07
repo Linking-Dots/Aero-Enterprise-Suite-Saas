@@ -134,8 +134,8 @@
    overflow-x scroll container. */
 .aeos-topnav-menu {
   z-index: var(--aeos-z-popover, 1200);
-  min-width: 200px;
-  max-width: 280px;
+  min-width: 240px;
+  max-width: 320px;
   max-height: min(60vh, 420px);
   overflow-y: auto;
   margin-top: var(--aeos-space-1);
@@ -172,7 +172,52 @@
   background: var(--aeos-primary-bg);
   color: var(--aeos-primary);
 }
-.aeos-topnav-menu-item .aeos-shell-nav-icon { width: var(--aeos-icon-sm); height: var(--aeos-icon-sm); }
+.aeos-topnav-menu-item .aeos-shell-nav-icon { width: var(--aeos-icon-sm); height: var(--aeos-icon-sm); flex-shrink: 0; }
+
+/* Collapsible folder group inside the dropdown — consistent with the sidebar
+   nav (icon + label + count badge + chevron), never a static uppercase label. */
+.aeos-topnav-menu-item .aeos-shell-nav-item-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aeos-topnav-menu-groupbtn {
+  width: 100%;
+  font-weight: 600;
+  color: var(--aeos-text-primary);
+}
+.aeos-topnav-menu-groupbtn .aeos-shell-nav-icon { color: var(--aeos-primary); }
+.aeos-topnav-menu-groupbtn.active-parent { color: var(--aeos-primary); }
+.aeos-topnav-menu-groupbtn .aeos-shell-cmd-nav-count {
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--aeos-bg-active);
+  color: var(--aeos-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.aeos-topnav-menu-groupbtn .aeos-shell-nav-chevron { display: inline-flex; flex-shrink: 0; }
+.aeos-topnav-menu-groupbtn .aeos-shell-nav-chevron svg {
+  width: 12px; height: 12px;
+  transition: transform var(--aeos-dur-fast) var(--aeos-ease-out);
+}
+.aeos-topnav-menu-groupbtn .aeos-shell-nav-chevron.is-open svg { transform: rotate(90deg); }
+.aeos-topnav-menu-children {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-left: calc(var(--aeos-space-3) + 2px);
+  border-left: var(--aeos-border-width) solid var(--aeos-divider);
+  padding-left: var(--aeos-space-1-5);
+}
 
 /* Off-screen width-probe for Priority+ overflow (measures the full item list
    without affecting layout). Same item styling as the real nav so widths match. */
