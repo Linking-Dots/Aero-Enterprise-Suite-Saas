@@ -280,6 +280,8 @@ class HandleInertiaRequests extends Middleware
                 // Specific to invitations/actions
                 'email_results' => $request->session()->get('email_results'),
                 'invitation_errors' => $request->session()->get('invitation_errors'),
+                // Payment-gateway connection-test result (scoped to a gateway code)
+                'gateway_test' => $request->session()->get('gateway_test'),
             ],
         ];
     }

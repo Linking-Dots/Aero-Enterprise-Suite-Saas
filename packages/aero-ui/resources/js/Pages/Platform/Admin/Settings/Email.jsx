@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import {
-  FormPageLayout,
   Field,
   Input,
   Select,
@@ -17,6 +16,9 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
+import SettingsSection from '@/components/settings/SettingsSection.jsx';
 
 const ENCRYPTION_OPTIONS = [
   { value: '',    label: 'None' },
@@ -67,17 +69,16 @@ export default function Email({ settings, testResult }) {
   }
 
   return (
-    <FormPageLayout
-      title="Email Settings"
-      breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
-        { label: 'Settings' },
-        { label: 'Email / SMTP' },
-      ]}
-      description="Configure SMTP credentials for outbound platform email."
-      onSubmit={handleSubmit}
-    >
-      <VStack gap={6}>
+    <form onSubmit={handleSubmit}>
+      <SettingsSection
+        title="Email / SMTP"
+        description="Configure SMTP credentials for outbound platform email."
+        canEdit={canEdit}
+        dirty={form.isDirty}
+        processing={form.processing}
+        onReset={() => form.reset()}
+        onSave={handleSubmit}
+      >
 
         {testResult && (
           <Alert
@@ -194,14 +195,6 @@ export default function Email({ settings, testResult }) {
           </CardBody>
         </Card>
 
-        {canEdit && (
-          <HStack gap={3}>
-            <Button type="submit" intent="primary" loading={form.processing} disabled={form.processing}>
-              Save Email Settings
-            </Button>
-          </HStack>
-        )}
-
         {canTest && (
           <Card>
             <CardBody>
@@ -237,9 +230,13 @@ export default function Email({ settings, testResult }) {
           </Card>
         )}
 
-      </VStack>
-    </FormPageLayout>
+      </SettingsSection>
+    </form>
   );
 }
 
-Email.layout = page => <App title="Email Settings">{page}</App>;
+Email.layout = page => (
+  <App title="Platform Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="email">{page}</SettingsLayout>
+  </App>
+);

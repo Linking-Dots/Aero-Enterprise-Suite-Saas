@@ -1,10 +1,8 @@
 import { useForm } from '@inertiajs/react';
 import {
-  FormPageLayout,
   Field,
   Input,
   Select,
-  Button,
   HStack,
   VStack,
   Eyebrow,
@@ -16,6 +14,9 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
+import SettingsSection from '@/components/settings/SettingsSection.jsx';
 
 const MODE_OPTIONS = [
   { value: 'dedicated', label: 'Dedicated (VPS / Cloud)' },
@@ -46,17 +47,16 @@ export default function Infrastructure({ hosting }) {
   const isShared = form.data.mode === 'shared';
 
   return (
-    <FormPageLayout
-      title="Infrastructure"
-      breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
-        { label: 'Settings' },
-        { label: 'Infrastructure' },
-      ]}
-      description="Storage driver, queue driver, cache driver and hosting configuration."
-      onSubmit={handleSubmit}
-    >
-      <VStack gap={6}>
+    <form onSubmit={handleSubmit}>
+      <SettingsSection
+        title="Infrastructure"
+        description="Storage driver, queue driver, cache driver and hosting configuration."
+        canEdit={canEdit}
+        dirty={form.isDirty}
+        processing={form.processing}
+        onReset={() => form.reset()}
+        onSave={handleSubmit}
+      >
 
         <Card>
           <CardBody>
@@ -157,17 +157,13 @@ export default function Infrastructure({ hosting }) {
           </Card>
         )}
 
-        {canEdit && (
-          <HStack gap={3}>
-            <Button type="submit" intent="primary" loading={form.processing} disabled={form.processing}>
-              Save Infrastructure Settings
-            </Button>
-          </HStack>
-        )}
-
-      </VStack>
-    </FormPageLayout>
+      </SettingsSection>
+    </form>
   );
 }
 
-Infrastructure.layout = page => <App title="Infrastructure">{page}</App>;
+Infrastructure.layout = page => (
+  <App title="Platform Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="infrastructure">{page}</SettingsLayout>
+  </App>
+);

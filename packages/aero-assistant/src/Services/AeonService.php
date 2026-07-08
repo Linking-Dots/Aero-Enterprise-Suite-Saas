@@ -49,11 +49,19 @@ class AeonService
         );
 
         {
-            $nav = $this->firstValidNavigate($result);
+            // A write-form request (prepare_operation) wins over navigation: if
+            // the user asked to CREATE/UPDATE something, show the form, don't
+            // just open a page.
+            $operation = $this->firstNamedTool($result, 'prepare_operation');
+            $nav = $operation ? null : $this->firstValidNavigate($result);
             $navAttempted = $this->attemptedNavigate($result);
-            $dataTool = $nav ? null : $this->firstDataTool($result);
+            $dataTool = ($nav || $operation) ? null : $this->firstDataTool($result);
 
-            if ($nav) {
+            if ($operation) {
+                $out = $this->runDataTool($operation, $userId);
+                $content = $out['text'];
+                $blocks = array_merge([['type' => 'text', 'text' => $content]], $out['blocks']);
+            } elseif ($nav) {
                 $content = trim($result->content) !== '' ? $result->content : "Sure — here's {$nav['label']}.";
                 $blocks = [
                     ['type' => 'text', 'text' => $content],
@@ -152,6 +160,22 @@ class AeonService
         }
 
         return false;
+    }
+
+    /**
+     * First tool-call with the given name that is a registered data tool.
+     *
+     * @return array{name:string,args:array<string,mixed>}|null
+     */
+    private function firstNamedTool(AiChatResult $result, string $name): ?array
+    {
+        foreach ($result->toolCalls as $call) {
+            if (($call['name'] ?? '') === $name && $this->tools->dataTool($name)) {
+                return ['name' => $name, 'args' => (array) ($call['args'] ?? [])];
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import {
-  FormPageLayout,
   Field,
   Input,
   FileInput,
-  Button,
   HStack,
   VStack,
   Eyebrow,
@@ -16,6 +14,9 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
+import SettingsSection from '@/components/settings/SettingsSection.jsx';
 
 export default function Branding({ branding }) {
   const toast   = useToast();
@@ -53,17 +54,16 @@ export default function Branding({ branding }) {
   }
 
   return (
-    <FormPageLayout
-      title="Branding"
-      breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
-        { label: 'Settings' },
-        { label: 'Branding' },
-      ]}
-      description="Logo, favicon and brand colour configuration."
-      onSubmit={handleSubmit}
-    >
-      <VStack gap={6}>
+    <form onSubmit={handleSubmit}>
+      <SettingsSection
+        title="Branding"
+        description="Logo, favicon and brand colour configuration."
+        canEdit={canEdit}
+        dirty={form.isDirty}
+        processing={form.processing}
+        onReset={() => form.reset()}
+        onSave={handleSubmit}
+      >
 
         <Card>
           <CardBody>
@@ -166,17 +166,13 @@ export default function Branding({ branding }) {
           </CardBody>
         </Card>
 
-        {canEdit && (
-          <HStack gap={3}>
-            <Button type="submit" intent="primary" loading={form.processing} disabled={form.processing}>
-              Save Branding
-            </Button>
-          </HStack>
-        )}
-
-      </VStack>
-    </FormPageLayout>
+      </SettingsSection>
+    </form>
   );
 }
 
-Branding.layout = page => <App title="Branding">{page}</App>;
+Branding.layout = page => (
+  <App title="Platform Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="branding">{page}</SettingsLayout>
+  </App>
+);

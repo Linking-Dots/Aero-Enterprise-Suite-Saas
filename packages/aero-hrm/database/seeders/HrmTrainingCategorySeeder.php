@@ -4,6 +4,7 @@ namespace Aero\HRM\Database\Seeders;
 
 use Aero\HRM\Models\TrainingCategory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class HrmTrainingCategorySeeder extends Seeder
 {
@@ -23,7 +24,10 @@ class HrmTrainingCategorySeeder extends Seeder
         foreach ($categories as $category) {
             TrainingCategory::firstOrCreate(
                 ['name' => $category['name']],
-                array_merge($category, ['is_active' => true])
+                array_merge($category, [
+                    'slug' => Str::slug($category['name']),
+                    'is_active' => true,
+                ])
             );
         }
     }

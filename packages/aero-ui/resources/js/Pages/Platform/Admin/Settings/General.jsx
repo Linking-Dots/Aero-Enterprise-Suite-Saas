@@ -1,10 +1,8 @@
 import { useForm } from '@inertiajs/react';
 import {
-  FormPageLayout,
   Field,
   Input,
   Select,
-  Button,
   HStack,
   VStack,
   Eyebrow,
@@ -14,6 +12,9 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
+import SettingsSection from '@/components/settings/SettingsSection.jsx';
 
 const TIMEZONE_OPTIONS = [
   { value: 'UTC',            label: 'UTC' },
@@ -63,17 +64,16 @@ export default function General({ settings }) {
   }
 
   return (
-    <FormPageLayout
-      title="General Settings"
-      breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
-        { label: 'Settings' },
-        { label: 'General' },
-      ]}
-      description="Platform name, contact info, timezone and locale defaults."
-      onSubmit={handleSubmit}
-    >
-      <VStack gap={6}>
+    <form onSubmit={handleSubmit}>
+      <SettingsSection
+        title="General"
+        description="Platform name, contact info, timezone and locale defaults."
+        canEdit={canEdit}
+        dirty={form.isDirty}
+        processing={form.processing}
+        onReset={() => form.reset()}
+        onSave={handleSubmit}
+      >
 
         <Card>
           <CardBody>
@@ -196,17 +196,13 @@ export default function General({ settings }) {
           </CardBody>
         </Card>
 
-        {canEdit && (
-          <HStack gap={3}>
-            <Button type="submit" intent="primary" loading={form.processing} disabled={form.processing}>
-              Save General Settings
-            </Button>
-          </HStack>
-        )}
-
-      </VStack>
-    </FormPageLayout>
+      </SettingsSection>
+    </form>
   );
 }
 
-General.layout = page => <App title="General Settings">{page}</App>;
+General.layout = page => (
+  <App title="Platform Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="general">{page}</SettingsLayout>
+  </App>
+);

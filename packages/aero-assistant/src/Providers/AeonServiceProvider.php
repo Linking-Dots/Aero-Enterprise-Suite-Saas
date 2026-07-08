@@ -11,6 +11,10 @@ use Aero\Assistant\Services\IndexingService;
 use Aero\Assistant\Services\RagService;
 use Aero\Assistant\Data\QueryTool;
 use Aero\Assistant\Data\SchemaCatalog;
+use Aero\Assistant\Operations\FormSpecBuilder;
+use Aero\Assistant\Operations\OperationResolver;
+use Aero\Assistant\Operations\RulesIntrospector;
+use Aero\Assistant\Tools\PrepareOperationTool;
 use Aero\Assistant\Tools\ToolRegistry;
 use Aero\Contracts\Ai\AiProvider;
 use Aero\Contracts\Providers\AbstractModuleProvider;
@@ -45,7 +49,16 @@ class AeonServiceProvider extends AbstractModuleProvider
         // their own specialised 'aeon.tools' for curated answers.
         $this->app->singleton(SchemaCatalog::class);
         $this->app->singleton(QueryTool::class);
-        $this->app->tag([QueryTool::class], 'aeon.tools');
+
+        // The generic operation engine: introspects the app's own routes +
+        // validation to build a pre-filled form Aeon posts to the REAL endpoint
+        // (validation + HRMAC + audit all run on submit). One tool = any write.
+        $this->app->singleton(OperationResolver::class);
+        $this->app->singleton(RulesIntrospector::class);
+        $this->app->singleton(FormSpecBuilder::class);
+        $this->app->singleton(PrepareOperationTool::class);
+
+        $this->app->tag([QueryTool::class, PrepareOperationTool::class], 'aeon.tools');
         $this->app->singleton(ToolRegistry::class, fn ($app) => new ToolRegistry($app->tagged('aeon.tools')));
 
         $this->app->singleton(AeonService::class);

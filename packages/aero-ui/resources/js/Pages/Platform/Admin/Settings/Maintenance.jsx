@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import {
-  IndexPageLayout,
   Field,
-  Input,
   Textarea,
   Toggle,
   Button,
@@ -19,6 +17,9 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
+import SettingsSection from '@/components/settings/SettingsSection.jsx';
 
 export default function Maintenance({ maintenance }) {
   const toast     = useToast();
@@ -47,16 +48,10 @@ export default function Maintenance({ maintenance }) {
   }
 
   return (
-    <IndexPageLayout
-      title="Maintenance Mode"
-      breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
-        { label: 'Settings' },
-        { label: 'Maintenance' },
-      ]}
+    <SettingsSection
+      title="Maintenance"
       description="Put the platform in maintenance mode to block tenant access during upgrades."
     >
-      <VStack gap={6}>
 
         {enabled && (
           <Alert
@@ -118,9 +113,12 @@ export default function Maintenance({ maintenance }) {
           </CardBody>
         </Card>
 
-      </VStack>
-    </IndexPageLayout>
+    </SettingsSection>
   );
 }
 
-Maintenance.layout = page => <App title="Maintenance Mode">{page}</App>;
+Maintenance.layout = page => (
+  <App title="Platform Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="maintenance">{page}</SettingsLayout>
+  </App>
+);

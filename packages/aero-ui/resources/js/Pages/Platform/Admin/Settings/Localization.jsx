@@ -1,10 +1,8 @@
 import { useForm } from '@inertiajs/react';
 import {
-  FormPageLayout,
   Field,
   Input,
   Select,
-  Button,
   HStack,
   VStack,
   Eyebrow,
@@ -15,6 +13,9 @@ import {
   useHRMAC,
 } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import SettingsLayout from './SettingsLayout.jsx';
+import SettingsRail from './SettingsRail.jsx';
+import SettingsSection from '@/components/settings/SettingsSection.jsx';
 
 const LOCALE_OPTIONS = [
   { value: 'en',    label: 'English (en)' },
@@ -88,17 +89,16 @@ export default function Localization({ localization }) {
   }
 
   return (
-    <FormPageLayout
-      title="Localization"
-      breadcrumb={[
-        { label: 'Platform Admin', href: route('platform.admin.onboarding.dashboard') },
-        { label: 'Settings' },
-        { label: 'Localization' },
-      ]}
-      description="Default language, date format, timezone and calendar settings."
-      onSubmit={handleSubmit}
-    >
-      <VStack gap={6}>
+    <form onSubmit={handleSubmit}>
+      <SettingsSection
+        title="Localization"
+        description="Default language, date format, timezone and calendar settings."
+        canEdit={canEdit}
+        dirty={form.isDirty}
+        processing={form.processing}
+        onReset={() => form.reset()}
+        onSave={handleSubmit}
+      >
 
         <Card>
           <CardBody>
@@ -169,17 +169,13 @@ export default function Localization({ localization }) {
           </CardBody>
         </Card>
 
-        {canEdit && (
-          <HStack gap={3}>
-            <Button type="submit" intent="primary" loading={form.processing} disabled={form.processing}>
-              Save Localization
-            </Button>
-          </HStack>
-        )}
-
-      </VStack>
-    </FormPageLayout>
+      </SettingsSection>
+    </form>
   );
 }
 
-Localization.layout = page => <App title="Localization">{page}</App>;
+Localization.layout = page => (
+  <App title="Platform Settings" railTitle="Settings" rail={<SettingsRail />}>
+    <SettingsLayout active="localization">{page}</SettingsLayout>
+  </App>
+);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from './Markdown.jsx';
+import AeonForm from './AeonForm.jsx';
 
 // Reveals a markdown reply one letter at a time (eased) on first mount; markdown
 // renders progressively as it streams. Instant under reduced-motion. Calls
@@ -184,6 +185,8 @@ function Block({ block, onAction, animate, onAnimated }) {
           ))}
         </div>
       );
+    case 'form':
+      return <AeonForm block={block} onAction={onAction} />;
     case 'action': {
       const isNav = block.kind === 'navigate';
       return (
