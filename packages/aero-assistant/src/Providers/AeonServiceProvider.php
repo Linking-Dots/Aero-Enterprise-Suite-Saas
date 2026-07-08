@@ -10,6 +10,7 @@ use Aero\Assistant\Services\AeonService;
 use Aero\Assistant\Services\IndexingService;
 use Aero\Assistant\Services\RagService;
 use Aero\Assistant\Tools\ToolRegistry;
+use Aero\Assistant\Tools\UserStatsTool;
 use Aero\Contracts\Ai\AiProvider;
 use Aero\Contracts\Providers\AbstractModuleProvider;
 
@@ -37,7 +38,12 @@ class AeonServiceProvider extends AbstractModuleProvider
 
         $this->app->singleton(RagService::class);
         $this->app->singleton(IndexingService::class);
-        $this->app->singleton(ToolRegistry::class);
+
+        // Data tools Aeon can call (feature packages tag their own too).
+        $this->app->singleton(UserStatsTool::class);
+        $this->app->tag([UserStatsTool::class], 'aeon.tools');
+        $this->app->singleton(ToolRegistry::class, fn ($app) => new ToolRegistry($app->tagged('aeon.tools')));
+
         $this->app->singleton(AeonService::class);
     }
 

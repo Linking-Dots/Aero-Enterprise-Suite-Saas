@@ -45,6 +45,7 @@ class AeonService
 
             $nav = $this->firstValidNavigate($result);
             $navAttempted = $this->attemptedNavigate($result);
+            $dataTool = $nav ? null : $this->firstDataTool($result);
 
             if ($nav) {
                 $content = trim($result->content) !== '' ? $result->content : "Sure — here's {$nav['label']}.";
@@ -52,6 +53,10 @@ class AeonService
                     ['type' => 'text', 'text' => $content],
                     ['type' => 'action', 'kind' => 'navigate', 'title' => $nav['label'], 'route' => $nav['route'], 'confirm_label' => 'Open →'],
                 ];
+            } elseif ($dataTool) {
+                $out = $this->runDataTool($dataTool, $userId);
+                $content = $out['text'];
+                $blocks = array_merge([['type' => 'text', 'text' => $content]], $out['blocks']);
             } elseif ($navAttempted) {
                 $content = trim($result->content) !== ''
                     ? $result->content
@@ -141,6 +146,43 @@ class AeonService
         }
 
         return false;
+    }
+
+    /**
+     * First tool-call that matches a registered data tool.
+     *
+     * @return array{name:string,args:array<string,mixed>}|null
+     */
+    private function firstDataTool(AiChatResult $result): ?array
+    {
+        foreach ($result->toolCalls as $call) {
+            $name = $call['name'] ?? '';
+            if ($name !== 'navigate' && $this->tools->dataTool($name)) {
+                return ['name' => $name, 'args' => (array) ($call['args'] ?? [])];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array{name:string,args:array<string,mixed>}  $call
+     * @return array{text:string,blocks:array<int,array<string,mixed>>}
+     */
+    private function runDataTool(array $call, int $userId): array
+    {
+        try {
+            $result = $this->tools->dataTool($call['name'])->run($call['args'], $userId);
+
+            return [
+                'text' => (string) ($result['text'] ?? 'Here you go.'),
+                'blocks' => array_values((array) ($result['blocks'] ?? [])),
+            ];
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Aeon data tool failed', ['tool' => $call['name'], 'error' => $e->getMessage()]);
+
+            return ['text' => "I couldn't pull those numbers just now — please try again.", 'blocks' => []];
+        }
     }
 
     /**
