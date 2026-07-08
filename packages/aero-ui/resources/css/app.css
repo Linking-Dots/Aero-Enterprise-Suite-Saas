@@ -86,11 +86,12 @@ a {
 
 /* ── Aeon Living Console ───────────────────────────────────────── */
 /* Console = self-contained dark surface. We locally OVERRIDE the app's colour
-   tokens within the overlay so every Aeon rule resolves to dark-surface values
-   and stays readable under EVERY theme combo (e.g. light+midnight, where the app
-   text token flips dark while surfaces stay dark → black-on-dark). Accent
-   (--aeos-primary) and semantics (success/danger/warning) still inherit. */
-.aeon-overlay {
+   tokens on the console so every Aeon rule resolves to dark-surface values and
+   stays readable under EVERY theme combo (e.g. light+midnight, where the app
+   text token flips dark while surfaces stay dark → black-on-dark). Applies to
+   both the slide-over drawer and the full /aeon page. Accent (--aeos-primary)
+   and semantics (success/danger/warning) still inherit. */
+.aeon-console {
   --aeos-text-primary: #eaf1fa;
   --aeos-text-secondary: #93a1b5;
   --aeos-bg-elevated: #0c1119;
@@ -101,6 +102,16 @@ a {
   --aeos-glass-2: rgba(255,255,255,.08);
 }
 .aeon-overlay { position: fixed; inset: 0; z-index: var(--aeos-z-modal, 600); display: flex; justify-content: flex-end; }
+
+/* Full-page /aeon console */
+.aeon-page { display: flex; justify-content: center; }
+.aeon-console.is-page {
+  position: relative; width: 100%; max-width: 880px;
+  height: calc(100vh - var(--aeos-h-topbar, 3.5rem) - 3rem); min-height: 480px;
+  border: 1px solid var(--aeos-border-base); border-radius: var(--aeos-r-xl, 24px);
+  margin: 0 auto; animation: none;
+  box-shadow: 0 30px 90px -40px rgba(0,0,0,.6);
+}
 .aeon-backdrop { position: absolute; inset: 0; background: var(--aeos-backdrop, rgba(4,7,12,.55)); backdrop-filter: blur(3px); animation: aeon-fade .25s ease; }
 @keyframes aeon-fade { from { opacity: 0 } }
 .aeon-console {

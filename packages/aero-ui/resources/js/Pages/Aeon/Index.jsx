@@ -1,50 +1,50 @@
-import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
-import { Card, VStack, HStack, Input, Button, Heading, Text, EmptyState } from '@aero/ui';
+import React from 'react';
+import { Head, usePage, router } from '@inertiajs/react';
 import App from '@/Pages/App.jsx';
-import BlockRenderer from '@/aeon/BlockRenderer.jsx';
+import AeonAura from '@/aeon/AeonAura.jsx';
+import AeonCore from '@/aeon/AeonCore.jsx';
+import AeonConversation from '@/aeon/AeonConversation.jsx';
 import { useAeon } from '@/aeon/useAeon.js';
 
+// The dedicated /aeon page — the living console rendered full-height (same
+// engine + blocks as the drawer, via the shared AeonConversation).
 export default function AeonPage() {
   const aeon = useAeon();
-  const [draft, setDraft] = useState('');
+  const user = usePage().props?.auth?.user;
+  const state = aeon.sending ? 'thinking' : 'listening';
 
-  const submit = (e) => {
-    e.preventDefault();
-    aeon.send(draft);
-    setDraft('');
+  const onAction = (evt) => {
+    const route = evt?.block?.route;
+    if (route && (evt.kind === 'confirm' || evt.kind === 'navigate')) {
+      router.visit(route);
+    }
   };
 
   return (
     <>
       <Head title="Aeon" />
-      <VStack gap={4}>
-        <Heading>Aeon</Heading>
+      <div className="aeon-page">
+        <section className="aeon-console is-page">
+          <AeonAura />
+          <header className="aeon-head">
+            <div className="aeon-head-core"><AeonCore state={state} size={44} /></div>
+            <div className="aeon-head-id">
+              <span className="aeon-head-name">Aeon <span className="aeon-badge">AI</span></span>
+              <span className="aeon-status"><span className="aeon-status-dot" /> {aeon.sending ? 'Thinking…' : 'Online'}</span>
+            </div>
+          </header>
 
-        {aeon.messages.length === 0 ? (
-          <EmptyState title="Ask Aeon anything" description="Your AEOS365 AI assistant." />
-        ) : (
-          aeon.messages.map((m, i) => (
-            <Card key={i} className={`aeon-msg aeon-msg--${m.role}`}>
-              <BlockRenderer blocks={m.blocks} />
-            </Card>
-          ))
-        )}
-        {aeon.sending && <Text muted>Aeon is thinking…</Text>}
-
-        <form onSubmit={submit} className="aeon-composer">
-          <HStack gap={2}>
-            <Input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Message Aeon…"
-              disabled={aeon.sending}
-              aria-label="Message Aeon"
-            />
-            <Button type="submit" disabled={aeon.sending || !draft.trim()}>Send</Button>
-          </HStack>
-        </form>
-      </VStack>
+          <AeonConversation
+            messages={aeon.messages}
+            sending={aeon.sending}
+            onSend={aeon.send}
+            onAction={onAction}
+            user={user}
+            hasAnimated={aeon.hasAnimated}
+            markAnimated={aeon.markAnimated}
+          />
+        </section>
+      </div>
     </>
   );
 }
