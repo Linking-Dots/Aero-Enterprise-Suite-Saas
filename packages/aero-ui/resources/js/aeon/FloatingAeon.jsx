@@ -42,6 +42,8 @@ export default function FloatingAeon() {
         sending={aeon.sending}
         onSend={aeon.send}
         user={user}
+        hasAnimated={aeon.hasAnimated}
+        markAnimated={aeon.markAnimated}
       />
     </>
   );

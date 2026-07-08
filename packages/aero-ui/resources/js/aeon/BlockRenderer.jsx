@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import Markdown from './Markdown.jsx';
 
 // Reveals a markdown reply one letter at a time (eased) on first mount; markdown
-// renders progressively as it streams. Instant under reduced-motion.
-function TypewriterText({ text }) {
+// renders progressively as it streams. Instant under reduced-motion. Calls
+// onAnimated() once on mount so the reply is marked "typed" and never replays.
+function TypewriterText({ text, onAnimated }) {
   const full = text ?? '';
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const [n, setN] = useState(reduce ? full.length : 0);
   const done = n >= full.length;
 
   useEffect(() => {
+    onAnimated?.();
     if (reduce) { setN(full.length); return; }
     let i = 0;
     const id = setInterval(() => {
@@ -54,7 +56,7 @@ function Spark({ points = [], unit = '' }) {
   );
 }
 
-function Block({ block, onAction, animate }) {
+function Block({ block, onAction, animate, onAnimated }) {
   switch (block.type) {
     case 'stats':
       return (
@@ -115,16 +117,21 @@ function Block({ block, onAction, animate }) {
       );
     case 'text':
     default:
-      return animate ? <TypewriterText text={block.text ?? ''} /> : <Markdown text={block.text ?? ''} />;
+      return animate
+        ? <TypewriterText text={block.text ?? ''} onAnimated={onAnimated} />
+        : <Markdown text={block.text ?? ''} />;
   }
 }
 
 // Renders Aeon's generative-UI blocks into @aero/ui-styled components.
-// `animate` types text blocks in letter-by-letter (used for Aeon's replies).
-export default function BlockRenderer({ blocks = [], onAction, animate = false }) {
+// `animate` types text blocks in letter-by-letter (used for Aeon's replies);
+// onAnimated() fires once so a reply is never re-typed on re-open.
+export default function BlockRenderer({ blocks = [], onAction, animate = false, onAnimated }) {
   return (
     <div className="aeon-blocks">
-      {blocks.map((block, i) => <Block key={i} block={block} onAction={onAction} animate={animate} />)}
+      {blocks.map((block, i) => (
+        <Block key={i} block={block} onAction={onAction} animate={animate} onAnimated={onAnimated} />
+      ))}
     </div>
   );
 }

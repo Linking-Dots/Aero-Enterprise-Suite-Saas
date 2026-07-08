@@ -29,7 +29,7 @@ function UserAvatar({ user }) {
 
 // The Aeon "living console" — a slide-over with an ambient aura, an animated
 // core that reflects state, generative-UI message blocks, and a smart composer.
-export default function AeonDrawer({ isOpen, onClose, messages, sending, onSend, onAction, user }) {
+export default function AeonDrawer({ isOpen, onClose, messages, sending, onSend, onAction, user, hasAnimated, markAnimated }) {
   const [draft, setDraft] = useState('');
   const [expanded, setExpanded] = useState(false);
   const streamRef = useRef(null);
@@ -82,16 +82,29 @@ export default function AeonDrawer({ isOpen, onClose, messages, sending, onSend,
               <div className="aeon-empty-d">How do I add an employee? · Who's on leave this week? · Where are billing settings?</div>
             </div>
           ) : (
-            messages.map((m, i) => (
-              <div className={`aeon-turn ${m.role === 'user' ? 'is-me' : ''}`} key={i}>
-                <div className={`aeon-av ${m.role === 'user' ? 'is-me' : 'is-ai'}`}>
-                  {m.role === 'user' ? <UserAvatar user={user} /> : '✦'}
+            messages.map((m, i) => {
+              const key = m.id ?? i;
+              // Animate a reply exactly once: newest assistant message that hasn't
+              // typed yet. Re-opening the drawer won't replay old answers.
+              const animate = m.role !== 'user'
+                && i === messages.length - 1
+                && !(hasAnimated ? hasAnimated(key) : false);
+              return (
+                <div className={`aeon-turn ${m.role === 'user' ? 'is-me' : ''}`} key={key}>
+                  <div className={`aeon-av ${m.role === 'user' ? 'is-me' : 'is-ai'}`}>
+                    {m.role === 'user' ? <UserAvatar user={user} /> : '✦'}
+                  </div>
+                  <div className="aeon-bubble">
+                    <BlockRenderer
+                      blocks={m.blocks}
+                      onAction={onAction}
+                      animate={animate}
+                      onAnimated={() => markAnimated?.(key)}
+                    />
+                  </div>
                 </div>
-                <div className="aeon-bubble">
-                  <BlockRenderer blocks={m.blocks} onAction={onAction} animate={m.role !== 'user' && i === messages.length - 1} />
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
 
           {sending && (
