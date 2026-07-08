@@ -115,10 +115,10 @@ function Detail({ product }) {
     ['Marketplace', product.is_marketplace_visible ? 'Visible' : 'Hidden'],
   ];
   const path = [
-    <>Promoted to <b>Product</b> ({product.code})</>,
-    <>Bundles <b>{product.modules.length} module{product.modules.length === 1 ? '' : 's'}</b> via product_modules</>,
-    <>Active <b>subscription</b> → subscribed_product_modules</>,
-    <>Resolved by <b>ModuleEntitlementService</b>, nav-gated live</>,
+    <>Promoted to a <b>Product</b></>,
+    <>Bundles <b>{product.modules.length} module{product.modules.length === 1 ? '' : 's'}</b></>,
+    <>Granted by an active <b>subscription</b></>,
+    <>Resolved &amp; <b>nav-gated</b> live</>,
   ];
   return (
     <Card>
