@@ -187,6 +187,15 @@ a {
 .aeon-entity-field { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; background: var(--aeos-bg-elevated, #0c1119); }
 .aeon-entity-k { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--aeos-text-secondary, #93a1b5); }
 .aeon-entity-v { font-size: 13px; color: var(--aeos-text-primary, #eaf1fa); word-break: break-word; }
+.aeon-donutcard { border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); background: var(--aeos-glass, rgba(255,255,255,.05)); border-radius: 14px; padding: 12px 13px; }
+.aeon-donut-wrap { display: flex; align-items: center; gap: 16px; margin-top: 6px; }
+.aeon-donut { width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; -webkit-mask: radial-gradient(circle 26px at center, transparent 98%, #000 100%); mask: radial-gradient(circle 26px at center, transparent 98%, #000 100%); }
+.aeon-donut-hole { color: var(--aeos-text-primary, #eaf1fa); font-variant-numeric: tabular-nums; font-size: 18px; }
+.aeon-donut-legend { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; }
+.aeon-donut-leg { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; font-size: 12.5px; }
+.aeon-donut-dot { width: 9px; height: 9px; border-radius: 3px; }
+.aeon-donut-l { color: var(--aeos-text-primary, #eaf1fa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; }
+.aeon-donut-v { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 12px; color: var(--aeos-text-secondary, #93a1b5); font-variant-numeric: tabular-nums; }
 .aeon-barcard { border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); background: var(--aeos-glass, rgba(255,255,255,.05)); border-radius: 14px; padding: 12px 13px; }
 .aeon-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .aeon-bar-row { display: grid; grid-template-columns: minmax(64px, 34%) 1fr auto; align-items: center; gap: 10px; }

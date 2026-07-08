@@ -102,6 +102,37 @@ function Block({ block, onAction, animate, onAnimated }) {
         </div>
       );
     }
+    case 'donut': {
+      const items = block.items || [];
+      const total = items.reduce((s, it) => s + (Number(it.value) || 0), 0) || 1;
+      const colors = ['var(--aeos-primary, #22e3ff)', '#8c6bff', '#ff66c4', '#37e2a0', '#ffc24b', '#4dd0e1', '#93a1b5'];
+      let acc = 0;
+      const stops = items.map((it, i) => {
+        const start = (acc / total) * 100;
+        acc += Number(it.value) || 0;
+        const end = (acc / total) * 100;
+        return `${colors[i % colors.length]} ${start}% ${end}%`;
+      }).join(', ');
+      return (
+        <div className="aeon-donutcard">
+          {block.title ? <div className="aeon-chart-h"><span>{block.title}</span></div> : null}
+          <div className="aeon-donut-wrap">
+            <div className="aeon-donut" style={{ background: `conic-gradient(${stops})` }}>
+              <div className="aeon-donut-hole"><b>{total}</b></div>
+            </div>
+            <div className="aeon-donut-legend">
+              {items.map((it, i) => (
+                <div className="aeon-donut-leg" key={i}>
+                  <span className="aeon-donut-dot" style={{ background: colors[i % colors.length] }} />
+                  <span className="aeon-donut-l" title={it.label}>{it.label}</span>
+                  <span className="aeon-donut-v">{it.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
     case 'bar': {
       const items = block.items || [];
       const max = Math.max(1, ...items.map((it) => Number(it.value) || 0));

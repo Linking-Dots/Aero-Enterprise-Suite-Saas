@@ -73,6 +73,17 @@ class QueryToolTest extends PackageTestCase
         ]);
     }
 
+    public function test_group_by_with_donut_chart(): void
+    {
+        $out = (new QueryTool($this->catalog()))->run(
+            ['entity' => 'aeon_test_widgets', 'operation' => 'count', 'group_by' => 'status', 'chart' => 'donut'],
+            1,
+        );
+        $donut = (new Collection($out['blocks']))->firstWhere('type', 'donut');
+        $this->assertNotNull($donut);
+        $this->assertSame(['label' => 'open', 'value' => 2], $donut['items'][0]);
+    }
+
     public function test_group_by_foreign_key_resolves_related_names(): void
     {
         $out = (new QueryTool($this->catalog()))->run(

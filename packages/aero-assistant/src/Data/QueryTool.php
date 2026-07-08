@@ -53,6 +53,7 @@ class QueryTool implements AeonToolContract
             'entity' => ['type' => 'string', 'description' => 'Table/entity to query, e.g. hrm_leave_applications'],
             'operation' => ['type' => 'string', 'enum' => ['count', 'aggregate', 'list', 'find'], 'description' => 'count rows, aggregate a numeric column, list rows, or find ONE record (use with a name filter) to show its details as a card'],
             'group_by' => ['type' => 'string', 'description' => 'Optional column to group counts by, e.g. status'],
+            'chart' => ['type' => 'string', 'enum' => ['bar', 'donut'], 'description' => 'How to visualise a group_by: bar (ranking) or donut (share/proportion). Default bar.'],
             'column' => ['type' => 'string', 'description' => 'Numeric column for aggregate'],
             'aggregate' => ['type' => 'string', 'enum' => ['sum', 'avg', 'min', 'max']],
             'period' => ['type' => 'string', 'enum' => ['today', 'last_7_days', 'last_30_days', 'this_month', 'all_time']],
@@ -107,14 +108,17 @@ class QueryTool implements AeonToolContract
                 return $this->find($query, $entity, $label);
             }
 
-            return $this->count($query, $entity, $label, $groupBy, $dateField, $period);
+            $chartArg = (string) ($args['chart'] ?? 'bar');
+            $chart = in_array($chartArg, ['bar', 'donut'], true) ? $chartArg : 'bar';
+
+            return $this->count($query, $entity, $label, $groupBy, $dateField, $period, $chart);
         } catch (\Throwable $e) {
             return $this->fail("I couldn't run that on {$label} — ".Str::limit($e->getMessage(), 80));
         }
     }
 
     /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
-    private function count($query, array $entity, string $label, ?string $groupBy, ?string $dateField, string $period): array
+    private function count($query, array $entity, string $label, ?string $groupBy, ?string $dateField, string $period, string $chart = 'bar'): array
     {
         if ($groupBy) {
             if ($this->catalog->isSensitive($groupBy)) {
@@ -136,7 +140,7 @@ class QueryTool implements AeonToolContract
                 'text' => "**{$total}** {$label} in total, by ".Str::headline($this->dimensionLabel($groupBy)).':',
                 'blocks' => [
                     ['type' => 'stats', 'items' => [['k' => $label.$this->periodSuffix($period), 'v' => (string) $total]]],
-                    ['type' => 'bar', 'title' => Str::headline($label).' by '.Str::headline($this->dimensionLabel($groupBy)), 'items' => $items],
+                    ['type' => $chart, 'title' => Str::headline($label).' by '.Str::headline($this->dimensionLabel($groupBy)), 'items' => $items],
                 ],
             ];
         }
