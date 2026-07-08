@@ -9,6 +9,7 @@ use Aero\Assistant\Providers\Models\GeminiProvider;
 use Aero\Assistant\Services\AeonService;
 use Aero\Assistant\Services\IndexingService;
 use Aero\Assistant\Services\RagService;
+use Aero\Assistant\Tools\ToolRegistry;
 use Aero\Contracts\Ai\AiProvider;
 use Aero\Contracts\Providers\AbstractModuleProvider;
 
@@ -36,6 +37,7 @@ class AeonServiceProvider extends AbstractModuleProvider
 
         $this->app->singleton(RagService::class);
         $this->app->singleton(IndexingService::class);
+        $this->app->singleton(ToolRegistry::class);
         $this->app->singleton(AeonService::class);
     }
 

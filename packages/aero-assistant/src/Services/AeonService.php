@@ -6,13 +6,19 @@ namespace Aero\Assistant\Services;
 
 use Aero\Assistant\Models\Conversation;
 use Aero\Assistant\Models\Message;
+use Aero\Assistant\Tools\ToolRegistry;
+use Aero\Contracts\Ai\AiChatResult;
 use Aero\Contracts\Ai\AiProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AeonService
 {
-    public function __construct(private AiProvider $provider, private RagService $rag) {}
+    public function __construct(
+        private AiProvider $provider,
+        private RagService $rag,
+        private ToolRegistry $tools,
+    ) {}
 
     /**
      * Run one chat turn: persist the user message, call the model, persist the
@@ -32,16 +38,34 @@ class AeonService
 
             $chunks = $this->rag->retrieve($text);
 
-            $result = $this->provider->chat($this->buildHistory($conversation, $context, $chunks));
+            $result = $this->provider->chat(
+                $this->buildHistory($conversation, $context, $chunks),
+                $this->tools->declarations(),
+            );
 
-            $content = $result->success
-                ? $result->content
-                : 'Sorry — Aeon is temporarily unavailable. Please try again.';
+            $nav = $this->firstValidNavigate($result);
+            $navAttempted = $this->attemptedNavigate($result);
 
-            $blocks = [['type' => 'text', 'text' => $content]];
-            if ($result->success && ! empty($chunks)) {
-                $titles = array_values(array_unique(array_map(static fn ($c) => $c['title'], $chunks)));
-                $blocks[] = ['type' => 'chips', 'variant' => 'source', 'items' => $titles];
+            if ($nav) {
+                $content = trim($result->content) !== '' ? $result->content : "Sure — here's {$nav['label']}.";
+                $blocks = [
+                    ['type' => 'text', 'text' => $content],
+                    ['type' => 'action', 'kind' => 'navigate', 'title' => $nav['label'], 'route' => $nav['route'], 'confirm_label' => 'Open →'],
+                ];
+            } elseif ($navAttempted) {
+                $content = trim($result->content) !== ''
+                    ? $result->content
+                    : "I'm not certain which page you mean — tell me the section (e.g. Human Resources → Time & Attendance) and I'll take you there.";
+                $blocks = [['type' => 'text', 'text' => $content]];
+            } else {
+                $content = $result->success
+                    ? (trim($result->content) !== '' ? $result->content : 'Okay.')
+                    : 'Sorry — Aeon is temporarily unavailable. Please try again.';
+                $blocks = [['type' => 'text', 'text' => $content]];
+                if ($result->success && ! empty($chunks)) {
+                    $titles = array_values(array_unique(array_map(static fn ($c) => $c['title'], $chunks)));
+                    $blocks[] = ['type' => 'chips', 'variant' => 'source', 'items' => $titles];
+                }
             }
 
             $reply = $conversation->messages()->create([
@@ -83,6 +107,40 @@ class AeonService
         }
 
         return $messages;
+    }
+
+    /**
+     * First navigate tool-call whose route is real (validated against the module registry).
+     *
+     * @return array{route:string,label:string}|null
+     */
+    private function firstValidNavigate(AiChatResult $result): ?array
+    {
+        foreach ($result->toolCalls as $call) {
+            if (($call['name'] ?? '') !== 'navigate') {
+                continue;
+            }
+            $route = $call['args']['route'] ?? null;
+            if ($this->tools->isValidRoute($route)) {
+                return [
+                    'route' => $route,
+                    'label' => $call['args']['label'] ?? ($this->tools->labelForRoute($route) ?? 'the page'),
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    private function attemptedNavigate(AiChatResult $result): bool
+    {
+        foreach ($result->toolCalls as $call) {
+            if (($call['name'] ?? '') === 'navigate') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

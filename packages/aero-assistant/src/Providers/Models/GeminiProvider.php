@@ -50,6 +50,9 @@ class GeminiProvider implements AiProvider
         if ($system) {
             $payload['systemInstruction'] = ['parts' => [['text' => $system]]];
         }
+        if (! empty($tools)) {
+            $payload['tools'] = $tools;
+        }
 
         // Try the primary model, then fall back to alternates when a model is
         // rate-limited (429) or overloaded (503) — Google throttles/overloads
@@ -85,10 +88,23 @@ class GeminiProvider implements AiProvider
                 }
 
                 $json = $res->json();
-                $text = data_get($json, 'candidates.0.content.parts.0.text', '');
+                $parts = (array) data_get($json, 'candidates.0.content.parts', []);
+                $text = '';
+                $toolCalls = [];
+                foreach ($parts as $p) {
+                    if (isset($p['text'])) {
+                        $text .= $p['text'];
+                    }
+                    if (isset($p['functionCall'])) {
+                        $toolCalls[] = [
+                            'name' => (string) ($p['functionCall']['name'] ?? ''),
+                            'args' => (array) ($p['functionCall']['args'] ?? []),
+                        ];
+                    }
+                }
                 $tokens = (int) data_get($json, 'usageMetadata.totalTokenCount', 0);
 
-                return new AiChatResult(content: (string) $text, tokensUsed: $tokens, model: $model);
+                return new AiChatResult(content: $text, toolCalls: $toolCalls, tokensUsed: $tokens, model: $model);
             } catch (\Throwable $e) {
                 Log::error('Aeon GeminiProvider chat failed', ['model' => $model, 'error' => $e->getMessage()]);
                 $lastStatus = $lastStatus ?? 0;
