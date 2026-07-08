@@ -85,22 +85,11 @@ a {
 .aeon-fab:hover { opacity: 1; }
 
 /* ── Aeon Living Console ───────────────────────────────────────── */
-/* Console = self-contained dark surface. We locally OVERRIDE the app's colour
-   tokens on the console so every Aeon rule resolves to dark-surface values and
-   stays readable under EVERY theme combo (e.g. light+midnight, where the app
-   text token flips dark while surfaces stay dark → black-on-dark). Applies to
-   both the slide-over drawer and the full /aeon page. Accent (--aeos-primary)
-   and semantics (success/danger/warning) still inherit. */
-.aeon-console {
-  --aeos-text-primary: #eaf1fa;
-  --aeos-text-secondary: #93a1b5;
-  --aeos-bg-elevated: #0c1119;
-  --aeos-bg-base: #080b11;
-  --aeos-border-base: rgba(255,255,255,.10);
-  --aeos-border-strong: rgba(255,255,255,.17);
-  --aeos-glass: rgba(255,255,255,.05);
-  --aeos-glass-2: rgba(255,255,255,.08);
-}
+/* The console is fully Theme-Studio reactive: it uses the app's own surface,
+   text, border, glass and radius tokens, so it flips light/dark and follows
+   card-style/radius/borders/accent exactly like every other surface. The glass
+   fallbacks below are neutral (theme-agnostic alphas) so they read on both light
+   and dark grounds when a token is undefined. */
 .aeon-overlay { position: fixed; inset: 0; z-index: var(--aeos-z-modal, 600); display: flex; justify-content: flex-end; }
 
 /* Full-page /aeon console */
@@ -117,7 +106,7 @@ a {
 .aeon-console {
   position: relative; z-index: 1; width: min(460px, 100vw); height: 100%;
   display: flex; flex-direction: column; overflow: hidden;
-  background: linear-gradient(180deg, var(--aeos-bg-elevated, #0c1119), var(--aeos-bg-base, #080b11));
+  background: var(--aeos-bg-elevated, #0c1119);
   border-left: 1px solid var(--aeos-border-base, rgba(255,255,255,.1));
   box-shadow: -30px 0 80px -30px rgba(0,0,0,.7);
   animation: aeon-slide .32s cubic-bezier(.2,.8,.2,1);
@@ -125,7 +114,7 @@ a {
 }
 .aeon-console.is-expanded { width: min(860px, 100vw); }
 @keyframes aeon-slide { from { transform: translateX(30px); opacity: .4 } }
-.aeon-aura { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .9; pointer-events: none; }
+.aeon-aura { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .55; pointer-events: none; }
 .aeon-console > *:not(.aeon-aura) { position: relative; z-index: 1; }
 
 .aeon-head { display: flex; align-items: center; gap: 13px; padding: 15px 17px; border-bottom: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); background: linear-gradient(180deg, rgba(255,255,255,.03), transparent); }
