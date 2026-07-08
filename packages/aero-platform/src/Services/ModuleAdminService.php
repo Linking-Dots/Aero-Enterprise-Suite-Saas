@@ -58,23 +58,4 @@ class ModuleAdminService
             return $module->refresh();
         });
     }
-
-    public function updatePricing(Module $module, float $monthly, float $annual): Module
-    {
-        return DB::transaction(function () use ($module, $monthly, $annual) {
-            $module->update([
-                'price_monthly' => $monthly,
-                'price_annual' => $annual,
-            ]);
-
-            $this->audit->log(
-                event: 'platform.modules.pricing_updated',
-                action: 'edit',
-                subject: $module,
-                description: "Module {$module->code} pricing: monthly={$monthly}, annual={$annual}",
-            );
-
-            return $module->refresh();
-        });
-    }
 }

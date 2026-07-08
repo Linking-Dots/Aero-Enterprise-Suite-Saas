@@ -1458,8 +1458,9 @@ Route::middleware('admin.domain')->group(function () {
                 ->post('/{module}/toggle', [ModuleAdminController::class, 'toggle'])->name('toggle');
             Route::middleware('hrmac:module-management.module-list.configure')
                 ->put('/{module}/config', [ModuleAdminController::class, 'configure'])->name('configure');
-            Route::middleware('hrmac:module-management.module-pricing.edit')
-                ->put('/{module}/pricing', [ModuleAdminController::class, 'updatePricing'])->name('pricing');
+            // Pricing lives on the Products (Catalog) page now — the vestigial
+            // per-module pricing editor (writing non-billed modules.price_* columns)
+            // was retired. See platform.admin.products.*.
 
             // Per-role module-access data contract for the shared RBAC access Drawer
             // (platform context). Backed by the shared aero-hrmac ModuleController.

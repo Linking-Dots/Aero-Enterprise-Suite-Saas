@@ -52,16 +52,4 @@ class ModuleAdminController extends Controller
 
         return back()->with('success', 'Module configured.');
     }
-
-    public function updatePricing(Request $request, Module $module): RedirectResponse
-    {
-        $data = $request->validate([
-            'price_monthly' => ['required', 'numeric', 'min:0'],
-            'price_annual' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $this->svc->updatePricing($module, (float) $data['price_monthly'], (float) $data['price_annual']);
-
-        return back()->with('success', 'Pricing updated.');
-    }
 }
