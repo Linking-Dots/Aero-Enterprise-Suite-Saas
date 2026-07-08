@@ -6,15 +6,21 @@ namespace Aero\Platform\Services;
 
 use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
+use Aero\Platform\Mail\Subscription\PaymentReminderMail;
 use Aero\Platform\Models\Invoice;
 use Aero\Platform\Models\ProductSubscription;
+use Aero\Platform\Models\Refund;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class InvoiceAdminService
 {
@@ -23,10 +29,16 @@ class InvoiceAdminService
     ) {}
 
     /**
-     * Unified command-centre payload: normalised invoices (tenant names resolved)
-     * + collection stats. Guard-free query builder.
+     * Unified command-centre payload: normalised invoices (tenant names
+     * resolved) + collection stats, AR aging, collections trend, KPI
+     * sparklines and the subscription list for guided generation. Guard-free
+     * query builder so it's context-agnostic.
      *
-     * @return array{stats: array, invoices: array}
+     * The DB uses `open` for a sent-unpaid invoice while the Invoice model
+     * constant is `issued`; both are normalised to `open` here so the surface
+     * has one vocabulary.
+     *
+     * @return array{stats: array, invoices: array, aging: array, trend: array, sparks: array, subscriptions: array}
      */
     public function overview(): array
     {
@@ -34,23 +46,71 @@ class InvoiceAdminService
             ->leftJoin('tenants as t', 't.id', '=', 'i.billable_id')
             ->whereNull('i.deleted_at')
             ->orderByDesc('i.created_at')
-            ->limit(300)
-            ->get(['i.id', 'i.invoice_number', 't.name as tenant', 'i.status', 'i.total',
-                'i.amount_due', 'i.billing_period_start', 'i.billing_period_end', 'i.due_date', 'i.paid_at'])
-            ->map(fn ($r) => [
-                'id'           => (string) $r->id,
-                'number'       => $r->invoice_number ?: ('#'.substr((string) $r->id, 0, 8)),
-                'tenant'       => $r->tenant ?: '—',
-                'status'       => $r->status,
-                'total'        => (float) $r->total,
-                'amount_due'   => (float) $r->amount_due,
-                'period_start' => $r->billing_period_start,
-                'period_end'   => $r->billing_period_end,
-                'due_date'     => $r->due_date,
-                'paid_at'      => $r->paid_at,
+            ->limit(500)
+            ->get(['i.id', 'i.invoice_number', 'i.reference', 't.name as tenant', 'i.billable_id as tenant_id',
+                'i.status', 'i.subtotal', 'i.discount_amount', 'i.tax_amount', 'i.total',
+                'i.amount_paid', 'i.amount_due', 'i.currency', 'i.payment_method',
+                'i.billing_period_start', 'i.billing_period_end', 'i.due_date', 'i.paid_at', 'i.created_at'])
+            ->map(function ($r) {
+                $status = $r->status === 'issued' ? 'open' : $r->status;
+                $unpaid = in_array($status, ['open', 'overdue'], true);
+                // (now − due): positive ⇒ days past due; only meaningful while unpaid.
+                $daysOverdue = ($unpaid && $r->due_date !== null)
+                    ? (int) Carbon::parse($r->due_date)->startOfDay()->diffInDays(now()->startOfDay(), false)
+                    : null;
+                $daysToPay = ($status === 'paid' && $r->paid_at !== null)
+                    ? (int) Carbon::parse($r->created_at)->startOfDay()->diffInDays(Carbon::parse($r->paid_at)->startOfDay(), false)
+                    : null;
+
+                return [
+                    'id'            => (string) $r->id,
+                    'number'        => $r->invoice_number ?: ($r->reference ?: '#'.substr((string) $r->id, 0, 8)),
+                    'reference'     => $r->reference,
+                    'tenant'        => $r->tenant ?: '—',
+                    'tenant_id'     => (string) $r->tenant_id,
+                    'status'        => $status,
+                    'subtotal'      => (float) $r->subtotal,
+                    'discount'      => (float) $r->discount_amount,
+                    'tax'           => (float) $r->tax_amount,
+                    'total'         => (float) $r->total,
+                    'amount_paid'   => (float) $r->amount_paid,
+                    'amount_due'    => (float) $r->amount_due,
+                    'currency'      => $r->currency ?: 'USD',
+                    'method'        => $r->payment_method,
+                    'period_start'  => $r->billing_period_start,
+                    'period_end'    => $r->billing_period_end,
+                    'due_date'      => $r->due_date,
+                    'paid_at'       => $r->paid_at,
+                    'created_at'    => $r->created_at,
+                    'days_overdue'  => ($daysOverdue !== null && $daysOverdue > 0) ? $daysOverdue : 0,
+                    'days_to_pay'   => $daysToPay,
+                ];
+            })->all();
+
+        // Subscriptions available for guided invoice generation.
+        $subscriptions = DB::table('subscriptions as s')
+            ->leftJoin('plans as p', 'p.id', '=', 's.plan_id')
+            ->leftJoin('tenants as t', 't.id', '=', 's.tenant_id')
+            ->whereNull('s.deleted_at')
+            ->whereIn('s.status', ['active', 'trialing', 'past_due'])
+            ->orderBy('t.name')
+            ->limit(500)
+            ->get(['s.id', 't.name as tenant', 'p.name as plan', 'p.price_monthly'])
+            ->map(fn ($s) => [
+                'id'     => (string) $s->id,
+                'tenant' => $s->tenant ?: '—',
+                'plan'   => $s->plan ?: 'No plan',
+                'price'  => (float) ($s->price_monthly ?? 0),
             ])->all();
 
-        return ['stats' => $this->invoiceStats($rows), 'invoices' => $rows];
+        return [
+            'stats'         => $this->invoiceStats($rows),
+            'invoices'      => $rows,
+            'aging'         => $this->buildAging($rows),
+            'trend'         => $this->buildTrend($rows),
+            'sparks'        => $this->buildSparks($rows),
+            'subscriptions' => $subscriptions,
+        ];
     }
 
     /**
@@ -65,17 +125,178 @@ class InvoiceAdminService
         $paid = fn ($r) => $r['status'] === 'paid';
         $open = fn ($r) => $r['status'] === 'open';
         $overdue = fn ($r) => $r['status'] === 'overdue';
+        $void = fn ($r) => $r['status'] === 'void';
         $total = max(1, count($rows));
 
+        $paidRows = array_filter($rows, fn ($r) => $r['days_to_pay'] !== null);
+        $avgDays = count($paidRows) > 0
+            ? (int) round(array_sum(array_map(fn ($r) => $r['days_to_pay'], $paidRows)) / count($paidRows))
+            : 0;
+
         return [
-            'collected'   => round($sumWhere($paid, 'total'), 2),
-            'outstanding' => round($sumWhere(fn ($r) => $open($r) || $overdue($r), 'amount_due'), 2),
-            'overdue_amt' => round($sumWhere($overdue, 'amount_due'), 2),
-            'overdue'     => $countWhere($overdue),
-            'open'        => $countWhere($open),
-            'paid'        => $countWhere($paid),
-            'total'       => count($rows),
-            'paid_rate'   => (int) round($countWhere($paid) / $total * 100),
+            'collected'      => round($sumWhere($paid, 'amount_paid'), 2),
+            'outstanding'    => round($sumWhere(fn ($r) => $open($r) || $overdue($r), 'amount_due'), 2),
+            'overdue_amt'    => round($sumWhere($overdue, 'amount_due'), 2),
+            'tax_total'      => round($sumWhere(fn () => true, 'tax'), 2),
+            'overdue'        => $countWhere($overdue),
+            'open'           => $countWhere($open),
+            'paid'           => $countWhere($paid),
+            'void'           => $countWhere($void),
+            'total'          => count($rows),
+            'paid_rate'      => (int) round($countWhere($paid) / $total * 100),
+            'avg_days_to_pay' => $avgDays,
+        ];
+    }
+
+    /**
+     * AR aging buckets from unpaid invoices' outstanding balance, keyed by how
+     * far each is past its due date. Pure derivation from real due_date +
+     * amount_due — no synthetic figures.
+     *
+     * @param  array<int, array>  $rows
+     * @return array<int, array{label: string, amount: float, count: int}>
+     */
+    private function buildAging(array $rows): array
+    {
+        $buckets = [
+            ['label' => 'Current', 'min' => PHP_INT_MIN, 'max' => 0, 'amount' => 0.0, 'count' => 0],
+            ['label' => '1–30 days', 'min' => 1, 'max' => 30, 'amount' => 0.0, 'count' => 0],
+            ['label' => '31–60 days', 'min' => 31, 'max' => 60, 'amount' => 0.0, 'count' => 0],
+            ['label' => '61–90 days', 'min' => 61, 'max' => 90, 'amount' => 0.0, 'count' => 0],
+            ['label' => '90+ days', 'min' => 91, 'max' => PHP_INT_MAX, 'amount' => 0.0, 'count' => 0],
+        ];
+
+        foreach ($rows as $r) {
+            if (! in_array($r['status'], ['open', 'overdue'], true) || $r['amount_due'] <= 0) {
+                continue;
+            }
+            $d = $r['days_overdue'];
+            foreach ($buckets as $i => $b) {
+                if ($d >= $b['min'] && $d <= $b['max']) {
+                    $buckets[$i]['amount'] += $r['amount_due'];
+                    $buckets[$i]['count']++;
+                    break;
+                }
+            }
+        }
+
+        return array_map(fn ($b) => [
+            'label'  => $b['label'],
+            'amount' => round($b['amount'], 2),
+            'count'  => $b['count'],
+        ], $buckets);
+    }
+
+    /**
+     * Build the trailing-6-month window (ending at the latest invoice month)
+     * as [Carbon startOfMonth, …].
+     *
+     * @param  array<int, array>  $rows
+     * @return array<int, Carbon>
+     */
+    private function monthWindow(array $rows): array
+    {
+        $latest = null;
+        foreach ($rows as $r) {
+            if ($r['created_at'] !== null) {
+                $c = Carbon::parse($r['created_at']);
+                if ($latest === null || $c->gt($latest)) {
+                    $latest = $c;
+                }
+            }
+        }
+        $end = ($latest ?? now())->copy()->startOfMonth();
+
+        return array_map(fn ($i) => $end->copy()->subMonths($i), range(5, 0));
+    }
+
+    /**
+     * Collections trend: billed (by issue month) vs collected (by paid month),
+     * last 6 months.
+     *
+     * @param  array<int, array>  $rows
+     * @return array{labels: array, billed: array, collected: array}
+     */
+    private function buildTrend(array $rows): array
+    {
+        $months = $this->monthWindow($rows);
+        $keys = array_map(fn ($m) => $m->format('Y-m'), $months);
+        $billed = array_fill_keys($keys, 0.0);
+        $collected = array_fill_keys($keys, 0.0);
+
+        foreach ($rows as $r) {
+            if ($r['created_at'] !== null) {
+                $k = Carbon::parse($r['created_at'])->format('Y-m');
+                if (isset($billed[$k])) {
+                    $billed[$k] += $r['total'];
+                }
+            }
+            if ($r['paid_at'] !== null) {
+                $k = Carbon::parse($r['paid_at'])->format('Y-m');
+                if (isset($collected[$k])) {
+                    $collected[$k] += $r['amount_paid'];
+                }
+            }
+        }
+
+        return [
+            'labels'    => array_map(fn ($m) => $m->format('M'), $months),
+            'billed'    => array_map(fn ($v) => round($v, 2), array_values($billed)),
+            'collected' => array_map(fn ($v) => round($v, 2), array_values($collected)),
+        ];
+    }
+
+    /**
+     * KPI sparkline series (6 months): collected, outstanding, overdue amount,
+     * paid-rate %. Every point derives from the real per-month row set.
+     *
+     * @param  array<int, array>  $rows
+     * @return array{collected: array, outstanding: array, overdue: array, paid_rate: array}
+     */
+    private function buildSparks(array $rows): array
+    {
+        $months = $this->monthWindow($rows);
+        $keys = array_map(fn ($m) => $m->format('Y-m'), $months);
+        $collected = array_fill_keys($keys, 0.0);
+        $billed = array_fill_keys($keys, 0.0);
+        $overdue = array_fill_keys($keys, 0.0);
+        $paidCount = array_fill_keys($keys, 0);
+        $totalCount = array_fill_keys($keys, 0);
+
+        foreach ($rows as $r) {
+            if ($r['created_at'] !== null) {
+                $k = Carbon::parse($r['created_at'])->format('Y-m');
+                if (isset($billed[$k])) {
+                    $billed[$k] += $r['total'];
+                    $totalCount[$k]++;
+                    if ($r['status'] === 'paid') {
+                        $paidCount[$k]++;
+                    }
+                    if ($r['status'] === 'overdue') {
+                        $overdue[$k] += $r['amount_due'];
+                    }
+                }
+            }
+            if ($r['paid_at'] !== null) {
+                $k = Carbon::parse($r['paid_at'])->format('Y-m');
+                if (isset($collected[$k])) {
+                    $collected[$k] += $r['amount_paid'];
+                }
+            }
+        }
+
+        $outstanding = [];
+        $paidRate = [];
+        foreach ($keys as $k) {
+            $outstanding[] = round(max(0, $billed[$k] - $collected[$k]), 2);
+            $paidRate[] = $totalCount[$k] > 0 ? (int) round($paidCount[$k] / $totalCount[$k] * 100) : 0;
+        }
+
+        return [
+            'collected'   => array_map(fn ($v) => round($v, 2), array_values($collected)),
+            'outstanding' => $outstanding,
+            'overdue'     => array_map(fn ($v) => round($v, 2), array_values($overdue)),
+            'paid_rate'   => $paidRate,
         ];
     }
 
@@ -277,6 +498,243 @@ class InvoiceAdminService
 
             return $invoice->fresh();
         });
+    }
+
+    /**
+     * Drawer detail: line items, payment history, refunds and audit activity.
+     * Every read is guarded so a missing table can't 500 the drawer.
+     *
+     * @return array{line_items: array, payments: array, refunds: array, activity: array, totals: array}
+     */
+    public function detail(string $id): array
+    {
+        $invoice = DB::table('invoices')->where('id', $id)->first();
+        abort_if($invoice === null, 404);
+
+        $lineItems = DB::table('invoice_line_items')
+            ->where('invoice_id', $id)
+            ->orderBy('sort_order')
+            ->get(['type', 'description', 'quantity', 'unit_price', 'amount', 'discount'])
+            ->map(fn ($l) => [
+                'type'        => $l->type,
+                'description' => $l->description,
+                'quantity'    => (int) $l->quantity,
+                'unit_price'  => (float) $l->unit_price,
+                'amount'      => (float) $l->amount,
+                'discount'    => (float) ($l->discount ?? 0),
+            ])->all();
+
+        // Payment history: the settled payment (paid_at) plus any refunds as
+        // signed movements. There is no separate payments ledger yet, so this
+        // reflects exactly what the invoice + refunds tables record.
+        $payments = [];
+        if ($invoice->paid_at !== null && (float) $invoice->amount_paid > 0) {
+            $payments[] = [
+                'kind'   => 'payment',
+                'amount' => (float) $invoice->amount_paid,
+                'method' => $invoice->payment_method,
+                'at'     => $invoice->paid_at,
+            ];
+        }
+
+        $refunds = [];
+        try {
+            $refunds = DB::table('refunds')
+                ->where('invoice_id', $id)
+                ->orderByDesc('created_at')
+                ->get(['reference', 'amount', 'currency', 'reason', 'status', 'created_at', 'processed_at'])
+                ->map(fn ($r) => [
+                    'reference' => $r->reference,
+                    'amount'    => (float) $r->amount,
+                    'currency'  => $r->currency,
+                    'reason'    => $r->reason,
+                    'status'    => $r->status,
+                    'at'        => $r->processed_at ?? $r->created_at,
+                ])->all();
+        } catch (\Illuminate\Database\QueryException) {
+            // refunds table absent — leave empty
+        }
+        foreach ($refunds as $rf) {
+            $payments[] = [
+                'kind'   => 'refund',
+                'amount' => -$rf['amount'],
+                'method' => $rf['reference'],
+                'at'     => $rf['at'],
+            ];
+        }
+        usort($payments, fn ($a, $b) => strcmp((string) $b['at'], (string) $a['at']));
+
+        // Activity from the central platform audit trail (or tenant audit_logs
+        // in standalone). Same guarded dual-source pattern the subscriptions
+        // drawer uses.
+        $activity = [];
+        try {
+            [$conn, $table] = (is_saas_mode() && ! (function_exists('tenancy') && tenancy()->initialized))
+                ? [central_connection(), 'platform_audit_logs']
+                : [null, 'audit_logs'];
+
+            $activity = DB::connection($conn)->table($table)
+                ->where('subject_type', Invoice::class)
+                ->where('subject_id', $id)
+                ->orderByDesc('created_at')
+                ->limit(15)
+                ->get(['event_type', 'action', 'description', 'actor_name', 'created_at'])
+                ->map(fn ($a) => [
+                    'event'  => $a->event_type,
+                    'action' => $a->action,
+                    'detail' => $a->description,
+                    'actor'  => $a->actor_name,
+                    'at'     => $a->created_at,
+                ])->all();
+        } catch (\Illuminate\Database\QueryException) {
+            // audit table absent in this context
+        }
+
+        return [
+            'line_items' => $lineItems,
+            'payments'   => $payments,
+            'refunds'    => $refunds,
+            'activity'   => $activity,
+            'totals'     => [
+                'subtotal'    => (float) $invoice->subtotal,
+                'discount'    => (float) $invoice->discount_amount,
+                'tax'         => (float) $invoice->tax_amount,
+                'total'       => (float) $invoice->total,
+                'amount_paid' => (float) $invoice->amount_paid,
+                'amount_due'  => (float) $invoice->amount_due,
+                'currency'    => $invoice->currency ?: 'USD',
+            ],
+        ];
+    }
+
+    /**
+     * Queue a payment reminder to the tenant's billing address. Never fakes a
+     * send — audit-logs whether an email was actually queued.
+     */
+    public function remind(Invoice $invoice): bool
+    {
+        $tenant = DB::table('tenants')->where('id', $invoice->billable_id)->first(['name', 'email']);
+        $ref = $invoice->reference ?? $invoice->invoice_number ?? (string) $invoice->id;
+
+        $sent = false;
+        if ($tenant?->email) {
+            Mail::to($tenant->email)->queue(new PaymentReminderMail(
+                tenantName: $tenant->name ?? 'there',
+                planName: "Invoice {$ref}",
+                amount: (float) $invoice->amount_due,
+                currency: $invoice->currency ?? 'USD',
+            ));
+            $sent = true;
+        }
+
+        $this->audit->log(
+            'invoice.reminder_sent',
+            'reminder_sent',
+            $invoice,
+            $sent
+                ? "Payment reminder for invoice [{$ref}] queued to {$tenant->email}."
+                : "Payment reminder for invoice [{$ref}] requested but no tenant email on record."
+        );
+
+        return $sent;
+    }
+
+    /**
+     * Record a refund against an invoice. Writes a real refunds row and, when
+     * the refund settles the full balance, flips the invoice to refunded.
+     */
+    public function refund(Invoice $invoice, float $amount, string $reason): Refund
+    {
+        if ($amount <= 0) {
+            throw new InvalidArgumentException('Refund amount must be positive.');
+        }
+        $paid = (float) $invoice->amount_paid;
+        if ($amount > $paid) {
+            throw new InvalidArgumentException('Refund cannot exceed the amount paid.');
+        }
+
+        return DB::transaction(function () use ($invoice, $amount, $reason) {
+            $ref = 'REF-'.strtoupper(Str::random(8));
+            $actorId = Auth::guard('landlord')->id() ?? Auth::id();
+
+            $refund = Refund::create([
+                'reference'    => $ref,
+                'tenant_id'    => $invoice->billable_id,
+                'invoice_id'   => $invoice->id,
+                'amount'       => $amount,
+                'currency'     => $invoice->currency ?? 'USD',
+                'reason'       => $reason,
+                'status'       => Refund::STATUS_PROCESSED,
+                'requested_by' => $actorId,
+                'processed_by' => $actorId,
+                'processed_at' => now(),
+            ]);
+
+            $invoice->markRefunded($amount);
+
+            $this->audit->log(
+                'invoice.refunded',
+                'refunded',
+                $invoice,
+                "Invoice [{$invoice->reference}] refunded {$amount} {$invoice->currency}. Reason: {$reason}."
+            );
+
+            return $refund;
+        });
+    }
+
+    /**
+     * Bulk send / mark-paid / remind / void. Each item is processed
+     * independently so one failure cannot roll back the others.
+     *
+     * @param  array<int, string>  $ids
+     * @return array{ok:int, failed:int}
+     */
+    public function bulk(array $ids, string $action, string $reason = ''): array
+    {
+        $ok = 0;
+        $failed = 0;
+        foreach ($ids as $id) {
+            try {
+                $invoice = Invoice::findOrFail($id);
+                match ($action) {
+                    'send'      => $this->send($invoice),
+                    'mark-paid' => $this->markPaid($invoice, 'manual'),
+                    'remind'    => $this->remind($invoice),
+                    'void'      => $this->void($invoice, $reason ?: 'Bulk void'),
+                    default     => throw new InvalidArgumentException("Unknown bulk action [$action]."),
+                };
+                $ok++;
+            } catch (\Throwable) {
+                $failed++;
+            }
+        }
+
+        return ['ok' => $ok, 'failed' => $failed];
+    }
+
+    /**
+     * All invoices flattened for CSV export.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function exportRows(): array
+    {
+        return array_map(fn ($r) => [
+            'number'      => $r['number'],
+            'tenant'      => $r['tenant'],
+            'status'      => $r['status'],
+            'subtotal'    => $r['subtotal'],
+            'discount'    => $r['discount'],
+            'tax'         => $r['tax'],
+            'total'       => $r['total'],
+            'amount_paid' => $r['amount_paid'],
+            'amount_due'  => $r['amount_due'],
+            'currency'    => $r['currency'],
+            'due_date'    => $r['due_date'] ?? '',
+            'paid_at'     => $r['paid_at'] ?? '',
+            'issued_at'   => $r['created_at'] ?? '',
+        ], $this->overview()['invoices']);
     }
 
     /**

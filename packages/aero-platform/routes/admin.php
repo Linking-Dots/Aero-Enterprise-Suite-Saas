@@ -1260,11 +1260,17 @@ Route::middleware('admin.domain')->group(function () {
 
             Route::prefix('invoices')->name('invoices.')->group(function () {
                 Route::get('/', [AdminInvoiceController::class, 'index'])->name('index')->middleware('hrmac:billing-management.invoices.view');
-                Route::get('/{invoice}', [AdminInvoiceController::class, 'show'])->name('show')->middleware('hrmac:billing-management.invoices.view');
+                // Static segments MUST be registered before the /{invoice} wildcard.
                 Route::post('/generate', [AdminInvoiceController::class, 'generate'])->name('generate')->middleware('hrmac:billing-management.invoices.generate');
+                Route::get('/export', [AdminInvoiceController::class, 'export'])->name('export')->middleware('hrmac:billing-management.invoices.view');
+                Route::post('/bulk', [AdminInvoiceController::class, 'bulk'])->name('bulk')->middleware('hrmac:billing-management.invoices.bulk');
+                Route::get('/detail/{invoice}', [AdminInvoiceController::class, 'detail'])->name('detail')->middleware('hrmac:billing-management.invoices.view');
+                Route::get('/{invoice}', [AdminInvoiceController::class, 'show'])->name('show')->middleware('hrmac:billing-management.invoices.view');
                 Route::post('/{invoice}/send', [AdminInvoiceController::class, 'send'])->name('send')->middleware('hrmac:billing-management.invoices.send');
                 Route::post('/{invoice}/mark-paid', [AdminInvoiceController::class, 'markPaid'])->name('mark-paid')->middleware('hrmac:billing-management.invoices.mark-paid');
-                Route::post('/{invoice}/void', [AdminInvoiceController::class, 'void'])->name('void')->middleware('hrmac:billing-management.invoices.mark-paid');
+                Route::post('/{invoice}/void', [AdminInvoiceController::class, 'void'])->name('void')->middleware('hrmac:billing-management.invoices.void');
+                Route::post('/{invoice}/remind', [AdminInvoiceController::class, 'remind'])->name('remind')->middleware('hrmac:billing-management.invoices.remind');
+                Route::post('/{invoice}/refund', [AdminInvoiceController::class, 'refund'])->name('refund')->middleware('hrmac:billing-management.invoices.refund');
                 Route::get('/{invoice}/download', [AdminInvoiceController::class, 'download'])->name('download')->middleware('hrmac:billing-management.invoices.view');
             });
 

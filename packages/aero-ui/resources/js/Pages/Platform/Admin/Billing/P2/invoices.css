@@ -13,8 +13,46 @@
 .pc-chip--void { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); border-color: var(--aeos-border); }
 .pc-chip--void .pc-chip__dot { background: var(--aeos-text-muted); }
 
+.pc-chip--refunded { background: color-mix(in srgb, var(--aeos-warning) 14%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 35%, transparent); }
+.pc-chip--refunded .pc-chip__dot { background: var(--aeos-warning); }
+
 .inv-seg-paid { background: var(--aeos-success); }
 .inv-seg-open { background: var(--aeos-primary); }
 .inv-seg-overdue { background: var(--aeos-danger); }
+.inv-seg-void { background: var(--aeos-text-muted); }
 
 .inv-num { font-family: var(--aeos-font-mono); font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); }
+
+/* amount-due emphasis (drawer + cells) */
+.inv-due { color: var(--aeos-danger); font-weight: 600; }
+
+/* ---- AR aging bars (interactive, severity-scaled, theme tokens) ---- */
+.inv-aging { display: flex; flex-direction: column; gap: var(--aeos-space-2, 8px); }
+.inv-agerow {
+  display: grid; grid-template-columns: 80px 1fr 92px; align-items: center;
+  gap: var(--aeos-space-3, 12px); width: 100%; background: transparent; border: 0;
+  padding: 4px 6px; border-radius: var(--aeos-radius-md, 8px); cursor: pointer; text-align: left;
+  transition: background .12s ease;
+}
+.inv-agerow:hover { background: var(--aeos-bg-subtle); }
+.inv-agerow.is-on { background: color-mix(in srgb, var(--aeos-primary) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--aeos-primary) 35%, transparent); }
+.inv-agerow__cap { font-size: var(--aeos-text-xs, 12px); color: var(--aeos-text-secondary); white-space: nowrap; }
+.inv-agerow__track { height: 20px; background: var(--aeos-bg-subtle); border-radius: 6px; overflow: hidden; }
+.inv-agerow__fill { display: block; height: 100%; border-radius: 6px; min-width: 0; transition: width .3s ease; }
+.inv-agerow__amt { text-align: right; font-size: var(--aeos-text-sm, 13px); font-weight: 600; font-variant-numeric: tabular-nums; }
+.inv-agerow__amt small { display: block; font-size: 10px; font-weight: 500; color: var(--aeos-text-muted); }
+.inv-age-0 { background: var(--aeos-success); }
+.inv-age-1 { background: color-mix(in srgb, var(--aeos-success) 55%, var(--aeos-warning)); }
+.inv-age-2 { background: var(--aeos-warning); }
+.inv-age-3 { background: color-mix(in srgb, var(--aeos-warning) 45%, var(--aeos-danger)); }
+.inv-age-4 { background: var(--aeos-danger); }
+
+/* ---- drawer line-item totals ---- */
+.inv-totrow { display: flex; justify-content: space-between; padding: 6px 0; font-size: var(--aeos-text-sm, 13px); color: var(--aeos-text-secondary); font-variant-numeric: tabular-nums; }
+.inv-totrow span:last-child { color: var(--aeos-text-primary); }
+.inv-totrow--grand { border-top: 1px solid var(--aeos-border); margin-top: 6px; padding-top: 11px; font-weight: 700; font-size: var(--aeos-text-base, 15px); }
+.inv-totrow--grand span:last-child { color: var(--aeos-primary); }
+
+/* ---- payment timeline markers ---- */
+.sc-tl li.inv-tl-refund::before { background: var(--aeos-warning) !important; }
+.sc-tl li.inv-tl-pay::before { background: var(--aeos-success) !important; }

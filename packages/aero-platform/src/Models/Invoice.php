@@ -163,6 +163,17 @@ class Invoice extends CentralModel
     // HELPERS
     // =========================================================================
 
+    /**
+     * Resolve route-model bindings by the string primary key without the
+     * HasUuids UUID-format guard. Invoices may carry non-UUID string ids
+     * (seeded/imported records), and `id` is the string PK regardless of
+     * format — the default HasUuids binding would 404 those.
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return $query->where($field ?? $this->getRouteKeyName(), $value);
+    }
+
     public function isPaid(): bool
     {
         return $this->status === self::STATUS_PAID;

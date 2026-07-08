@@ -356,6 +356,10 @@ return [
                         ['code' => 'generate', 'name' => 'Generate Invoice'],
                         ['code' => 'send', 'name' => 'Send Invoice'],
                         ['code' => 'mark-paid', 'name' => 'Mark as Paid'],
+                        ['code' => 'void', 'name' => 'Void Invoice'],
+                        ['code' => 'refund', 'name' => 'Refund Invoice'],
+                        ['code' => 'remind', 'name' => 'Send Payment Reminder'],
+                        ['code' => 'bulk', 'name' => 'Bulk Invoice Actions'],
                     ],
                 ],
                 [
