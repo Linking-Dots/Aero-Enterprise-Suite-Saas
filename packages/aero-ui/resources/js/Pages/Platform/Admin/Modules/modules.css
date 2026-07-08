@@ -1,0 +1,9 @@
+/* Modules (registry) — extends the shared products.css visual language.
+   Only the registry-specific bits live here. */
+
+.mr-hier {
+  font-size: var(--aeos-text-xs);
+  color: var(--aeos-text-secondary);
+  font-family: var(--aeos-font-mono);
+  white-space: nowrap;
+}
