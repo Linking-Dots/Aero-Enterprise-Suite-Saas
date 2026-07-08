@@ -8,6 +8,13 @@ const IcoSend = (
   </svg>
 );
 
+const SUGGESTIONS = [
+  { icon: '↗', text: 'How do I add a new employee?' },
+  { icon: '◫', text: 'Break down employees by department' },
+  { icon: '◐', text: 'Show the share of employees by type' },
+  { icon: '◈', text: 'How many users are there?' },
+];
+
 function initials(user) {
   const name = (user?.name || user?.full_name || user?.email || 'You').trim();
   const parts = name.split(/\s+/).filter(Boolean);
@@ -43,7 +50,15 @@ export default function AeonConversation({ messages, sending, onSend, onAction, 
           <div className="aeon-empty">
             <div className="aeon-empty-core"><AeonCore state="idle" size={72} /></div>
             <div className="aeon-empty-t">Ask Aeon anything</div>
-            <div className="aeon-empty-d">How do I add an employee? · Break down employees by department · How many users?</div>
+            <div className="aeon-empty-d">Guidance, live data on any table, and I'll take you to the right page.</div>
+            <div className="aeon-suggest">
+              {SUGGESTIONS.map((s) => (
+                <button type="button" className="aeon-suggest-card" key={s.text} onClick={() => onSend(s.text)}>
+                  <span className="aeon-suggest-ico">{s.icon}</span>
+                  <span>{s.text}</span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((m, i) => {
