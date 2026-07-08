@@ -193,7 +193,7 @@ class QueryTool implements AeonToolContract
             return $this->fail("I couldn't find a matching {$label}.");
         }
         $arr = (array) $row;
-        $title = $this->cardTitle($arr) ?? ($label.' #'.($arr['id'] ?? '?'));
+        $title = $this->cardTitle($arr, $entity) ?? ($label.' #'.($arr['id'] ?? '?'));
 
         $fields = [];
         foreach ($entity['columns'] as $col) {
@@ -222,8 +222,11 @@ class QueryTool implements AeonToolContract
         ];
     }
 
-    /** @param array<string,mixed> $arr */
-    private function cardTitle(array $arr): ?string
+    /**
+     * @param  array<string,mixed>  $arr
+     * @param  array{columns:array<int,string>}  $entity
+     */
+    private function cardTitle(array $arr, array $entity): ?string
     {
         foreach (['name', 'title', 'label', 'display_name', 'full_name'] as $c) {
             if (! empty($arr[$c])) {
@@ -234,6 +237,16 @@ class QueryTool implements AeonToolContract
         $last = $arr['last_name'] ?? null;
         if ($first || $last) {
             return trim(((string) $first).' '.((string) $last));
+        }
+        // Name held on a related record (e.g. employees.user_id → users.name).
+        foreach (['user_id', 'person_id', 'employee_id', 'contact_id', 'owner_id'] as $fk) {
+            if (! empty($arr[$fk]) && in_array($fk, $entity['columns'], true)) {
+                $map = $this->resolveLabels($fk, [$arr[$fk]]);
+                $name = $map[$arr[$fk]] ?? $map[(int) $arr[$fk]] ?? null;
+                if ($name) {
+                    return (string) $name;
+                }
+            }
         }
         foreach (['code', 'email', 'reference', 'number'] as $c) {
             if (! empty($arr[$c])) {
