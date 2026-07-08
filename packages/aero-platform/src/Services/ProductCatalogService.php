@@ -109,6 +109,40 @@ class ProductCatalogService
         });
     }
 
+    /**
+     * Soft-delete (retire) a product. Refuses if it still has active/trialing
+     * subscriptions — you deactivate a live product, you don't delete it out from
+     * under paying customers (industry norm). Cleans the pivot + busts caches.
+     *
+     * @throws \RuntimeException when active subscriptions exist
+     */
+    public function delete(string $id): void
+    {
+        DB::transaction(function () use ($id): void {
+            $product = Product::findOrFail($id);
+
+            $active = (int) DB::table('product_subscriptions')
+                ->where('product_id', $id)
+                ->whereIn('status', ['active', 'trialing'])
+                ->count();
+
+            if ($active > 0) {
+                throw new \RuntimeException("Cannot delete — {$active} active subscription(s). Deactivate the product instead.");
+            }
+
+            DB::table('product_modules')->where('product_id', $id)->delete();
+            $this->bustEntitlementCaches($id);
+            $product->delete();
+
+            $this->audit->log(
+                event: 'platform.products.deleted',
+                action: 'delete',
+                subject: $product,
+                description: "Product {$product->code} deleted",
+            );
+        });
+    }
+
     /** Bust per-tenant entitlement caches for every tenant subscribed to a product. */
     private function bustEntitlementCaches(string $productId): void
     {

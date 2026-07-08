@@ -1452,6 +1452,8 @@ Route::middleware('admin.domain')->group(function () {
                 ->post('/', [ProductCatalogController::class, 'store'])->name('store');
             Route::middleware('hrmac:product-catalog.catalog.edit')
                 ->put('/{product}', [ProductCatalogController::class, 'update'])->name('update');
+            Route::middleware('hrmac:product-catalog.catalog.edit')
+                ->delete('/{product}', [ProductCatalogController::class, 'destroy'])->name('destroy');
         });
 
         // Module Management (P-4)

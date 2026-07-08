@@ -176,6 +176,11 @@ function ProductModal({ product, moduleOptions, onClose }) {
     else form.post('/products', opts);
   };
 
+  const remove = () => {
+    if (!window.confirm(`Delete "${product.name}"? This can't be undone. (Blocked if it has active subscriptions.)`)) return;
+    router.delete(`/products/${product.id}`, { preserveScroll: true, onSuccess: onClose });
+  };
+
   return (
     <div className="pc-modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="pc-modal" role="dialog" aria-modal="true">
@@ -226,6 +231,8 @@ function ProductModal({ product, moduleOptions, onClose }) {
             <label className="pc-check"><input type="checkbox" checked={data.is_marketplace_visible} onChange={(e) => setData('is_marketplace_visible', e.target.checked)} /> Marketplace-visible</label>
           </div>
           <div className="pc-modal__actions">
+            {editing && <button type="button" className="pc-btn pc-btn--danger" onClick={remove}>Delete</button>}
+            <span className="pc-spacer" />
             <button type="button" className="pc-btn" onClick={onClose}>Cancel</button>
             <button type="submit" className="pc-btn pc-btn--primary" disabled={processing}>{processing ? 'Saving…' : (editing ? 'Save changes' : 'Create product')}</button>
           </div>

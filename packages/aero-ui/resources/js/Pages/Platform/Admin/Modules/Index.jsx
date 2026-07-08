@@ -100,6 +100,16 @@ function Detail({ module }) {
             <div className="pc-modtags">{module.dependencies.map((d) => <span key={d} className="pc-modtag">{d}</span>)}</div>
           </div>
         )}
+        <div className="pc-detail__actions">
+          {module.is_core ? (
+            <span className="pc-hint">Foundation module — always active.</span>
+          ) : (
+            <button type="button" className={`pc-btn${module.is_active ? ' pc-btn--danger' : ' pc-btn--primary'}`}
+              onClick={() => router.post(`/modules/${module.id}/toggle`, {}, { preserveScroll: true })}>
+              {module.is_active ? 'Deactivate module' : 'Activate module'}
+            </button>
+          )}
+        </div>
       </CardBody>
     </Card>
   );

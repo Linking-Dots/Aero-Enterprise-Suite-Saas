@@ -160,7 +160,10 @@ textarea.pc-input { resize: vertical; min-height: 60px; }
 .pc-modtag-pick { display: flex; flex-wrap: wrap; gap: var(--aeos-space-2); }
 .pc-modpick { display: inline-flex; align-items: center; gap: var(--aeos-space-2); font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: 999px; padding: 5px var(--aeos-space-3); cursor: pointer; }
 .pc-modpick[data-on="true"] { background: var(--aeos-primary-tint); color: var(--aeos-primary); border-color: var(--aeos-primary-border); }
-.pc-modal__actions { display: flex; justify-content: flex-end; gap: var(--aeos-space-2); margin-top: var(--aeos-space-2); }
+.pc-modal__actions { display: flex; align-items: center; gap: var(--aeos-space-2); margin-top: var(--aeos-space-2); }
+.pc-modal__actions .pc-spacer { flex: 1; }
+.pc-btn--danger { color: var(--aeos-danger); border-color: var(--aeos-danger-border, var(--aeos-border)); }
+.pc-btn--danger:hover { background: var(--aeos-danger-tint, var(--aeos-bg-hover)); }
 
 @media (max-width: 1000px) {
   .pc-kpis { grid-template-columns: repeat(2, 1fr); }

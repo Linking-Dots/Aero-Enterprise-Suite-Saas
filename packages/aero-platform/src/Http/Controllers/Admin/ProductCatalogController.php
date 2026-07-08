@@ -44,6 +44,17 @@ class ProductCatalogController extends Controller
         return back()->with('success', 'Product updated.');
     }
 
+    public function destroy(Product $product): RedirectResponse
+    {
+        try {
+            $this->svc->delete($product->id);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Product deleted.');
+    }
+
     /** @return array<string, mixed> */
     private function validated(Request $request, ?string $id): array
     {

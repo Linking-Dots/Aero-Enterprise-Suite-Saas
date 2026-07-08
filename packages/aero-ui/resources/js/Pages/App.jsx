@@ -9,9 +9,10 @@
  *   import App from '@/Pages/App.jsx';
  *   MyPage.layout = page => <App title="Page Title">{page}</App>;
  */
+import { useEffect, useRef } from 'react';
 import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
-import { AppShell, AppBrand, AppTopbarTitle, GlobalActions, SearchOverlay } from '@aero/ui';
+import { AppShell, AppBrand, AppTopbarTitle, GlobalActions, SearchOverlay, useToast } from '@aero/ui';
 import { useTheme } from '../theme/ThemeProvider.jsx';
 import { useTourEngine } from '../tour/useTour.jsx';
 
@@ -259,6 +260,23 @@ export default function App({ title, rail, railTitle = 'Context', children }) {
   const page = usePage();
   const { auth, navigation, navigationGroups, navSections } = page.props;
   const theme = useTheme();
+
+  // App-wide flash → toast bridge. Controllers that `back()->with('success'|'error'
+  // |'warning'|'info', …)` surface a toast on the next Inertia render. Guarded so
+  // the same flash isn't re-toasted on unrelated prop updates.
+  const toast = useToast();
+  const lastFlash = useRef(null);
+  useEffect(() => {
+    const f = page.props.flash;
+    if (!f) return;
+    const msg = f.success || f.error || f.warning || f.info;
+    if (!msg || msg === lastFlash.current) return;
+    lastFlash.current = msg;
+    if (f.success) toast.success(f.success);
+    else if (f.error) toast.error(f.error);
+    else if (f.warning) toast({ intent: 'warning', title: f.warning });
+    else if (f.info) toast({ intent: 'info', title: f.info });
+  }, [page.props.flash]); // eslint-disable-line react-hooks/exhaustive-deps
   // Inertia's top-level `page.url` is the request PATH (e.g. "/tenants?p=2"),
   // whereas `page.props.url` is the FULL absolute URL from HandleInertiaRequests.
   // Active-state matching needs the path, so read the top-level url and strip
