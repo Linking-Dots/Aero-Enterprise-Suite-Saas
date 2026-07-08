@@ -74,27 +74,44 @@ class IndexingService
             $name = $m['name'] ?? (is_string($code) ? ucfirst($code) : 'Module');
             $desc = $m['description'] ?? '';
 
+            // Nav grouping: submodules render under a section header in the sidebar
+            // (e.g. "Leaves" lives under "Time & Attendance"). Capture it so Aeon
+            // gives the correct path, not a flattened guess.
+            $navGroups = $m['nav_groups'] ?? [];
+            $navMap = $m['nav_group_map'] ?? [];
+            $sectionOf = static function ($smCode) use ($navGroups, $navMap): ?string {
+                $key = $navMap[$smCode] ?? null;
+                return $key ? ($navGroups[$key]['label'] ?? null) : null;
+            };
+
             $lines = [];
             foreach ($m['submodules'] ?? [] as $sm) {
-                $smName = $sm['name'] ?? ($sm['code'] ?? '');
-                $route = ! empty($sm['route']) ? " (route: {$sm['route']})" : '';
-                $lines[] = "- {$smName}{$route}";
+                $smCode = $sm['code'] ?? '';
+                $smName = $sm['name'] ?? $smCode;
+                $section = $sectionOf($smCode);
+                $path = $name.($section ? " › {$section}" : '')." › {$smName}";
+                $route = ! empty($sm['route']) ? "  [{$sm['route']}]" : '';
+                $lines[] = "- {$path}{$route}";
+
                 foreach ($sm['components'] ?? [] as $comp) {
+                    $cName = $comp['name'] ?? ($comp['code'] ?? '');
+                    if (! $cName) {
+                        continue;
+                    }
+                    $cRoute = ! empty($comp['route']) ? "  [{$comp['route']}]" : '';
                     $actions = array_filter(array_map(
                         static fn ($a) => is_array($a) ? ($a['name'] ?? null) : null,
                         $comp['actions'] ?? []
                     ));
                     $actionStr = $actions ? ' — actions: '.implode(', ', $actions) : '';
-                    $cName = $comp['name'] ?? ($comp['code'] ?? '');
-                    if ($cName) {
-                        $lines[] = "    · {$cName}{$actionStr}";
-                    }
+                    $lines[] = "    · {$path} › {$cName}{$cRoute}{$actionStr}";
                 }
             }
 
             $text = "Module: {$name}\n"
                 .($desc ? "Description: {$desc}\n" : '')
-                ."Pages, features and permitted actions:\n".implode("\n", $lines);
+                ."Navigation is shown as \"Section › Page › Sub-page  [route]\". Use these exact paths and routes:\n"
+                .implode("\n", $lines);
 
             $chunks[] = [
                 'source_type' => 'module',
