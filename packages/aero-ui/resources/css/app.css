@@ -178,6 +178,11 @@ a {
 .aeon-chart-h { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--aeos-text-secondary, #8593a6); display: flex; justify-content: space-between; }
 .aeon-chart-v { color: var(--aeos-success, #37e2a0); }
 .aeon-spark { margin-top: 4px; display: block; }
+.aeon-tablewrap { overflow-x: auto; border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); border-radius: 12px; }
+.aeon-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.aeon-table th { text-align: left; font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--aeos-text-secondary, #93a1b5); padding: 8px 11px; border-bottom: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); }
+.aeon-table td { padding: 7px 11px; border-bottom: 1px solid var(--aeos-border-base, rgba(255,255,255,.06)); color: var(--aeos-text-primary, #eaf1fa); font-variant-numeric: tabular-nums; }
+.aeon-table tr:last-child td { border-bottom: none; }
 .aeon-chips { display: flex; gap: 7px; flex-wrap: wrap; }
 .aeon-chip { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 11px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--aeos-border-strong, rgba(255,255,255,.16)); background: var(--aeos-glass, rgba(255,255,255,.045)); color: var(--aeos-text-secondary, #8593a6); cursor: pointer; transition: .16s; display: flex; gap: 6px; align-items: center; }
 .aeon-chip:hover { color: var(--aeos-primary, #22e3ff); border-color: color-mix(in srgb, var(--aeos-primary, #22e3ff) 40%, transparent); }

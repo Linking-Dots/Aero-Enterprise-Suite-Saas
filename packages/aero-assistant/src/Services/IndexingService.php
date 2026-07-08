@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Assistant\Services;
 
+use Aero\Assistant\Data\SchemaCatalog;
 use Aero\Assistant\Models\Embedding;
 use Aero\Contracts\Ai\AiProvider;
 
@@ -14,7 +15,7 @@ use Aero\Contracts\Ai\AiProvider;
  */
 class IndexingService
 {
-    public function __construct(private AiProvider $provider) {}
+    public function __construct(private AiProvider $provider, private SchemaCatalog $schema) {}
 
     /**
      * @return array{indexed:int, skipped:int, sources:int}
@@ -25,7 +26,7 @@ class IndexingService
             Embedding::query()->delete();
         }
 
-        $chunks = array_merge($this->moduleChunks(), $this->docChunks());
+        $chunks = array_merge($this->moduleChunks(), $this->schemaChunks(), $this->docChunks());
         $indexed = 0;
         $skipped = 0;
 
@@ -117,6 +118,33 @@ class IndexingService
                 'source_type' => 'module',
                 'source_ref' => (string) $code,
                 'title' => (string) $name,
+                'text' => $text,
+            ];
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * One chunk per data table (from the live schema) so Aeon knows which entity
+     * + columns to query with the query_data tool for any data question.
+     *
+     * @return array<int,array{source_type:string,source_ref:string,title:string,text:string}>
+     */
+    private function schemaChunks(): array
+    {
+        $chunks = [];
+        foreach ($this->schema->all() as $e) {
+            $cols = implode(', ', $e['columns']);
+            $dates = implode(', ', $e['date_fields']);
+            $text = "Data table: {$e['table']} ({$e['label']}). To answer data questions about {$e['label']} "
+                ."— counts, breakdowns (group_by), totals/averages, or trends over time — call the query_data "
+                ."tool with entity=\"{$e['table']}\". Columns available to count / group_by / aggregate / filter: {$cols}."
+                .($dates ? " Date columns for period & trend: {$dates}." : '');
+            $chunks[] = [
+                'source_type' => 'schema',
+                'source_ref' => $e['table'],
+                'title' => $e['label'].' data',
                 'text' => $text,
             ];
         }

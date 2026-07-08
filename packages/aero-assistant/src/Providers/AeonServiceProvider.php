@@ -9,8 +9,9 @@ use Aero\Assistant\Providers\Models\GeminiProvider;
 use Aero\Assistant\Services\AeonService;
 use Aero\Assistant\Services\IndexingService;
 use Aero\Assistant\Services\RagService;
+use Aero\Assistant\Data\QueryTool;
+use Aero\Assistant\Data\SchemaCatalog;
 use Aero\Assistant\Tools\ToolRegistry;
-use Aero\Assistant\Tools\UserStatsTool;
 use Aero\Contracts\Ai\AiProvider;
 use Aero\Contracts\Providers\AbstractModuleProvider;
 
@@ -39,9 +40,12 @@ class AeonServiceProvider extends AbstractModuleProvider
         $this->app->singleton(RagService::class);
         $this->app->singleton(IndexingService::class);
 
-        // Data tools Aeon can call (feature packages tag their own too).
-        $this->app->singleton(UserStatsTool::class);
-        $this->app->tag([UserStatsTool::class], 'aeon.tools');
+        // Dynamic, schema-aware data access: one generic tool queries ANY table
+        // (validated against the live schema). Feature packages can still tag
+        // their own specialised 'aeon.tools' for curated answers.
+        $this->app->singleton(SchemaCatalog::class);
+        $this->app->singleton(QueryTool::class);
+        $this->app->tag([QueryTool::class], 'aeon.tools');
         $this->app->singleton(ToolRegistry::class, fn ($app) => new ToolRegistry($app->tagged('aeon.tools')));
 
         $this->app->singleton(AeonService::class);

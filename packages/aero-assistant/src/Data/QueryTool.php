@@ -1,0 +1,231 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Aero\Assistant\Data;
+
+use Aero\Contracts\Ai\AeonToolContract;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+/**
+ * Aeon's dynamic, schema-aware data tool. The model fills a STRUCTURED query
+ * (entity + operation + column/group_by/period) — never raw SQL. Every field is
+ * validated against the live schema (SchemaCatalog), so it can query ANY table in
+ * the system, but can never touch a column that doesn't exist, run a write, or
+ * emit a sensitive/PII value. Tenant isolation comes from the models' own scopes.
+ * Results render as stat / table / chart blocks.
+ */
+class QueryTool implements AeonToolContract
+{
+    public function __construct(private SchemaCatalog $catalog) {}
+
+    public function name(): string
+    {
+        return 'query_data';
+    }
+
+    public function description(): string
+    {
+        $entities = array_map(
+            static fn ($e) => $e['table'].' ('.$e['label'].')',
+            $this->catalog->all(),
+        );
+        $list = implode(', ', array_slice(array_values($entities), 0, 120));
+
+        return 'Answer ANY data question about this system by querying a table. Provide `entity` (one '
+            .'of the tables below), `operation` (count | aggregate | list), and optionally `group_by` '
+            .'(a column), `column`+`aggregate` (sum/avg/min/max), `period` (today|last_7_days|last_30_days|'
+            .'this_month|all_time) and `date_field`. Only use column names shown in the knowledge base for '
+            .'that entity. Available tables: '.$list;
+    }
+
+    public function parameters(): array
+    {
+        return [
+            'entity' => ['type' => 'string', 'description' => 'Table/entity to query, e.g. hrm_leave_applications'],
+            'operation' => ['type' => 'string', 'enum' => ['count', 'aggregate', 'list'], 'description' => 'count rows, aggregate a numeric column, or list rows'],
+            'group_by' => ['type' => 'string', 'description' => 'Optional column to group counts by, e.g. status'],
+            'column' => ['type' => 'string', 'description' => 'Numeric column for aggregate'],
+            'aggregate' => ['type' => 'string', 'enum' => ['sum', 'avg', 'min', 'max']],
+            'period' => ['type' => 'string', 'enum' => ['today', 'last_7_days', 'last_30_days', 'this_month', 'all_time']],
+            'date_field' => ['type' => 'string', 'description' => 'Date column for period/trend, e.g. created_at'],
+        ];
+    }
+
+    public function run(array $args, ?int $userId): array
+    {
+        $entityKey = (string) ($args['entity'] ?? '');
+        $entity = $this->catalog->entity($entityKey);
+        if ($entity === null) {
+            return $this->fail("I don't have a data table called \"{$entityKey}\".");
+        }
+
+        $label = $entity['label'];
+        $operation = (string) ($args['operation'] ?? 'count');
+        $groupBy = $this->validColumn($entityKey, $args['group_by'] ?? null);
+        $dateField = $this->validColumn($entityKey, $args['date_field'] ?? null)
+            ?? ($entity['date_fields'][0] ?? null);
+        $period = (string) ($args['period'] ?? 'all_time');
+
+        try {
+            $query = DB::table($entity['table']);
+            if (! empty($entity['soft_delete'])) {
+                $query->whereNull('deleted_at'); // respect soft-deletes generically
+            }
+            $this->applyPeriod($query, $dateField, $period);
+
+            if ($operation === 'aggregate') {
+                return $this->aggregate($query, $entityKey, $label, $args);
+            }
+            if ($operation === 'list') {
+                return $this->listRows($query, $entity, $label);
+            }
+
+            return $this->count($query, $entity, $label, $groupBy, $dateField, $period);
+        } catch (\Throwable $e) {
+            return $this->fail("I couldn't run that on {$label} — ".Str::limit($e->getMessage(), 80));
+        }
+    }
+
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    private function count($query, array $entity, string $label, ?string $groupBy, ?string $dateField, string $period): array
+    {
+        if ($groupBy) {
+            if ($this->catalog->isSensitive($groupBy)) {
+                return $this->fail("I can't break {$label} down by {$groupBy}.");
+            }
+            $rows = (clone $query)
+                ->select($groupBy, DB::raw('count(*) as aeon_c'))
+                ->groupBy($groupBy)->orderByDesc('aeon_c')->limit(20)->get();
+            $total = (int) (clone $query)->count();
+            $tableRows = $rows->map(fn ($r) => [(string) ($r->{$groupBy} ?? '—'), (string) $r->aeon_c])->all();
+
+            return [
+                'text' => "**{$total}** {$label} in total, grouped by {$groupBy}:",
+                'blocks' => [
+                    ['type' => 'stats', 'items' => [['k' => $label.$this->periodSuffix($period), 'v' => (string) $total]]],
+                    ['type' => 'table', 'columns' => [Str::headline($groupBy), 'Count'], 'rows' => $tableRows],
+                ],
+            ];
+        }
+
+        $total = (int) (clone $query)->count();
+        $blocks = [['type' => 'stats', 'items' => [['k' => $label.$this->periodSuffix($period), 'v' => (string) $total]]]];
+
+        if ($dateField) {
+            $trend = $this->trend($query, $dateField);
+            if ($trend) {
+                $blocks[] = ['type' => 'chart', 'title' => Str::headline($label).' · last 14 days', 'points' => $trend];
+            }
+        }
+
+        return ['text' => "There are **{$total}** {$label}".$this->periodPhrase($period).'.', 'blocks' => $blocks];
+    }
+
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    private function aggregate($query, string $entityKey, string $label, array $args): array
+    {
+        $column = $this->validColumn($entityKey, $args['column'] ?? null);
+        $fn = strtolower((string) ($args['aggregate'] ?? 'sum'));
+        if (! $column || ! in_array($fn, ['sum', 'avg', 'min', 'max'], true)) {
+            return $this->fail('Tell me which numeric column to '.($args['aggregate'] ?? 'aggregate').'.');
+        }
+        if ($this->catalog->isSensitive($column)) {
+            return $this->fail("I can't aggregate {$column}.");
+        }
+        $value = (clone $query)->{$fn}($column);
+        $pretty = is_numeric($value) ? rtrim(rtrim(number_format((float) $value, 2), '0'), '.') : (string) $value;
+
+        return [
+            'text' => "The {$fn} of {$column} across {$label} is **{$pretty}**.",
+            'blocks' => [['type' => 'stats', 'items' => [['k' => Str::upper($fn).' · '.Str::headline($column), 'v' => (string) $pretty]]]],
+        ];
+    }
+
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    private function listRows($query, array $entity, string $label): array
+    {
+        $cols = array_values(array_filter(
+            $entity['columns'],
+            fn ($c) => ! $this->catalog->isSensitive($c),
+        ));
+        $cols = array_slice($cols, 0, 6);
+        $rows = (clone $query)->limit(10)->get($cols);
+        $tableRows = $rows->map(fn ($r) => array_map(fn ($c) => Str::limit((string) $r->{$c}, 40), $cols))->all();
+
+        return [
+            'text' => "Here are up to 10 {$label}:",
+            'blocks' => [['type' => 'table', 'columns' => array_map([Str::class, 'headline'], $cols), 'rows' => $tableRows]],
+        ];
+    }
+
+    /** @return array<int,int>|null 14-day daily counts */
+    private function trend($query, string $dateField): ?array
+    {
+        $start = Carbon::today()->subDays(13);
+        $days = [];
+        for ($i = 0; $i < 14; $i++) {
+            $days[Carbon::today()->subDays(13 - $i)->format('Y-m-d')] = 0;
+        }
+        $rows = (clone $query)
+            ->whereNotNull($dateField)
+            ->where($dateField, '>=', $start->copy()->startOfDay())
+            ->get([$dateField]);
+        foreach ($rows as $r) {
+            $key = optional(Carbon::parse($r->{$dateField}))->format('Y-m-d');
+            if ($key !== null && array_key_exists($key, $days)) {
+                $days[$key]++;
+            }
+        }
+
+        return array_values($days);
+    }
+
+    private function applyPeriod($query, ?string $dateField, string $period): void
+    {
+        if (! $dateField || $period === 'all_time') {
+            return;
+        }
+        $start = match ($period) {
+            'today' => Carbon::today(),
+            'last_7_days' => Carbon::today()->subDays(6),
+            'last_30_days' => Carbon::today()->subDays(29),
+            'this_month' => Carbon::now()->startOfMonth(),
+            default => null,
+        };
+        if ($start) {
+            $query->whereNotNull($dateField)->where($dateField, '>=', $start->startOfDay());
+        }
+    }
+
+    private function validColumn(string $entity, $column): ?string
+    {
+        $column = is_string($column) && $column !== '' ? $column : null;
+
+        return ($column !== null && $this->catalog->isColumn($entity, $column)) ? $column : null;
+    }
+
+    private function periodSuffix(string $period): string
+    {
+        return $period === 'all_time' ? '' : ' · '.Str::headline($period);
+    }
+
+    private function periodPhrase(string $period): string
+    {
+        return match ($period) {
+            'today' => ' today',
+            'last_7_days' => ' in the last 7 days',
+            'last_30_days' => ' in the last 30 days',
+            'this_month' => ' this month',
+            default => '',
+        };
+    }
+
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    private function fail(string $msg): array
+    {
+        return ['text' => $msg, 'blocks' => []];
+    }
+}

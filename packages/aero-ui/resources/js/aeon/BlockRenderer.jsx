@@ -77,6 +77,21 @@ function Block({ block, onAction, animate, onAnimated }) {
           <Spark points={block.points || []} unit={block.unit} />
         </div>
       );
+    case 'table':
+      return (
+        <div className="aeon-tablewrap">
+          <table className="aeon-table">
+            {block.columns?.length ? (
+              <thead><tr>{block.columns.map((c, i) => <th key={i}>{c}</th>)}</tr></thead>
+            ) : null}
+            <tbody>
+              {(block.rows || []).map((row, i) => (
+                <tr key={i}>{(Array.isArray(row) ? row : [row]).map((cell, j) => <td key={j}>{cell}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
     case 'chips':
       return (
         <div className="aeon-chips">
