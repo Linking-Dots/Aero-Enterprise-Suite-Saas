@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import FloatingAeonButton from './FloatingAeonButton.jsx';
 import AeonDrawer from './AeonDrawer.jsx';
@@ -30,6 +30,16 @@ export default function FloatingAeon() {
     });
   }, []);
 
+  // Guided action: a confirmed navigate directive routes the user to the real
+  // page (Inertia SPA visit) and closes the drawer.
+  const onAction = useCallback((evt) => {
+    const route = evt?.block?.route;
+    if (route && (evt.kind === 'confirm' || evt.kind === 'navigate')) {
+      aeon.close();
+      router.visit(route);
+    }
+  }, [aeon]);
+
   if (!user) return null;
 
   return (
@@ -42,6 +52,7 @@ export default function FloatingAeon() {
         sending={aeon.sending}
         onSend={aeon.send}
         user={user}
+        onAction={onAction}
         hasAnimated={aeon.hasAnimated}
         markAnimated={aeon.markAnimated}
       />

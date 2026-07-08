@@ -93,12 +93,14 @@ function Block({ block, onAction, animate, onAnimated }) {
           ))}
         </div>
       );
-    case 'action':
+    case 'action': {
+      const isNav = block.kind === 'navigate';
       return (
         <div className="aeon-action">
-          <div className="aeon-action-h">◆ Proposed action · needs your confirm</div>
+          <div className="aeon-action-h">{isNav ? '➜ Take me there' : '◆ Proposed action · needs your confirm'}</div>
           <div className="aeon-action-t">{block.title}</div>
           {block.desc ? <div className="aeon-action-d">{block.desc}</div> : null}
+          {block.route ? <div className="aeon-action-route">{block.route}</div> : null}
           {block.fields?.length ? (
             <div className="aeon-action-fields">
               {block.fields.map((f, i) => (
@@ -108,13 +110,18 @@ function Block({ block, onAction, animate, onAnimated }) {
           ) : null}
           <div className="aeon-action-row">
             <button type="button" className="aeon-abtn is-go" onClick={() => onAction?.({ kind: 'confirm', block })}>
-              {block.confirm_label || 'Open & prefill →'}
+              {block.confirm_label || (isNav ? 'Open →' : 'Open & prefill →')}
             </button>
-            <button type="button" className="aeon-abtn" onClick={() => onAction?.({ kind: 'edit', block })}>Edit</button>
-            <button type="button" className="aeon-abtn" onClick={() => onAction?.({ kind: 'cancel', block })}>Cancel</button>
+            {!isNav && (
+              <>
+                <button type="button" className="aeon-abtn" onClick={() => onAction?.({ kind: 'edit', block })}>Edit</button>
+                <button type="button" className="aeon-abtn" onClick={() => onAction?.({ kind: 'cancel', block })}>Cancel</button>
+              </>
+            )}
           </div>
         </div>
       );
+    }
     case 'text':
     default:
       return animate
