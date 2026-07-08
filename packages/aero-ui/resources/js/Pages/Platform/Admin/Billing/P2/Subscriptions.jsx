@@ -6,7 +6,7 @@ import {
   Card, CardBody,
   AreaTrend, AreaSpark, BarsDiverging, CohortGrid, Donut,
   useWorkbench, useCtxMenu,
-  WbToolbar, WbSearch, WbViews, WbBulkBar, WbTable, WbFooter, WbDrawer,
+  WbToolbar, WbSearch, WbViews, WbBulkBar, WbColumns, WbTable, WbFooter, WbDrawer,
 } from '@aero/ui';
 
 import '../../Products/products.css';
@@ -434,11 +434,11 @@ export default function Index({
 
   const kpis = [
     { label: 'Monthly recurring', value: fmtMoney(s.mrr), delta: `${(s.mrr_delta_pct ?? 0) >= 0 ? '▲' : '▼'} ${Math.abs(s.mrr_delta_pct ?? 0)}% vs last month`, up: (s.mrr_delta_pct ?? 0) >= 0, spark: sp.mrr },
-    { label: 'Annual run rate', value: fmtK(s.arr ?? 0), delta: `plan ${fmtMoney(s.plan_mrr)} · product ${fmtMoney(s.product_mrr)}`, up: true },
+    { label: 'Annual run rate', value: fmtK(s.arr ?? 0), delta: `plan ${fmtMoney(s.plan_mrr)} · product ${fmtMoney(s.product_mrr)}`, up: true, spark: (sp.mrr ?? []).map((v) => v * 12) },
     { label: 'Active', value: s.active ?? 0, delta: `${s.plan_total ?? 0} plan · ${s.product_total ?? 0} product records`, spark: sp.active },
     { label: 'In trial', value: s.trialing ?? 0, delta: `${s.trials_ending_7d ?? 0} end within 7 days`, warn: (s.trials_ending_7d ?? 0) > 0, spark: sp.trials },
     { label: 'MRR churn', value: `${churnNow}%`, delta: churnNow <= 2 ? 'healthy' : 'watch closely', up: churnNow <= 2, spark: sp.churn_pct },
-    { label: 'In dunning', value: fmtMoney(s.dunning_amount), delta: `${s.dunning_count ?? 0} past-due · ${atRisk} at risk`, down: (s.dunning_count ?? 0) > 0 },
+    { label: 'In dunning', value: fmtMoney(s.dunning_amount), delta: `${s.dunning_count ?? 0} past-due · ${atRisk} at risk`, down: (s.dunning_count ?? 0) > 0, spark: mrr_movement?.churn },
   ];
 
   const rowMenu = (r) => {
@@ -743,6 +743,7 @@ export default function Index({
             <option value="300">≥ $300</option>
             <option value="800">≥ $800</option>
           </select>
+          <WbColumns wb={wb} columns={columns} />
         </WbToolbar>
 
         <WbViews wb={wb} />

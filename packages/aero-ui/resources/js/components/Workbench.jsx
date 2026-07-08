@@ -54,6 +54,14 @@ export function useWorkbench({
   const [page, setPage] = useState(1);
   const [per, setPer] = useState(perPage);
   const [selection, setSelection] = useState(() => new Set());
+  const [hiddenCols, setHiddenCols] = useState(() => new Set());
+
+  const toggleCol = (key) => setHiddenCols((h) => {
+    const n = new Set(h);
+    n.has(key) ? n.delete(key) : n.add(key);
+    return n;
+  });
+  const isColHidden = (key) => hiddenCols.has(key);
 
   /* custom saved views (localStorage) */
   const lsKey = storageKey ? `aeos.wb.${storageKey}` : null;
@@ -154,6 +162,7 @@ export function useWorkbench({
     page: safePage, setPage, per, setPer: (n) => { setPer(n); setPage(1); },
     pages, from, to, total, pageRows, filtered,
     selection, selectedRows, isSelected, toggleSelect, toggleSelectPage, pageAllSelected, clearSelection,
+    hiddenCols, toggleCol, isColHidden,
     getId,
   };
 }
@@ -236,6 +245,34 @@ export function WbViews({ wb, label = 'Views' }) {
   );
 }
 
+/** Column chooser — toggle visibility of the toggleable columns. */
+export function WbColumns({ wb, columns = [], label = '⚙ Columns' }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+  const toggleable = columns.filter((c) => c.label && c.key !== 'actions');
+  return (
+    <div className="wb-colmenu" ref={ref}>
+      <button type="button" className="pc-btn pc-btn--sm" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{label}</button>
+      {open && (
+        <div className="wb-colmenu__pop" role="menu">
+          {toggleable.map((c) => (
+            <label key={c.key} className="wb-colmenu__row">
+              <input type="checkbox" checked={!wb.isColHidden(c.key)} onChange={() => wb.toggleCol(c.key)} />
+              <span>{c.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Bulk-action bar; renders only while rows are selected. */
 export function WbBulkBar({ wb, children }) {
   if (wb.selection.size === 0) return null;
@@ -260,6 +297,7 @@ export function WbBulkBar({ wb, children }) {
  * @param empty ReactNode shown when there are no rows
  */
 export function WbTable({ wb, columns = [], selectable = false, onRowClick, empty = 'No records match these filters.', rowAriaLabel }) {
+  columns = columns.filter((c) => !wb.isColHidden?.(c.key));
   const colSpan = columns.length + (selectable ? 1 : 0);
   const clickable = typeof onRowClick === 'function';
   return (

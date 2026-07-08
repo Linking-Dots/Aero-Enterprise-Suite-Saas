@@ -132,6 +132,9 @@ class SubscriptionImmutabilityTest extends TestCase
             'type'          => 'default',
             'name'          => 'default',
             'plan_id'       => $overridePlanId ?? $this->plan->id,
+            'billing_cycle' => 'monthly',
+            'amount'        => 100,
+            'currency'      => 'USD',
             'status'        => $status,
             'starts_at'     => now(),
         ]);

@@ -399,6 +399,50 @@ class PlatformDemoSeeder extends Seeder
                     'created_at'      => $e[2],
                 ]);
             }
+
+            // Priced MRR-movement ledger (subscription_events) — real rows the
+            // analytics service reads for new / expansion / contraction / churn.
+            // Recent movements are placed inside the visible 6-month window so
+            // the demo chart shows genuine deltas rather than reconstructed zeros.
+            $monthly = $cycle === 'yearly' ? round((float) $amount / 12, 2) : (float) $amount;
+            $ledger = [];
+            if ($s['status'] !== 'trial') {
+                $ledger[] = ['created', 'new', 0.0, $monthly, $created];
+            }
+            if ($subStatus === 'active') {
+                if (mt_rand(0, 100) < 42) {
+                    $lo = round($monthly * 0.65, 2);
+                    $ledger[] = ['upgraded', 'expansion', $lo, $monthly, now()->subMonthsNoOverflow(mt_rand(0, 4))->subDays(mt_rand(0, 20))];
+                }
+                if (mt_rand(0, 100) < 34) {
+                    $hi = round($monthly * 1.35, 2);
+                    $ledger[] = ['downgraded', 'contraction', $hi, $monthly, now()->subMonthsNoOverflow(mt_rand(0, 4))->subDays(mt_rand(0, 20))];
+                }
+            }
+            if ($subStatus === 'cancelled') {
+                $ledger[] = ['cancelled', 'churn', $monthly, 0.0, now()->subMonthsNoOverflow(mt_rand(0, 4))];
+            }
+            // Idempotent: replace any prior ledger rows for this demo sub.
+            DB::table('subscription_events')->where('subscription_id', $subId)->delete();
+            foreach ($ledger as $le) {
+                $delta = $le[1] === 'churn' ? -round($le[2], 2) : round($le[3] - $le[2], 2);
+                DB::table('subscription_events')->insert([
+                    'id'              => (string) \Illuminate\Support\Str::uuid(),
+                    'subscription_id' => $subId,
+                    'kind'            => 'plan',
+                    'tenant_id'       => $tenantId,
+                    'event_type'      => $le[0],
+                    'movement'        => $le[1],
+                    'old_mrr'         => round($le[2], 2),
+                    'new_mrr'         => round($le[3], 2),
+                    'mrr_delta'       => $delta,
+                    'currency'        => $s['cur'],
+                    'actor_name'      => 'Demo Seeder',
+                    'occurred_at'     => $le[4],
+                    'created_at'      => $le[4],
+                    'updated_at'      => $le[4],
+                ]);
+            }
         }
 
         $this->command->info("  ✓ subscriptions seeded ($subCount plan subs, $prodSubCount product subs)");

@@ -63,6 +63,13 @@
 .wb-foot__spacer { flex: 1; }
 .wb-foot label { display: inline-flex; align-items: center; gap: var(--aeos-space-2); }
 .wb-per { width: auto; }
+
+/* ---- column chooser ---- */
+.wb-colmenu { position: relative; }
+.wb-colmenu__pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; min-width: 180px; background: var(--aeos-bg-elevated, var(--aeos-bg-card)); border: var(--aeos-border-width) solid var(--aeos-border); border-radius: calc(var(--aeos-card-radius) * .9); box-shadow: var(--aeos-shadow-xl); padding: 6px; }
+.wb-colmenu__row { display: flex; align-items: center; gap: var(--aeos-space-2); padding: 6px var(--aeos-space-2); border-radius: calc(var(--aeos-card-radius) * .6); font-size: var(--aeos-text-xs); color: var(--aeos-text-primary); cursor: pointer; }
+.wb-colmenu__row:hover { background: var(--aeos-bg-hover); }
+.wb-colmenu__row input { width: 14px; height: 14px; accent-color: var(--aeos-primary); }
 .wb-pgn { display: flex; gap: 4px; }
 .wb-pgn button { min-width: 28px; height: 28px; border-radius: calc(var(--aeos-card-radius) * .6); border: var(--aeos-border-width) solid var(--aeos-border); background: transparent; color: var(--aeos-text-secondary); font-size: var(--aeos-text-xs); cursor: pointer; }
 .wb-pgn button:hover:not(:disabled) { background: var(--aeos-bg-hover); }

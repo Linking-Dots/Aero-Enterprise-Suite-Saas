@@ -263,6 +263,39 @@ class SubscriptionCommandCenterTest extends TestCase
         $this->assertSame(1000.0, (float) $sub->amount);
     }
 
+    public function test_plan_change_writes_a_priced_movement_event(): void
+    {
+        $cheap = $this->plan; // price_monthly 100
+        $pricey = Plan::factory()->create(['is_active' => true, 'price_monthly' => 400, 'price_annual' => 4000]);
+        $sub = $this->makeSub(['plan_id' => $cheap->id]);
+
+        $this->actingAs($this->admin, 'landlord')
+            ->post(route('platform.admin.billing.subscriptions.change-plan', $sub), ['plan_id' => $pricey->id])
+            ->assertRedirect();
+
+        // 100 → 400 monthly = +300 expansion in the ledger.
+        $this->assertDatabaseHas('subscription_events', [
+            'subscription_id' => $sub->id,
+            'movement' => 'expansion',
+            'mrr_delta' => 300.00,
+        ]);
+    }
+
+    public function test_immediate_cancel_writes_a_churn_event(): void
+    {
+        $sub = $this->makeSub();
+
+        $this->actingAs($this->admin, 'landlord')
+            ->post(route('platform.admin.billing.subscriptions.cancel', $sub), ['reason' => 'x', 'mode' => 'immediate'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('subscription_events', [
+            'subscription_id' => $sub->id,
+            'movement' => 'churn',
+            'mrr_delta' => -100.00,
+        ]);
+    }
+
     public function test_bulk_cancel_processes_each_selection(): void
     {
         Mail::fake();

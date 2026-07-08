@@ -16,10 +16,13 @@ use Illuminate\Support\Facades\DB;
  * MRR is normalised to the monthly rate (plan price_monthly for plan rows;
  * product amount, divided by 12 for yearly cycles).
  *
- * Known approximations (documented, not fabricated):
- * - mrr_movement expansion/contraction would need priced plan-change history;
- *   the audit trail stores plan ids but not point-in-time prices, so both
- *   series are returned as zeros until a subscription_events ledger exists.
+ * mrr_movement expansion/contraction are read from the subscription_events
+ * ledger (priced plan-change / cycle-change deltas); new/churn stay
+ * reconstructed from created_at/cancelled_at so history predating the ledger
+ * still charts. There is no double-count: ledger expansion/contraction rows
+ * are plan/cycle changes only, never creates or cancellations.
+ *
+ * Known approximation (documented, not fabricated):
  * - historical trial counts use trial_ends_at (a sub is "in trial" in month M
  *   while created_at <= EOM < trial_ends_at) — matches how trials actually run.
  */
@@ -189,9 +192,26 @@ class SubscriptionAnalyticsService
 
     private function mrrMovement(CarbonImmutable $now): array
     {
+        // Ledger expansion/contraction, aggregated per YYYY-MM in one query.
+        $ledger = [];
+        if (\Illuminate\Support\Facades\Schema::connection(central_connection())->hasTable('subscription_events')) {
+            $since = $now->subMonthsNoOverflow(5)->startOfMonth();
+            $rows = DB::table('subscription_events')
+                ->whereIn('movement', ['expansion', 'contraction'])
+                ->where('occurred_at', '>=', $since->toDateTimeString())
+                ->get(['movement', 'mrr_delta', 'occurred_at']);
+            foreach ($rows as $row) {
+                $key = CarbonImmutable::parse($row->occurred_at)->format('Y-m');
+                $ledger[$key]['expansion'] = ($ledger[$key]['expansion'] ?? 0) + ($row->movement === 'expansion' ? (float) $row->mrr_delta : 0);
+                $ledger[$key]['contraction'] = ($ledger[$key]['contraction'] ?? 0) + ($row->movement === 'contraction' ? abs((float) $row->mrr_delta) : 0);
+            }
+        }
+
         $labels = [];
         $new = [];
         $churn = [];
+        $expansion = [];
+        $contraction = [];
         for ($i = 5; $i >= 0; $i--) {
             $m = $now->subMonthsNoOverflow($i);
             $som = $m->startOfMonth()->toDateTimeString();
@@ -210,15 +230,18 @@ class SubscriptionAnalyticsService
                     }
                 }
             }
+            $key = $m->format('Y-m');
             $new[] = round($n, 2);
             $churn[] = round($c, 2);
+            $expansion[] = round($ledger[$key]['expansion'] ?? 0, 2);
+            $contraction[] = round($ledger[$key]['contraction'] ?? 0, 2);
         }
 
         return [
             'labels'      => $labels,
             'new'         => $new,
-            'expansion'   => array_fill(0, 6, 0.0), // see class docblock
-            'contraction' => array_fill(0, 6, 0.0), // see class docblock
+            'expansion'   => $expansion,
+            'contraction' => $contraction,
             'churn'       => $churn,
         ];
     }

@@ -88,6 +88,10 @@ class SubscriptionController extends Controller
             'mode' => ['nullable', 'in:immediate,period_end'],
         ]);
 
+        // Defense-in-depth: the UI never offers Cancel on a cancelled row
+        // (it shows Reactivate), so a cancel here is an out-of-band request.
+        abort_if($subscription->status === Subscription::STATUS_CANCELLED, 422, 'This subscription is already cancelled.');
+
         $mode = $request->string('mode')->toString() ?: 'immediate';
         $this->svc->cancel($subscription, $request->string('reason')->toString(), $mode);
 

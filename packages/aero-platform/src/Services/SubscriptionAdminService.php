@@ -29,8 +29,19 @@ class SubscriptionAdminService
 {
     public function __construct(
         private readonly AuditServiceInterface $audit,
-        private readonly SubscriptionAnalyticsService $analytics
+        private readonly SubscriptionAnalyticsService $analytics,
+        private readonly SubscriptionEventRecorder $events
     ) {}
+
+    /** Monthly-rate MRR for a plan subscription at a given cycle. */
+    private function planMrr(?Plan $plan, string $cycle): float
+    {
+        if ($plan === null) {
+            return 0.0;
+        }
+
+        return $cycle === 'yearly' ? round((float) $plan->price_annual / 12, 2) : (float) $plan->price_monthly;
+    }
 
     /**
      * Unified command-centre payload: normalised plan + product subscriptions
@@ -259,6 +270,9 @@ class SubscriptionAdminService
                 ['status' => Subscription::STATUS_CANCELLED, 'cancel_reason' => $reason]
             );
 
+            $lostMrr = $this->planMrr(Plan::find($subscription->plan_id), (string) $subscription->billing_cycle);
+            $this->events->record((string) $subscription->id, 'plan', $subscription->tenant_id, 'cancelled', $lostMrr, 0.0, $subscription->currency ?? 'USD');
+
             return $subscription;
         });
     }
@@ -270,11 +284,17 @@ class SubscriptionAdminService
     {
         return DB::transaction(function () use ($subscription, $newPlanId) {
             $oldPlanId = $subscription->plan_id;
+            $cycle = (string) $subscription->billing_cycle;
+            $oldMrr = $this->planMrr(Plan::find($oldPlanId), $cycle);
+            $newMrr = $this->planMrr(Plan::find($newPlanId), $cycle);
 
             DB::table('subscriptions')
                 ->where('id', $subscription->id)
                 ->update([
                     'plan_id' => $newPlanId,
+                    'amount' => $cycle === 'yearly'
+                        ? (float) (Plan::find($newPlanId)?->price_annual ?? $subscription->amount)
+                        : $newMrr,
                     'updated_at' => now(),
                 ]);
 
@@ -288,6 +308,9 @@ class SubscriptionAdminService
                 ['plan_id' => $oldPlanId],
                 ['plan_id' => $newPlanId]
             );
+
+            $eventType = $newMrr >= $oldMrr ? 'upgraded' : 'downgraded';
+            $this->events->record((string) $subscription->id, 'plan', $subscription->tenant_id, $eventType, $oldMrr, $newMrr, $subscription->currency ?? 'USD');
 
             return $subscription;
         });
@@ -327,6 +350,9 @@ class SubscriptionAdminService
                 $subscription,
                 "Subscription [{$subscription->id}] reactivated by admin."
             );
+
+            $mrr = $this->planMrr(Plan::find($subscription->plan_id), (string) $subscription->billing_cycle);
+            $this->events->record((string) $subscription->id, 'plan', $subscription->tenant_id, 'reactivated', 0.0, $mrr, $subscription->currency ?? 'USD');
 
             return $subscription;
         });
@@ -378,6 +404,12 @@ class SubscriptionAdminService
                     "Subscription [{$sub->id}] created by admin — plan {$plan->name}, {$cycle}."
                 );
 
+                // A trial books no MRR until it converts, so new-revenue ledger
+                // entry is deferred to convertTrial; paid signups book now.
+                if ($trialDays === 0) {
+                    $this->events->record((string) $sub->id, 'plan', $sub->tenant_id, 'created', 0.0, $this->planMrr($plan, $cycle), $plan->currency ?? 'USD');
+                }
+
                 return $sub;
             }
 
@@ -405,6 +437,11 @@ class SubscriptionAdminService
                 $sub,
                 "Product subscription [{$sub->id}] created by admin — {$product->name}, {$cycle}."
             );
+
+            if ($trialDays === 0) {
+                $monthly = $cycle === 'yearly' ? round($amount / 12, 2) : $amount;
+                $this->events->record((string) $sub->id, 'product', $sub->tenant_id, 'created', 0.0, $monthly, 'USD');
+            }
 
             return $sub;
         });
@@ -484,6 +521,10 @@ class SubscriptionAdminService
                 "Trial converted to active — first period ends {$end->toDateString()}."
             );
 
+            // Trial start booked no MRR; conversion is where the revenue lands.
+            $mrr = $this->planMrr(Plan::find($subscription->plan_id), (string) $subscription->billing_cycle);
+            $this->events->record((string) $subscription->id, 'plan', $subscription->tenant_id, 'trial_converted', 0.0, $mrr, $subscription->currency ?? 'USD');
+
             return $subscription;
         });
     }
@@ -496,7 +537,9 @@ class SubscriptionAdminService
             $amount = $plan === null
                 ? $subscription->amount
                 : ($cycle === 'yearly' ? (float) $plan->price_annual : (float) $plan->price_monthly);
-            $old = $subscription->billing_cycle;
+            $old = (string) $subscription->billing_cycle;
+            $oldMrr = $this->planMrr($plan, $old);
+            $newMrr = $this->planMrr($plan, $cycle);
 
             DB::table('subscriptions')->where('id', $subscription->id)->update([
                 'billing_cycle' => $cycle,
@@ -513,6 +556,11 @@ class SubscriptionAdminService
                 ['billing_cycle' => $old],
                 ['billing_cycle' => $cycle, 'amount' => $amount]
             );
+
+            // A yearly switch lowers the effective monthly rate (annual discount)
+            // → contraction; monthly→yearly is neutral-to-expansion by the same
+            // math. The ledger records whatever the priced delta actually is.
+            $this->events->record((string) $subscription->id, 'plan', $subscription->tenant_id, 'cycle_changed', $oldMrr, $newMrr, $subscription->currency ?? 'USD');
 
             return $subscription;
         });
@@ -639,13 +687,38 @@ class SubscriptionAdminService
             $discount = (float) (DB::table('product_subscriptions')->where('id', $id)->value('discount_amount') ?? 0);
         }
 
-        // audit_logs is a tenant-DB table (AuditLog extends TenantModel); the
-        // SaaS central DB has no copy, so platform-context activity history is
-        // empty until central audit persistence lands (known B1/B2 debt).
+        // Activity merges two real sources: the domain-specific
+        // subscription_audit_logs (lifecycle history, FK'd to the subscription)
+        // and the generic platform_audit_logs where AuditService routes admin
+        // actions in platform context. Both are central-owned; merged, sorted,
+        // capped. Each read is guarded so a missing table can't 500 the drawer.
         $activity = [];
         try {
+            if ($kind === 'plan') {
+                $activity = DB::table('subscription_audit_logs')
+                    ->where('subscription_id', $id)
+                    ->orderByDesc('created_at')
+                    ->limit(12)
+                    ->get(['event_type', 'description', 'created_at'])
+                    ->map(fn ($a) => [
+                        'event'  => $a->event_type,
+                        'action' => $a->event_type,
+                        'detail' => $a->description,
+                        'actor'  => null,
+                        'at'     => $a->created_at,
+                    ])->all();
+            }
+        } catch (\Illuminate\Database\QueryException) {
+            // domain table absent — fall through to platform audits
+        }
+
+        try {
             $subjectType = $kind === 'plan' ? Subscription::class : ProductSubscription::class;
-            $activity = DB::table('audit_logs')
+            [$conn, $table] = (is_saas_mode() && ! (function_exists('tenancy') && tenancy()->initialized))
+                ? [central_connection(), 'platform_audit_logs']
+                : [null, 'audit_logs'];
+
+            $adminActs = DB::connection($conn)->table($table)
                 ->where('subject_type', $subjectType)
                 ->where('subject_id', $id)
                 ->orderByDesc('created_at')
@@ -658,8 +731,12 @@ class SubscriptionAdminService
                     'actor'  => $a->actor_name,
                     'at'     => $a->created_at,
                 ])->all();
+
+            $activity = array_merge($activity, $adminActs);
+            usort($activity, fn ($a, $b) => strcmp((string) $b['at'], (string) $a['at']));
+            $activity = array_slice($activity, 0, 12);
         } catch (\Illuminate\Database\QueryException) {
-            // table absent in this context — activity stays empty
+            // platform audit table absent in this context — keep domain events
         }
 
         return [

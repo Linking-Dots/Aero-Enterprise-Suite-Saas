@@ -57,7 +57,7 @@ export {
 // ── Workbench (shared command-center table kit) ───────────────────
 export {
   useWorkbench, useCtxMenu,
-  WbToolbar, WbSearch, WbViews, WbBulkBar,
+  WbToolbar, WbSearch, WbViews, WbBulkBar, WbColumns,
   WbTable, WbFooter, WbDrawer,
 }                                           from './components/Workbench.jsx';
 
