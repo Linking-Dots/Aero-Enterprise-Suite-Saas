@@ -4,213 +4,316 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
-use Aero\Platform\Models\Subscription;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Billing "Revenue Command Center" data. Thin, read-only aggregation over the
- * live billing tables — recurring revenue (MRR/ARR, normalized), subscription
- * lifecycle, invoice collections, dunning (overdue), payment-gateway health, and
- * a recent-transactions feed.
+ * Billing "Command Center" hub data for the /billing landing page — the
+ * executive roll-up of the whole billing vertical.
  *
- * All money is monthly-normalized (yearly amount ÷ 12) so MRR agrees with the
- * Plans + Tenants pages — the legacy controller summed raw `amount`, which
- * over-counts annual subscriptions. All decimals are cast to float at the
- * boundary (MySQL returns decimal strings).
+ * This service COMPOSES the two shipped command-centre aggregators rather than
+ * re-deriving anything:
+ *   - SubscriptionAdminService::overview()  → recurring revenue, lifecycle,
+ *     MRR movement/trend, churn sparks and the renewals/trials/dunning queues.
+ *   - InvoiceAdminService::overview()        → collections, AR aging, billed-vs-
+ *     collected trend and the invoice list (overdue queue + payment-method mix).
+ *
+ * On top of that it adds a real, merged "recent billing activity" feed
+ * (subscription lifecycle events + refunds + settled invoices, with the central
+ * audit trail merged in when present) and a payment-gateway roster + settled
+ * method mix. Everything is read-only and money is monthly-normalised by the
+ * upstream services, so figures agree with the Subscriptions/Invoices pages.
  */
 class BillingDashboardService
 {
-    private const ACTIVE = 'active';
+    public function __construct(
+        private readonly SubscriptionAdminService $subscriptions,
+        private readonly InvoiceAdminService $invoices,
+    ) {}
 
     /** @return array<string, mixed> */
     public function overview(): array
     {
+        $sub = $this->subscriptions->overview();
+        $inv = $this->invoices->overview();
+
+        $s = $sub['stats'];
+        $i = $inv['stats'];
+        $subSparks = $sub['sparks'];
+        $invSparks = $inv['sparks'];
+
+        $churnPct = ! empty($subSparks['churn_pct']) ? (float) end($subSparks['churn_pct']) : 0.0;
+
         return [
-            'heroes'         => $this->heroes(),
-            'revenueTrend'   => $this->revenueTrend(),
-            'lifecycle'      => $this->lifecycle(),
-            'invoices'       => $this->invoiceHealth(),
-            'needsAttention' => $this->needsAttention(),
-            'gateways'       => $this->gateways(),
-            'recent'         => $this->recentTransactions(),
+            'kpis' => [
+                'mrr'            => $s['mrr'],
+                'mrr_delta_pct'  => $s['mrr_delta_pct'] ?? 0.0,
+                'arr'            => $s['arr'] ?? round($s['mrr'] * 12, 2),
+                'plan_mrr'       => $s['plan_mrr'],
+                'product_mrr'    => $s['product_mrr'],
+                'active'         => $s['active'],
+                'trialing'       => $s['trialing'],
+                'trials_ending_7d' => $s['trials_ending_7d'] ?? 0,
+                'collected'      => $i['collected'],
+                'paid'           => $i['paid'],
+                'outstanding'    => $i['outstanding'],
+                'open'           => $i['open'],
+                'overdue'        => $i['overdue'],
+                'overdue_amt'    => $i['overdue_amt'],
+                'paid_rate'      => $i['paid_rate'],
+                'avg_days_to_pay' => $i['avg_days_to_pay'],
+                'dunning_amount' => $s['dunning_amount'] ?? 0.0,
+                'dunning_count'  => $s['dunning_count'] ?? 0,
+                'churn_pct'      => $churnPct,
+            ],
+            'sparks' => [
+                'mrr'         => $subSparks['mrr'] ?? [],
+                'arr'         => array_map(static fn ($v) => round((float) $v * 12, 2), $subSparks['mrr'] ?? []),
+                'active'      => $subSparks['active'] ?? [],
+                'trials'      => $subSparks['trials'] ?? [],
+                'churn'       => $subSparks['churn_pct'] ?? [],
+                'collected'   => $invSparks['collected'] ?? [],
+                'outstanding' => $invSparks['outstanding'] ?? [],
+                'overdue'     => $invSparks['overdue'] ?? [],
+                'paid_rate'   => $invSparks['paid_rate'] ?? [],
+            ],
+            'movement' => $sub['mrr_movement'],
+            'trend'    => $inv['trend'],
+            'health'   => [
+                'active'     => $s['active'],
+                'trialing'   => $s['trialing'],
+                'past_due'   => $s['past_due'],
+                'incomplete' => $s['incomplete'],
+                'cancelled'  => $s['cancelled'],
+                'total'      => $s['total'],
+                'active_pct' => $s['total'] > 0 ? (int) round($s['active'] / $s['total'] * 100) : 0,
+            ],
+            'queues' => [
+                'renewals' => $sub['queues']['renewals'],
+                'trials'   => $sub['queues']['trials'],
+                'dunning'  => $sub['queues']['dunning'],
+                'overdue'  => $this->overdueInvoices($inv['invoices']),
+            ],
+            'activity'  => $this->recentActivity(),
+            'gateways'  => $this->gateways(),
+            'methodMix' => $this->methodMix($inv['invoices']),
         ];
     }
 
     /**
-     * Fast-changing figures for the ~30s live poll (overdue + recent shift most).
+     * Fast-changing subset for a live poll (queues + activity shift most).
+     * The page's ~45s partial reload refreshes the full `overview`, so this is
+     * only used by the JSON `stats` endpoint.
      *
      * @return array<string, mixed>
      */
     public function live(): array
     {
-        return [
-            'invoices'       => $this->invoiceHealth(),
-            'needsAttention' => $this->needsAttention(),
-            'recent'         => $this->recentTransactions(),
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function heroes(): array
-    {
-        $mrr = $this->normalizedMrr();
-        $mrrPrev = $this->normalizedMrrAsOf(now()->subMonth());
-
-        $subs = DB::table('subscriptions')->whereNull('deleted_at')
-            ->selectRaw("SUM(status = 'active') a, SUM(status = 'trialing') t, SUM(status = 'cancelled') c")
-            ->first();
-
-        $overdue = DB::table('invoices')->whereNull('deleted_at')->where('status', 'overdue')
-            ->selectRaw('COUNT(*) c, SUM(total) t')->first();
-        $openCount = (int) DB::table('invoices')->whereNull('deleted_at')->where('status', 'issued')->count();
-
-        $delta = $mrrPrev > 0 ? round((($mrr - $mrrPrev) / $mrrPrev) * 100, 1) : 0.0;
+        $inv = $this->invoices->overview();
 
         return [
-            'mrr'            => $mrr,
-            'arr'            => round($mrr * 12, 2),
-            'mrrDeltaPct'    => $delta,
-            'activeSubs'     => (int) ($subs->a ?? 0),
-            'trialingSubs'   => (int) ($subs->t ?? 0),
-            'cancelledSubs'  => (int) ($subs->c ?? 0),
-            'overdueCount'   => (int) ($overdue->c ?? 0),
-            'overdueAmount'  => round((float) ($overdue->t ?? 0), 2),
-            'openCount'      => $openCount,
+            'queues'   => ['overdue' => $this->overdueInvoices($inv['invoices'])],
+            'activity' => $this->recentActivity(),
         ];
-    }
-
-    /** Monthly-normalized MRR from active plan + product subscriptions. */
-    private function normalizedMrr(): float
-    {
-        $plan = (float) DB::table('subscriptions')->whereNull('deleted_at')
-            ->where('status', self::ACTIVE)
-            ->selectRaw("SUM(CASE WHEN billing_cycle = 'yearly' THEN amount / 12 ELSE amount END) m")
-            ->value('m');
-
-        $product = (float) DB::table('product_subscriptions')->whereNull('deleted_at')
-            ->where('status', self::ACTIVE)
-            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
-            ->selectRaw("SUM(CASE WHEN billing_cycle = 'yearly' THEN amount / 12 ELSE amount END) m")
-            ->value('m');
-
-        return round($plan + $product, 2);
-    }
-
-    /** Prior-period MRR baseline from platform_metrics_daily (for the delta). */
-    private function normalizedMrrAsOf(Carbon $date): float
-    {
-        $row = DB::table('platform_metrics_daily')
-            ->where('date', '<=', $date->toDateString())
-            ->orderByDesc('date')->first();
-
-        return $row ? round((float) $row->mrr, 2) : 0.0;
     }
 
     /**
-     * Last 6 calendar months of MRR (total + product split) from the daily metrics
-     * snapshot — the month's latest row per month.
+     * Overdue invoices, oldest-first (largest days-overdue), for the collections
+     * queue. `id` is carried so the row's quick actions can POST to the invoice
+     * lifecycle endpoints (same ids the Invoices page uses).
      *
-     * @return array<int, array{month: string, mrr: float, product: float}>
+     * @param  array<int, array<string, mixed>>  $invoices
+     * @return array<int, array<string, mixed>>
      */
-    private function revenueTrend(): array
+    private function overdueInvoices(array $invoices): array
     {
-        $since = now()->subMonths(5)->startOfMonth();
+        $overdue = array_values(array_filter($invoices, static fn ($r) => $r['status'] === 'overdue'));
+        usort($overdue, static fn ($a, $b) => $b['days_overdue'] <=> $a['days_overdue']);
 
-        $rows = DB::table('platform_metrics_daily')
-            ->where('date', '>=', $since->toDateString())
-            ->orderBy('date')
-            ->get(['date', 'mrr', 'product_mrr']);
-
-        $byMonth = [];
-        foreach ($rows as $r) {
-            $key = Carbon::parse($r->date)->format('Y-m');
-            $byMonth[$key] = [
-                'month'   => Carbon::parse($r->date)->format('M'),
-                'mrr'     => round((float) $r->mrr, 2),
-                'product' => round((float) $r->product_mrr, 2),
-            ];
-        }
-
-        return array_values($byMonth);
-    }
-
-    /** @return array<string, mixed> */
-    private function lifecycle(): array
-    {
-        $active    = (int) DB::table('subscriptions')->whereNull('deleted_at')->where('status', self::ACTIVE)->count();
-        $trialing  = (int) DB::table('subscriptions')->whereNull('deleted_at')->where('status', 'trialing')->count();
-        $cancelled = (int) DB::table('subscriptions')->whereNull('deleted_at')->where('status', 'cancelled')->count();
-
-        // 30-day churn from the daily metrics: churned tenants over the average
-        // active base. Null when the metrics window is empty.
-        $m = DB::table('platform_metrics_daily')
-            ->where('date', '>=', now()->subDays(30)->toDateString())
-            ->selectRaw('SUM(churned_tenants) churned, AVG(active_tenants) active_avg')->first();
-        $churn = ($m && (float) $m->active_avg > 0)
-            ? round(((int) $m->churned / (float) $m->active_avg) * 100, 1)
-            : null;
-
-        return [
-            'active'    => $active,
-            'trialing'  => $trialing,
-            'cancelled' => $cancelled,
-            'total'     => $active + $trialing + $cancelled,
-            'churnPct'  => $churn,
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function invoiceHealth(): array
-    {
-        $rows = DB::table('invoices')->whereNull('deleted_at')
-            ->selectRaw('status, COUNT(*) c, SUM(total) t')
-            ->groupBy('status')->get()->keyBy('status');
-
-        $pick = fn (string $s) => [
-            'count'  => (int) ($rows[$s]->c ?? 0),
-            'amount' => round((float) ($rows[$s]->t ?? 0), 2),
-        ];
-
-        $paid    = $pick('paid');
-        $open    = $pick('issued');
-        $overdue = $pick('overdue');
-
-        $totalCount = $paid['count'] + $open['count'] + $overdue['count'];
-        $collectedPct = $totalCount > 0 ? round(($paid['count'] / $totalCount) * 100, 0) : 0;
-
-        return [
-            'paid'         => $paid,
-            'open'         => $open,
-            'overdue'      => $overdue,
-            'total'        => $totalCount,
-            'collectedPct' => $collectedPct,
-        ];
+        return array_map(static fn ($r) => [
+            'id'           => $r['id'],
+            'tenant'       => $r['tenant'],
+            'number'       => $r['number'],
+            'amount'       => $r['total'],
+            'days_overdue' => $r['days_overdue'],
+        ], array_slice($overdue, 0, 6));
     }
 
     /**
-     * Overdue invoices, oldest due-date first — the dunning worklist. Tenant name
-     * comes via subscription (uuid → uuid), the only reliable link (the polymorphic
-     * billable_id is a bigint that can't join the uuid tenant in seeded data).
+     * Merged, real "recent billing activity" feed: subscription lifecycle events
+     * (priced), refunds, and settled invoices — with the central platform audit
+     * trail merged in when it holds billing rows. Sorted newest-first, capped.
+     * Every read is guarded so a missing table can't 500 the hub.
      *
      * @return array<int, array<string, mixed>>
      */
-    private function needsAttention(): array
+    private function recentActivity(): array
     {
-        return DB::table('invoices as i')
-            ->leftJoin('subscriptions as s', 's.id', '=', 'i.subscription_id')
-            ->leftJoin('tenants as t', 't.id', '=', 's.tenant_id')
+        $items = [];
+
+        // 1) Subscription lifecycle ledger — priced movement per tenant.
+        try {
+            $events = DB::table('subscription_events as e')
+                ->leftJoin('tenants as t', 't.id', '=', 'e.tenant_id')
+                ->orderByDesc('e.occurred_at')
+                ->limit(12)
+                ->get(['e.event_type', 'e.movement', 'e.mrr_delta', 'e.currency', 't.name as tenant', 'e.occurred_at', 'e.actor_name']);
+            foreach ($events as $e) {
+                $delta = (float) $e->mrr_delta;
+                $items[] = [
+                    'kind'     => $this->activityKind((string) $e->movement, (string) $e->event_type),
+                    'tenant'   => $e->tenant ?: '—',
+                    'message'  => $this->eventMessage((string) $e->event_type, (string) $e->movement),
+                    'amount'   => $delta !== 0.0 ? round($delta, 2) : null,
+                    'currency' => $e->currency ?: 'USD',
+                    'at'       => $e->occurred_at,
+                    'note'     => $e->actor_name ?: null,
+                ];
+            }
+        } catch (QueryException) {
+            // subscription_events absent — skip
+        }
+
+        // 2) Refunds — signed negative movements.
+        try {
+            $refunds = DB::table('refunds as r')
+                ->leftJoin('tenants as t', 't.id', '=', 'r.tenant_id')
+                ->orderByDesc('r.created_at')
+                ->limit(6)
+                ->get(['r.reference', 'r.amount', 'r.currency', 'r.reason', 'r.status', 't.name as tenant', 'r.created_at']);
+            foreach ($refunds as $r) {
+                $items[] = [
+                    'kind'     => 'refund',
+                    'tenant'   => $r->tenant ?: '—',
+                    'message'  => "refunded {$r->reference}".($r->reason ? " — {$r->reason}" : ''),
+                    'amount'   => -round((float) $r->amount, 2),
+                    'currency' => $r->currency ?: 'USD',
+                    'at'       => $r->created_at,
+                    'note'     => $r->status ?: null,
+                ];
+            }
+        } catch (QueryException) {
+            // refunds absent — skip
+        }
+
+        // 3) Settled invoices — real collections.
+        $paid = DB::table('invoices as i')
+            ->leftJoin('tenants as t', 't.id', '=', 'i.billable_id')
             ->whereNull('i.deleted_at')
-            ->where('i.status', 'overdue')
-            ->orderBy('i.due_date')
+            ->whereNotNull('i.paid_at')
+            ->orderByDesc('i.paid_at')
             ->limit(6)
-            ->get(['i.invoice_number', 'i.total', 'i.due_date', 't.name as tenant'])
-            ->map(fn ($r) => [
-                'invoice'     => $r->invoice_number,
-                'tenant'      => $r->tenant ?? '—',
-                'amount'      => round((float) $r->total, 2),
-                'daysOverdue' => $r->due_date ? (int) abs(now()->diffInDays(Carbon::parse($r->due_date))) : null,
-            ])->all();
+            ->get(['i.invoice_number', 'i.total', 'i.currency', 'i.payment_method', 't.name as tenant', 'i.paid_at']);
+        foreach ($paid as $p) {
+            $items[] = [
+                'kind'     => 'pay',
+                'tenant'   => $p->tenant ?: '—',
+                'message'  => "paid invoice {$p->invoice_number}",
+                'amount'   => round((float) $p->total, 2),
+                'currency' => $p->currency ?: 'USD',
+                'at'       => $p->paid_at,
+                'note'     => $p->payment_method ?: null,
+            ];
+        }
+
+        // 4) Central audit trail — merged when it carries billing subjects
+        //    (empty on seeded data, but real admin actions land here in prod).
+        try {
+            [$conn, $table] = (is_saas_mode() && ! (function_exists('tenancy') && tenancy()->initialized))
+                ? [central_connection(), 'platform_audit_logs']
+                : [null, 'audit_logs'];
+
+            $audits = DB::connection($conn)->table($table)
+                ->where(fn ($q) => $q->where('subject_type', 'like', '%Invoice%')->orWhere('subject_type', 'like', '%Subscription%'))
+                ->orderByDesc('created_at')
+                ->limit(6)
+                ->get(['action', 'description', 'actor_name', 'created_at']);
+            foreach ($audits as $a) {
+                $items[] = [
+                    'kind'     => 'event',
+                    'tenant'   => $a->actor_name ?: 'System',
+                    'message'  => $a->description ?: ($a->action ?: 'billing action'),
+                    'amount'   => null,
+                    'currency' => null,
+                    'at'       => $a->created_at,
+                    'note'     => 'audit',
+                ];
+            }
+        } catch (QueryException) {
+            // audit table absent in this context — keep the composed feed
+        }
+
+        usort($items, static fn ($a, $b) => strcmp((string) $b['at'], (string) $a['at']));
+
+        return array_slice($items, 0, 10);
+    }
+
+    /** Icon/colour class for an activity row from its ledger movement/type. */
+    private function activityKind(string $movement, string $eventType): string
+    {
+        return match (true) {
+            $movement === 'new' || $eventType === 'created'      => 'new',
+            $movement === 'expansion'                            => 'up',
+            $movement === 'contraction'                          => 'down',
+            $movement === 'churn' || $eventType === 'cancelled'  => 'churn',
+            default                                              => 'event',
+        };
+    }
+
+    /** Human message for a subscription lifecycle event. */
+    private function eventMessage(string $eventType, string $movement): string
+    {
+        return match ($eventType) {
+            'created'         => 'started a new subscription',
+            'cancelled'       => 'cancelled their subscription',
+            'reactivated'     => 'reactivated their subscription',
+            'trial_converted' => 'converted their trial to paid',
+            'cycle_changed'   => 'changed billing cycle',
+            'upgraded'        => 'upgraded their plan',
+            'downgraded'      => 'downgraded their plan',
+            default           => match ($movement) {
+                'expansion'   => 'expanded their subscription',
+                'contraction' => 'reduced their subscription',
+                'churn'       => 'cancelled their subscription',
+                default       => 'updated their subscription',
+            },
+        };
+    }
+
+    /**
+     * Settled-payment method mix from paid invoices' payment_method — the honest
+     * distribution of how collected revenue actually settled.
+     *
+     * @param  array<int, array<string, mixed>>  $invoices
+     * @return array<int, array{method: string, count: int, amount: float, pct: int}>
+     */
+    private function methodMix(array $invoices): array
+    {
+        $mix = [];
+        $totalPaid = 0;
+        foreach ($invoices as $r) {
+            if ($r['status'] !== 'paid') {
+                continue;
+            }
+            $method = $r['method'] ?: 'other';
+            $mix[$method]['count'] = ($mix[$method]['count'] ?? 0) + 1;
+            $mix[$method]['amount'] = ($mix[$method]['amount'] ?? 0) + $r['amount_paid'];
+            $totalPaid++;
+        }
+
+        $out = [];
+        foreach ($mix as $method => $agg) {
+            $out[] = [
+                'method' => $method,
+                'count'  => $agg['count'],
+                'amount' => round($agg['amount'], 2),
+                'pct'    => $totalPaid > 0 ? (int) round($agg['count'] / $totalPaid * 100) : 0,
+            ];
+        }
+        usort($out, static fn ($a, $b) => $b['count'] <=> $a['count']);
+
+        return $out;
     }
 
     /**
@@ -223,34 +326,11 @@ class BillingDashboardService
         return DB::table('payment_gateways')
             ->orderByDesc('is_default')->orderBy('label')
             ->get(['code', 'label', 'is_enabled', 'is_default'])
-            ->map(fn ($g) => [
+            ->map(static fn ($g) => [
                 'code'      => $g->code,
                 'label'     => $g->label,
                 'enabled'   => (bool) $g->is_enabled,
                 'isDefault' => (bool) $g->is_default,
-            ])->all();
-    }
-
-    /**
-     * Latest invoices for the transactions feed.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function recentTransactions(): array
-    {
-        return DB::table('invoices as i')
-            ->leftJoin('subscriptions as s', 's.id', '=', 'i.subscription_id')
-            ->leftJoin('tenants as t', 't.id', '=', 's.tenant_id')
-            ->whereNull('i.deleted_at')
-            ->orderByDesc('i.created_at')
-            ->limit(8)
-            ->get(['i.invoice_number', 'i.total', 'i.status', 'i.created_at', 't.name as tenant'])
-            ->map(fn ($r) => [
-                'invoice' => $r->invoice_number,
-                'tenant'  => $r->tenant ?? '—',
-                'amount'  => round((float) $r->total, 2),
-                'status'  => $r->status,
-                'date'    => $r->created_at ? Carbon::parse($r->created_at)->format('M j') : null,
             ])->all();
     }
 }

@@ -1,0 +1,72 @@
+/* Billing command centre (hub) — the /billing landing roll-up. Extends the
+   shared products.css (pc-*) + subscriptions.css (sc-*) command-centre language;
+   adds only the few hub-specific pieces (4-up queues, activity feed dot colours,
+   gateway roster, method-mix bar). All colour via theme tokens so Theme-Studio
+   mode / density / radius / borders / accent all apply. */
+
+/* ---- 4-up action queues ---- */
+.bh-queues4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--aeos-space-3); }
+.bh-queues4 > * { min-width: 0; }
+.bh-qacts { display: flex; gap: var(--aeos-space-1); padding: 0 0 var(--aeos-space-2) 37px; }
+
+/* ---- bottom row: activity + gateways ---- */
+.bh-bottom { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--aeos-space-3); align-items: start; }
+.bh-bottom > * { min-width: 0; }
+
+/* ---- activity timeline (extends sc-tl with per-kind dot colours) ---- */
+.bh-tl li::before { border-color: var(--aeos-primary); }
+.bh-tl li.bh-act--new::before    { border-color: var(--aeos-primary); }
+.bh-tl li.bh-act--pay::before    { border-color: var(--aeos-success); }
+.bh-tl li.bh-act--refund::before { border-color: var(--aeos-danger); }
+.bh-tl li.bh-act--up::before     { border-color: var(--aeos-success); }
+.bh-tl li.bh-act--down::before   { border-color: var(--aeos-warning); }
+.bh-tl li.bh-act--churn::before  { border-color: var(--aeos-danger); }
+.bh-tl li.bh-act--event::before  { border-color: var(--aeos-text-muted); }
+.bh-tl .bh-amt { font-variant-numeric: tabular-nums; font-weight: 600; margin-left: 6px; }
+.bh-tl .bh-amt--pos { color: var(--aeos-success); }
+.bh-tl .bh-amt--neg { color: var(--aeos-danger); }
+.bh-tl .bh-tl-note { color: var(--aeos-text-muted); }
+
+/* ---- deep-link mini button ---- */
+.bh-deep { display: inline-flex; align-items: center; gap: 5px; font-size: var(--aeos-text-xs); font-weight: 540; color: var(--aeos-primary); background: none; border: 0; cursor: pointer; padding: 0; font-family: inherit; }
+.bh-deep:hover { text-decoration: underline; }
+
+/* ---- gateways roster ---- */
+.bh-gw { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.bh-gcard { display: flex; align-items: center; gap: var(--aeos-space-3); padding: var(--aeos-space-2) var(--aeos-space-3); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: calc(var(--aeos-card-radius) * .7); background: var(--aeos-bg-subtle); }
+.bh-gcard .bh-gn { flex: 1; min-width: 0; }
+.bh-gcard .bh-gn b { font-weight: 570; color: var(--aeos-text-primary); display: block; }
+.bh-gcard .bh-gn span { font-size: 11px; color: var(--aeos-text-muted); font-family: var(--aeos-font-mono); }
+.bh-gdot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.bh-gdot--live { background: var(--aeos-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--aeos-success) 20%, transparent); }
+.bh-gdot--off { background: var(--aeos-text-muted); }
+.bh-gchip { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: var(--aeos-primary-tint); color: var(--aeos-primary); border: var(--aeos-border-width) solid var(--aeos-primary-border); }
+
+/* ---- settled method mix ---- */
+.bh-mix { margin-top: var(--aeos-space-4); padding-top: var(--aeos-space-4); border-top: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.bh-mix__lab { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); font-weight: 540; }
+.bh-mixbar { display: flex; height: 12px; border-radius: 7px; overflow: hidden; background: var(--aeos-bg-subtle); margin: var(--aeos-space-2) 0 6px; }
+.bh-mixbar > span { display: block; height: 100%; }
+.bh-mix-c0 { background: var(--aeos-primary); }
+.bh-mix-c1 { background: var(--aeos-success); }
+.bh-mix-c2 { background: var(--aeos-warning); }
+.bh-mix-c3 { background: var(--aeos-tertiary, var(--aeos-text-muted)); }
+
+/* ---- container-responsive: the hub reflows to its CONTENT width, not the
+   viewport, so the command shell's narrower main column (rail takes ~260px)
+   collapses the 6-up KPIs / 3-up analytics / 4-up queues instead of cramping
+   them. Scoped to .bh so shipped Subscriptions/Invoices pages are untouched. */
+.bh { container-type: inline-size; }
+
+@container (max-width: 1080px) {
+  .bh .sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .bh .sc-band { grid-template-columns: 1fr 1fr; }
+  .bh .sc-band > *:last-child { grid-column: 1 / -1; }
+  .bh .bh-queues4 { grid-template-columns: 1fr 1fr; }
+  .bh .bh-bottom { grid-template-columns: 1fr; }
+}
+@container (max-width: 620px) {
+  .bh .sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .bh .sc-band { grid-template-columns: 1fr; }
+  .bh .bh-queues4 { grid-template-columns: 1fr; }
+}
