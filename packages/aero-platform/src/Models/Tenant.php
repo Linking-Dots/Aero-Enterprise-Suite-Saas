@@ -470,7 +470,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         $baseline = config('hrmac.baseline_modules', []);
 
-        $productCodes = ProductSubscription::query()
+        // Base query: this tenant's currently-entitled (active or trialing)
+        // subscriptions on active products.
+        $activeSubscriptions = fn () => ProductSubscription::query()
             ->where('tenant_id', $this->id)
             ->where(function ($q): void {
                 $q->where(function ($sub): void {
@@ -484,11 +486,23 @@ class Tenant extends BaseTenant implements TenantWithDatabase
                 });
             })
             ->join('products', 'product_subscriptions.product_id', '=', 'products.id')
-            ->where('products.is_active', true)
+            ->where('products.is_active', true);
+
+        // Bundle-aware: every module a subscribed product grants via product_modules.
+        // A single product can now bundle several modules.
+        $pivotCodes = $activeSubscriptions()
+            ->join('product_modules', 'products.id', '=', 'product_modules.product_id')
+            ->pluck('product_modules.module_code')
+            ->all();
+
+        // Legacy 1:1 scalar — retained until the Phase 4 cleanup and unioned here so
+        // any product not yet backfilled into the pivot still resolves.
+        $scalarCodes = $activeSubscriptions()
+            ->whereNotNull('products.module_code')
             ->pluck('products.module_code')
             ->all();
 
-        return array_values(array_unique(array_merge($baseline, $productCodes)));
+        return array_values(array_unique(array_merge($baseline, $pivotCodes, $scalarCodes)));
     }
 
     /**

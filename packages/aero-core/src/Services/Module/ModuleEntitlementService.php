@@ -7,7 +7,9 @@ namespace Aero\Core\Services\Module;
 use Aero\Core\Models\ModuleLicense;
 use Aero\HRMAC\Models\Module;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 /**
@@ -59,7 +61,11 @@ class ModuleEntitlementService
                     return null; // pre-tenancy — do not over-filter
                 }
 
-                return $this->clean(array_merge($codes, (array) ($tenant->subscribed_product_modules ?? [])));
+                return $this->clean(array_merge(
+                    $codes,
+                    (array) ($tenant->subscribed_product_modules ?? []),
+                    $this->overrideCodes($tenant->getTenantKey()),
+                ));
             }
 
             // Standalone: entitlement comes from active module licenses. When the
@@ -70,7 +76,7 @@ class ModuleEntitlementService
                 return null;
             }
 
-            return $this->clean(array_merge($codes, $licensed));
+            return $this->clean(array_merge($codes, $licensed, $this->overrideCodes(null)));
         } catch (Throwable $e) {
             Log::warning('ModuleEntitlementService: resolution failed, treating as unrestricted', ['error' => $e->getMessage()]);
 
@@ -111,6 +117,39 @@ class ModuleEntitlementService
         }
 
         return ModuleLicense::query()->active()->pluck('module_code')->filter()->values()->all();
+    }
+
+    /**
+     * Open override grants for this scope — modules an admin comped / trialed /
+     * grandfathered outside a purchase (tenant_entitlements, source=override).
+     *
+     * Read via the query builder (not the platform TenantEntitlement model) so
+     * aero-core keeps no code edge to aero-platform. Guarded on table existence
+     * and fail-open: a standalone install without the ledger table simply gets
+     * no overrides rather than an error.
+     *
+     * @return array<int, string>
+     */
+    private function overrideCodes(?string $tenantId): array
+    {
+        try {
+            if (! Schema::hasTable('tenant_entitlements')) {
+                return [];
+            }
+
+            return DB::table('tenant_entitlements')
+                ->where('source', 'override')
+                ->whereNull('revoked_at')
+                ->when(
+                    $tenantId === null,
+                    fn ($q) => $q->whereNull('tenant_id'),
+                    fn ($q) => $q->where('tenant_id', $tenantId),
+                )
+                ->pluck('module_code')
+                ->all();
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 
     /** @return array<int, string> */

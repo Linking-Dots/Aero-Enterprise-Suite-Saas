@@ -65,6 +65,7 @@ use Aero\Platform\Http\Middleware\SmartLandingRedirect;
 use Aero\Platform\Http\Middleware\TenantSuperAdmin;
 use Aero\Platform\Http\Middleware\TrustHosts;
 use Aero\Platform\Listeners\ReactivateRoleAccessOnResubscribe;
+use Aero\Platform\Listeners\RecordProductEntitlementLedger;
 use Aero\Platform\Listeners\ResyncTenantModuleCatalog;
 use Aero\Platform\Listeners\SuspendUnsubscribedRoleAccess;
 use Aero\Platform\Listeners\TenantCreatedListener;
@@ -377,6 +378,9 @@ class AeroPlatformServiceProvider extends ServiceProvider
         // Observer fires ProductSubscriptionChanged; listener re-syncs the catalog.
         ProductSubscription::observe(ProductSubscriptionObserver::class);
         Event::listen(ProductSubscriptionChanged::class, ResyncTenantModuleCatalog::class);
+
+        // Append grant/revoke rows to the tenant_entitlements audit ledger.
+        Event::listen(ProductSubscriptionChanged::class, RecordProductEntitlementLedger::class);
 
         // Audit D17 — soft-suspend role grants on unsubscribe; restore on re-subscribe.
         // SuspendUnsubscribedRoleAccess marks rows suspended (30-day grace; no access at runtime).

@@ -55,8 +55,15 @@ return new class extends Migration
         // the SOLE source of truth for active/inactive. That drop runs in the auth
         // tier BEFORE platform, so `users` has no `active` column by the time this
         // platform migration runs; the data-move must NOT reference it.
+        // Portable "insert, skipping rows that collide on a unique key":
+        //   MySQL  → INSERT IGNORE INTO
+        //   SQLite → INSERT OR IGNORE INTO   (test harness runs on :memory: sqlite)
+        $insertIgnore = DB::connection('central')->getDriverName() === 'sqlite'
+            ? 'INSERT OR IGNORE INTO'
+            : 'INSERT IGNORE INTO';
+
         DB::connection('central')->statement(
-            'INSERT IGNORE INTO users ('
+            $insertIgnore.' users ('
             .'id, user_name, phone, email, password, name, '
             .'profile_image, timezone, two_factor_secret, two_factor_recovery_codes, '
             .'two_factor_confirmed_at, last_login_at, last_login_ip, email_verified_at, '
