@@ -52,6 +52,7 @@ use Aero\Platform\Http\Controllers\Admin\ModuleAdminController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
 use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminOnboardingController;
+use Aero\Platform\Http\Controllers\Admin\ProductCatalogController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
 use Aero\Platform\Http\Controllers\Admin\PlatformAddonController;
@@ -1440,6 +1441,14 @@ Route::middleware('admin.domain')->group(function () {
                 Route::middleware('hrmac:hrmac.roles_permissions.roles.assign')
                     ->post('/assign-user', [RoleController::class, 'assignUser'])->name('assign-user');
             });
+
+        // Products (Catalog) — monetisation-governance command centre.
+        // Sellable products (bundled modules, price, adoption, MRR). The technical
+        // module registry lives on the Modules page below.
+        Route::prefix('products')->name('platform.admin.products.')->group(function () {
+            Route::middleware('hrmac:product-catalog.catalog.view')
+                ->get('/', [ProductCatalogController::class, 'index'])->name('index');
+        });
 
         // Module Management (P-4)
         Route::prefix('modules')->name('platform.admin.modules.')->group(function () {

@@ -60,7 +60,7 @@ return [
     'nav_section_map' => [
         'analytics' => 'ov', 'product-analytics' => 'ov',
         'tenants' => 'tn', 'onboarding' => 'tn', 'quotas' => 'tn', 'provisioning' => 'tn',
-        'plans' => 'rv', 'billing' => 'rv', 'modules' => 'rv', 'licenses' => 'rv', 'contracts' => 'rv',
+        'plans' => 'rv', 'billing' => 'rv', 'products' => 'rv', 'modules' => 'rv', 'licenses' => 'rv', 'contracts' => 'rv',
         'leads' => 'gr', 'newsletter' => 'gr', 'affiliates' => 'gr', 'partners' => 'gr', 'seo' => 'gr', 'social-auth' => 'gr',
         'users' => 'access', 'roles' => 'access', 'security' => 'access', 'security-center' => 'access', 'secrets' => 'access',
         'settings' => 'cf', 'integrations' => 'cf', 'feature-flags' => 'cf', 'white-label' => 'cf', 'developer' => 'cf', 'releases' => 'cf',
@@ -363,6 +363,35 @@ return [
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Gateways'],
                         ['code' => 'configure', 'name' => 'Configure Gateway'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6b. Products (Catalog) — monetisation-governance command centre
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'product-catalog',
+            'name' => 'Products',
+            'description' => 'Sellable product catalog — bundled modules, pricing, adoption & MRR',
+            'icon' => 'RectangleStackIcon',
+            'route' => '/products',
+            'priority' => 6,
+
+            'components' => [
+                [
+                    'code' => 'catalog',
+                    'name' => 'Product Catalog',
+                    'route' => '/products',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Products'],
+                        ['code' => 'create', 'name' => 'Create Product'],
+                        ['code' => 'edit', 'name' => 'Edit Product'],
+                        ['code' => 'bundle', 'name' => 'Manage Product Modules'],
+                        ['code' => 'pricing', 'name' => 'Edit Product Pricing'],
                     ],
                 ],
             ],

@@ -1,0 +1,293 @@
+import { useMemo, useState } from 'react';
+import { router } from '@inertiajs/react';
+
+import App from '@/Pages/App.jsx';
+import { Card, CardBody } from '@aero/ui';
+
+import './products.css';
+
+/* ---------- tiny inline glyphs (SVG markup, not style) ---------- */
+const svg = (paths) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18" strokeLinecap="round" strokeLinejoin="round">{paths}</svg>
+);
+const Glyph = {
+  refresh: svg(<><path d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6" /></>),
+  plus: svg(<><path d="M12 5v14M5 12h14" /></>),
+  product: svg(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" /></>),
+  dev: svg(<><path d="m8 6-6 6 6 6M16 6l6 6-6 6" /></>),
+  catalog: svg(<><path d="M4 7h16M4 12h16M4 17h10" /></>),
+  sell: svg(<><path d="M3 3h18v13H3zM8 21h8M12 16v5" /></>),
+  check: svg(<><path d="M20 6 9 17l-5-5" /></>),
+  clock: svg(<><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>),
+  shield: svg(<><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z" /><path d="m9 12 2 2 4-4" /></>),
+  chevron: svg(<><path d="m6 9 6 6 6-6" /></>),
+  cube: svg(<><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.3 7 12 12l8.7-5M12 22V12" /></>),
+};
+
+const fmtMoney = (n) => `$${Number(n ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+
+/* ---------------- command-shell context rail ---------------- */
+function ProductsRail({ kpis }) {
+  const k = kpis ?? {};
+  const rows = [
+    ['Live products', k.live_products ?? 0],
+    ['Adoption', `${k.adoption_pct ?? 0}%`],
+    ['Module MRR', fmtMoney(k.module_mrr)],
+  ];
+  const links = [
+    ['Module registry', '/modules', Glyph.cube],
+    ['Subscriptions', '/subscriptions', Glyph.product],
+    ['Tenants', '/tenants', Glyph.check],
+  ];
+  return (
+    <div className="pc-rail">
+      <div>
+        <div className="pc-panel-h__title">Catalog</div>
+        <div className="pc-rail__rows">
+          {rows.map(([label, val]) => (
+            <div key={label} className="pc-rail__row"><span>{label}</span><b>{val}</b></div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="pc-panel-h__title">Go to</div>
+        <div className="pc-rail__links">
+          {links.map(([label, href, icon]) => (
+            <button key={href} type="button" className="pc-btn pc-btn--sm" onClick={() => router.visit(href)}>
+              {icon}<span>{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- lifecycle band ---------------- */
+function Lifecycle({ lifecycle }) {
+  const l = lifecycle ?? {};
+  const total = Math.max(1, l.developed ?? 1);
+  const tenants = Math.max(1, l.tenants_total ?? 1);
+  const stages = [
+    { ico: Glyph.dev, title: 'Developed', desc: 'Package + config/module.php defines features & HRMAC actions.', n: l.developed ?? 0, pct: 100 },
+    { ico: Glyph.catalog, title: 'Cataloged', desc: 'Synced into the module registry with category & core flag.', n: l.cataloged ?? 0, pct: 100 },
+    { ico: Glyph.sell, title: 'Sellable', desc: 'Promoted to a Product with a price & marketplace listing.', n: l.sellable ?? 0, sub: `/ ${l.developed ?? 0}`, pct: Math.round(((l.sellable ?? 0) / total) * 100) },
+    { ico: Glyph.check, title: 'Entitled', desc: 'SaaS subscription or standalone license grants access.', n: l.entitled_tenants ?? 0, sub: 'tenants', pct: Math.round(((l.entitled_tenants ?? 0) / tenants) * 100) },
+    { ico: Glyph.clock, title: 'Active', desc: 'Nav-filtered & enforced live from the unified resolver.', n: l.active ?? 0, pct: Math.round(((l.active ?? 0) / tenants) * 100) },
+  ];
+  return (
+    <Card>
+      <CardBody>
+        <div className="pc-panel-h">
+          <h2 className="pc-panel-h__title">Module lifecycle</h2>
+          <span className="pc-hint">development → customer · counts show modules/tenants at each stage</span>
+        </div>
+        <div className="pc-flow">
+          {stages.map((s) => (
+            <div key={s.title} className="pc-stage">
+              <div className="pc-stage__ico">{s.ico}</div>
+              <div className="pc-stage__title">{s.title}</div>
+              <div className="pc-stage__desc">{s.desc}</div>
+              <div className="pc-stage__n">{s.n}{s.sub && <small> {s.sub}</small>}</div>
+              <div className="pc-stage__bar"><i style={{ width: `${Math.min(100, s.pct)}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+/* ---------------- product detail panel ---------------- */
+function Detail({ product }) {
+  if (!product) {
+    return <Card><CardBody><div className="pc-sub">Select a product to inspect its bundle &amp; entitlement path.</div></CardBody></Card>;
+  }
+  const rows = [
+    ['State', product.is_active
+      ? <span className="pc-chip pc-chip--live"><span className="pc-chip__dot" />Live product</span>
+      : <span className="pc-chip pc-chip--off"><span className="pc-chip__dot" />Inactive</span>],
+    ['Price', `${fmtMoney(product.monthly_price)} / month`],
+    ['Bundled modules', product.modules.join(', ') || '—'],
+    ['Subscriptions', `${product.subscriptions} active`],
+    ['Adoption', `${product.subscriptions} / ${product.tenants_total} tenants`],
+    ['Module MRR', fmtMoney(product.mrr)],
+    ['Marketplace', product.is_marketplace_visible ? 'Visible' : 'Hidden'],
+  ];
+  const path = [
+    <>Promoted to <b>Product</b> ({product.code})</>,
+    <>Bundles <b>{product.modules.length} module{product.modules.length === 1 ? '' : 's'}</b> via product_modules</>,
+    <>Active <b>subscription</b> → subscribed_product_modules</>,
+    <>Resolved by <b>ModuleEntitlementService</b>, nav-gated live</>,
+  ];
+  return (
+    <Card>
+      <CardBody>
+        <div className="pc-detail__head">
+          <div className="pc-detail__ico">{Glyph.product}</div>
+          <div>
+            <div className="pc-detail__title">{product.name}</div>
+            <div className="pc-detail__code">{product.code}</div>
+          </div>
+        </div>
+        {rows.map(([k, v]) => (
+          <div key={k} className="pc-drow"><span className="pc-drow__k">{k}</span><span className="pc-drow__v">{v}</span></div>
+        ))}
+        <div className="pc-ent">
+          <div className="pc-ent__l">Entitlement path</div>
+          <div className="pc-ent__path">
+            {path.map((step, i) => (
+              <div key={i} className="pc-estep"><span className="pc-estep__i">{Glyph.check}</span>{step}</div>
+            ))}
+          </div>
+        </div>
+        <div className="pc-detail__actions">
+          <button type="button" className="pc-btn">Edit product</button>
+          <button type="button" className="pc-btn">View adoption</button>
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+/* ---------------- page ---------------- */
+export default function Index({ kpis, lifecycle, products, systemModules }) {
+  const list = products ?? [];
+  const [selectedId, setSelectedId] = useState(list[0]?.id ?? null);
+  const [sysOpen, setSysOpen] = useState(false);
+  const selected = useMemo(() => list.find((p) => p.id === selectedId) ?? list[0] ?? null, [list, selectedId]);
+  const k = kpis ?? {};
+  const sys = systemModules ?? [];
+
+  const kpiCards = [
+    { label: 'Products in catalog', value: k.products_total ?? 0, delta: `${sys.length} foundation · ${k.live_products ?? 0} sellable` },
+    { label: 'Live products', value: k.live_products ?? 0, delta: 'marketplace-visible' },
+    { label: 'Adoption', value: k.adoption_pct ?? 0, unit: '%', delta: `${k.entitled_tenants ?? 0} of ${k.tenants_total ?? 0} tenants`, up: true },
+    { label: 'Module MRR', value: fmtMoney(k.module_mrr), delta: `${k.entitled_tenants ?? 0} paying tenants`, up: true },
+    { label: 'Catalog health', value: k.catalog_health ?? 0, unit: '%', delta: (k.catalog_health ?? 0) === 100 ? '✓ all products mapped' : 'products missing modules', up: (k.catalog_health ?? 0) === 100 },
+  ];
+
+  return (
+    <div className="pc">
+      <div className="pc-head">
+        <div>
+          <div className="pc-eyebrow"><span className="pc-eyebrow__dot" /> Platform · Catalog governance</div>
+          <h1 className="pc-title">Products</h1>
+          <div className="pc-sub">Every sellable capability from development to customer — one lifecycle, one entitlement source across SaaS subscriptions and standalone licenses.</div>
+        </div>
+        <div className="pc-actions">
+          <button type="button" className="pc-btn" onClick={() => router.visit('/modules')}>{Glyph.cube}<span>Module registry</span></button>
+          <button type="button" className="pc-btn pc-btn--primary">{Glyph.plus}<span>New product</span></button>
+        </div>
+      </div>
+
+      {/* KPI strip */}
+      <div className="pc-kpis">
+        {kpiCards.map((c) => (
+          <Card key={c.label}>
+            <CardBody>
+              <div className="pc-kpi">
+                <div className="pc-kpi__label">{c.label}</div>
+                <div className="pc-kpi__value">{c.value}{c.unit && <small>{c.unit}</small>}</div>
+                <div className={`pc-kpi__delta${c.up ? ' pc-kpi__delta--up' : ''}`}>{c.delta}</div>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+
+      <Lifecycle lifecycle={lifecycle} />
+
+      <div className="pc-split">
+        {/* catalog */}
+        <Card>
+          <CardBody>
+            <div className="pc-panel-h">
+              <div>
+                <h2 className="pc-panel-h__title">Products</h2>
+                <div className="pc-panel-h__sub">Sellable modules — what customers subscribe to or license</div>
+              </div>
+              <div className="pc-seg">
+                <button type="button" className="pc-seg__b" aria-pressed="true">Products · {list.length}</button>
+                <button type="button" className="pc-seg__b" aria-pressed="false">System · {sys.length}</button>
+              </div>
+            </div>
+            <div className="pc-tablewrap">
+              <table className="pc-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th className="pc-hide-sm">Bundled modules</th>
+                    <th>State</th>
+                    <th className="pc-r">Price</th>
+                    <th className="pc-r">Adoption</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {list.map((p) => (
+                    <tr key={p.id} aria-selected={p.id === selected?.id} onClick={() => setSelectedId(p.id)}>
+                      <td>
+                        <div className="pc-mrow">
+                          <div className="pc-mico">{Glyph.product}</div>
+                          <div><div className="pc-mname">{p.name}</div><div className="pc-mcode">{p.code}</div></div>
+                        </div>
+                      </td>
+                      <td className="pc-hide-sm"><div className="pc-modtags">{p.modules.map((m) => <span key={m} className="pc-modtag">{m}</span>)}</div></td>
+                      <td>{p.is_active
+                        ? <span className="pc-chip pc-chip--live"><span className="pc-chip__dot" />Live</span>
+                        : <span className="pc-chip pc-chip--off"><span className="pc-chip__dot" />Off</span>}</td>
+                      <td className="pc-r pc-price">{fmtMoney(p.monthly_price)}<small>/mo</small></td>
+                      <td className="pc-r">
+                        <div className="pc-adopt">
+                          <span className="pc-adopt__bar"><i style={{ width: `${Math.min(100, p.adoption_pct)}%` }} /></span>
+                          <span className="pc-adopt__n">{p.subscriptions} / {p.tenants_total}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="pc-addrow">
+                    <td colSpan={5}>
+                      <div className="pc-addcta"><span className="pc-plus">{Glyph.plus}</span>Promote a module to a sellable product — bundle one or more modules with a price</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* system / foundation tray (demoted) */}
+            <div className="pc-sys">
+              <div className="pc-sys-h">
+                <div className="pc-sys-t">
+                  {Glyph.shield}
+                  <span><b>{sys.length} system &amp; infrastructure modules</b> · bundled with every tenant</span>
+                </div>
+                <button type="button" className="pc-sys-toggle" onClick={() => setSysOpen((v) => !v)}>
+                  {sysOpen ? 'Hide' : 'Show'}{Glyph.chevron}
+                </button>
+              </div>
+              {sysOpen && (
+                <div className="pc-sys-chips">
+                  {sys.map((m) => (
+                    <span key={m.code} className="pc-syschip">{m.name} <i>{m.code}</i></span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+
+        <Detail product={selected} />
+      </div>
+    </div>
+  );
+}
+
+Index.layout = (page) => (
+  <App
+    title="Products"
+    railTitle="Catalog"
+    rail={<ProductsRail kpis={page.props.kpis} />}
+  >
+    {page}
+  </App>
+);
