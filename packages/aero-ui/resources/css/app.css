@@ -85,6 +85,21 @@ a {
 .aeon-fab:hover { opacity: 1; }
 
 /* ── Aeon Living Console ───────────────────────────────────────── */
+/* Console = self-contained dark surface. We locally OVERRIDE the app's colour
+   tokens within the overlay so every Aeon rule resolves to dark-surface values
+   and stays readable under EVERY theme combo (e.g. light+midnight, where the app
+   text token flips dark while surfaces stay dark → black-on-dark). Accent
+   (--aeos-primary) and semantics (success/danger/warning) still inherit. */
+.aeon-overlay {
+  --aeos-text-primary: #eaf1fa;
+  --aeos-text-secondary: #93a1b5;
+  --aeos-bg-elevated: #0c1119;
+  --aeos-bg-base: #080b11;
+  --aeos-border-base: rgba(255,255,255,.10);
+  --aeos-border-strong: rgba(255,255,255,.17);
+  --aeos-glass: rgba(255,255,255,.05);
+  --aeos-glass-2: rgba(255,255,255,.08);
+}
 .aeon-overlay { position: fixed; inset: 0; z-index: var(--aeos-z-modal, 600); display: flex; justify-content: flex-end; }
 .aeon-backdrop { position: absolute; inset: 0; background: var(--aeos-backdrop, rgba(4,7,12,.55)); backdrop-filter: blur(3px); animation: aeon-fade .25s ease; }
 @keyframes aeon-fade { from { opacity: 0 } }
