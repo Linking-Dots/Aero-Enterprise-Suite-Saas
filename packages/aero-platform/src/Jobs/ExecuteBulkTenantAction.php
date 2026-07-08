@@ -31,7 +31,9 @@ class ExecuteBulkTenantAction implements ShouldQueue
         }
 
         match ($this->type) {
-            'suspend' => $svc->suspend($tenant, $this->payload['reason'] ?? 'Bulk operation'),
+            'suspend' => $tenant->status === 'suspended' ? null : $svc->suspend($tenant, $this->payload['reason'] ?? 'Bulk operation'),
+            'reactivate' => $svc->activate($tenant),
+            'archive' => $svc->archive($tenant),
             'plan-change' => null, // handled by billing service in P-2
             'email' => null, // notification job dispatched elsewhere
             default => null,

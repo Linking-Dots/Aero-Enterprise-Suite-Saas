@@ -1,0 +1,73 @@
+/* Tenants command centre — extends products.css card language + subscriptions.css
+   (KPI band, analytics band, queues, drawer, avatars) and the @aero/ui workbench
+   kit (wb-*). All colour via theme tokens / color-mix so every surface reacts to
+   the Theme-Studio drawer (mode / density / radius / borders / accent). */
+
+/* ---- tenant status chips (extend .pc-chip base from products.css) ---- */
+.pc-chip--active { background: color-mix(in srgb, var(--aeos-success) 14%, transparent); color: var(--aeos-success); border-color: color-mix(in srgb, var(--aeos-success) 35%, transparent); }
+.pc-chip--active .pc-chip__dot { background: var(--aeos-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--aeos-success) 20%, transparent); }
+.pc-chip--trial { background: var(--aeos-primary-tint); color: var(--aeos-primary); border-color: var(--aeos-primary-border); }
+.pc-chip--trial .pc-chip__dot { background: var(--aeos-primary); box-shadow: 0 0 0 3px var(--aeos-primary-tint); }
+.pc-chip--pending, .pc-chip--provisioning { background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 35%, transparent); }
+.pc-chip--pending .pc-chip__dot, .pc-chip--provisioning .pc-chip__dot { background: var(--aeos-warning); }
+.pc-chip--suspended, .pc-chip--failed { background: color-mix(in srgb, var(--aeos-danger) 14%, transparent); color: var(--aeos-danger); border-color: color-mix(in srgb, var(--aeos-danger) 35%, transparent); }
+.pc-chip--suspended .pc-chip__dot, .pc-chip--failed .pc-chip__dot { background: var(--aeos-danger); }
+.pc-chip--archived, .pc-chip--cancelled { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); border-color: var(--aeos-border); }
+.pc-chip--archived .pc-chip__dot, .pc-chip--cancelled .pc-chip__dot { background: var(--aeos-text-muted); }
+
+/* ---- type tag (company / demo) ---- */
+.tn-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 560; padding: 2px 8px; border-radius: calc(var(--aeos-card-radius) * .55); background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); border: var(--aeos-border-width) solid var(--aeos-border-subtle); white-space: nowrap; }
+.tn-tag--demo { background: color-mix(in srgb, var(--aeos-warning) 13%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 30%, transparent); }
+
+/* ---- outstanding cell ---- */
+.tn-owe { color: var(--aeos-warning); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---- plan-mix bars (mirror the invoices AR-aging bar rows) ---- */
+.tn-mix { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.tn-mixrow { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: var(--aeos-space-3); background: none; border: 0; padding: 5px 0; cursor: pointer; text-align: left; width: 100%; }
+.tn-mixrow__cap { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); }
+.tn-mixrow:hover .tn-mixrow__cap { color: var(--aeos-text-primary); }
+.tn-mixrow.is-on .tn-mixrow__cap { color: var(--aeos-primary); font-weight: 600; }
+.tn-mixrow__track { height: 8px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.tn-mixrow__fill { display: block; height: 100%; border-radius: 5px; }
+.tn-mix-0 { background: var(--aeos-primary); }
+.tn-mix-1 { background: var(--aeos-success); }
+.tn-mix-2 { background: var(--aeos-warning); }
+.tn-mix-3 { background: color-mix(in srgb, var(--aeos-primary) 60%, var(--aeos-success)); }
+.tn-mixrow__n { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); min-width: 74px; text-align: right; font-variant-numeric: tabular-nums; }
+.tn-mixrow__n b { color: var(--aeos-text-primary); font-weight: 600; }
+
+/* ---- signups trend legend footnote ---- */
+.tn-trend-foot { display: flex; align-items: center; gap: var(--aeos-space-4); flex-wrap: wrap; margin-top: var(--aeos-space-2); font-size: var(--aeos-text-xs); }
+.tn-trend-foot .li { display: inline-flex; align-items: center; gap: 7px; color: var(--aeos-text-secondary); }
+.tn-trend-foot .d { width: 9px; height: 9px; border-radius: 3px; }
+.tn-trend-foot b { color: var(--aeos-text-primary); font-weight: 600; }
+
+/* ---- drawer: invoice mini-rows reuse .sc-minit; add outstanding accent ---- */
+.tn-inv-due { color: var(--aeos-warning); font-weight: 600; }
+.tn-inv-paid { color: var(--aeos-success); }
+
+/* ---- command-shell responsiveness ----
+   The shells expose their real content width via `container-type: inline-size`
+   (see shells/_shell-core.css). The shared KPI/band/queue grids and the wb kit's
+   `.wb-hide-sm` only carry VIEWPORT @media breakpoints, so in command mode — where
+   a right context rail narrows the column while the viewport stays wide — they
+   never collapse and the workbench table overflows. These @container rules react
+   to the actual column width instead, so the page stays uncramped in every shell.
+   Scoped to `.tn` so no other page is affected. */
+@container (max-width: 1120px) {
+  .tn .pc-kpis.sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .tn .sc-band { grid-template-columns: 1fr 1fr; }
+  .tn .sc-band > *:last-child { grid-column: 1 / -1; }
+  .tn .sc-queues { grid-template-columns: 1fr; }
+  .tn .wb-hide-sm { display: none; }
+}
+@container (max-width: 680px) {
+  .tn .pc-kpis.sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .tn .sc-band { grid-template-columns: 1fr; }
+  .tn .pc-head { gap: var(--aeos-space-3); }
+}
+
+/* ---- forget modal: type-to-confirm ---- */
+.tn-danger-note { font-size: var(--aeos-text-xs); color: var(--aeos-danger); background: color-mix(in srgb, var(--aeos-danger) 8%, transparent); border: var(--aeos-border-width) solid color-mix(in srgb, var(--aeos-danger) 28%, transparent); border-radius: calc(var(--aeos-card-radius) * .7); padding: var(--aeos-space-3); line-height: 1.5; }
+.tn-confirm-code { font-family: var(--aeos-font-mono); font-weight: 600; color: var(--aeos-text-primary); }

@@ -405,6 +405,13 @@ class NavigationRegistry implements NavigationRegistryInterface
         // automatically once their route is registered.
         $navigationItems = $this->pruneUnnavigable($navigationItems);
 
+        // Collapse any group that, after pruning, leads to a single real page into
+        // a direct link — a parent that expands to reveal one child pointing at the
+        // same destination is redundant (e.g. Tenants → All Tenants, Plans → All
+        // Plans). Matches the "single product flat" rule; multi-page groups are
+        // untouched.
+        $navigationItems = $this->collapseSingleChildGroups($navigationItems);
+
         // Collapse duplicate top-level entries. A config authoring slip (the
         // same submodule declared twice — e.g. two "Security Center" or two
         // "Access Logs" blocks) would otherwise render the group twice in the
@@ -458,6 +465,41 @@ class NavigationRegistry implements NavigationRegistryInterface
     }
 
     /**
+     * Collapse groups that resolve to a single navigable child into a direct
+     * link. The group keeps its own identity (name / icon / section / priority)
+     * but adopts the child's destination and drops the now-redundant sublevel, so
+     * a one-page module reads as "Tenants" rather than "Tenants → All Tenants".
+     *
+     * The special aggregate folders (Dashboards, My Workspace) are preserved even
+     * when momentarily single — they are intentional containers, not modules.
+     *
+     * @param  array<int, array>  $items
+     * @return array<int, array>
+     */
+    protected function collapseSingleChildGroups(array $items): array
+    {
+        foreach ($items as $i => $item) {
+            if (empty($item['children']) || ! is_array($item['children'])) {
+                continue;
+            }
+
+            $item['children'] = $this->collapseSingleChildGroups($item['children']);
+
+            $section = $item['section'] ?? '';
+            if (count($item['children']) === 1 && ! in_array($section, ['dashboards', 'my-workspace'], true)) {
+                $only = $item['children'][0];
+                $item['path'] = $only['path'] ?? ($item['path'] ?? null);
+                $item['access'] = $item['access'] ?? ($only['access'] ?? null);
+                unset($item['children']);
+            }
+
+            $items[$i] = $item;
+        }
+
+        return array_values($items);
+    }
+
+    /**
      * Recursively drop navigation items that don't lead to a real page:
      *  - type === 'feature' with no children (embedded, no standalone route)
      *  - a leaf whose non-empty path matches no registered GET route
@@ -493,6 +535,14 @@ class NavigationRegistry implements NavigationRegistryInterface
 
             // Embedded features are surfaced inline on record pages, not as menu pages.
             if (($item['type'] ?? 'page') === 'feature') {
+                continue;
+            }
+
+            // Detail / parameterised pages (e.g. /plans/{id}) are opened from their
+            // list, never reached from the nav. Drop them as nav leaves — their
+            // HRMAC actions live in the module hierarchy, not here, so access
+            // control is unaffected.
+            if (str_contains((string) ($item['path'] ?? ''), '{')) {
                 continue;
             }
 

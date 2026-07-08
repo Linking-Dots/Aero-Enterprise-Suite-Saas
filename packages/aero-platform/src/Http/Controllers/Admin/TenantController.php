@@ -10,10 +10,12 @@ use Aero\Platform\Models\Product;
 use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\TenantAdminService;
 use Aero\Platform\Services\TenantImpersonationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TenantController extends Controller
 {
@@ -22,14 +24,35 @@ class TenantController extends Controller
         private TenantImpersonationService $impersonation,
     ) {}
 
-    public function index(Request $request): Response
+    /**
+     * Tenants command centre — the full overview payload (rows + stats + trend +
+     * plan mix + sparklines). Mirrors InvoiceController::index → overview().
+     */
+    public function index(): Response
     {
-        return Inertia::render('Platform/Admin/Tenants/Index', [
-            'tenants' => $this->svc->list($request->only(['status', 'plan_id', 'search'])),
-            'stats' => $this->svc->stats(),
-            'filters' => $request->only(['status', 'plan_id', 'search']),
-            'plans' => Plan::orderBy('name')->get(['id', 'name']),
-        ]);
+        return Inertia::render('Platform/Admin/Tenants/P2/Index', $this->svc->overview());
+    }
+
+    /** Drawer payload: subscription snapshot, invoices, and audit activity. */
+    public function detail(Tenant $tenant): JsonResponse
+    {
+        return response()->json($this->svc->detail((string) $tenant->id));
+    }
+
+    /** Stream every tenant as CSV. */
+    public function export(): StreamedResponse
+    {
+        $rows = $this->svc->exportRows();
+        $filename = 'tenants-'.now()->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Name', 'Subdomain', 'Email', 'Type', 'Status', 'Plan', 'Currency', 'MRR', 'Outstanding', 'Joined']);
+            foreach ($rows as $r) {
+                fputcsv($out, array_values($r));
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
     public function create(): Response

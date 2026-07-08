@@ -174,9 +174,16 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // Note: require.saas middleware blocks these routes in standalone mode
         Route::middleware(['require.saas', 'hrmac:tenants'])->prefix('tenants')->name('admin.tenants.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Tenants/Index');
-            })->middleware(['hrmac:tenants.tenant-list'])->name('index');
+            // Command centre. This group is registered before the P-1 lifecycle
+            // group below, so it wins dispatch for GET /tenants — the controller
+            // renders the full overview payload here (mirrors InvoiceController).
+            Route::get('/', [AdminTenantController::class, 'index'])
+                ->middleware(['hrmac:tenants.tenant-list'])->name('index');
+
+            // CSV export — MUST precede the /{tenant} route below or it is captured
+            // as a tenant id.
+            Route::get('/export', [AdminTenantController::class, 'export'])
+                ->middleware(['hrmac:tenants.tenant-list'])->name('export');
 
             Route::get('/create', function () {
                 return Inertia::render('Platform/Admin/Tenants/Create');
@@ -225,6 +232,12 @@ Route::middleware('admin.domain')->group(function () {
 
                 return Inertia::render('Platform/Admin/Tenants/Edit', ['tenantId' => $tenant]);
             })->middleware(['hrmac:tenants.tenant-list.tenant-management.update'])->name('edit');
+
+            // Drawer detail payload (subscription + invoices + audit activity) for
+            // the command-centre drawer. JSON, fetched client-side.
+            Route::get('/{tenant}/detail', [AdminTenantController::class, 'detail'])
+                ->middleware(['hrmac:tenants.tenant-list.tenant-management.view'])
+                ->name('detail');
 
             // Tenant Impersonation
             Route::post('/{tenant}/impersonate', [ImpersonationController::class, 'impersonate'])
@@ -1276,8 +1289,14 @@ Route::middleware('admin.domain')->group(function () {
 
             Route::prefix('gateways')->name('gateways.')->group(function () {
                 Route::get('/', [PaymentGatewayController::class, 'index'])->name('index')->middleware('hrmac:billing-management.payment-gateways.view');
-                Route::put('/{code}', [PaymentGatewayController::class, 'update'])->name('update')->middleware('hrmac:billing-management.payment-gateways.configure');
-                Route::post('/{code}/test', [PaymentGatewayController::class, 'test'])->name('test')->middleware('hrmac:billing-management.payment-gateways.view');
+                Route::post('/', [PaymentGatewayController::class, 'store'])->name('store')->middleware('hrmac:billing-management.payment-gateways.configure');
+                // Bind by the natural key (code); sub-segment routes stay distinct from the bare wildcard.
+                Route::put('/{gateway:code}', [PaymentGatewayController::class, 'update'])->name('update')->middleware('hrmac:billing-management.payment-gateways.configure');
+                Route::put('/{gateway:code}/config', [PaymentGatewayController::class, 'saveConfig'])->name('config')->middleware('hrmac:billing-management.payment-gateways.configure');
+                Route::post('/{gateway:code}/toggle', [PaymentGatewayController::class, 'toggle'])->name('toggle')->middleware('hrmac:billing-management.payment-gateways.configure');
+                Route::post('/{gateway:code}/default', [PaymentGatewayController::class, 'setDefault'])->name('default')->middleware('hrmac:billing-management.payment-gateways.configure');
+                Route::post('/{gateway:code}/test', [PaymentGatewayController::class, 'test'])->name('test')->middleware('hrmac:billing-management.payment-gateways.view');
+                Route::delete('/{gateway:code}', [PaymentGatewayController::class, 'destroy'])->name('destroy')->middleware('hrmac:billing-management.payment-gateways.configure');
             });
         });
 

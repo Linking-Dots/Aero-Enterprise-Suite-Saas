@@ -17,7 +17,7 @@ class BulkTenantController extends Controller
     public function execute(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'type' => 'required|in:suspend,plan-change,email',
+            'type' => 'required|in:suspend,reactivate,archive,plan-change,email',
             'tenant_ids' => 'required|array|min:1',
             'tenant_ids.*' => 'string|exists:tenants,id',
             'reason' => 'required_if:type,suspend|string|max:255',
