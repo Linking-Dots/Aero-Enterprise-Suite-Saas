@@ -1455,6 +1455,8 @@ Route::middleware('admin.domain')->group(function () {
             Route::middleware('hrmac:module-management.module-list.view')
                 ->get('/', [ModuleAdminController::class, 'index'])->name('index');
             Route::middleware('hrmac:module-management.module-list.toggle-active')
+                ->post('/resync', [ModuleAdminController::class, 'resync'])->name('resync');
+            Route::middleware('hrmac:module-management.module-list.toggle-active')
                 ->post('/{module}/toggle', [ModuleAdminController::class, 'toggle'])->name('toggle');
             Route::middleware('hrmac:module-management.module-list.configure')
                 ->put('/{module}/config', [ModuleAdminController::class, 'configure'])->name('configure');

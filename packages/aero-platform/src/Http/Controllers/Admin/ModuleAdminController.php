@@ -10,8 +10,10 @@ use Aero\Platform\Services\ModuleAdminService;
 use Aero\Platform\Services\ModuleRegistryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 /**
  * Modules (registry) controller — the TECHNICAL module surface.
@@ -51,5 +53,23 @@ class ModuleAdminController extends Controller
         $this->svc->configure($module, $data['config']);
 
         return back()->with('success', 'Module configured.');
+    }
+
+    /**
+     * Re-run the module-registry sync (aero:sync-module) so the HRMAC hierarchy
+     * matches the packages' config/module.php after a deploy or config change.
+     * Synchronous — the sync completes in ~2s and the admin expects a fresh page.
+     */
+    public function resync(): RedirectResponse
+    {
+        try {
+            $exit = Artisan::call('aero:sync-module', ['--scope' => 'platform']);
+        } catch (Throwable $e) {
+            return back()->with('error', 'Registry sync failed: '.$e->getMessage());
+        }
+
+        return $exit === 0
+            ? back()->with('success', 'Module registry re-synced.')
+            : back()->with('error', "Registry sync returned exit code {$exit}.");
     }
 }

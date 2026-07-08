@@ -109,6 +109,7 @@ function Detail({ module }) {
 export default function Index({ kpis, modules, sync }) {
   const list = modules ?? [];
   const [selectedId, setSelectedId] = useState(list[0]?.id ?? null);
+  const [syncing, setSyncing] = useState(false);
   const selected = useMemo(() => list.find((m) => m.id === selectedId) ?? list[0] ?? null, [list, selectedId]);
   const k = kpis ?? {};
 
@@ -130,7 +131,10 @@ export default function Index({ kpis, modules, sync }) {
         </div>
         <div className="pc-actions">
           <button type="button" className="pc-btn" onClick={() => router.visit('/products')}>{Glyph.product}<span>Products</span></button>
-          <button type="button" className="pc-btn pc-btn--primary">{Glyph.refresh}<span>Re-sync registry</span></button>
+          <button type="button" className="pc-btn pc-btn--primary" disabled={syncing}
+            onClick={() => router.post('/modules/resync', {}, { preserveScroll: true, onStart: () => setSyncing(true), onFinish: () => setSyncing(false) })}>
+            {Glyph.refresh}<span>{syncing ? 'Syncing…' : 'Re-sync registry'}</span>
+          </button>
         </div>
       </div>
 

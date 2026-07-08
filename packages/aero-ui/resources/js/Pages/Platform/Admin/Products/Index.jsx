@@ -154,7 +154,7 @@ function Detail({ product }) {
 export default function Index({ kpis, lifecycle, products, systemModules }) {
   const list = products ?? [];
   const [selectedId, setSelectedId] = useState(list[0]?.id ?? null);
-  const [sysOpen, setSysOpen] = useState(false);
+  const [view, setView] = useState('products');
   const selected = useMemo(() => list.find((p) => p.id === selectedId) ?? list[0] ?? null, [list, selectedId]);
   const k = kpis ?? {};
   const sys = systemModules ?? [];
@@ -208,71 +208,97 @@ export default function Index({ kpis, lifecycle, products, systemModules }) {
                 <div className="pc-panel-h__sub">Sellable modules — what customers subscribe to or license</div>
               </div>
               <div className="pc-seg">
-                <button type="button" className="pc-seg__b" aria-pressed="true">Products · {list.length}</button>
-                <button type="button" className="pc-seg__b" aria-pressed="false">System · {sys.length}</button>
+                <button type="button" className="pc-seg__b" aria-pressed={view === 'products'} onClick={() => setView('products')}>Products · {list.length}</button>
+                <button type="button" className="pc-seg__b" aria-pressed={view === 'system'} onClick={() => setView('system')}>System · {sys.length}</button>
               </div>
-            </div>
-            <div className="pc-tablewrap">
-              <table className="pc-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th className="pc-hide-sm">Bundled modules</th>
-                    <th>State</th>
-                    <th className="pc-r">Price</th>
-                    <th className="pc-r">Adoption</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((p) => (
-                    <tr key={p.id} aria-selected={p.id === selected?.id} onClick={() => setSelectedId(p.id)}>
-                      <td>
-                        <div className="pc-mrow">
-                          <div className="pc-mico">{Glyph.product}</div>
-                          <div><div className="pc-mname">{p.name}</div><div className="pc-mcode">{p.code}</div></div>
-                        </div>
-                      </td>
-                      <td className="pc-hide-sm"><div className="pc-modtags">{p.modules.map((m) => <span key={m} className="pc-modtag">{m}</span>)}</div></td>
-                      <td>{p.is_active
-                        ? <span className="pc-chip pc-chip--live"><span className="pc-chip__dot" />Live</span>
-                        : <span className="pc-chip pc-chip--off"><span className="pc-chip__dot" />Off</span>}</td>
-                      <td className="pc-r pc-price">{fmtMoney(p.monthly_price)}<small>/mo</small></td>
-                      <td className="pc-r">
-                        <div className="pc-adopt">
-                          <span className="pc-adopt__bar"><i style={{ width: `${Math.min(100, p.adoption_pct)}%` }} /></span>
-                          <span className="pc-adopt__n">{p.subscriptions} / {p.tenants_total}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="pc-addrow">
-                    <td colSpan={5}>
-                      <div className="pc-addcta"><span className="pc-plus">{Glyph.plus}</span>Promote a module to a sellable product — bundle one or more modules with a price</div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
 
-            {/* system / foundation tray (demoted) */}
-            <div className="pc-sys">
-              <div className="pc-sys-h">
-                <div className="pc-sys-t">
-                  {Glyph.shield}
-                  <span><b>{sys.length} system &amp; infrastructure modules</b> · bundled with every tenant</span>
-                </div>
-                <button type="button" className="pc-sys-toggle" onClick={() => setSysOpen((v) => !v)}>
-                  {sysOpen ? 'Hide' : 'Show'}{Glyph.chevron}
-                </button>
+            {view === 'products' ? (
+              <div className="pc-tablewrap">
+                <table className="pc-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th className="pc-hide-sm">Bundled modules</th>
+                      <th>State</th>
+                      <th className="pc-r">Price</th>
+                      <th className="pc-r">Adoption</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {list.map((p) => (
+                      <tr key={p.id} aria-selected={p.id === selected?.id} onClick={() => setSelectedId(p.id)}>
+                        <td>
+                          <div className="pc-mrow">
+                            <div className="pc-mico">{Glyph.product}</div>
+                            <div><div className="pc-mname">{p.name}</div><div className="pc-mcode">{p.code}</div></div>
+                          </div>
+                        </td>
+                        <td className="pc-hide-sm"><div className="pc-modtags">{p.modules.map((m) => <span key={m} className="pc-modtag">{m}</span>)}</div></td>
+                        <td>{p.is_active
+                          ? <span className="pc-chip pc-chip--live"><span className="pc-chip__dot" />Live</span>
+                          : <span className="pc-chip pc-chip--off"><span className="pc-chip__dot" />Off</span>}</td>
+                        <td className="pc-r pc-price">{fmtMoney(p.monthly_price)}<small>/mo</small></td>
+                        <td className="pc-r">
+                          <div className="pc-adopt">
+                            <span className="pc-adopt__bar"><i style={{ width: `${Math.min(100, p.adoption_pct)}%` }} /></span>
+                            <span className="pc-adopt__n">{p.subscriptions} / {p.tenants_total}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="pc-addrow">
+                      <td colSpan={5}>
+                        <div className="pc-addcta"><span className="pc-plus">{Glyph.plus}</span>Promote a module to a sellable product — bundle one or more modules with a price</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              {sysOpen && (
-                <div className="pc-sys-chips">
-                  {sys.map((m) => (
-                    <span key={m.code} className="pc-syschip">{m.name} <i>{m.code}</i></span>
-                  ))}
+            ) : (
+              <div className="pc-tablewrap">
+                <table className="pc-table">
+                  <thead>
+                    <tr>
+                      <th>Module</th>
+                      <th className="pc-hide-sm">Category</th>
+                      <th>Type</th>
+                      <th className="pc-r">Billing</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sys.map((m) => (
+                      <tr key={m.code}>
+                        <td>
+                          <div className="pc-mrow">
+                            <div className="pc-mico">{Glyph.shield}</div>
+                            <div><div className="pc-mname">{m.name}</div><div className="pc-mcode">{m.code}</div></div>
+                          </div>
+                        </td>
+                        <td className="pc-hide-sm"><span className="pc-modtag">{m.category}</span></td>
+                        <td><span className="pc-chip pc-chip--foundation"><span className="pc-chip__dot" />Foundation</span></td>
+                        <td className="pc-r pc-free">Bundled</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* system / foundation tray (demoted) — only in products view */}
+            {view === 'products' && (
+              <div className="pc-sys">
+                <div className="pc-sys-h">
+                  <div className="pc-sys-t">
+                    {Glyph.shield}
+                    <span><b>{sys.length} system &amp; infrastructure modules</b> · bundled with every tenant</span>
+                  </div>
+                  <button type="button" className="pc-sys-toggle" onClick={() => setView('system')}>
+                    View{Glyph.chevron}
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </CardBody>
         </Card>
 
