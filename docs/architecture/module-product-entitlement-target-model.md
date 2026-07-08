@@ -132,3 +132,25 @@ Net: **create 2**, **drop 4–5**, **consolidate 2 pairs (pricing, licensing)**,
 - Phases 1–3 are additive/parallel — old columns remain readable, so any step is revertable by ignoring the new tables.
 - Phase 4 is the only irreversible one; it runs behind a DB backup + after 1–3 are verified live on democorp + standalone.
 - Fail-open resolver stays fail-open throughout — a bad entitlement never hides the whole app.
+
+---
+
+## 8. Execution outcome (2026-07-08)
+
+**Delivered (committed on `feat/aeon-ai-assistant`):**
+- **Phase 1** — `product_modules` M2M + `tenant_entitlements` ledger + backfill + models (`ProductModule`, `TenantEntitlement`, `Product::modules()`).
+- **Phase 2** — bundle-aware `Tenant::subscribed_product_modules` + `ModuleEntitlementService` override union + `RecordProductEntitlementLedger` writer + tests (**12 green**). Also made the `drop_landlord_users` data-move driver-portable so the sqlite suite runs.
+- **Phase 3a** — **Products (Catalog)** page: `ProductCatalogService` + controller + `/products` route, registered in `config/module.php` as the `product-catalog` submodule (`catalog` HRMAC component, 5 actions), nav section = Revenue & Catalog, `aero:sync-module` run. React page uses `@aero/ui` `<Card>` so Theme-Studio styles apply. Live-verified.
+- **Phase 3b** — **Modules (registry)** page: `ModuleRegistryService`; reworked `ModuleAdminController.index` + the page into a technical registry (HRMAC depth, dependencies, sync health).
+- **Phase 4 (safe subset only)** — retired the vestigial `updatePricing` editor + route; dropped `modules.price_monthly` / `price_annual`.
+
+**Phase 4 reality check — most drops were NOT safe.** The §2 verdicts leaned on non-migration ref-counts, which **undercounted** real coupling. Code inspection found these still load-bearing (left in place):
+- `products.module_code` — 10+ readers (ModuleAnalyticsController, RegistrationController, HandleInertiaRequests, `ReactivateRoleAccessOnResubscribe`, the module→products relation). Kept; the resolver unions it with the pivot.
+- `subscription_modules`, `tenant_module` — used across provisioning/registration/dashboards.
+- `module_pricing` — used by installation + ProductSeeder + provider.
+- `module_purchases` — used by `MarketplaceService`.
+- `plan_quotas` — read by the admin dashboard via `Plan::quotas()`.
+- `plan_modules` — already dropped by an earlier migration (no-op).
+- Other `modules` pricing/stripe columns — read-sites couldn't be disentangled from products/plans with confidence; dropping on uncertainty risks billing/registration.
+
+**Recommendation:** treat each remaining redundancy as its own small, individually-tested refactor (or leave as harmless-redundant). Do NOT bulk-drop — the zero-error bar wins over schema tidiness.
