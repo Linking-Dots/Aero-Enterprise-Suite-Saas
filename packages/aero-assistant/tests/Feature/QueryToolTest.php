@@ -28,13 +28,22 @@ class QueryToolTest extends PackageTestCase
         {
             public function all(): array
             {
-                return ['aeon_test_widgets' => [
-                    'model' => AeonQueryWidget::class,
-                    'table' => 'aeon_test_widgets',
-                    'label' => 'Widgets',
-                    'columns' => ['id', 'status', 'price', 'created_at'],
-                    'date_fields' => ['created_at'],
-                ]];
+                return [
+                    'aeon_test_widgets' => [
+                        'table' => 'aeon_test_widgets',
+                        'label' => 'Widgets',
+                        'columns' => ['id', 'status', 'price', 'category_id', 'created_at'],
+                        'date_fields' => ['created_at'],
+                        'soft_delete' => false,
+                    ],
+                    'categories' => [
+                        'table' => 'aeon_test_categories',
+                        'label' => 'Categories',
+                        'columns' => ['id', 'name'],
+                        'date_fields' => [],
+                        'soft_delete' => false,
+                    ],
+                ];
             }
         };
     }
@@ -46,13 +55,34 @@ class QueryToolTest extends PackageTestCase
             $t->id();
             $t->string('status');
             $t->integer('price');
+            $t->unsignedBigInteger('category_id')->nullable();
             $t->timestamp('created_at')->nullable();
         });
-        AeonQueryWidget::insert([
-            ['status' => 'open', 'price' => 10, 'created_at' => now()],
-            ['status' => 'open', 'price' => 20, 'created_at' => now()],
-            ['status' => 'closed', 'price' => 30, 'created_at' => now()],
+        Schema::create('aeon_test_categories', function ($t) {
+            $t->id();
+            $t->string('name');
+        });
+        \Illuminate\Support\Facades\DB::table('aeon_test_categories')->insert([
+            ['id' => 1, 'name' => 'Alpha'], ['id' => 2, 'name' => 'Beta'],
         ]);
+        AeonQueryWidget::insert([
+            ['status' => 'open', 'price' => 10, 'category_id' => 1, 'created_at' => now()],
+            ['status' => 'open', 'price' => 20, 'category_id' => 1, 'created_at' => now()],
+            ['status' => 'closed', 'price' => 30, 'category_id' => 2, 'created_at' => now()],
+        ]);
+    }
+
+    public function test_group_by_foreign_key_resolves_related_names(): void
+    {
+        $out = (new QueryTool($this->catalog()))->run(
+            ['entity' => 'aeon_test_widgets', 'operation' => 'count', 'group_by' => 'category_id'],
+            1,
+        );
+        $bar = (new Collection($out['blocks']))->firstWhere('type', 'bar');
+        $this->assertNotNull($bar);
+        // category 1 (Alpha) has 2, category 2 (Beta) has 1 — ids resolved to names.
+        $this->assertSame(['label' => 'Alpha', 'value' => 2], $bar['items'][0]);
+        $this->assertSame(['label' => 'Beta', 'value' => 1], $bar['items'][1]);
     }
 
     public function test_count_total_emits_stat_block(): void
@@ -62,17 +92,17 @@ class QueryToolTest extends PackageTestCase
         $this->assertSame('3', $stats['items'][0]['v']);
     }
 
-    public function test_count_group_by_emits_table_block(): void
+    public function test_count_group_by_emits_bar_block(): void
     {
         $out = (new QueryTool($this->catalog()))->run(
             ['entity' => 'aeon_test_widgets', 'operation' => 'count', 'group_by' => 'status'],
             1,
         );
-        $table = (new Collection($out['blocks']))->firstWhere('type', 'table');
-        $this->assertNotNull($table);
+        $bar = (new Collection($out['blocks']))->firstWhere('type', 'bar');
+        $this->assertNotNull($bar);
         // open (2) ranks above closed (1)
-        $this->assertSame(['open', '2'], $table['rows'][0]);
-        $this->assertSame(['closed', '1'], $table['rows'][1]);
+        $this->assertSame(['label' => 'open', 'value' => 2], $bar['items'][0]);
+        $this->assertSame(['label' => 'closed', 'value' => 1], $bar['items'][1]);
     }
 
     public function test_aggregate_sum(): void

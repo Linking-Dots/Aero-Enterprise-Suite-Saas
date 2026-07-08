@@ -100,13 +100,19 @@ class QueryTool implements AeonToolContract
                 ->select($groupBy, DB::raw('count(*) as aeon_c'))
                 ->groupBy($groupBy)->orderByDesc('aeon_c')->limit(20)->get();
             $total = (int) (clone $query)->count();
-            $tableRows = $rows->map(fn ($r) => [(string) ($r->{$groupBy} ?? '—'), (string) $r->aeon_c])->all();
+
+            // Resolve foreign-key ids (e.g. department_id) to their real names.
+            $labels = $this->resolveLabels($groupBy, $rows->pluck($groupBy)->all());
+            $items = $rows->map(fn ($r) => [
+                'label' => (string) ($labels[$r->{$groupBy}] ?? ($r->{$groupBy} ?? '—')),
+                'value' => (int) $r->aeon_c,
+            ])->all();
 
             return [
-                'text' => "**{$total}** {$label} in total, grouped by {$groupBy}:",
+                'text' => "**{$total}** {$label} in total, by ".Str::headline($this->dimensionLabel($groupBy)).':',
                 'blocks' => [
                     ['type' => 'stats', 'items' => [['k' => $label.$this->periodSuffix($period), 'v' => (string) $total]]],
-                    ['type' => 'table', 'columns' => [Str::headline($groupBy), 'Count'], 'rows' => $tableRows],
+                    ['type' => 'bar', 'title' => Str::headline($label).' by '.Str::headline($this->dimensionLabel($groupBy)), 'items' => $items],
                 ],
             ];
         }
@@ -205,6 +211,59 @@ class QueryTool implements AeonToolContract
         $column = is_string($column) && $column !== '' ? $column : null;
 
         return ($column !== null && $this->catalog->isColumn($entity, $column)) ? $column : null;
+    }
+
+    /**
+     * Resolve foreign-key ids (department_id → "Sales") using the related table's
+     * name column. Returns id => name; empty when it isn't a resolvable relation.
+     *
+     * @param  array<int,mixed>  $ids
+     * @return array<int|string,string>
+     */
+    private function resolveLabels(string $col, array $ids): array
+    {
+        if (! Str::endsWith($col, '_id')) {
+            return [];
+        }
+        $ids = array_values(array_filter(array_unique($ids), static fn ($v) => $v !== null));
+        if (empty($ids)) {
+            return [];
+        }
+        $base = Str::beforeLast($col, '_id');
+        foreach ([Str::plural($base), $base] as $table) {
+            $e = $this->catalog->entity($table);
+            if (! $e || ! in_array('id', $e['columns'], true)) {
+                continue;
+            }
+            $nameCol = $this->nameColumn($e['columns']);
+            if (! $nameCol) {
+                continue;
+            }
+            try {
+                return DB::table($e['table'])->whereIn('id', $ids)->pluck($nameCol, 'id')->all();
+            } catch (\Throwable) {
+                return [];
+            }
+        }
+
+        return [];
+    }
+
+    /** @param array<int,string> $columns */
+    private function nameColumn(array $columns): ?string
+    {
+        foreach (['name', 'title', 'label', 'display_name', 'full_name', 'code'] as $c) {
+            if (in_array($c, $columns, true)) {
+                return $c;
+            }
+        }
+
+        return null;
+    }
+
+    private function dimensionLabel(string $col): string
+    {
+        return Str::endsWith($col, '_id') ? Str::beforeLast($col, '_id') : $col;
     }
 
     private function periodSuffix(string $period): string

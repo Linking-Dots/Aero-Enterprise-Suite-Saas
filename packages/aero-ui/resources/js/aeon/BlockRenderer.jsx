@@ -77,6 +77,26 @@ function Block({ block, onAction, animate, onAnimated }) {
           <Spark points={block.points || []} unit={block.unit} />
         </div>
       );
+    case 'bar': {
+      const items = block.items || [];
+      const max = Math.max(1, ...items.map((it) => Number(it.value) || 0));
+      return (
+        <div className="aeon-barcard">
+          {block.title ? <div className="aeon-chart-h"><span>{block.title}</span></div> : null}
+          <div className="aeon-bars">
+            {items.map((it, i) => (
+              <div className="aeon-bar-row" key={i}>
+                <span className="aeon-bar-label" title={it.label}>{it.label}</span>
+                <span className="aeon-bar-track">
+                  <span className="aeon-bar-fill" style={{ width: `${Math.round((Number(it.value) || 0) / max * 100)}%` }} />
+                </span>
+                <span className="aeon-bar-val">{it.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
     case 'table':
       return (
         <div className="aeon-tablewrap">
