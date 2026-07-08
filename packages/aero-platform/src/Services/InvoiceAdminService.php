@@ -23,6 +23,63 @@ class InvoiceAdminService
     ) {}
 
     /**
+     * Unified command-centre payload: normalised invoices (tenant names resolved)
+     * + collection stats. Guard-free query builder.
+     *
+     * @return array{stats: array, invoices: array}
+     */
+    public function overview(): array
+    {
+        $rows = DB::table('invoices as i')
+            ->leftJoin('tenants as t', 't.id', '=', 'i.billable_id')
+            ->whereNull('i.deleted_at')
+            ->orderByDesc('i.created_at')
+            ->limit(300)
+            ->get(['i.id', 'i.invoice_number', 't.name as tenant', 'i.status', 'i.total',
+                'i.amount_due', 'i.billing_period_start', 'i.billing_period_end', 'i.due_date', 'i.paid_at'])
+            ->map(fn ($r) => [
+                'id'           => (string) $r->id,
+                'number'       => $r->invoice_number ?: ('#'.substr((string) $r->id, 0, 8)),
+                'tenant'       => $r->tenant ?: '—',
+                'status'       => $r->status,
+                'total'        => (float) $r->total,
+                'amount_due'   => (float) $r->amount_due,
+                'period_start' => $r->billing_period_start,
+                'period_end'   => $r->billing_period_end,
+                'due_date'     => $r->due_date,
+                'paid_at'      => $r->paid_at,
+            ])->all();
+
+        return ['stats' => $this->invoiceStats($rows), 'invoices' => $rows];
+    }
+
+    /**
+     * @param  array<int, array>  $rows
+     * @return array<string, int|float>
+     */
+    private function invoiceStats(array $rows): array
+    {
+        $sumWhere = fn (callable $pred, string $key) => array_sum(array_map(fn ($r) => $pred($r) ? $r[$key] : 0, $rows));
+        $countWhere = fn (callable $pred) => count(array_filter($rows, $pred));
+
+        $paid = fn ($r) => $r['status'] === 'paid';
+        $open = fn ($r) => $r['status'] === 'open';
+        $overdue = fn ($r) => $r['status'] === 'overdue';
+        $total = max(1, count($rows));
+
+        return [
+            'collected'   => round($sumWhere($paid, 'total'), 2),
+            'outstanding' => round($sumWhere(fn ($r) => $open($r) || $overdue($r), 'amount_due'), 2),
+            'overdue_amt' => round($sumWhere($overdue, 'amount_due'), 2),
+            'overdue'     => $countWhere($overdue),
+            'open'        => $countWhere($open),
+            'paid'        => $countWhere($paid),
+            'total'       => count($rows),
+            'paid_rate'   => (int) round($countWhere($paid) / $total * 100),
+        ];
+    }
+
+    /**
      * Paginated list of invoices.
      *
      * @return LengthAwarePaginator<Invoice>

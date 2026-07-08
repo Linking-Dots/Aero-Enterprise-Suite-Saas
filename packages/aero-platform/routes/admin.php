@@ -1252,6 +1252,7 @@ Route::middleware('admin.domain')->group(function () {
                 Route::post('/generate', [AdminInvoiceController::class, 'generate'])->name('generate')->middleware('hrmac:billing-management.invoices.generate');
                 Route::post('/{invoice}/send', [AdminInvoiceController::class, 'send'])->name('send')->middleware('hrmac:billing-management.invoices.send');
                 Route::post('/{invoice}/mark-paid', [AdminInvoiceController::class, 'markPaid'])->name('mark-paid')->middleware('hrmac:billing-management.invoices.mark-paid');
+                Route::post('/{invoice}/void', [AdminInvoiceController::class, 'void'])->name('void')->middleware('hrmac:billing-management.invoices.mark-paid');
                 Route::get('/{invoice}/download', [AdminInvoiceController::class, 'download'])->name('download')->middleware('hrmac:billing-management.invoices.view');
             });
 

@@ -21,12 +21,9 @@ class InvoiceController extends Controller
         private readonly InvoiceAdminService $svc
     ) {}
 
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        return Inertia::render('Platform/Admin/Billing/P2/Invoices', [
-            'invoices' => $this->svc->list($request->only(['status', 'search'])),
-            'filters' => $request->only(['status', 'search']),
-        ]);
+        return Inertia::render('Platform/Admin/Billing/P2/Invoices', $this->svc->overview());
     }
 
     public function show(Invoice $invoice): Response
