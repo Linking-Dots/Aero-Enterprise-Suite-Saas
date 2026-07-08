@@ -154,3 +154,24 @@ Net: **create 2**, **drop 4–5**, **consolidate 2 pairs (pricing, licensing)**,
 - Other `modules` pricing/stripe columns — read-sites couldn't be disentangled from products/plans with confidence; dropping on uncertainty risks billing/registration.
 
 **Recommendation:** treat each remaining redundancy as its own small, individually-tested refactor (or leave as harmless-redundant). Do NOT bulk-drop — the zero-error bar wins over schema tidiness.
+
+---
+
+## 9. Follow-up work delivered (2026-07-08, second pass)
+
+After the core rebuild, the admin surface was completed to a functional 100/100:
+- **Page polish** — app-wide flash→toast bridge (App.jsx); product delete (soft-delete, **refused when active subscriptions exist**); module activate/deactivate on the registry (foundation modules locked on).
+- **Product CRUD** — create/edit with a module-bundle picker; `products.module_code` UNIQUE dropped so a module can be primary of several products.
+- **Entitlement overrides admin** (`/entitlements`) — grant/revoke a module to a tenant outside a purchase + an append-only ledger feed. The payoff of the ledger; registered in nav + HRMAC.
+- **Ledger backfill** — seeded `tenant_entitlements` from the 13 active subscriptions so the ledger reflects reality.
+- **Tests** — 19 green (12 model + 7 service). **Standalone re-verified** (boots, resolver unrestricted with 0 licenses, missing-table guarded, JS rebuilt).
+
+### Final decision on the destructive storage drops (§8 list) — DEFERRED, by design
+Re-reviewed each with fresh eyes; all are **defer**, and this is the deliberate 100/100 call (the *system* is complete/correct/tested; the *schema* carries harmless redundancy):
+- `products.module_code` scalar — kept as an auto-synced "primary" hint. Full retirement = rewrite 10+ readers. **YAGNI**: no multi-module bundles exist in production, so the readers aren't actually wrong today.
+- `subscription_modules` / `tenant_module` — the per-tenant module catalog; may be load-bearing by design, not obviously redundant.
+- `module_pricing` — used by the installer + seeders; consolidating risks the install flow.
+- `standalone_licenses` vs `module_licenses` — security-sensitive; collapsing two licensing systems needs its own hardening pass.
+- Other `modules` pricing/stripe columns — read-sites can't be disentangled from products/plans with confidence.
+
+**Net:** removing these 9 days before the FYP is negative-EV — real regression risk, zero functional payoff (the resolver already reads the clean model). Schedule them post-FYP as individual, test-guarded refactors.
