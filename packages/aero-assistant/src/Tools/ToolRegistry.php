@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Assistant\Tools;
 
 use Aero\Contracts\Ai\AeonToolContract;
+use Illuminate\Support\Str;
 
 /**
  * Aeon's tool catalog: the built-in `navigate` guided tool + any data tools that
@@ -29,9 +30,11 @@ class ToolRegistry
     {
         $fns = [[
             'name' => 'navigate',
-            'description' => 'Take the user to a page in AEOS365. Call this ONLY when the user asks to '
-                .'go to, open, view or start creating something. Use the exact route path from the '
-                .'knowledge base (e.g. /hrm/leave/types). Do not invent routes.',
+            'description' => 'Take the user to a page in AEOS365. Call this when the user asks to go to, '
+                .'open, view, or CREATE/ADD something. Use the exact route path from the knowledge base '
+                .'(e.g. /hrm/leave/types). To open a NEW/create form, append "/create" to that entity\'s '
+                .'list route (e.g. /hrm/employees → /hrm/employees/create); these are valid. Do not invent '
+                .'other routes.',
             'parameters' => [
                 'type' => 'object',
                 'properties' => [
@@ -96,7 +99,50 @@ class ToolRegistry
             }
         }
 
+        // Also allow navigating to real "create/new" forms (guided actions).
+        foreach ($this->createRoutes() as $route => $label) {
+            $out[$route] = $label;
+        }
+
         return $this->routes = $out;
+    }
+
+    /**
+     * Real GET create-form routes from the router (named *.create or URI ending
+     * /create, no path params) so Aeon can open a genuine "New X" form.
+     *
+     * @return array<string,string> route => "New X"
+     */
+    private function createRoutes(): array
+    {
+        $out = [];
+        try {
+            foreach (app('router')->getRoutes() as $route) {
+                if (! in_array('GET', $route->methods(), true)) {
+                    continue;
+                }
+                $uri = '/'.ltrim($route->uri(), '/');
+                if (str_contains($uri, '{')) {
+                    continue; // needs parameters we can't supply
+                }
+                $name = (string) $route->getName();
+                $isCreate = Str::endsWith($name, '.create') || Str::endsWith($uri, '/create');
+                if (! $isCreate) {
+                    continue;
+                }
+                // 'hrm.employees.create' -> "New Employee"; fallback from the URI.
+                $base = $name !== '' ? Str::beforeLast($name, '.create') : trim(Str::beforeLast($uri, '/create'), '/');
+                $entity = Str::of($base)->afterLast('.')->afterLast('/')->replace('-', ' ')->__toString();
+                if ($entity === '') {
+                    continue;
+                }
+                $out[$uri] = 'New '.Str::headline(Str::singular($entity));
+            }
+        } catch (\Throwable) {
+            // router unavailable (e.g. isolated tests) — no create routes
+        }
+
+        return $out;
     }
 
     public function isValidRoute(?string $route): bool
