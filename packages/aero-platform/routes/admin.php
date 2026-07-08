@@ -1448,6 +1448,10 @@ Route::middleware('admin.domain')->group(function () {
         Route::prefix('products')->name('platform.admin.products.')->group(function () {
             Route::middleware('hrmac:product-catalog.catalog.view')
                 ->get('/', [ProductCatalogController::class, 'index'])->name('index');
+            Route::middleware('hrmac:product-catalog.catalog.create')
+                ->post('/', [ProductCatalogController::class, 'store'])->name('store');
+            Route::middleware('hrmac:product-catalog.catalog.edit')
+                ->put('/{product}', [ProductCatalogController::class, 'update'])->name('update');
         });
 
         // Module Management (P-4)

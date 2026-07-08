@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 
 import App from '@/Pages/App.jsx';
 import { Card, CardBody } from '@aero/ui';
@@ -99,7 +99,7 @@ function Lifecycle({ lifecycle }) {
 }
 
 /* ---------------- product detail panel ---------------- */
-function Detail({ product }) {
+function Detail({ product, onEdit }) {
   if (!product) {
     return <Card><CardBody><div className="pc-sub">Select a product to inspect its bundle &amp; entitlement path.</div></CardBody></Card>;
   }
@@ -142,22 +142,113 @@ function Detail({ product }) {
           </div>
         </div>
         <div className="pc-detail__actions">
-          <button type="button" className="pc-btn">Edit product</button>
-          <button type="button" className="pc-btn">View adoption</button>
+          <button type="button" className="pc-btn" onClick={() => onEdit?.(product)}>Edit product</button>
+          <button type="button" className="pc-btn" onClick={() => router.visit('/subscriptions')}>View adoption</button>
         </div>
       </CardBody>
     </Card>
   );
 }
 
+/* ---------------- create / edit modal ---------------- */
+function ProductModal({ product, moduleOptions, onClose }) {
+  const editing = Boolean(product);
+  const form = useForm({
+    name: product?.name ?? '',
+    code: product?.code ?? '',
+    description: product?.description ?? '',
+    monthly_price: product?.monthly_price ?? 0,
+    yearly_price: product?.yearly_price ?? 0,
+    is_active: product?.is_active ?? true,
+    is_marketplace_visible: product?.is_marketplace_visible ?? true,
+    modules: product?.modules ?? [],
+  });
+  const { data, setData, errors, processing } = form;
+
+  const toggleModule = (code) => setData('modules', data.modules.includes(code)
+    ? data.modules.filter((c) => c !== code)
+    : [...data.modules, code]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    const opts = { preserveScroll: true, onSuccess: onClose };
+    if (editing) form.put(`/products/${product.id}`, opts);
+    else form.post('/products', opts);
+  };
+
+  return (
+    <div className="pc-modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="pc-modal" role="dialog" aria-modal="true">
+        <h2 className="pc-modal__title">{editing ? 'Edit product' : 'New product'}</h2>
+        <div className="pc-modal__sub">A product bundles one or more modules and is what customers subscribe to.</div>
+        <form className="pc-form" onSubmit={submit}>
+          <div className="pc-field">
+            <label className="pc-field__label" htmlFor="pf-name">Name</label>
+            <input id="pf-name" className="pc-input" value={data.name} onChange={(e) => setData('name', e.target.value)} placeholder="HRM Suite" />
+            {errors.name && <span className="pc-field__err">{errors.name}</span>}
+          </div>
+          {!editing && (
+            <div className="pc-field">
+              <label className="pc-field__label" htmlFor="pf-code">Code (slug)</label>
+              <input id="pf-code" className="pc-input" value={data.code} onChange={(e) => setData('code', e.target.value)} placeholder="hrm-suite" />
+              {errors.code && <span className="pc-field__err">{errors.code}</span>}
+            </div>
+          )}
+          <div className="pc-field">
+            <label className="pc-field__label" htmlFor="pf-desc">Description</label>
+            <textarea id="pf-desc" className="pc-input" value={data.description ?? ''} onChange={(e) => setData('description', e.target.value)} />
+          </div>
+          <div className="pc-row2">
+            <div className="pc-field">
+              <label className="pc-field__label" htmlFor="pf-mp">Monthly price ($)</label>
+              <input id="pf-mp" type="number" min="0" step="0.01" className="pc-input" value={data.monthly_price} onChange={(e) => setData('monthly_price', e.target.value)} />
+              {errors.monthly_price && <span className="pc-field__err">{errors.monthly_price}</span>}
+            </div>
+            <div className="pc-field">
+              <label className="pc-field__label" htmlFor="pf-yp">Yearly price ($)</label>
+              <input id="pf-yp" type="number" min="0" step="0.01" className="pc-input" value={data.yearly_price} onChange={(e) => setData('yearly_price', e.target.value)} />
+            </div>
+          </div>
+          <div className="pc-field">
+            <span className="pc-field__label">Bundled modules</span>
+            <div className="pc-modtag-pick">
+              {moduleOptions.length === 0 && <span className="pc-modal__sub">No sellable modules yet — develop a non-core module to bundle.</span>}
+              {moduleOptions.map((m) => (
+                <button type="button" key={m.code} className="pc-modpick" data-on={data.modules.includes(m.code)} onClick={() => toggleModule(m.code)}>
+                  {data.modules.includes(m.code) ? '✓ ' : ''}{m.name} <i className="mono">{m.code}</i>
+                </button>
+              ))}
+            </div>
+            {errors.modules && <span className="pc-field__err">{errors.modules}</span>}
+          </div>
+          <div className="pc-checks">
+            <label className="pc-check"><input type="checkbox" checked={data.is_active} onChange={(e) => setData('is_active', e.target.checked)} /> Active (available to sell)</label>
+            <label className="pc-check"><input type="checkbox" checked={data.is_marketplace_visible} onChange={(e) => setData('is_marketplace_visible', e.target.checked)} /> Marketplace-visible</label>
+          </div>
+          <div className="pc-modal__actions">
+            <button type="button" className="pc-btn" onClick={onClose}>Cancel</button>
+            <button type="submit" className="pc-btn pc-btn--primary" disabled={processing}>{processing ? 'Saving…' : (editing ? 'Save changes' : 'Create product')}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- page ---------------- */
-export default function Index({ kpis, lifecycle, products, systemModules }) {
+export default function Index({ kpis, lifecycle, products, systemModules, moduleOptions }) {
   const list = products ?? [];
   const [selectedId, setSelectedId] = useState(list[0]?.id ?? null);
   const [view, setView] = useState('products');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState(null);
   const selected = useMemo(() => list.find((p) => p.id === selectedId) ?? list[0] ?? null, [list, selectedId]);
   const k = kpis ?? {};
   const sys = systemModules ?? [];
+  const opts = moduleOptions ?? [];
+
+  const openNew = () => { setEditProduct(null); setModalOpen(true); };
+  const openEdit = (p) => { setEditProduct(p); setModalOpen(true); };
 
   const kpiCards = [
     { label: 'Products in catalog', value: k.products_total ?? 0, delta: `${sys.length} foundation · ${k.live_products ?? 0} sellable` },
@@ -177,7 +268,7 @@ export default function Index({ kpis, lifecycle, products, systemModules }) {
         </div>
         <div className="pc-actions">
           <button type="button" className="pc-btn" onClick={() => router.visit('/modules')}>{Glyph.cube}<span>Module registry</span></button>
-          <button type="button" className="pc-btn pc-btn--primary">{Glyph.plus}<span>New product</span></button>
+          <button type="button" className="pc-btn pc-btn--primary" onClick={openNew}>{Glyph.plus}<span>New product</span></button>
         </div>
       </div>
 
@@ -249,7 +340,7 @@ export default function Index({ kpis, lifecycle, products, systemModules }) {
                     ))}
                     <tr className="pc-addrow">
                       <td colSpan={5}>
-                        <div className="pc-addcta"><span className="pc-plus">{Glyph.plus}</span>Promote a module to a sellable product — bundle one or more modules with a price</div>
+                        <div className="pc-addcta" onClick={openNew}><span className="pc-plus">{Glyph.plus}</span>Promote a module to a sellable product — bundle one or more modules with a price</div>
                       </td>
                     </tr>
                   </tbody>
@@ -302,8 +393,16 @@ export default function Index({ kpis, lifecycle, products, systemModules }) {
           </CardBody>
         </Card>
 
-        <Detail product={selected} />
+        <Detail product={selected} onEdit={openEdit} />
       </div>
+
+      {modalOpen && (
+        <ProductModal
+          product={editProduct}
+          moduleOptions={opts}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

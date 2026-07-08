@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Services;
 
+use Aero\Contracts\AuditServiceInterface;
 use Aero\Platform\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Assembles the data for the platform Products (Catalog) command centre.
@@ -17,7 +20,9 @@ use Illuminate\Support\Facades\DB;
  */
 class ProductCatalogService
 {
-    /** @return array{kpis: array, lifecycle: array, products: array, systemModules: array} */
+    public function __construct(private AuditServiceInterface $audit) {}
+
+    /** @return array{kpis: array, lifecycle: array, products: array, systemModules: array, moduleOptions: array} */
     public function overview(): array
     {
         $tenantsTotal = max(1, (int) DB::table('tenants')->count());
@@ -27,7 +32,94 @@ class ProductCatalogService
             'lifecycle'     => $this->lifecycle($tenantsTotal),
             'products'      => $this->products($tenantsTotal),
             'systemModules' => $this->systemModules(),
+            'moduleOptions' => $this->moduleOptions(),
         ];
+    }
+
+    /**
+     * Modules an admin can bundle into a product — non-core, active modules
+     * (foundation modules are never sold). Guard-free via the query builder.
+     *
+     * @return array<int, array{code: string, name: string}>
+     */
+    public function moduleOptions(): array
+    {
+        return DB::table('modules')
+            ->where('is_active', true)
+            ->where('is_core', false)
+            ->orderBy('name')
+            ->get(['code', 'name'])
+            ->map(fn ($m) => ['code' => $m->code, 'name' => $m->name])
+            ->all();
+    }
+
+    /**
+     * Create or update a product and sync its bundled modules (product_modules).
+     * Keeps the legacy products.module_code scalar pointed at the primary (first)
+     * bundled module for the BC readers that still use it, and busts the
+     * entitlement caches of every tenant subscribed to the product.
+     *
+     * @param  array<string, mixed>  $data  validated: name, code?, description?,
+     *         monthly_price, yearly_price, is_active, is_marketplace_visible, modules[]
+     */
+    public function save(array $data, ?string $id = null): Product
+    {
+        return DB::transaction(function () use ($data, $id): Product {
+            $product = $id ? Product::findOrFail($id) : new Product;
+            $isNew = ! $product->exists;
+
+            $modules = array_values(array_unique(array_filter((array) ($data['modules'] ?? []))));
+            $primary = $modules[0] ?? ($product->module_code ?? null);
+
+            $product->fill([
+                'name'                   => $data['name'],
+                'description'            => $data['description'] ?? null,
+                'monthly_price'          => $data['monthly_price'] ?? 0,
+                'yearly_price'           => $data['yearly_price'] ?? 0,
+                'currency'               => $data['currency'] ?? 'USD',
+                'is_active'              => (bool) ($data['is_active'] ?? true),
+                'is_marketplace_visible' => (bool) ($data['is_marketplace_visible'] ?? true),
+                'module_code'            => $primary,
+            ]);
+            if ($isNew) {
+                $product->code = $data['code'] ?: Str::slug($data['name']);
+            }
+            $product->save();
+
+            // Re-sync the pivot to exactly the submitted set.
+            DB::table('product_modules')->where('product_id', $product->id)->delete();
+            $now = now();
+            foreach ($modules as $code) {
+                DB::table('product_modules')->insert([
+                    'product_id' => $product->id, 'module_code' => $code,
+                    'created_at' => $now, 'updated_at' => $now,
+                ]);
+            }
+
+            $this->bustEntitlementCaches($product->id);
+
+            $this->audit->log(
+                event: $isNew ? 'platform.products.created' : 'platform.products.updated',
+                action: $isNew ? 'create' : 'edit',
+                subject: $product,
+                description: "Product {$product->code} ".($isNew ? 'created' : 'updated')." — modules: ".implode(',', $modules),
+            );
+
+            return $product->refresh();
+        });
+    }
+
+    /** Bust per-tenant entitlement caches for every tenant subscribed to a product. */
+    private function bustEntitlementCaches(string $productId): void
+    {
+        DB::table('product_subscriptions')
+            ->where('product_id', $productId)
+            ->distinct()
+            ->pluck('tenant_id')
+            ->each(function ($tid): void {
+                Cache::forget("tenant_subscribed_modules:{$tid}");
+                Cache::forget("module_entitlement:{$tid}");
+            });
     }
 
     /** Active/trialing subscription aggregates keyed by product_id. */
