@@ -36,7 +36,7 @@ function ProductsRail({ kpis }) {
   ];
   const links = [
     ['Module registry', '/modules', Glyph.cube],
-    ['Subscriptions', '/subscriptions', Glyph.product],
+    ['Subscriptions', '/billing/subscriptions', Glyph.product],
     ['Tenants', '/tenants', Glyph.check],
   ];
   return (
@@ -143,7 +143,7 @@ function Detail({ product, onEdit }) {
         </div>
         <div className="pc-detail__actions">
           <button type="button" className="pc-btn" onClick={() => onEdit?.(product)}>Edit product</button>
-          <button type="button" className="pc-btn" onClick={() => router.visit('/subscriptions')}>View adoption</button>
+          <button type="button" className="pc-btn" onClick={() => router.visit('/billing/subscriptions')}>View adoption</button>
         </div>
       </CardBody>
     </Card>

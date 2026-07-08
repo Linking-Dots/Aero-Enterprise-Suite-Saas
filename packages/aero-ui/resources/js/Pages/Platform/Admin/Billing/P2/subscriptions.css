@@ -1,0 +1,44 @@
+/* Subscriptions command centre — extends the shared products.css card language.
+   All colour via theme tokens (color-mix keeps status tints theme-reactive in
+   both light & dark). Surfaces are @aero/ui <Card> so Theme-Studio card-style,
+   mode, radius, borders and accent all apply. */
+
+.sc-kpis4 { grid-template-columns: repeat(4, 1fr); }
+
+/* status distribution stacked bar */
+.sc-dist { display: flex; height: 12px; border-radius: 7px; overflow: hidden; background: var(--aeos-bg-subtle); margin-bottom: var(--aeos-space-4); }
+.sc-dist > span { display: block; height: 100%; }
+.sc-seg-active { background: var(--aeos-success); }
+.sc-seg-trialing { background: var(--aeos-primary); }
+.sc-seg-past_due { background: var(--aeos-warning); }
+.sc-seg-incomplete { background: var(--aeos-text-muted); }
+.sc-seg-cancelled { background: var(--aeos-danger); }
+
+.sc-legend { display: flex; flex-wrap: wrap; gap: var(--aeos-space-4); font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); }
+.sc-legend .li { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+.sc-legend .d { width: 9px; height: 9px; border-radius: 3px; }
+.sc-legend b { color: var(--aeos-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* status chips (extend .pc-chip base from products.css) */
+.pc-chip--active { background: color-mix(in srgb, var(--aeos-success) 14%, transparent); color: var(--aeos-success); border-color: color-mix(in srgb, var(--aeos-success) 35%, transparent); }
+.pc-chip--active .pc-chip__dot { background: var(--aeos-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--aeos-success) 20%, transparent); }
+.pc-chip--trialing { background: color-mix(in srgb, var(--aeos-primary) 14%, transparent); color: var(--aeos-primary); border-color: color-mix(in srgb, var(--aeos-primary) 35%, transparent); }
+.pc-chip--trialing .pc-chip__dot { background: var(--aeos-primary); }
+.pc-chip--past_due { background: color-mix(in srgb, var(--aeos-warning) 16%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 38%, transparent); }
+.pc-chip--past_due .pc-chip__dot { background: var(--aeos-warning); }
+.pc-chip--incomplete { background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); border-color: var(--aeos-border); }
+.pc-chip--incomplete .pc-chip__dot { background: var(--aeos-text-muted); }
+.pc-chip--cancelled { background: color-mix(in srgb, var(--aeos-danger) 14%, transparent); color: var(--aeos-danger); border-color: color-mix(in srgb, var(--aeos-danger) 35%, transparent); }
+.pc-chip--cancelled .pc-chip__dot { background: var(--aeos-danger); }
+
+/* tenant avatar */
+.sc-av { width: 32px; height: 32px; border-radius: calc(var(--aeos-card-radius) * .7); display: grid; place-items: center; flex: none; background: var(--aeos-primary-tint); border: var(--aeos-border-width) solid var(--aeos-primary-border); color: var(--aeos-primary); font-size: var(--aeos-text-xs); font-weight: 600; }
+.sc-kind { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); font-family: var(--aeos-font-mono); }
+
+/* row actions */
+.sc-actions { display: inline-flex; gap: var(--aeos-space-1); justify-content: flex-end; flex-wrap: wrap; }
+.sc-statusfilter { width: auto; }
+
+@media (max-width: 900px) {
+  .sc-kpis4 { grid-template-columns: 1fr 1fr; }
+}

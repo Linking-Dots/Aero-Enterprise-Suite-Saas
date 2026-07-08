@@ -1241,6 +1241,9 @@ Route::middleware('admin.domain')->group(function () {
                 Route::get('/{subscription}', [AdminSubscriptionController::class, 'show'])->name('show')->middleware('hrmac:billing-management.subscriptions.view');
                 Route::post('/{subscription}/cancel', [AdminSubscriptionController::class, 'cancel'])->name('cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
                 Route::post('/{subscription}/upgrade', [AdminSubscriptionController::class, 'upgrade'])->name('upgrade')->middleware('hrmac:billing-management.subscriptions.upgrade');
+                Route::post('/{subscription}/change-plan', [AdminSubscriptionController::class, 'changePlan'])->name('change-plan')->middleware('hrmac:billing-management.subscriptions.upgrade');
+                Route::post('/{subscription}/reactivate', [AdminSubscriptionController::class, 'reactivate'])->name('reactivate')->middleware('hrmac:billing-management.subscriptions.upgrade');
+                Route::post('/product/{productSubscription}/cancel', [AdminSubscriptionController::class, 'cancelProduct'])->name('product.cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
             });
 
             Route::prefix('invoices')->name('invoices.')->group(function () {

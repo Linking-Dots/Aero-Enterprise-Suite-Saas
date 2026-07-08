@@ -26,6 +26,93 @@ class SubscriptionAdminService
     ) {}
 
     /**
+     * Unified command-centre payload: normalised plan + product subscriptions
+     * (with tenant names resolved), health stats, and MRR. Guard-free query
+     * builder so it's context-agnostic.
+     *
+     * @return array{stats: array, plan_subscriptions: array, product_subscriptions: array}
+     */
+    public function overview(): array
+    {
+        $planRows = DB::table('subscriptions as s')
+            ->leftJoin('plans as p', 'p.id', '=', 's.plan_id')
+            ->leftJoin('tenants as t', 't.id', '=', 's.tenant_id')
+            ->whereNull('s.deleted_at')
+            ->orderByDesc('s.created_at')
+            ->limit(300)
+            ->get(['s.id', 't.name as tenant', 's.tenant_id', 'p.name as plan', 'p.id as plan_id',
+                's.status', 's.amount', 'p.price_monthly', 's.trial_ends_at', 's.created_at'])
+            ->map(fn ($r) => [
+                'id'          => (string) $r->id,
+                'kind'        => 'plan',
+                'tenant'      => $r->tenant ?: '—',
+                'label'       => $r->plan ?: 'No plan',
+                'plan_id'     => $r->plan_id,
+                'status'      => $r->status,
+                // Normalise to the plan's MONTHLY rate for a consistent MRR
+                // (subscriptions.amount can hold the yearly charge for annual plans).
+                'amount'      => (float) ($r->price_monthly ?? 0),
+                'trial_ends'  => $r->trial_ends_at,
+                'since'       => $r->created_at,
+            ])->all();
+
+        $productRows = DB::table('product_subscriptions as ps')
+            ->leftJoin('products as pr', 'pr.id', '=', 'ps.product_id')
+            ->leftJoin('tenants as t', 't.id', '=', 'ps.tenant_id')
+            ->whereNull('ps.deleted_at')
+            ->orderByDesc('ps.created_at')
+            ->limit(300)
+            ->get(['ps.id', 't.name as tenant', 'ps.tenant_id', 'pr.name as product',
+                'ps.status', 'ps.amount', 'ps.trial_ends_at', 'ps.created_at'])
+            ->map(fn ($r) => [
+                'id'          => (string) $r->id,
+                'kind'        => 'product',
+                'tenant'      => $r->tenant ?: '—',
+                'label'       => $r->product ?: 'Product',
+                'plan_id'     => null,
+                'status'      => $r->status,
+                'amount'      => (float) ($r->amount ?? 0),
+                'trial_ends'  => $r->trial_ends_at,
+                'since'       => $r->created_at,
+            ])->all();
+
+        return [
+            'stats'                 => $this->stats($planRows, $productRows),
+            'plan_subscriptions'    => $planRows,
+            'product_subscriptions' => $productRows,
+        ];
+    }
+
+    /**
+     * @param  array<int, array>  $plan
+     * @param  array<int, array>  $product
+     * @return array<string, int|float>
+     */
+    private function stats(array $plan, array $product): array
+    {
+        $all = array_merge($plan, $product);
+        $count = fn (string $status) => count(array_filter($all, fn ($r) => $r['status'] === $status));
+        $mrr = fn (array $rows) => array_sum(array_map(
+            fn ($r) => in_array($r['status'], ['active', 'trialing'], true) ? $r['amount'] : 0,
+            $rows
+        ));
+
+        return [
+            'active'       => $count('active'),
+            'trialing'     => $count('trialing'),
+            'past_due'     => $count('past_due'),
+            'incomplete'   => $count('incomplete'),
+            'cancelled'    => $count('cancelled'),
+            'total'        => count($all),
+            'plan_total'   => count($plan),
+            'product_total' => count($product),
+            'plan_mrr'     => round($mrr($plan), 2),
+            'product_mrr'  => round($mrr($product), 2),
+            'mrr'          => round($mrr($plan) + $mrr($product), 2),
+        ];
+    }
+
+    /**
      * Paginated list of subscriptions with tenant + plan eager-loaded.
      *
      * @return LengthAwarePaginator<Subscription>

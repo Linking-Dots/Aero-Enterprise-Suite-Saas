@@ -20,17 +20,10 @@ class SubscriptionController extends Controller
         private readonly SubscriptionAdminService $svc
     ) {}
 
-    public function index(Request $request): Response
+    public function index(): Response
     {
         return Inertia::render('Platform/Admin/Billing/P2/Subscriptions', [
-            'subscriptions' => $this->svc->list($request->only(['status', 'tenant_id'])),
-            'product_subscriptions' => ProductSubscription::with('product')
-                ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
-                ->when($request->input('tenant_id'), fn ($q, $t) => $q->where('tenant_id', $t))
-                ->orderByDesc('created_at')
-                ->paginate(25)
-                ->withQueryString(),
-            'filters' => $request->only(['status', 'tenant_id']),
+            ...$this->svc->overview(),
             'plans' => Plan::orderBy('name')->get(['id', 'name', 'price_monthly', 'price_annual']),
         ]);
     }
@@ -78,5 +71,23 @@ class SubscriptionController extends Controller
         $this->svc->reactivate($subscription);
 
         return back()->with('success', 'Subscription reactivated.');
+    }
+
+    /**
+     * Cancel a PRODUCT subscription. The ProductSubscriptionObserver fires on the
+     * status change → ProductSubscriptionChanged('cancelled') → catalog resync +
+     * entitlement-ledger revoke + cache bust, so no extra bookkeeping is needed here.
+     */
+    public function cancelProduct(Request $request, ProductSubscription $productSubscription): RedirectResponse
+    {
+        $request->validate(['reason' => ['nullable', 'string', 'max:500']]);
+
+        $productSubscription->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+            'cancellation_reason' => $request->string('reason')->toString() ?: null,
+        ]);
+
+        return back()->with('success', 'Product subscription cancelled.');
     }
 }
