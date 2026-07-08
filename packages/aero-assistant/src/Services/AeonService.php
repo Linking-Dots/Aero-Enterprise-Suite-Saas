@@ -29,20 +29,26 @@ class AeonService
      */
     public function send(int $userId, ?int $conversationId, string $text, array $context = []): array
     {
-        return DB::transaction(function () use ($userId, $conversationId, $text, $context) {
+        // Persist the conversation + user turn atomically, THEN call the model
+        // (an external, multi-second, retrying HTTP call must not be held inside
+        // a DB transaction).
+        $conversation = DB::transaction(function () use ($userId, $conversationId, $text) {
             $conversation = $conversationId
                 ? Conversation::where('user_id', $userId)->findOrFail($conversationId)
                 : Conversation::create(['user_id' => $userId, 'title' => Str::limit($text, 40)]);
-
             $conversation->messages()->create(['role' => 'user', 'content' => $text]);
 
-            $chunks = $this->rag->retrieve($text);
+            return $conversation;
+        });
 
-            $result = $this->provider->chat(
-                $this->buildHistory($conversation, $context, $chunks),
-                $this->tools->declarations(),
-            );
+        $chunks = $this->rag->retrieve($text);
 
+        $result = $this->provider->chat(
+            $this->buildHistory($conversation, $context, $chunks),
+            $this->tools->declarations(),
+        );
+
+        {
             $nav = $this->firstValidNavigate($result);
             $navAttempted = $this->attemptedNavigate($result);
             $dataTool = $nav ? null : $this->firstDataTool($result);
@@ -83,7 +89,7 @@ class AeonService
             ]);
 
             return ['conversation' => $conversation, 'reply' => $reply];
-        });
+        }
     }
 
     /**

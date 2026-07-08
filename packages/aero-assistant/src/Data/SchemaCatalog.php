@@ -21,9 +21,16 @@ use Illuminate\Support\Str;
 class SchemaCatalog
 {
     private const SENSITIVE = [
-        'password', 'remember_token', 'national_id', 'tax_id', 'account_number',
-        'routing_number', 'medical_notes', 'api_key', 'secret', 'two_factor',
-        'byoc_db_',
+        // credentials / tokens
+        'password', 'remember_token', 'api_key', 'secret', 'two_factor', 'byoc_db_', 'access_token', 'refresh_token',
+        // government / identity PII
+        'national_id', 'tax_id', 'ssn', 'passport', 'nid', 'date_of_birth', 'dob', 'birth_date',
+        // financial / banking
+        'account_number', 'routing_number', 'iban', 'swift', 'card_number', 'cvv',
+        // compensation (aggregating/listing pay across the org without authorisation)
+        'salary', 'basic_salary', 'gross', 'net_pay', 'net_salary', 'compensation', 'ctc', 'wage',
+        // health / private
+        'medical_notes', 'medical', 'diagnosis',
     ];
 
     private const SYSTEM_TABLES = [

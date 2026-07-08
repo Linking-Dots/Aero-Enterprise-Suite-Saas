@@ -14,8 +14,14 @@ use Illuminate\Support\Str;
  * (entity + operation + column/group_by/period) — never raw SQL. Every field is
  * validated against the live schema (SchemaCatalog), so it can query ANY table in
  * the system, but can never touch a column that doesn't exist, run a write, or
- * emit a sensitive/PII value. Tenant isolation comes from the models' own scopes.
- * Results render as stat / table / chart blocks.
+ * emit a sensitive/PII value (SchemaCatalog::SENSITIVE). Tenant isolation comes
+ * from the current (tenant) DB connection.
+ *
+ * NOTE (hardening, pre multi-user prod): this tool is not yet HRMAC-gated per
+ * table — any user who can use Aeon can read aggregate/non-sensitive data from
+ * any table. Sensitive columns are excluded, but a per-module/per-table access
+ * gate should be added before exposing to low-privilege multi-tenant users.
+ * Results render as stat / table / chart / entityCard blocks.
  */
 class QueryTool implements AeonToolContract
 {
