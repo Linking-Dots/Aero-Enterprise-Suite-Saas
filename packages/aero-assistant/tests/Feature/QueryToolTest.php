@@ -115,6 +115,26 @@ class QueryToolTest extends PackageTestCase
         $this->assertSame('60', $stats['items'][0]['v']);
     }
 
+    public function test_filter_by_column_value(): void
+    {
+        $out = (new QueryTool($this->catalog()))->run([
+            'entity' => 'aeon_test_widgets', 'operation' => 'count',
+            'filters' => [['column' => 'status', 'op' => 'eq', 'value' => 'open']],
+        ], 1);
+        $stats = (new Collection($out['blocks']))->firstWhere('type', 'stats');
+        $this->assertSame('2', $stats['items'][0]['v']); // 2 open
+    }
+
+    public function test_filter_by_foreign_key_name_resolves(): void
+    {
+        $out = (new QueryTool($this->catalog()))->run([
+            'entity' => 'aeon_test_widgets', 'operation' => 'count',
+            'filters' => [['column' => 'category_id', 'op' => 'eq', 'value' => 'Alpha']],
+        ], 1);
+        $stats = (new Collection($out['blocks']))->firstWhere('type', 'stats');
+        $this->assertSame('2', $stats['items'][0]['v']); // Alpha = id 1 = 2 widgets
+    }
+
     public function test_unknown_entity_is_rejected(): void
     {
         $out = (new QueryTool($this->catalog()))->run(['entity' => 'nope', 'operation' => 'count'], 1);

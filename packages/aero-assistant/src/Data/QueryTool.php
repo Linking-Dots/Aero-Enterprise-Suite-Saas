@@ -51,6 +51,20 @@ class QueryTool implements AeonToolContract
             'aggregate' => ['type' => 'string', 'enum' => ['sum', 'avg', 'min', 'max']],
             'period' => ['type' => 'string', 'enum' => ['today', 'last_7_days', 'last_30_days', 'this_month', 'all_time']],
             'date_field' => ['type' => 'string', 'description' => 'Date column for period/trend, e.g. created_at'],
+            'filters' => [
+                'type' => 'array',
+                'description' => 'Conditions to narrow the query. For a foreign-key column (ends with _id) pass '
+                    .'the human NAME as the value (e.g. {"column":"department_id","op":"eq","value":"Sales"}) and it '
+                    .'is resolved automatically. Use op: eq, ne, gt, gte, lt, lte, contains.',
+                'items' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'column' => ['type' => 'string'],
+                        'op' => ['type' => 'string', 'enum' => ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'contains']],
+                        'value' => ['type' => 'string'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -75,6 +89,7 @@ class QueryTool implements AeonToolContract
                 $query->whereNull('deleted_at'); // respect soft-deletes generically
             }
             $this->applyPeriod($query, $dateField, $period);
+            $this->applyFilters($query, $entityKey, $args['filters'] ?? []);
 
             if ($operation === 'aggregate') {
                 return $this->aggregate($query, $entityKey, $label, $args);
@@ -211,6 +226,77 @@ class QueryTool implements AeonToolContract
         $column = is_string($column) && $column !== '' ? $column : null;
 
         return ($column !== null && $this->catalog->isColumn($entity, $column)) ? $column : null;
+    }
+
+    /**
+     * Apply validated WHERE conditions. Unknown/sensitive columns are ignored;
+     * a foreign-key filter given a NAME is resolved to matching ids.
+     *
+     * @param  mixed  $filters
+     */
+    private function applyFilters($query, string $entityKey, $filters): void
+    {
+        if (! is_array($filters)) {
+            return;
+        }
+        foreach ($filters as $f) {
+            if (! is_array($f)) {
+                continue;
+            }
+            $col = $this->validColumn($entityKey, $f['column'] ?? null);
+            if (! $col || $this->catalog->isSensitive($col)) {
+                continue;
+            }
+            $op = strtolower((string) ($f['op'] ?? 'eq'));
+            $value = $f['value'] ?? null;
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            // Foreign key given a name → resolve to matching ids and match those.
+            if (Str::endsWith($col, '_id') && ! is_numeric($value)) {
+                $ids = $this->resolveNameToIds($col, (string) $value);
+                $query->whereIn($col, $ids ?: [-1]); // no match → match nothing (honest)
+                continue;
+            }
+
+            match ($op) {
+                'ne' => $query->where($col, '!=', $value),
+                'gt' => $query->where($col, '>', $value),
+                'gte' => $query->where($col, '>=', $value),
+                'lt' => $query->where($col, '<', $value),
+                'lte' => $query->where($col, '<=', $value),
+                'contains' => $query->where($col, 'like', '%'.$value.'%'),
+                default => $query->where($col, '=', $value),
+            };
+        }
+    }
+
+    /**
+     * Resolve a related record NAME to its id(s) via the related table's name column.
+     *
+     * @return array<int,int|string>
+     */
+    private function resolveNameToIds(string $col, string $name): array
+    {
+        $base = Str::beforeLast($col, '_id');
+        foreach ([Str::plural($base), $base] as $table) {
+            $e = $this->catalog->entity($table);
+            if (! $e || ! in_array('id', $e['columns'], true)) {
+                continue;
+            }
+            $nameCol = $this->nameColumn($e['columns']);
+            if (! $nameCol) {
+                continue;
+            }
+            try {
+                return DB::table($e['table'])->where($nameCol, 'like', '%'.$name.'%')->pluck('id')->all();
+            } catch (\Throwable) {
+                return [];
+            }
+        }
+
+        return [];
     }
 
     /**
