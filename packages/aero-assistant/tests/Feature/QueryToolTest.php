@@ -32,7 +32,7 @@ class QueryToolTest extends PackageTestCase
                     'aeon_test_widgets' => [
                         'table' => 'aeon_test_widgets',
                         'label' => 'Widgets',
-                        'columns' => ['id', 'status', 'price', 'category_id', 'created_at'],
+                        'columns' => ['id', 'status', 'price', 'category_id', 'is_active', 'created_at'],
                         'date_fields' => ['created_at'],
                         'soft_delete' => false,
                     ],
@@ -56,6 +56,7 @@ class QueryToolTest extends PackageTestCase
             $t->string('status');
             $t->integer('price');
             $t->unsignedBigInteger('category_id')->nullable();
+            $t->boolean('is_active')->default(1);
             $t->timestamp('created_at')->nullable();
         });
         Schema::create('aeon_test_categories', function ($t) {
@@ -147,6 +148,8 @@ class QueryToolTest extends PackageTestCase
         $this->assertTrue($fields->contains(fn ($f) => $f['k'] === 'Status' && $f['v'] === 'closed'));
         // category_id (2) resolved to its name "Beta"
         $this->assertTrue($fields->contains(fn ($f) => $f['v'] === 'Beta'));
+        // is_active (1) formatted as a friendly boolean
+        $this->assertTrue($fields->contains(fn ($f) => $f['k'] === 'Is Active' && $f['v'] === 'Yes'));
     }
 
     public function test_unknown_entity_is_rejected(): void

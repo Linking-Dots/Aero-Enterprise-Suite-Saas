@@ -122,7 +122,7 @@ class QueryTool implements AeonToolContract
             // Resolve foreign-key ids (e.g. department_id) to their real names.
             $labels = $this->resolveLabels($groupBy, $rows->pluck($groupBy)->all());
             $items = $rows->map(fn ($r) => [
-                'label' => (string) ($labels[$r->{$groupBy}] ?? ($r->{$groupBy} ?? '—')),
+                'label' => (string) ($labels[$r->{$groupBy}] ?? $this->formatValue($groupBy, $r->{$groupBy})),
                 'value' => (int) $r->aeon_c,
             ])->all();
 
@@ -177,7 +177,7 @@ class QueryTool implements AeonToolContract
         ));
         $cols = array_slice($cols, 0, 6);
         $rows = (clone $query)->limit(10)->get($cols);
-        $tableRows = $rows->map(fn ($r) => array_map(fn ($c) => Str::limit((string) $r->{$c}, 40), $cols))->all();
+        $tableRows = $rows->map(fn ($r) => array_map(fn ($c) => Str::limit($this->formatValue($c, $r->{$c}), 40), $cols))->all();
 
         return [
             'text' => "Here are up to 10 {$label}:",
@@ -209,7 +209,9 @@ class QueryTool implements AeonToolContract
             }
             if (Str::endsWith($col, '_id') && is_numeric($val)) {
                 $map = $this->resolveLabels($col, [$val]);
-                $val = $map[$val] ?? $map[(int) $val] ?? $val;
+                $val = $map[$val] ?? $map[(int) $val] ?? (string) $val;
+            } else {
+                $val = $this->formatValue($col, $val);
             }
             $fields[] = ['k' => Str::headline($col), 'v' => Str::limit((string) $val, 60)];
         }
@@ -410,6 +412,38 @@ class QueryTool implements AeonToolContract
     private function dimensionLabel(string $col): string
     {
         return Str::endsWith($col, '_id') ? Str::beforeLast($col, '_id') : $col;
+    }
+
+    /**
+     * Human-friendly display of a raw DB value: booleans → Yes/No, ISO dates →
+     * "Jan 5, 2026", snake_case enums → "Full Time". Leaves other values as-is.
+     *
+     * @param  mixed  $val
+     */
+    private function formatValue(string $col, $val): string
+    {
+        if ($val === null || $val === '') {
+            return '—';
+        }
+
+        $isBoolCol = Str::startsWith($col, ['is_', 'has_', 'can_'])
+            || in_array($col, ['active', 'enabled', 'published', 'archived', 'verified', 'default'], true);
+        if ($isBoolCol && (is_bool($val) || in_array((string) $val, ['0', '1'], true))) {
+            return ($val === true || (string) $val === '1') ? 'Yes' : 'No';
+        }
+
+        if (is_string($val) && preg_match('/^\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2})?/', $val)) {
+            try {
+                return Carbon::parse($val)->format('M j, Y');
+            } catch (\Throwable) {
+            }
+        }
+
+        if (is_string($val) && str_contains($val, '_') && preg_match('/^[a-z][a-z0-9_]*$/', $val) && strlen($val) <= 30) {
+            return Str::headline($val);
+        }
+
+        return (string) $val;
     }
 
     private function periodSuffix(string $period): string
