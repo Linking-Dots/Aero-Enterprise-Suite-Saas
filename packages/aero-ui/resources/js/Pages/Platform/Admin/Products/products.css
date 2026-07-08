@@ -142,7 +142,10 @@
 .pc-rail__links .pc-btn { justify-content: flex-start; }
 
 /* ---- product form modal ---- */
-.pc-modal-overlay { position: fixed; inset: 0; z-index: 60; background: var(--aeos-bg-overlay, rgba(4, 7, 14, .62)); backdrop-filter: blur(3px); display: grid; place-items: center; padding: var(--aeos-space-4); }
+/* Above the app shell topbar (z 100) and the workbench drawer (z 701).
+   --aeos-overlay-backdrop is the translucent scrim token; --aeos-bg-overlay
+   is the SOLID glow-card surface — never use it for scrims. */
+.pc-modal-overlay { position: fixed; inset: 0; z-index: 720; background: var(--aeos-overlay-backdrop, rgba(4, 7, 14, .55)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: grid; place-items: center; padding: var(--aeos-space-4); }
 .pc-modal { width: min(560px, 100%); max-height: 90vh; overflow-y: auto; background: var(--aeos-bg-elevated, var(--aeos-bg-card)); border: var(--aeos-border-width) solid var(--aeos-border); border-radius: var(--aeos-card-radius); box-shadow: var(--aeos-shadow-xl); padding: var(--aeos-space-5); }
 .pc-modal__title { font-size: var(--aeos-text-lg); font-weight: 640; color: var(--aeos-text-primary); margin: 0 0 var(--aeos-space-1); }
 .pc-modal__sub { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-bottom: var(--aeos-space-4); }

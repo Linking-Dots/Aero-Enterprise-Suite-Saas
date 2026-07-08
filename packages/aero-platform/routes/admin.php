@@ -1238,12 +1238,24 @@ Route::middleware('admin.domain')->group(function () {
 
             Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
                 Route::get('/', [AdminSubscriptionController::class, 'index'])->name('index')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::post('/', [AdminSubscriptionController::class, 'store'])->name('store')->middleware('hrmac:billing-management.subscriptions.create');
+                // Static segments MUST be registered before the /{subscription} wildcard.
+                Route::get('/export', [AdminSubscriptionController::class, 'export'])->name('export')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::get('/detail/{kind}/{id}', [AdminSubscriptionController::class, 'detail'])->name('detail')->middleware('hrmac:billing-management.subscriptions.view');
+                Route::post('/bulk', [AdminSubscriptionController::class, 'bulk'])->name('bulk')->middleware('hrmac:billing-management.subscriptions.cancel');
+                Route::post('/product/{productSubscription}/cancel', [AdminSubscriptionController::class, 'cancelProduct'])->name('product.cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
                 Route::get('/{subscription}', [AdminSubscriptionController::class, 'show'])->name('show')->middleware('hrmac:billing-management.subscriptions.view');
                 Route::post('/{subscription}/cancel', [AdminSubscriptionController::class, 'cancel'])->name('cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
                 Route::post('/{subscription}/upgrade', [AdminSubscriptionController::class, 'upgrade'])->name('upgrade')->middleware('hrmac:billing-management.subscriptions.upgrade');
                 Route::post('/{subscription}/change-plan', [AdminSubscriptionController::class, 'changePlan'])->name('change-plan')->middleware('hrmac:billing-management.subscriptions.upgrade');
                 Route::post('/{subscription}/reactivate', [AdminSubscriptionController::class, 'reactivate'])->name('reactivate')->middleware('hrmac:billing-management.subscriptions.upgrade');
-                Route::post('/product/{productSubscription}/cancel', [AdminSubscriptionController::class, 'cancelProduct'])->name('product.cancel')->middleware('hrmac:billing-management.subscriptions.cancel');
+                Route::post('/{subscription}/pause', [AdminSubscriptionController::class, 'pause'])->name('pause')->middleware('hrmac:billing-management.subscriptions.manage');
+                Route::post('/{subscription}/resume', [AdminSubscriptionController::class, 'resume'])->name('resume')->middleware('hrmac:billing-management.subscriptions.manage');
+                Route::post('/{subscription}/trial/extend', [AdminSubscriptionController::class, 'extendTrial'])->name('trial.extend')->middleware('hrmac:billing-management.subscriptions.manage');
+                Route::post('/{subscription}/trial/convert', [AdminSubscriptionController::class, 'convertTrial'])->name('trial.convert')->middleware('hrmac:billing-management.subscriptions.manage');
+                Route::post('/{subscription}/change-cycle', [AdminSubscriptionController::class, 'changeCycle'])->name('change-cycle')->middleware('hrmac:billing-management.subscriptions.upgrade');
+                Route::post('/{subscription}/retry-charge', [AdminSubscriptionController::class, 'retryCharge'])->name('retry-charge')->middleware('hrmac:billing-management.subscriptions.manage');
+                Route::post('/{subscription}/remind', [AdminSubscriptionController::class, 'remind'])->name('remind')->middleware('hrmac:billing-management.subscriptions.manage');
             });
 
             Route::prefix('invoices')->name('invoices.')->group(function () {

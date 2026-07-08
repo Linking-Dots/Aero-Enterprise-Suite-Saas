@@ -51,7 +51,15 @@ export {
 // ── Charts ────────────────────────────────────────────────────────
 export {
   AreaTrend, AreaSpark, BarMini, Donut,
+  BarsDiverging, CohortGrid,
 }                                           from './components/Charts.jsx';
+
+// ── Workbench (shared command-center table kit) ───────────────────
+export {
+  useWorkbench, useCtxMenu,
+  WbToolbar, WbSearch, WbViews, WbBulkBar,
+  WbTable, WbFooter, WbDrawer,
+}                                           from './components/Workbench.jsx';
 
 // ── Navigation ────────────────────────────────────────────────────
 export {

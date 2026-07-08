@@ -341,8 +341,10 @@ return [
                     'route' => '/billing/subscriptions',
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Subscriptions'],
+                        ['code' => 'create', 'name' => 'Create Subscription'],
                         ['code' => 'cancel', 'name' => 'Cancel Subscription'],
                         ['code' => 'upgrade', 'name' => 'Upgrade/Downgrade'],
+                        ['code' => 'manage', 'name' => 'Manage Lifecycle (pause/trial/dunning)'],
                     ],
                 ],
                 [

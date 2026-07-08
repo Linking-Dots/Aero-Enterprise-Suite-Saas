@@ -406,3 +406,10 @@
 }
 .aeos-donut-mid b { font-size: var(--aeos-text-xl); font-weight: 700; color: var(--aeos-text-primary); line-height: 1; }
 .aeos-donut-mid small { font-size: var(--aeos-text-xs); color: var(--aeos-text-tertiary); }
+
+/* CohortGrid — retention heat grid (sequential single-hue opacity cells) */
+.aeos-cohort { display: grid; gap: 3px; font-size: 9.5px; color: var(--aeos-text-tertiary); }
+.aeos-cohort__h { text-align: center; font-family: var(--aeos-font-mono); }
+.aeos-cohort__r { padding-right: 5px; display: flex; align-items: center; font-family: var(--aeos-font-mono); }
+.aeos-cohort__cell { aspect-ratio: 1.6; border-radius: 4px; display: grid; place-items: center; color: transparent; min-width: 0; }
+.aeos-cohort__cell--empty { background: var(--aeos-bg-subtle); opacity: 1; }

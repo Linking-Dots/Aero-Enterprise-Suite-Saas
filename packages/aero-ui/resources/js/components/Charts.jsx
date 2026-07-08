@@ -13,8 +13,11 @@
  *   AreaSpark  — tiny hero-card area sparkline.
  *   BarMini    — clean vertical bar chart (when bars are genuinely wanted).
  *   Donut      — ring / progress donut with a centred label.
+ *   BarsDiverging — diverging stacked bars around a zero baseline with an
+ *                   optional net overlay (MRR movement, cash in/out, aging).
+ *   CohortGrid — retention-cohort heat grid (sequential single-hue opacity).
  */
-import { useId } from 'react';
+import { Fragment, useId } from 'react';
 import { cx } from './Primitives.jsx';
 
 const num = (v) => Number(v ?? 0);
@@ -191,6 +194,176 @@ export function Donut({ segments = [], centerValue, centerLabel, size = 118, thi
           {centerLabel != null && <small>{centerLabel}</small>}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * BarsDiverging — stacked bars diverging around a zero baseline, with an
+ * optional net overlay (dotted line + labelled dots). The chart for flows
+ * with inherent polarity: MRR movement, cash in/out, invoice aging deltas.
+ *
+ * @param labels string[] one per bucket (x axis).
+ * @param up     [{ key, label, color, values:number[] }] positive stacks
+ *               (values >= 0), first series sits on the baseline.
+ * @param down   [{ key, label, color, values:number[] }] negative stacks
+ *               (pass magnitudes >= 0; they are drawn below the baseline).
+ * @param net    optional { color, values:number[] } overlay (signed).
+ * @param format (v) => string for tooltips / net labels (default 1-dp).
+ */
+export function BarsDiverging({
+  labels = [],
+  up = [],
+  down = [],
+  net = null,
+  height = 190,
+  className,
+  ariaLabel = 'Diverging bar chart',
+  format = (v) => (Math.round(v * 10) / 10).toString(),
+  empty = 'Not enough data yet.',
+}) {
+  const n = labels.length;
+  const has = (s) => Array.isArray(s.values) && s.values.length;
+  const ups = up.filter(has);
+  const downs = down.filter(has);
+  if (!n || (!ups.length && !downs.length)) {
+    return <div className={cx('aeos-chart aeos-chart--empty', className)}>{empty}</div>;
+  }
+
+  const W = 560;
+  const H = height;
+  const padL = 10;
+  const padR = 10;
+  const padT = 14;
+  const padB = 22;
+  const sumAt = (series, i) => series.reduce((a, s) => a + Math.max(0, num(s.values[i])), 0);
+  const maxUp = Math.max(1e-9, ...labels.map((_, i) => sumAt(ups, i))) * 1.15;
+  const maxDn = Math.max(1e-9, ...labels.map((_, i) => sumAt(downs, i))) * 1.25;
+  const zero = padT + (maxUp / (maxUp + maxDn)) * (H - padT - padB);
+  const yUp = (v) => zero - (v / maxUp) * (zero - padT);
+  const yDn = (v) => zero + (v / maxDn) * (H - padB - zero);
+  const slot = (W - padL - padR) / n;
+  const bw = Math.min(30, slot * 0.44);
+  const gap = 2; // surface gap between stacked segments
+
+  const bars = [];
+  labels.forEach((label, i) => {
+    const x = (padL + slot * i + (slot - bw) / 2).toFixed(1);
+    let accUp = 0;
+    ups.forEach((s) => {
+      const v = Math.max(0, num(s.values[i]));
+      if (v <= 0) return;
+      const hPx = zero - yUp(v);
+      bars.push(
+        <rect key={`u-${s.key}-${i}`} x={x} y={(zero - accUp - hPx).toFixed(1)} width={bw}
+          height={Math.max(0, hPx - gap).toFixed(1)} rx="3" fill={s.color}>
+          <title>{`${label} · ${s.label} +${format(v)}`}</title>
+        </rect>
+      );
+      accUp += hPx;
+    });
+    let accDn = 0;
+    downs.forEach((s) => {
+      const v = Math.max(0, num(s.values[i]));
+      if (v <= 0) return;
+      const hPx = yDn(v) - zero;
+      bars.push(
+        <rect key={`d-${s.key}-${i}`} x={x} y={(zero + accDn + gap).toFixed(1)} width={bw}
+          height={Math.max(0, hPx - gap).toFixed(1)} rx="3" fill={s.color}>
+          <title>{`${label} · ${s.label} −${format(v)}`}</title>
+        </rect>
+      );
+      accDn += hPx;
+    });
+  });
+
+  let netEls = null;
+  if (net && Array.isArray(net.values) && net.values.length) {
+    const pts = labels.map((_, i) => {
+      const v = num(net.values[i]);
+      return [padL + slot * i + slot / 2, v >= 0 ? yUp(v) : yDn(-v)];
+    });
+    const path = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    netEls = (
+      <g>
+        <path d={path} fill="none" stroke={net.color} strokeWidth="1.8" strokeDasharray="1 4" strokeLinecap="round" />
+        {pts.map((p, i) => (
+          <g key={i}>
+            <circle cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r="3" fill={net.color}>
+              <title>{`${labels[i]} · Net ${num(net.values[i]) >= 0 ? '+' : '−'}${format(Math.abs(num(net.values[i])))}`}</title>
+            </circle>
+            <text className="aeos-chart-xlab" x={p[0].toFixed(1)} y={(p[1] - 7).toFixed(1)} textAnchor="middle">
+              {num(net.values[i]) >= 0 ? '+' : '−'}{format(Math.abs(num(net.values[i])))}
+            </text>
+          </g>
+        ))}
+      </g>
+    );
+  }
+
+  return (
+    <div className={cx('aeos-chart', className)}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel}>
+        <line className="aeos-chart-grid" x1={padL} x2={W - padR} y1={zero.toFixed(1)} y2={zero.toFixed(1)} strokeDasharray="2 3" />
+        {bars}
+        {netEls}
+        {labels.map((l, i) => (
+          <text key={i} className="aeos-chart-xlab" x={(padL + slot * i + slot / 2).toFixed(1)} y={H - 6} textAnchor="middle">{l}</text>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * CohortGrid — retention-cohort heat grid. Sequential encoding: one hue
+ * (the caller-supplied theme token) at varying opacity, so it stays
+ * theme- and CVD-safe. Cell tooltips carry the exact value.
+ *
+ * @param rows      [{ label, values:(number|null)[] }] null = future cell.
+ * @param colLabel  (i) => string column header (default `M${i}`).
+ * @param color     theme token for the filled cells.
+ * @param domain    [min,max] value range mapped to opacity (default [80,100]).
+ * @param format    (v) => string tooltip value (default `${v}%`).
+ */
+export function CohortGrid({
+  rows = [],
+  colLabel = (i) => `M${i}`,
+  color = 'var(--aeos-primary)',
+  domain = [80, 100],
+  format = (v) => `${v}%`,
+  className,
+}) {
+  const cols = Math.max(0, ...rows.map((r) => r.values?.length ?? 0));
+  if (!rows.length || !cols) {
+    return <div className={cx('aeos-chart aeos-chart--empty', className)}>Not enough history yet.</div>;
+  }
+  const [lo, hi] = domain;
+  const alpha = (v) => {
+    const t = Math.max(0, Math.min(1, (v - lo) / Math.max(1e-9, hi - lo)));
+    return (0.16 + t * 0.84).toFixed(2);
+  };
+  return (
+    <div className={cx('aeos-cohort', className)} style={{ gridTemplateColumns: `auto repeat(${cols}, 1fr)` }} role="table" aria-label="Retention cohorts">
+      <span />
+      {Array.from({ length: cols }, (_, i) => (
+        <span key={`h${i}`} className="aeos-cohort__h" role="columnheader">{colLabel(i)}</span>
+      ))}
+      {rows.map((r) => (
+        <Fragment key={r.label}>
+          <span className="aeos-cohort__r" role="rowheader">{r.label}</span>
+          {Array.from({ length: cols }, (_, i) => {
+            const v = r.values?.[i];
+            return v == null
+              ? <span key={i} className="aeos-cohort__cell aeos-cohort__cell--empty" />
+              : (
+                <span key={i} className="aeos-cohort__cell" style={{ background: color, opacity: alpha(v) }} title={`${r.label} cohort · ${format(v)}`} role="cell">
+                  {v}
+                </span>
+              );
+          })}
+        </Fragment>
+      ))}
     </div>
   );
 }
