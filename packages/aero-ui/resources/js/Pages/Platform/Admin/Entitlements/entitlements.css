@@ -1,0 +1,25 @@
+/* Entitlement overrides — extends the shared products.css card language. */
+
+.ent-kpis3 { grid-template-columns: repeat(3, 1fr); }
+
+/* grant form — responsive row: tenant | module | reason | button */
+.ent-grant { display: grid; grid-template-columns: 1fr 1fr 1.4fr auto; gap: var(--aeos-space-3); align-items: end; }
+.ent-grant__btn { height: fit-content; }
+select.pc-input { cursor: pointer; }
+
+/* ledger feed */
+.ent-feed { display: flex; flex-direction: column; gap: var(--aeos-space-1); max-height: 420px; overflow-y: auto; }
+.ent-feed__row { display: flex; align-items: flex-start; gap: var(--aeos-space-3); padding: var(--aeos-space-2) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.ent-feed__row:last-child { border-bottom: 0; }
+.ent-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex: none; }
+.ent-dot--granted { background: var(--aeos-success); }
+.ent-dot--revoked { background: var(--aeos-danger); }
+.ent-feed__main { font-size: var(--aeos-text-sm); color: var(--aeos-text-primary); }
+.ent-feed__meta { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-top: 2px; }
+
+.ent-empty { padding: var(--aeos-space-3); }
+
+@media (max-width: 900px) {
+  .ent-grant { grid-template-columns: 1fr; }
+  .ent-kpis3 { grid-template-columns: 1fr; }
+}

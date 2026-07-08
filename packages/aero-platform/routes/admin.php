@@ -52,6 +52,7 @@ use Aero\Platform\Http\Controllers\Admin\ModuleAdminController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
 use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminOnboardingController;
+use Aero\Platform\Http\Controllers\Admin\EntitlementOverrideController;
 use Aero\Platform\Http\Controllers\Admin\ProductCatalogController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
 use Aero\Platform\Http\Controllers\Admin\PlanController as AdminP2PlanController;
@@ -1441,6 +1442,16 @@ Route::middleware('admin.domain')->group(function () {
                 Route::middleware('hrmac:hrmac.roles_permissions.roles.assign')
                     ->post('/assign-user', [RoleController::class, 'assignUser'])->name('assign-user');
             });
+
+        // Entitlement overrides — grant/revoke a module to a tenant outside a purchase.
+        Route::prefix('entitlements')->name('platform.admin.entitlements.')->group(function () {
+            Route::middleware('hrmac:entitlement-overrides.overrides.view')
+                ->get('/', [EntitlementOverrideController::class, 'index'])->name('index');
+            Route::middleware('hrmac:entitlement-overrides.overrides.grant')
+                ->post('/', [EntitlementOverrideController::class, 'store'])->name('store');
+            Route::middleware('hrmac:entitlement-overrides.overrides.revoke')
+                ->delete('/{entitlement}', [EntitlementOverrideController::class, 'destroy'])->name('destroy');
+        });
 
         // Products (Catalog) — monetisation-governance command centre.
         // Sellable products (bundled modules, price, adoption, MRR). The technical

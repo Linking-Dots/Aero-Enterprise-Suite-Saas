@@ -62,7 +62,7 @@ return [
         'tenants' => 'tn', 'onboarding' => 'tn', 'quotas' => 'tn', 'provisioning' => 'tn',
         'plans' => 'rv', 'billing' => 'rv', 'products' => 'rv', 'modules' => 'rv', 'licenses' => 'rv', 'contracts' => 'rv',
         'leads' => 'gr', 'newsletter' => 'gr', 'affiliates' => 'gr', 'partners' => 'gr', 'seo' => 'gr', 'social-auth' => 'gr',
-        'users' => 'access', 'roles' => 'access', 'security' => 'access', 'security-center' => 'access', 'secrets' => 'access',
+        'users' => 'access', 'roles' => 'access', 'security' => 'access', 'security-center' => 'access', 'secrets' => 'access', 'entitlements' => 'access',
         'settings' => 'cf', 'integrations' => 'cf', 'feature-flags' => 'cf', 'white-label' => 'cf', 'developer' => 'cf', 'releases' => 'cf',
         'error-logs' => 'op', 'audit-logs' => 'op', 'access-logs' => 'op', 'backup' => 'op', 'status' => 'op', 'observability' => 'op', 'disaster-recovery' => 'op', 'api-gateway' => 'op',
         'customer-success' => 'cs', 'help-center' => 'cs', 'enterprise-scim' => 'cs',
@@ -363,6 +363,33 @@ return [
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Gateways'],
                         ['code' => 'configure', 'name' => 'Configure Gateway'],
+                    ],
+                ],
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6a. Entitlement overrides — comp/trial/grandfather module access
+        |--------------------------------------------------------------------------
+        */
+        [
+            'code' => 'entitlement-overrides',
+            'name' => 'Entitlements',
+            'description' => 'Grant or revoke module access outside a purchase, with an audit ledger',
+            'icon' => 'KeyIcon',
+            'route' => '/entitlements',
+            'priority' => 5,
+
+            'components' => [
+                [
+                    'code' => 'overrides',
+                    'name' => 'Entitlement Overrides',
+                    'route' => '/entitlements',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Overrides'],
+                        ['code' => 'grant', 'name' => 'Grant Override'],
+                        ['code' => 'revoke', 'name' => 'Revoke Override'],
                     ],
                 ],
             ],
