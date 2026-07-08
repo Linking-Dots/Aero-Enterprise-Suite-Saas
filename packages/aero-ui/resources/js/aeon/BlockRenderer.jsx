@@ -77,6 +77,31 @@ function Block({ block, onAction, animate, onAnimated }) {
           <Spark points={block.points || []} unit={block.unit} />
         </div>
       );
+    case 'entityCard': {
+      const title = block.title || '';
+      const initials = title.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '•';
+      return (
+        <div className="aeon-entity">
+          <div className="aeon-entity-head">
+            <div className="aeon-entity-av">{initials}</div>
+            <div className="aeon-entity-id">
+              <div className="aeon-entity-title">{title}</div>
+              {block.subtitle ? <div className="aeon-entity-sub">{block.subtitle}</div> : null}
+            </div>
+          </div>
+          {block.fields?.length ? (
+            <div className="aeon-entity-fields">
+              {block.fields.map((f, i) => (
+                <div className="aeon-entity-field" key={i}>
+                  <span className="aeon-entity-k">{f.k}</span>
+                  <span className="aeon-entity-v">{f.v}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      );
+    }
     case 'bar': {
       const items = block.items || [];
       const max = Math.max(1, ...items.map((it) => Number(it.value) || 0));

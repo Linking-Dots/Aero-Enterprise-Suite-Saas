@@ -135,6 +135,20 @@ class QueryToolTest extends PackageTestCase
         $this->assertSame('2', $stats['items'][0]['v']); // Alpha = id 1 = 2 widgets
     }
 
+    public function test_find_returns_entity_card_with_resolved_fields(): void
+    {
+        $out = (new QueryTool($this->catalog()))->run([
+            'entity' => 'aeon_test_widgets', 'operation' => 'find',
+            'filters' => [['column' => 'status', 'op' => 'eq', 'value' => 'closed']],
+        ], 1);
+        $card = (new Collection($out['blocks']))->firstWhere('type', 'entityCard');
+        $this->assertNotNull($card);
+        $fields = new Collection($card['fields']);
+        $this->assertTrue($fields->contains(fn ($f) => $f['k'] === 'Status' && $f['v'] === 'closed'));
+        // category_id (2) resolved to its name "Beta"
+        $this->assertTrue($fields->contains(fn ($f) => $f['v'] === 'Beta'));
+    }
+
     public function test_unknown_entity_is_rejected(): void
     {
         $out = (new QueryTool($this->catalog()))->run(['entity' => 'nope', 'operation' => 'count'], 1);

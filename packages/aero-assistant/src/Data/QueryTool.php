@@ -45,7 +45,7 @@ class QueryTool implements AeonToolContract
     {
         return [
             'entity' => ['type' => 'string', 'description' => 'Table/entity to query, e.g. hrm_leave_applications'],
-            'operation' => ['type' => 'string', 'enum' => ['count', 'aggregate', 'list'], 'description' => 'count rows, aggregate a numeric column, or list rows'],
+            'operation' => ['type' => 'string', 'enum' => ['count', 'aggregate', 'list', 'find'], 'description' => 'count rows, aggregate a numeric column, list rows, or find ONE record (use with a name filter) to show its details as a card'],
             'group_by' => ['type' => 'string', 'description' => 'Optional column to group counts by, e.g. status'],
             'column' => ['type' => 'string', 'description' => 'Numeric column for aggregate'],
             'aggregate' => ['type' => 'string', 'enum' => ['sum', 'avg', 'min', 'max']],
@@ -96,6 +96,9 @@ class QueryTool implements AeonToolContract
             }
             if ($operation === 'list') {
                 return $this->listRows($query, $entity, $label);
+            }
+            if ($operation === 'find') {
+                return $this->find($query, $entity, $label);
             }
 
             return $this->count($query, $entity, $label, $groupBy, $dateField, $period);
@@ -180,6 +183,63 @@ class QueryTool implements AeonToolContract
             'text' => "Here are up to 10 {$label}:",
             'blocks' => [['type' => 'table', 'columns' => array_map([Str::class, 'headline'], $cols), 'rows' => $tableRows]],
         ];
+    }
+
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    private function find($query, array $entity, string $label): array
+    {
+        $row = (clone $query)->first();
+        if (! $row) {
+            return $this->fail("I couldn't find a matching {$label}.");
+        }
+        $arr = (array) $row;
+        $title = $this->cardTitle($arr) ?? ($label.' #'.($arr['id'] ?? '?'));
+
+        $fields = [];
+        foreach ($entity['columns'] as $col) {
+            if (count($fields) >= 8) {
+                break;
+            }
+            if (in_array($col, ['id', 'created_at', 'updated_at', 'deleted_at'], true) || $this->catalog->isSensitive($col)) {
+                continue;
+            }
+            $val = $arr[$col] ?? null;
+            if ($val === null || $val === '') {
+                continue;
+            }
+            if (Str::endsWith($col, '_id') && is_numeric($val)) {
+                $map = $this->resolveLabels($col, [$val]);
+                $val = $map[$val] ?? $map[(int) $val] ?? $val;
+            }
+            $fields[] = ['k' => Str::headline($col), 'v' => Str::limit((string) $val, 60)];
+        }
+
+        return [
+            'text' => "Here's {$title}:",
+            'blocks' => [['type' => 'entityCard', 'title' => $title, 'subtitle' => $label, 'fields' => $fields]],
+        ];
+    }
+
+    /** @param array<string,mixed> $arr */
+    private function cardTitle(array $arr): ?string
+    {
+        foreach (['name', 'title', 'label', 'display_name', 'full_name'] as $c) {
+            if (! empty($arr[$c])) {
+                return (string) $arr[$c];
+            }
+        }
+        $first = $arr['first_name'] ?? null;
+        $last = $arr['last_name'] ?? null;
+        if ($first || $last) {
+            return trim(((string) $first).' '.((string) $last));
+        }
+        foreach (['code', 'email', 'reference', 'number'] as $c) {
+            if (! empty($arr[$c])) {
+                return (string) $arr[$c];
+            }
+        }
+
+        return null;
     }
 
     /** @return array<int,int>|null 14-day daily counts */

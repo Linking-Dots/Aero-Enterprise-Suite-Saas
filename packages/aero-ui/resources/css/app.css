@@ -178,6 +178,15 @@ a {
 .aeon-chart-h { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--aeos-text-secondary, #8593a6); display: flex; justify-content: space-between; }
 .aeon-chart-v { color: var(--aeos-success, #37e2a0); }
 .aeon-spark { margin-top: 4px; display: block; }
+.aeon-entity { border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); background: var(--aeos-glass, rgba(255,255,255,.05)); border-radius: 14px; overflow: hidden; }
+.aeon-entity-head { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--aeos-primary, #22e3ff) 10%, transparent), transparent); border-bottom: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); }
+.aeon-entity-av { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: grid; place-items: center; font-family: var(--aeos-font-mono, ui-monospace, monospace); font-weight: 600; font-size: 14px; color: #04121a; background: conic-gradient(from 200deg, var(--aeos-primary, #22e3ff), #8c6bff, #ff66c4, var(--aeos-primary, #22e3ff)); box-shadow: 0 0 18px -2px var(--aeos-primary, #22e3ff); }
+.aeon-entity-title { font-weight: 650; font-size: 15px; letter-spacing: -.01em; color: var(--aeos-text-primary, #eaf1fa); }
+.aeon-entity-sub { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--aeos-text-secondary, #93a1b5); margin-top: 2px; }
+.aeon-entity-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--aeos-border-base, rgba(255,255,255,.07)); }
+.aeon-entity-field { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; background: var(--aeos-bg-elevated, #0c1119); }
+.aeon-entity-k { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--aeos-text-secondary, #93a1b5); }
+.aeon-entity-v { font-size: 13px; color: var(--aeos-text-primary, #eaf1fa); word-break: break-word; }
 .aeon-barcard { border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); background: var(--aeos-glass, rgba(255,255,255,.05)); border-radius: 14px; padding: 12px 13px; }
 .aeon-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .aeon-bar-row { display: grid; grid-template-columns: minmax(64px, 34%) 1fr auto; align-items: center; gap: 10px; }
