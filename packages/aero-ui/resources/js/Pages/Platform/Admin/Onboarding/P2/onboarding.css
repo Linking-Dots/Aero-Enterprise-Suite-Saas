@@ -1,0 +1,81 @@
+/* Onboarding command centre — full tenant-lifecycle console. Extends the shared
+   products.css (pc-*) + subscriptions.css (sc-*) + workbench kit (wb-*); adds
+   the funnel, per-status chips, automation rules, settings + template rows.
+   All colour via theme tokens; scoped to .obx for container-query reflow. */
+
+.obx { container-type: inline-size; }
+
+/* ---- analytics band (funnel / trend / donut) ---- */
+.ob-band { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.05fr) minmax(0, .85fr); gap: var(--aeos-space-3); align-items: stretch; }
+.ob-band > * { min-width: 0; }
+
+/* funnel */
+.ob-funnel { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.ob-fnrow { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: var(--aeos-space-2); font-size: var(--aeos-text-xs); }
+.ob-fnrow__cap { color: var(--aeos-text-secondary); }
+.ob-fntrack { height: 22px; border-radius: 6px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.ob-fnfill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 9px; color: #fff; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 22px; }
+.ob-fndrop { font-size: 10px; color: var(--aeos-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---- queues (3-up) ---- */
+.ob-queues { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--aeos-space-3); }
+.ob-queues > * { min-width: 0; }
+.ob-qacts { display: flex; gap: var(--aeos-space-1); padding: 0 0 var(--aeos-space-2) 37px; flex-wrap: wrap; }
+
+/* ---- status chips (per tenant lifecycle status) ---- */
+.ob-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; border: var(--aeos-border-width) solid transparent; }
+.ob-chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ob-chip--active { background: color-mix(in srgb, var(--aeos-success) 13%, transparent); color: var(--aeos-success); }
+.ob-chip--trial { background: color-mix(in srgb, var(--aeos-tertiary, var(--aeos-primary)) 15%, transparent); color: var(--aeos-tertiary, var(--aeos-primary)); }
+.ob-chip--pending { background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); }
+.ob-chip--provisioning { background: var(--aeos-primary-tint); color: var(--aeos-primary); }
+.ob-chip--failed { background: color-mix(in srgb, var(--aeos-danger) 13%, transparent); color: var(--aeos-danger); }
+.ob-chip--suspended, .ob-chip--archived, .ob-chip--cancelled { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); border-color: var(--aeos-border); }
+
+.ob-mini { font-size: 11px; color: var(--aeos-text-muted); }
+.ob-unver { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); white-space: nowrap; }
+
+/* ---- lower row (automation / settings / templates) ---- */
+.ob-low { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-3); align-items: start; }
+.ob-low > * { min-width: 0; }
+
+.ob-rule { display: flex; align-items: center; gap: var(--aeos-space-3); padding: var(--aeos-space-3) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.ob-rule:last-child { border-bottom: 0; }
+.ob-rule__n { flex: 1; min-width: 0; }
+.ob-rule__n b { display: block; font-weight: 570; color: var(--aeos-text-primary); }
+.ob-rule__n span { font-size: 11px; color: var(--aeos-text-muted); }
+
+/* toggle */
+.ob-sw { position: relative; width: 36px; height: 20px; border-radius: 999px; background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border); cursor: pointer; flex: none; padding: 0; }
+.ob-sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--aeos-text-muted); transition: transform .15s, background .15s; }
+.ob-sw[aria-pressed="true"] { background: color-mix(in srgb, var(--aeos-success) 30%, transparent); border-color: transparent; }
+.ob-sw[aria-pressed="true"]::after { transform: translateX(16px); background: var(--aeos-success); }
+
+.ob-setrow { display: flex; align-items: center; justify-content: space-between; gap: var(--aeos-space-3); padding: var(--aeos-space-2) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); font-size: var(--aeos-text-xs); }
+.ob-setrow:last-child { border-bottom: 0; }
+.ob-setrow__k { color: var(--aeos-text-secondary); }
+.ob-setrow__v { font-weight: 600; color: var(--aeos-text-primary); font-variant-numeric: tabular-nums; }
+
+.ob-tmpl { display: flex; align-items: center; gap: var(--aeos-space-3); padding: var(--aeos-space-2) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); font-size: var(--aeos-text-xs); }
+.ob-tmpl:last-child { border-bottom: 0; }
+.ob-tmpl__ic { width: 26px; height: 26px; border-radius: 7px; background: color-mix(in srgb, var(--aeos-tertiary, var(--aeos-primary)) 15%, transparent); color: var(--aeos-tertiary, var(--aeos-primary)); display: grid; place-items: center; flex: none; }
+.ob-tmpl__n { flex: 1; min-width: 0; }
+.ob-tmpl__n b { display: block; font-weight: 560; color: var(--aeos-text-primary); }
+.ob-tmpl__n span { color: var(--aeos-text-muted); font-size: 11px; }
+
+/* drawer bits */
+.ob-dr-reasons { margin-top: var(--aeos-space-2); }
+.ob-dr-reason { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); padding: var(--aeos-space-1) 0; }
+.ob-dr-reason b { color: var(--aeos-text-primary); font-weight: 600; text-transform: capitalize; }
+
+@container (max-width: 1080px) {
+  .obx .sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .obx .ob-band { grid-template-columns: 1fr 1fr; }
+  .obx .ob-band > *:last-child { grid-column: 1 / -1; }
+  .obx .ob-queues { grid-template-columns: 1fr; }
+  .obx .ob-low { grid-template-columns: 1fr; }
+}
+@container (max-width: 620px) {
+  .obx .sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .obx .ob-band { grid-template-columns: 1fr; }
+}

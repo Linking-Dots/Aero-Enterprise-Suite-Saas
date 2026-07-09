@@ -51,7 +51,7 @@ use Aero\Platform\Http\Controllers\Admin\MaintenanceWindowController;
 use Aero\Platform\Http\Controllers\Admin\ModuleAdminController;
 use Aero\Platform\Http\Controllers\Admin\ModuleController;
 use Aero\Platform\Http\Controllers\Admin\NewsletterController;
-use Aero\Platform\Http\Controllers\Admin\OnboardingController as AdminOnboardingController;
+use Aero\Platform\Http\Controllers\Admin\AdminOnboardingController;
 use Aero\Platform\Http\Controllers\Admin\EntitlementOverrideController;
 use Aero\Platform\Http\Controllers\Admin\ProductCatalogController;
 use Aero\Platform\Http\Controllers\Admin\PaymentGatewayController;
@@ -835,10 +835,18 @@ Route::middleware('admin.domain')->group(function () {
         // 14. PLATFORM ONBOARDING MODULE (platform-onboarding)
         // =========================================================================
         Route::middleware(['hrmac:platform-onboarding'])->prefix('onboarding')->name('admin.onboarding.')->group(function () {
-            // Page routes
-            Route::get('/', [AdminOnboardingController::class, 'dashboard'])
+            // Page routes — command centre (full lifecycle console) is the landing.
+            Route::get('/', [AdminOnboardingController::class, 'overview'])
                 ->middleware(['hrmac:platform-onboarding.onboarding_dashboard.view'])
                 ->name('dashboard');
+
+            // Drawer detail (JSON) + bulk lifecycle action.
+            Route::get('/tenants/{tenant}/detail', [AdminOnboardingController::class, 'detail'])
+                ->middleware(['hrmac:platform-onboarding.onboarding_dashboard.view'])
+                ->name('detail');
+            Route::post('/bulk', [AdminOnboardingController::class, 'bulk'])
+                ->middleware(['hrmac:platform-onboarding.pending_approvals.approve', 'throttle:10,1'])
+                ->name('bulk');
 
             Route::get('/pending', [AdminOnboardingController::class, 'pending'])
                 ->middleware(['hrmac:platform-onboarding.pending_approvals.view'])

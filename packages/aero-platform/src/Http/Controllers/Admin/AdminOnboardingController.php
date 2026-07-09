@@ -8,6 +8,7 @@ use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\Tenant;
+use Aero\Platform\Services\OnboardingAdminService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,66 @@ use Inertia\Response;
  */
 class AdminOnboardingController extends Controller
 {
+    public function __construct(
+        private readonly OnboardingAdminService $svc
+    ) {}
+
+    /**
+     * Onboarding command centre — the /onboarding landing (full lifecycle console).
+     */
+    public function overview(): Response
+    {
+        return Inertia::render('Platform/Admin/Onboarding/P2/Onboarding', [
+            'overview' => fn () => $this->svc->overview(),
+        ]);
+    }
+
+    /**
+     * Per-tenant lifecycle detail for the drawer (JSON, fetched client-side).
+     */
+    public function detail(Tenant $tenant): JsonResponse
+    {
+        return response()->json($this->svc->detail((string) $tenant->id));
+    }
+
+    /**
+     * Bulk lifecycle action over pending/failed/trial tenants. Each item is
+     * processed independently so one failure cannot roll back the others.
+     */
+    public function bulk(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'action' => 'required|in:approve,reject,retry,archive',
+            'ids' => 'required|array',
+            'ids.*' => 'string',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $ok = 0;
+        $failed = 0;
+        foreach ($data['ids'] as $id) {
+            try {
+                $tenant = Tenant::find($id);
+                if ($tenant === null) {
+                    $failed++;
+
+                    continue;
+                }
+                match ($data['action']) {
+                    'approve' => $this->approve($request, $tenant),
+                    'reject'  => $this->reject($request->merge(['reason' => $data['reason'] ?? 'Bulk rejection']), $tenant),
+                    'retry'   => $this->retryProvisioning($tenant),
+                    'archive' => $this->archive($request->merge(['reason' => $data['reason'] ?? 'Bulk archive']), $tenant),
+                };
+                $ok++;
+            } catch (\Throwable) {
+                $failed++;
+            }
+        }
+
+        return response()->json(['success' => true, 'ok' => $ok, 'failed' => $failed]);
+    }
+
     /**
      * Display the onboarding dashboard with key metrics.
      */
@@ -579,12 +640,12 @@ class AdminOnboardingController extends Controller
         }
 
         try {
+            $setting = PlatformSetting::current();
+            $prefs = (array) ($setting->admin_preferences ?? []);
             foreach ($settings as $key => $value) {
-                PlatformSetting::updateOrCreate(
-                    ['key' => "onboarding.{$key}"],
-                    ['value' => is_array($value) ? json_encode($value) : $value]
-                );
+                data_set($prefs, "onboarding.{$key}", $value);
             }
+            $setting->update(['admin_preferences' => $prefs]);
 
             return response()->json([
                 'success' => true,
@@ -613,11 +674,12 @@ class AdminOnboardingController extends Controller
         ]);
 
         try {
-            $key = "onboarding.automation.{$request->rule_id}.is_active";
-            PlatformSetting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $request->is_active ? '1' : '0']
-            );
+            // Onboarding preferences live in the PlatformSetting singleton's
+            // admin_preferences JSON bag (there is no key/value settings table).
+            $setting = PlatformSetting::current();
+            $prefs = (array) ($setting->admin_preferences ?? []);
+            data_set($prefs, "onboarding.automation.{$request->rule_id}", (bool) $request->is_active);
+            $setting->update(['admin_preferences' => $prefs]);
 
             return response()->json([
                 'success' => true,
