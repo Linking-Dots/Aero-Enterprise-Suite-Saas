@@ -8,6 +8,7 @@ use Aero\Platform\Http\Controllers\Admin\AdminDashboardController;
 use Aero\Platform\Http\Controllers\Admin\AffiliateController;
 use Aero\Platform\Http\Controllers\Admin\AnalyticsController;
 use Aero\Platform\Http\Controllers\Admin\ApiKeyAdminController;
+use Aero\Platform\Http\Controllers\Admin\IntegrationsController;
 use Aero\Platform\Http\Controllers\Admin\AuditLogAdminController;
 use Aero\Platform\Http\Controllers\Admin\BillingDashboardController;
 use Aero\Platform\Http\Controllers\Admin\BroadcastController;
@@ -613,9 +614,9 @@ Route::middleware('admin.domain')->group(function () {
         // 12. PLATFORM INTEGRATIONS MODULE (platform-integrations)
         // =========================================================================
         Route::middleware(['hrmac:platform-integrations'])->prefix('integrations')->name('admin.integrations.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Integrations/Connectors');
-            })->middleware(['hrmac:platform-integrations.global-connectors'])->name('index');
+            // Command centre — the nav "Integrations" link lands here (data-backed).
+            Route::get('/', [IntegrationsController::class, 'overview'])
+                ->middleware(['hrmac:platform-integrations.global-connectors'])->name('index');
 
             Route::get('/connectors', function () {
                 return Inertia::render('Platform/Admin/Integrations/Connectors');

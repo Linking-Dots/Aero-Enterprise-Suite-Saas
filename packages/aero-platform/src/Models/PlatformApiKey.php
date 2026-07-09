@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Models;
 
+use Aero\Auth\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;

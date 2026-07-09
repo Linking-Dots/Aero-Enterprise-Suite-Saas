@@ -534,6 +534,7 @@ return [
                     'code' => 'api-keys',
                     'name' => 'API Keys',
                     'route' => '/integrations/api',
+                    'show_in_nav' => false, // subsumed by the Integrations console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View API Keys'],
                         ['code' => 'create', 'name' => 'Create API Key'],
@@ -544,6 +545,7 @@ return [
                     'code' => 'webhooks',
                     'name' => 'Webhooks',
                     'route' => '/integrations/webhooks',
+                    'show_in_nav' => false, // subsumed by the Integrations console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Webhooks'],
                         ['code' => 'manage', 'name' => 'Manage Webhooks'],
@@ -553,6 +555,7 @@ return [
                     'code' => 'connectors',
                     'name' => 'Connectors',
                     'route' => '/integrations/connectors',
+                    'show_in_nav' => false, // subsumed by the Integrations console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Connectors'],
                         ['code' => 'configure', 'name' => 'Configure Connector'],

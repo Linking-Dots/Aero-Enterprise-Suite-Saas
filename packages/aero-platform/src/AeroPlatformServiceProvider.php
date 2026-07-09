@@ -598,14 +598,16 @@ class AeroPlatformServiceProvider extends ServiceProvider
             $navSeg = strtolower(trim(explode('/', ltrim((string) $navRoute, '/'))[0] ?? ''));
             $navSection = $submodule['nav_section'] ?? ($config['nav_section_map'][$navSeg] ?? null);
 
-            // If submodule has only ONE component, use it directly as the menu item
-            if (count($components) === 1) {
-                $component = $components[0];
+            // If a submodule exposes ONE nav component (or none — e.g. a command
+            // centre that subsumed its sub-pages, leaving only hidden HRMAC
+            // components), it becomes a single flat menu item on the module route.
+            if (count($components) <= 1) {
+                $component = $components[0] ?? null;
                 $submoduleNav[] = [
                     'name' => $submodule['name'] ?? ucfirst($submoduleCode),
                     'path' => $component['route'] ?? $submodule['route'] ?? null,
                     'icon' => $component['icon'] ?? $submoduleIcon,
-                    'access' => 'platform.'.$submoduleCode.'.'.($component['code'] ?? ''),
+                    'access' => 'platform.'.$submoduleCode.($component ? '.'.($component['code'] ?? '') : ''),
                     'priority' => $submodule['priority'] ?? 100,
                     'type' => $component['type'] ?? 'page',
                     'nav_section' => $navSection,
