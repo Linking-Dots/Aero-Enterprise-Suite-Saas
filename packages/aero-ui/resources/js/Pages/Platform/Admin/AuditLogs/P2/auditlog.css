@@ -1,0 +1,51 @@
+/* Audit Logs command centre — investigative console. Extends products.css
+   (pc-*) + subscriptions.css (sc-*) + workbench kit (wb-*). Scoped to .alx for
+   container-query reflow. All colour via theme tokens. */
+
+.alx { container-type: inline-size; }
+
+/* analytics band */
+.al-band { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .9fr) minmax(0, .9fr); gap: var(--aeos-space-3); align-items: stretch; }
+.al-band > * { min-width: 0; }
+
+/* severity + category */
+.al-sev { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.al-sev--info { background: var(--aeos-primary); }
+.al-sev--warn { background: var(--aeos-warning); }
+.al-sev--crit { background: var(--aeos-danger); }
+.al-cat { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.al-cat--auth { background: var(--aeos-primary-tint); color: var(--aeos-primary); }
+.al-cat--billing { background: color-mix(in srgb, var(--aeos-tertiary, var(--aeos-primary)) 15%, transparent); color: var(--aeos-tertiary, var(--aeos-primary)); }
+.al-cat--security { background: color-mix(in srgb, var(--aeos-danger) 13%, transparent); color: var(--aeos-danger); }
+.al-cat--tenants { background: color-mix(in srgb, var(--aeos-success) 13%, transparent); color: var(--aeos-success); }
+.al-cat--other { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); }
+.al-evt { font-family: var(--aeos-font-mono); font-size: 11.5px; color: var(--aeos-text-primary); }
+.al-evtcell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.al-mono { font-family: var(--aeos-font-mono); font-size: 11px; color: var(--aeos-text-muted); }
+.al-desc { color: var(--aeos-text-secondary); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* actors leaderboard */
+.al-lb { display: flex; flex-direction: column; }
+.al-lbrow { display: flex; align-items: center; gap: var(--aeos-space-3); padding: var(--aeos-space-2) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); font-size: var(--aeos-text-xs); }
+.al-lbrow:last-child { border-bottom: 0; }
+.al-lb__n { flex: 1; min-width: 0; font-weight: 570; color: var(--aeos-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.al-lb__v { font-variant-numeric: tabular-nums; font-weight: 600; }
+.al-lb__bar { height: 5px; border-radius: 3px; background: var(--aeos-bg-subtle); overflow: hidden; width: 80px; flex: none; }
+.al-lb__bar > i { display: block; height: 100%; background: var(--aeos-primary); border-radius: 3px; }
+
+/* drawer detail */
+.al-dr-diff { font-family: var(--aeos-font-mono); font-size: 11.5px; border-radius: calc(var(--aeos-card-radius) * .6); overflow: hidden; border: var(--aeos-border-width) solid var(--aeos-border-subtle); margin-top: var(--aeos-space-1); }
+.al-dr-diff > div { padding: 5px 10px; white-space: pre-wrap; word-break: break-word; }
+.al-dr-diff .del { background: color-mix(in srgb, var(--aeos-danger) 10%, transparent); color: var(--aeos-danger); }
+.al-dr-diff .add { background: color-mix(in srgb, var(--aeos-success) 10%, transparent); color: var(--aeos-success); }
+.al-dr-json { background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: calc(var(--aeos-card-radius) * .6); padding: var(--aeos-space-3); font-family: var(--aeos-font-mono); font-size: 11px; color: var(--aeos-text-secondary); white-space: pre-wrap; word-break: break-word; margin-top: var(--aeos-space-1); }
+
+@container (max-width: 1080px) {
+  .alx .sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .alx .al-band { grid-template-columns: 1fr 1fr; }
+  .alx .al-band > *:first-child { grid-column: 1 / -1; }
+}
+@container (max-width: 620px) {
+  .alx .sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .alx .al-band { grid-template-columns: 1fr; }
+}

@@ -16,6 +16,16 @@ class AuditLogAdminController extends Controller
 {
     public function __construct(private readonly AuditLogAdminService $svc) {}
 
+    /**
+     * Audit Logs command centre — the /audit-logs landing (investigative console).
+     */
+    public function overview(): Response
+    {
+        return Inertia::render('Platform/Admin/AuditLogs/P2/AuditLog', [
+            'overview' => fn () => $this->svc->overview(),
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         $filters = $request->only(['event_type', 'actor_id', 'subject_type', 'from', 'to']);
@@ -28,7 +38,7 @@ class AuditLogAdminController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        return response()->json($this->svc->show($id));
+        return response()->json($this->svc->detail($id));
     }
 
     public function export(Request $request): StreamedResponse

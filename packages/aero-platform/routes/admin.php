@@ -1730,7 +1730,8 @@ Route::middleware('admin.domain')->group(function () {
 
         // Audit Logs (P-5)
         Route::prefix('audit-logs')->name('platform.admin.audit-logs.')->group(function () {
-            Route::get('/', [AuditLogAdminController::class, 'index'])
+            // Command centre — the nav "Audit Logs" link lands here (investigative console).
+            Route::get('/', [AuditLogAdminController::class, 'overview'])
                 ->name('index')
                 ->middleware('hrmac:audit-logs.audit-log-list.view');
             Route::get('/export', [AuditLogAdminController::class, 'export'])
