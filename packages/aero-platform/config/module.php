@@ -879,15 +879,19 @@ return [
                     'code' => 'lead-pipeline',
                     'name' => 'Pipeline',
                     'route' => '/leads/pipeline',
+                    'show_in_nav' => false, // subsumed by the Leads console (drag-drop board); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Pipeline'],
                         ['code' => 'manage', 'name' => 'Manage Pipeline'],
+                        ['code' => 'move', 'name' => 'Move Stage'],
+                        ['code' => 'convert', 'name' => 'Convert to Tenant'],
                     ],
                 ],
                 [
                     'code' => 'lead-analytics',
                     'name' => 'Lead Analytics',
                     'route' => '/leads/analytics',
+                    'show_in_nav' => false, // subsumed by the Leads console (analytics band); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Analytics'],
                         ['code' => 'export', 'name' => 'Export Reports'],

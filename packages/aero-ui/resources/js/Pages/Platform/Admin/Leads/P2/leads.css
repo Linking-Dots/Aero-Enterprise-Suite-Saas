@@ -1,0 +1,91 @@
+/* Leads command centre — CRM console. Extends products.css (pc-* card language,
+   chips, modal, drawer rows) + subscriptions.css (KPI band, analytics band, donut
+   row, drawer head, timeline) + the @aero/ui workbench kit (wb-*). All colour via
+   theme tokens / color-mix so every surface reacts to the Theme-Studio drawer.
+   Scoped to `.ld`. */
+
+/* ---- stage chips (extend .pc-chip base) ---- */
+.pc-chip.ld-s-new { background: var(--aeos-primary-tint); color: var(--aeos-primary); border-color: var(--aeos-primary-border); }
+.pc-chip.ld-s-contact { background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 34%, transparent); }
+.pc-chip.ld-s-qual { background: color-mix(in srgb, #a78bfa 16%, transparent); color: #a78bfa; border-color: color-mix(in srgb, #a78bfa 36%, transparent); }
+.pc-chip.ld-s-conv { background: color-mix(in srgb, var(--aeos-success) 15%, transparent); color: var(--aeos-success); border-color: color-mix(in srgb, var(--aeos-success) 34%, transparent); }
+.pc-chip.ld-s-lost { background: color-mix(in srgb, var(--aeos-danger) 13%, transparent); color: var(--aeos-danger); border-color: color-mix(in srgb, var(--aeos-danger) 32%, transparent); }
+
+/* ---- score pill ---- */
+.ld-score { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; padding: 1px 7px; border-radius: calc(var(--aeos-card-radius) * .5); font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ld-score--hi { background: color-mix(in srgb, var(--aeos-success) 16%, transparent); color: var(--aeos-success); }
+.ld-score--md { background: color-mix(in srgb, var(--aeos-warning) 16%, transparent); color: var(--aeos-warning); }
+.ld-score--lo { background: color-mix(in srgb, var(--aeos-danger) 14%, transparent); color: var(--aeos-danger); }
+
+/* ---- source chip ---- */
+.ld-srcchip { display: inline-block; font-size: 11.5px; color: var(--aeos-text-secondary); text-transform: capitalize; }
+
+/* ---- owner cell ---- */
+.ld-owner { display: inline-flex; align-items: center; gap: 6px; font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); }
+.ld-av { width: 21px; height: 21px; border-radius: 50%; background: var(--aeos-primary-tint); color: var(--aeos-primary); font-size: 9.5px; font-weight: 700; display: inline-grid; place-items: center; flex: none; }
+.ld-av--none { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); }
+
+/* ---- pipeline board (horizontally-scrolling kanban) ---- */
+.ld-board { display: flex; gap: var(--aeos-space-3); margin-top: var(--aeos-space-3); overflow-x: auto; padding-bottom: var(--aeos-space-2); }
+.ld-col { flex: 1 0 208px; min-width: 208px; display: flex; flex-direction: column; }
+.ld-col__h { display: flex; align-items: center; justify-content: space-between; padding: 0 2px var(--aeos-space-2); }
+.ld-col__t { display: inline-flex; align-items: center; gap: 7px; font-size: var(--aeos-text-sm); font-weight: 600; color: var(--aeos-text-primary); }
+.ld-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.ld-col__c { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--aeos-text-secondary); background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); padding: 1px 8px; border-radius: 20px; }
+.ld-lane { display: flex; flex-direction: column; gap: var(--aeos-space-2); min-height: 200px; max-height: 468px; overflow-y: auto; background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: var(--aeos-card-radius); padding: var(--aeos-space-2); transition: background .12s, box-shadow .12s; }
+.ld-lane.is-over { background: var(--aeos-primary-tint); box-shadow: inset 0 0 0 1.5px var(--aeos-primary-border); }
+.ld-lane__empty { color: var(--aeos-text-muted); text-align: center; padding: var(--aeos-space-4) 0; font-size: var(--aeos-text-sm); }
+.ld-card { background: var(--aeos-surface); border: var(--aeos-border-width) solid var(--aeos-border); border-radius: calc(var(--aeos-card-radius) * .8); padding: var(--aeos-space-2) var(--aeos-space-3); cursor: pointer; transition: border-color .12s, transform .05s; }
+.ld-card:hover { border-color: var(--aeos-border-strong, var(--aeos-primary-border)); }
+.ld-card:active { transform: scale(.99); }
+.ld-card[draggable="true"] { cursor: grab; }
+.ld-card__top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.ld-card__nm { font-size: var(--aeos-text-sm); font-weight: 600; color: var(--aeos-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-card__co { font-size: 11.5px; color: var(--aeos-text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-card__meta { display: flex; align-items: center; gap: 7px; margin-top: var(--aeos-space-2); }
+.ld-card__src { font-size: 10.5px; color: var(--aeos-text-muted); text-transform: capitalize; }
+.ld-card__meta .ld-av { margin-left: auto; }
+.ld-card .wb-kebab { padding: 0 4px; line-height: 1; }
+
+/* ---- score distribution bars ---- */
+.ld-scorebars { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.ld-scorebar { display: grid; grid-template-columns: 56px 1fr 28px; align-items: center; gap: var(--aeos-space-3); }
+.ld-scorebar__cap { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); font-variant-numeric: tabular-nums; }
+.ld-scorebar__track { height: 8px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.ld-scorebar__fill { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--aeos-primary), #a78bfa); }
+.ld-scorebar__n { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- funnel ---- */
+.ld-funnel { display: flex; flex-direction: column; gap: 6px; margin-top: var(--aeos-space-4); padding-top: var(--aeos-space-3); border-top: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.ld-funnel__row { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: var(--aeos-space-2); }
+.ld-funnel__cap { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); }
+.ld-funnel__bar { height: 22px; border-radius: 6px; display: flex; align-items: center; padding: 0 9px; font-size: 11.5px; font-weight: 700; color: #08101f; font-variant-numeric: tabular-nums; min-width: 34px; }
+
+/* ---- drawer: score gauge ---- */
+.ld-gauge { display: flex; align-items: center; gap: var(--aeos-space-4); padding-bottom: var(--aeos-space-3); margin-bottom: var(--aeos-space-2); border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.ld-tags { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.ld-tag { font-size: 10.5px; padding: 1px 7px; border-radius: calc(var(--aeos-card-radius) * .5); background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); border: var(--aeos-border-width) solid var(--aeos-border-subtle); text-transform: capitalize; }
+.ld-notes { font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); line-height: 1.6; }
+
+/* ---- rail queues ---- */
+.ld-railq { display: flex; flex-direction: column; gap: 6px; }
+.ld-railq__it { display: flex; align-items: center; gap: 8px; }
+.ld-railq__nm { flex: 1; font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-railq__sub { font-size: 10.5px; color: var(--aeos-text-muted); }
+
+/* ---- form grid ---- */
+.ld-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-3); margin-bottom: var(--aeos-space-3); }
+.pc-modal--sm { max-width: 420px; }
+
+/* ---- command-shell responsiveness (react to CONTENT width, not viewport) ---- */
+@container (max-width: 1180px) {
+  .ld .pc-kpis.sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .ld .sc-band { grid-template-columns: 1fr; }
+}
+@container (max-width: 720px) {
+  .ld .pc-kpis.sc-kpis6 { grid-template-columns: repeat(2, 1fr); }
+  .ld .ld-form-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .ld .ld-form-grid { grid-template-columns: 1fr; }
+}

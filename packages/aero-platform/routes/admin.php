@@ -969,9 +969,14 @@ Route::middleware('admin.domain')->group(function () {
         // 16. LEAD MANAGEMENT MODULE (lead-management)
         // =========================================================================
         Route::middleware(['hrmac:lead-management'])->prefix('leads')->name('admin.leads.')->group(function () {
-            Route::get('/', [LeadController::class, 'index'])
+            // Command centre — the nav "Leads" link lands here (data-backed CRM console).
+            Route::get('/', [LeadController::class, 'overview'])
                 ->middleware(['hrmac:lead-management.all-leads.view'])
                 ->name('index');
+
+            Route::post('/bulk', [LeadController::class, 'bulk'])
+                ->middleware(['hrmac:lead-management.all-leads.assign'])
+                ->name('bulk');
 
             Route::get('/paginate', [LeadController::class, 'paginate'])
                 ->middleware(['hrmac:lead-management.all-leads.view'])

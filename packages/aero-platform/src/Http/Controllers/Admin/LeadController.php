@@ -7,6 +7,7 @@ namespace Aero\Platform\Http\Controllers\Admin;
 use Aero\Platform\Models\ProspectLead;
 use Aero\Platform\Services\Marketing\LeadService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -24,27 +25,21 @@ class LeadController extends Controller
     ) {}
 
     /**
-     * Display leads list.
+     * Leads command centre — the /leads landing (full CRM console).
      */
-    public function index(Request $request): Response
+    public function overview(Request $request): Response
     {
-        $filters = $request->only([
-            'search', 'status', 'source', 'assigned_to', 'unassigned',
-            'min_score', 'date_from', 'date_to', 'sort_by', 'sort_dir',
+        return Inertia::render('Platform/Admin/Leads/P2/Leads', [
+            'overview' => fn () => $this->leadService->overview($request->input('period', '6m')),
         ]);
+    }
 
-        $perPage = $request->input('perPage', 20);
-        $leads = $this->leadService->getPaginatedLeads($filters, $perPage);
-        $stats = $this->leadService->getLeadStats($request->input('period', 'month'));
-
-        return Inertia::render('Platform/Admin/Leads/Index', [
-            'title' => 'Lead Management',
-            'leads' => $leads,
-            'stats' => $stats,
-            'filters' => $filters,
-            'statusOptions' => ProspectLead::getStatusOptions(),
-            'sourceOptions' => ProspectLead::getSourceOptions(),
-        ]);
+    /**
+     * Legacy leads list — subsumed by the command centre; redirect.
+     */
+    public function index(): RedirectResponse
+    {
+        return redirect('/leads');
     }
 
     /**
@@ -64,16 +59,11 @@ class LeadController extends Controller
     }
 
     /**
-     * Show lead details.
+     * Lead detail — subsumed by the console drawer; redirect to the console.
      */
-    public function show(ProspectLead $lead): Response
+    public function show(ProspectLead $lead): RedirectResponse
     {
-        $lead->load('assignee', 'tenant');
-
-        return Inertia::render('Platform/Admin/Leads/Show', [
-            'title' => 'Lead Details',
-            'lead' => $lead,
-        ]);
+        return redirect('/leads');
     }
 
     /**
@@ -181,23 +171,48 @@ class LeadController extends Controller
     }
 
     /**
-     * Update lead status.
+     * Move a lead to a new pipeline stage (sets the matching stage timestamp).
      */
     public function updateStatus(Request $request, ProspectLead $lead): JsonResponse
     {
         $validated = $request->validate([
             'status' => 'required|string|in:'.implode(',', array_keys(ProspectLead::getStatusOptions())),
+            'reason' => 'nullable|string|max:500',
         ]);
 
-        $lead->update([
-            'status' => $validated['status'],
-            'last_activity_at' => now(),
-        ]);
+        $this->leadService->transition($lead, $validated['status'], $validated['reason'] ?? null);
 
         return response()->json([
             'success' => true,
             'message' => 'Lead status updated successfully.',
-            'data' => $lead->fresh(),
+            'data' => $lead->fresh('assignee'),
+        ]);
+    }
+
+    /**
+     * Bulk lifecycle action (assign / move stage / mark lost / delete).
+     */
+    public function bulk(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:assign,contacted,qualified,lost,delete',
+            'lead_ids' => 'required|array|min:1',
+            'lead_ids.*' => 'integer|exists:prospect_leads,id',
+            'user_id' => 'nullable|integer|exists:central.users,id',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $count = $this->leadService->bulkAction(
+            $validated['lead_ids'],
+            $validated['action'],
+            $validated['user_id'] ?? null,
+            $validated['reason'] ?? null,
+        );
+
+        return response()->json([
+            'success' => true,
+            'count' => $count,
+            'message' => "{$count} lead(s) updated.",
         ]);
     }
 
