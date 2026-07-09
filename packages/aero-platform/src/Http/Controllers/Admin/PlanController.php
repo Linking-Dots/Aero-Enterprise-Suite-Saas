@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PlanController extends Controller
 {
@@ -21,27 +22,29 @@ class PlanController extends Controller
         private readonly PlanService $svc
     ) {}
 
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        return Inertia::render('Platform/Admin/Plans/Index', [
-            'plans'   => $this->svc->list($request->only(['status', 'tier', 'search'])),
-            'stats'   => $this->svc->stats(),
-            'filters' => $request->only(['status', 'tier', 'search']),
-        ]);
+        return Inertia::render('Platform/Admin/Plans/P2/Index', $this->svc->overview());
+    }
+
+    /** Drawer payload: subscribers, revenue roll-up, audit activity. */
+    public function detail(Plan $plan): JsonResponse
+    {
+        return response()->json($this->svc->detail((string) $plan->id));
     }
 
     public function show(Plan $plan): Response
     {
         $plan->loadCount(['subscriptions as active_count' => fn ($q) => $q->where('status', 'active')]);
 
-        return Inertia::render('Platform/Admin/Plans/P2/Show', [
+        return Inertia::render('Platform/Admin/Plans/Show', [
             'plan' => $plan,
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Platform/Admin/Plans/P2/Form');
+        return Inertia::render('Platform/Admin/Plans/Form');
     }
 
     public function store(PlanStoreRequest $request): RedirectResponse
@@ -55,7 +58,7 @@ class PlanController extends Controller
 
     public function edit(Plan $plan): Response
     {
-        return Inertia::render('Platform/Admin/Plans/P2/Form', [
+        return Inertia::render('Platform/Admin/Plans/Form', [
             'plan' => $plan,
         ]);
     }
@@ -88,6 +91,53 @@ class PlanController extends Controller
         $copy = $this->svc->clone($plan);
 
         return redirect()->route('platform.admin.plans.show', $copy)->with('success', 'Plan cloned');
+    }
+
+    /** Toggle a plan's visibility on the public pricing page. */
+    public function togglePublic(Request $request, Plan $plan): RedirectResponse
+    {
+        $public = $request->boolean('public', ! $plan->is_public);
+        $this->svc->setPublic($plan, $public);
+
+        return back()->with('success', $public ? 'Plan published.' : 'Plan unpublished.');
+    }
+
+    /** Toggle a plan's featured (recommended) flag. */
+    public function toggleFeatured(Request $request, Plan $plan): RedirectResponse
+    {
+        $featured = $request->boolean('featured', ! $plan->is_featured);
+        $this->svc->setFeatured($plan, $featured);
+
+        return back()->with('success', $featured ? 'Plan marked as featured.' : 'Plan unfeatured.');
+    }
+
+    /** Persist a new display order for the public pricing page. */
+    public function reorder(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids'   => ['required', 'array', 'min:1'],
+            'ids.*' => ['string', 'exists:plans,id'],
+        ]);
+
+        $this->svc->reorder($data['ids']);
+
+        return back()->with('success', 'Plan order updated.');
+    }
+
+    /** Stream every plan as CSV. */
+    public function export(): StreamedResponse
+    {
+        $rows = $this->svc->exportRows();
+        $filename = 'plans-'.now()->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Name', 'Slug', 'Tier', 'Status', 'Visibility', 'Featured', 'Monthly', 'Annual', 'Currency', 'Subscribers', 'Trials', 'MRR']);
+            foreach ($rows as $r) {
+                fputcsv($out, array_values($r));
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
     public function stats(Plan $plan): JsonResponse

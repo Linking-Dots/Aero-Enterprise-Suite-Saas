@@ -1,0 +1,89 @@
+/* Plans command centre — extends products.css + subscriptions.css (KPI band,
+   analytics band, queues, drawer) and the @aero/ui workbench kit. All colour via
+   theme tokens / color-mix so every surface reacts to the Theme-Studio drawer. */
+
+/* ---- tier badges ---- */
+.pn-tier { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: calc(var(--aeos-card-radius) * .55); text-transform: capitalize; white-space: nowrap; }
+.pn-tier--free { background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); border: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.pn-tier--starter { background: var(--aeos-primary-tint); color: var(--aeos-primary); border: var(--aeos-border-width) solid var(--aeos-primary-border); }
+.pn-tier--professional { background: color-mix(in srgb, var(--aeos-info, #6366F1) 14%, transparent); color: var(--aeos-info, #6366F1); border: var(--aeos-border-width) solid color-mix(in srgb, var(--aeos-info, #6366F1) 32%, transparent); }
+.pn-tier--enterprise { background: color-mix(in srgb, var(--aeos-warning) 14%, transparent); color: var(--aeos-warning); border: var(--aeos-border-width) solid color-mix(in srgb, var(--aeos-warning) 32%, transparent); }
+
+/* ---- status chips (reuse subscriptions.css .pc-chip--active etc.); add draft ---- */
+.pc-chip--draft { background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 34%, transparent); }
+.pc-chip--draft .pc-chip__dot { background: var(--aeos-warning); }
+.pc-chip--archived { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); border-color: var(--aeos-border); }
+.pc-chip--archived .pc-chip__dot { background: var(--aeos-text-muted); }
+
+.pn-star { color: var(--aeos-warning); font-size: 13px; line-height: 1; }
+.pn-vis { font-size: 11px; color: var(--aeos-text-secondary); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.pn-mrr { font-weight: 600; color: var(--aeos-text-primary); font-variant-numeric: tabular-nums; }
+.pn-av { width: 32px; height: 32px; border-radius: calc(var(--aeos-card-radius) * .7); display: grid; place-items: center; flex: none; background: var(--aeos-primary-tint); border: var(--aeos-border-width) solid var(--aeos-primary-border); color: var(--aeos-primary); font-size: 15px; }
+
+/* ---- price ladder ---- */
+.pn-ladder { display: flex; align-items: flex-end; gap: var(--aeos-space-3); height: 168px; padding-top: var(--aeos-space-4); }
+.pn-lad { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; background: none; border: 0; cursor: pointer; padding: 0; min-width: 0; }
+.pn-lad__bar { width: 100%; border-radius: 8px 8px 0 0; background: linear-gradient(var(--aeos-primary), color-mix(in srgb, var(--aeos-primary) 35%, transparent)); min-height: 4px; position: relative; transition: filter .15s; }
+.pn-lad:hover .pn-lad__bar, .pn-lad.is-on .pn-lad__bar { filter: brightness(1.14); }
+.pn-lad__price { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-size: 11px; font-weight: 700; color: var(--aeos-text-primary); }
+.pn-lad__cap { font-size: 11px; color: var(--aeos-text-secondary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pn-lad__cap b { display: block; color: var(--aeos-text-primary); font-weight: 600; }
+
+/* ---- mix bars (reuse invoices aging pattern) ---- */
+.pn-mix { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.pn-mixrow { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: var(--aeos-space-3); background: none; border: 0; padding: 5px 0; cursor: pointer; text-align: left; width: 100%; }
+.pn-mixrow__cap { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pn-mixrow:hover .pn-mixrow__cap { color: var(--aeos-text-primary); }
+.pn-mixrow.is-on .pn-mixrow__cap { color: var(--aeos-primary); font-weight: 600; }
+.pn-mixrow__track { height: 8px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.pn-mixrow__fill { display: block; height: 100%; border-radius: 5px; }
+.pn-mix-0 { background: var(--aeos-primary); }
+.pn-mix-1 { background: var(--aeos-success); }
+.pn-mix-2 { background: var(--aeos-warning); }
+.pn-mix-3 { background: var(--aeos-info, #6366F1); }
+.pn-mix-4 { background: color-mix(in srgb, var(--aeos-primary) 60%, var(--aeos-success)); }
+.pn-mixrow__n { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+.pn-mixrow__n b { color: var(--aeos-text-primary); font-weight: 600; }
+
+/* ---- drawer feature list ---- */
+.pn-feat { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: var(--aeos-text-sm); color: var(--aeos-text-primary); }
+.pn-feat svg { width: 15px; height: 15px; color: var(--aeos-success); flex: none; }
+
+/* ---- editor modal form ---- */
+.pn-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-3); }
+.pn-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--aeos-space-3); }
+.pn-sectitle { font-size: var(--aeos-text-xs); letter-spacing: .06em; text-transform: uppercase; color: var(--aeos-text-muted); border-top: var(--aeos-border-width) solid var(--aeos-border-subtle); padding-top: var(--aeos-space-3); margin-top: var(--aeos-space-1); }
+.pn-switch { display: flex; align-items: center; gap: 8px; font-size: var(--aeos-text-sm); color: var(--aeos-text-primary); cursor: pointer; }
+.pn-switch input { width: 16px; height: 16px; accent-color: var(--aeos-primary); }
+.pn-featedit { display: flex; flex-direction: column; gap: 6px; }
+.pn-featrow { display: flex; align-items: center; gap: 8px; }
+.pn-featrow .pc-input { flex: 1; }
+.pn-featrow button { border: var(--aeos-border-width) solid var(--aeos-border); background: var(--aeos-bg-card); color: var(--aeos-text-muted); border-radius: calc(var(--aeos-card-radius) * .6); width: 30px; height: 30px; cursor: pointer; flex: none; }
+.pn-featrow button:hover { background: var(--aeos-bg-hover); color: var(--aeos-danger); }
+
+/* wider modal for the plan editor */
+.pn-modal-wide .pc-modal { width: min(680px, 100%); }
+
+/* ---- reorder drag list ---- */
+.pn-reorder { display: flex; flex-direction: column; gap: 6px; }
+.pn-rerow { display: flex; align-items: center; gap: var(--aeos-space-3); padding: var(--aeos-space-3); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: var(--aeos-card-radius); background: var(--aeos-bg-subtle); cursor: grab; }
+.pn-rerow.is-drag { opacity: .4; }
+.pn-rerow.is-over { border-color: var(--aeos-primary); box-shadow: 0 0 0 2px var(--aeos-primary-tint); }
+.pn-rerow__grip { color: var(--aeos-text-muted); font-size: 15px; cursor: grab; }
+.pn-rerow__n { font-weight: 570; color: var(--aeos-text-primary); flex: 1; }
+.pn-rerow__price { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); font-variant-numeric: tabular-nums; }
+.pn-reorder-hint { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-bottom: var(--aeos-space-3); }
+
+/* ---- command-shell responsiveness (container queries — see tenants.css note) ---- */
+@container (max-width: 1120px) {
+  .pn .pc-kpis.sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .pn .sc-band { grid-template-columns: 1fr 1fr; }
+  .pn .sc-band > *:last-child { grid-column: 1 / -1; }
+  .pn .sc-queues { grid-template-columns: 1fr; }
+  .pn .wb-hide-sm { display: none; }
+}
+@container (max-width: 680px) {
+  .pn .pc-kpis.sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .pn .sc-band { grid-template-columns: 1fr; }
+  .pn .pn-grid2, .pn .pn-grid3 { grid-template-columns: 1fr; }
+}

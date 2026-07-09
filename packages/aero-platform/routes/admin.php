@@ -279,10 +279,30 @@ Route::middleware('admin.domain')->group(function () {
         // =========================================================================
         // Subscription Plans
         Route::middleware(['hrmac:subscriptions'])->prefix('plans')->name('admin.plans.')->group(function () {
-            // Plan List Page
-            Route::get('/', function () {
-                return Inertia::render('Platform/Admin/Plans/PlanList');
-            })->middleware(['hrmac:subscriptions.plans'])->name('index');
+            // Plans command centre. Registered before the P-2 lifecycle group, so
+            // it wins dispatch for GET /plans — the controller renders the full
+            // overview payload (mirrors the Tenants/Invoices command centres).
+            Route::get('/', [AdminP2PlanController::class, 'index'])
+                ->middleware(['hrmac:subscriptions.plans'])->name('index');
+
+            // CSV export — MUST precede the /{plan} route below or it is captured
+            // as a plan id.
+            Route::get('/export', [AdminP2PlanController::class, 'export'])
+                ->middleware(['hrmac:subscriptions.plans'])->name('export');
+
+            // Reorder the public pricing page (drag-to-sort).
+            Route::post('/reorder', [AdminP2PlanController::class, 'reorder'])
+                ->middleware(['hrmac:plan-management.plan-list.edit'])->name('reorder');
+
+            // Drawer detail (subscribers + revenue + activity), JSON.
+            Route::get('/{plan}/detail', [AdminP2PlanController::class, 'detail'])
+                ->middleware(['hrmac:plan-management.plan-details.view'])->name('detail');
+
+            // Visibility + featured toggles.
+            Route::post('/{plan}/toggle-public', [AdminP2PlanController::class, 'togglePublic'])
+                ->middleware(['hrmac:plan-management.plan-list.edit'])->name('toggle-public');
+            Route::post('/{plan}/toggle-featured', [AdminP2PlanController::class, 'toggleFeatured'])
+                ->middleware(['hrmac:plan-management.plan-list.edit'])->name('toggle-featured');
 
             // Create Plan Page
             Route::get('/create', function () {

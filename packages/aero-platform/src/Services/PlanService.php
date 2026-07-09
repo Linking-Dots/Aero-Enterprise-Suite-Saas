@@ -8,6 +8,7 @@ use Aero\Contracts\AuditServiceInterface;
 use Aero\Core\Services\Audit\AuditEventType;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\Subscription;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,299 @@ class PlanService
     public function __construct(
         private readonly AuditServiceInterface $audit
     ) {}
+
+    /** Currency symbols kept in sync with the plans.currency column. */
+    private const CURRENCY_SYMBOL = ['USD' => '$', 'EUR' => '€', 'GBP' => '£', 'BDT' => '৳', 'AUD' => 'A$', 'CAD' => 'C$'];
+
+    /**
+     * Unified command-centre payload for the Plans catalog: normalised plan rows
+     * (subscribers + MRR resolved), KPI stats, price ladder, subscriber / MRR
+     * distributions and KPI sparklines. Guard-free — mirrors the Tenants and
+     * Invoices command centres.
+     *
+     * Honesty: subscriber counts and MRR come from the subscriptions ledger; no
+     * usage/revenue figure is fabricated.
+     *
+     * @return array{stats: array, plans: array, ladder: array, sparks: array}
+     */
+    public function overview(): array
+    {
+        $plans = Plan::query()
+            ->withCount([
+                'subscriptions as active_subscribers_count' => fn ($q) => $q->where('status', Subscription::STATUS_ACTIVE),
+                'subscriptions as trial_subscribers_count' => fn ($q) => $q->where('status', Subscription::STATUS_TRIALING),
+            ])
+            ->orderBy('sort_order')
+            ->get();
+
+        $mrrByPlan = $this->mrrByPlan($plans->pluck('id')->all());
+
+        $rows = $plans->map(function (Plan $p) use ($mrrByPlan) {
+            $features = is_array($p->features) ? $p->features : [];
+
+            return [
+                'id'             => (string) $p->id,
+                'name'           => $p->name,
+                'slug'           => $p->slug,
+                'tier'           => $p->tier ?: 'free',
+                'status'         => $p->status ?: ($p->is_active ? 'active' : 'draft'),
+                'is_public'      => (bool) $p->is_public,
+                'is_featured'    => (bool) $p->is_featured,
+                'currency'       => $p->currency ?: 'USD',
+                'price_monthly'  => (float) ($p->price_monthly ?? $p->monthly_price),
+                'price_annual'   => (float) ($p->price_annual ?? $p->yearly_price),
+                'trial_days'     => (int) ($p->trial_days ?? 0),
+                'grace_days'     => (int) ($p->grace_days ?? 0),
+                'max_users'      => (int) ($p->max_users ?? 0),
+                'max_storage_gb' => (int) ($p->max_storage_gb ?? 0),
+                'downgrade_policy'    => $p->downgrade_policy,
+                'cancellation_policy' => $p->cancellation_policy,
+                'description'    => $p->description,
+                'features'       => array_values(array_filter($features, 'is_string')),
+                'features_count' => count($features),
+                'sort_order'     => (int) ($p->sort_order ?? 0),
+                'active_subs'    => (int) $p->active_subscribers_count,
+                'trial_subs'     => (int) $p->trial_subscribers_count,
+                'mrr'            => round((float) ($mrrByPlan[$p->id] ?? 0.0), 2),
+            ];
+        })->all();
+
+        return [
+            'stats'  => $this->overviewStats($rows),
+            'plans'  => $rows,
+            'ladder' => $this->buildLadder($rows),
+            'sparks' => $this->buildSparks(),
+        ];
+    }
+
+    /**
+     * KPI metrics from the normalised rows: catalog totals, public/private split,
+     * subscriber + trial counts, plan MRR/ARR and featured count.
+     *
+     * @param  array<int, array>  $rows
+     * @return array<string, int|float>
+     */
+    private function overviewStats(array $rows): array
+    {
+        $count = fn (callable $p) => count(array_filter($rows, $p));
+        $mrr = round(array_sum(array_map(fn ($r) => $r['mrr'], $rows)), 2);
+
+        return [
+            'total'       => count($rows),
+            'active'      => $count(fn ($r) => $r['status'] === 'active'),
+            'draft'       => $count(fn ($r) => $r['status'] === 'draft'),
+            'archived'    => $count(fn ($r) => $r['status'] === 'archived'),
+            'public'      => $count(fn ($r) => $r['is_public']),
+            'private'     => $count(fn ($r) => ! $r['is_public']),
+            'featured'    => $count(fn ($r) => $r['is_featured']),
+            'free'        => $count(fn ($r) => $r['price_monthly'] <= 0),
+            'subscribers' => array_sum(array_map(fn ($r) => $r['active_subs'], $rows)),
+            'trials'      => array_sum(array_map(fn ($r) => $r['trial_subs'], $rows)),
+            'mrr'         => $mrr,
+            'arr'         => round($mrr * 12, 2),
+        ];
+    }
+
+    /**
+     * Price-ladder rows (monthly price + subscriber count per plan), ordered by
+     * price so the client can render the ascending tier ladder.
+     *
+     * @param  array<int, array>  $rows
+     * @return array<int, array{name: string, tier: string, price: float, subs: int, mrr: float}>
+     */
+    private function buildLadder(array $rows): array
+    {
+        $ladder = array_map(fn ($r) => [
+            'name'  => $r['name'],
+            'slug'  => $r['slug'],
+            'tier'  => $r['tier'],
+            'price' => $r['price_monthly'],
+            'subs'  => $r['active_subs'] + $r['trial_subs'],
+            'mrr'   => $r['mrr'],
+        ], $rows);
+
+        usort($ladder, fn ($a, $b) => $a['price'] <=> $b['price']);
+
+        return $ladder;
+    }
+
+    /**
+     * KPI sparkline series (6 months) from the subscriptions ledger: cumulative
+     * active subscribers and cumulative MRR by subscription start month. Real
+     * derivation — every point comes from subscriptions.created_at.
+     *
+     * @return array{subscribers: array<int,int>, mrr: array<int,float>}
+     */
+    private function buildSparks(): array
+    {
+        $end = now()->startOfMonth();
+        $months = array_map(fn ($i) => $end->copy()->subMonths($i), range(5, 0));
+
+        $subs = DB::table('subscriptions')
+            ->whereIn('status', [Subscription::STATUS_ACTIVE, Subscription::STATUS_TRIALING])
+            ->whereNull('deleted_at')
+            ->get(['created_at', 'billing_cycle', 'amount']);
+
+        $subSeries = [];
+        $mrrSeries = [];
+        foreach ($months as $m) {
+            $cut = $m->copy()->endOfMonth();
+            $c = 0;
+            $mrr = 0.0;
+            foreach ($subs as $s) {
+                if ($s->created_at !== null && Carbon::parse($s->created_at)->lte($cut)) {
+                    $c++;
+                    $mrr += $s->billing_cycle === 'yearly' ? (float) $s->amount / 12 : (float) $s->amount;
+                }
+            }
+            $subSeries[] = $c;
+            $mrrSeries[] = round($mrr, 2);
+        }
+
+        return ['subscribers' => $subSeries, 'mrr' => $mrrSeries];
+    }
+
+    /**
+     * Drawer detail for a single plan: subscriber list (tenant names), revenue
+     * roll-up and audit activity. Guarded so a missing table can't 500 the drawer.
+     *
+     * @return array{subscribers: array, revenue: array, activity: array}
+     */
+    public function detail(string $planId): array
+    {
+        $plan = Plan::query()->findOrFail($planId);
+
+        $subscribers = DB::table('subscriptions as s')
+            ->leftJoin('tenants as t', 't.id', '=', 's.tenant_id')
+            ->where('s.plan_id', $planId)
+            ->whereIn('s.status', [Subscription::STATUS_ACTIVE, Subscription::STATUS_TRIALING])
+            ->whereNull('s.deleted_at')
+            ->orderByDesc('s.created_at')
+            ->limit(100)
+            ->get(['t.name as tenant', 's.status', 's.amount', 's.billing_cycle', 's.currency', 's.created_at'])
+            ->map(fn ($s) => [
+                'tenant'   => $s->tenant ?: '—',
+                'status'   => $s->status,
+                'amount'   => (float) $s->amount,
+                'cycle'    => $s->billing_cycle,
+                'currency' => $s->currency ?: ($plan->currency ?: 'USD'),
+                'since'    => $s->created_at,
+            ])->all();
+
+        $active = array_filter($subscribers, fn ($s) => $s['status'] === Subscription::STATUS_ACTIVE);
+        $mrr = (float) ($this->mrrByPlan([$planId])[$planId] ?? 0.0);
+        $revenue = [
+            'mrr'   => round($mrr, 2),
+            'arr'   => round($mrr * 12, 2),
+            'arpu'  => count($active) > 0 ? round($mrr / count($active), 2) : 0.0,
+            'active' => count($active),
+            'trial'  => count($subscribers) - count($active),
+        ];
+
+        $activity = [];
+        try {
+            [$conn, $table] = (is_saas_mode() && ! (function_exists('tenancy') && tenancy()->initialized))
+                ? [central_connection(), 'platform_audit_logs']
+                : [null, 'audit_logs'];
+
+            $activity = DB::connection($conn)->table($table)
+                ->where('subject_type', 'like', '%Plan%')
+                ->where('subject_id', $planId)
+                ->orderByDesc('created_at')
+                ->limit(20)
+                ->get(['event_type', 'action', 'description', 'actor_name', 'created_at'])
+                ->map(fn ($a) => [
+                    'event'  => $a->event_type,
+                    'action' => $a->action,
+                    'detail' => $a->description,
+                    'actor'  => $a->actor_name,
+                    'at'     => $a->created_at,
+                ])->all();
+        } catch (\Illuminate\Database\QueryException) {
+            // audit table absent in this context
+        }
+
+        return ['subscribers' => $subscribers, 'revenue' => $revenue, 'activity' => $activity];
+    }
+
+    /** Toggle a plan's public visibility on the pricing page. */
+    public function setPublic(Plan $plan, bool $public): Plan
+    {
+        return DB::transaction(function () use ($plan, $public) {
+            $plan->update(['is_public' => $public, 'visibility' => $public ? 'public' : 'private']);
+
+            $this->audit->log(
+                AuditEventType::PLAN_UPDATED->value,
+                $public ? 'published' : 'unpublished',
+                $plan,
+                "Plan [{$plan->name}] ".($public ? 'published to' : 'hidden from').' the pricing page.'
+            );
+
+            return $plan->fresh();
+        });
+    }
+
+    /** Toggle a plan's featured (recommended) flag. */
+    public function setFeatured(Plan $plan, bool $featured): Plan
+    {
+        return DB::transaction(function () use ($plan, $featured) {
+            $plan->update(['is_featured' => $featured]);
+
+            $this->audit->log(
+                AuditEventType::PLAN_UPDATED->value,
+                $featured ? 'featured' : 'unfeatured',
+                $plan,
+                "Plan [{$plan->name}] ".($featured ? 'marked as featured.' : 'unfeatured.')
+            );
+
+            return $plan->fresh();
+        });
+    }
+
+    /**
+     * Persist a new display order for the public pricing page. Each id gets its
+     * 1-based position; unknown ids are ignored.
+     *
+     * @param  array<int, string>  $orderedIds
+     */
+    public function reorder(array $orderedIds): void
+    {
+        DB::transaction(function () use ($orderedIds) {
+            foreach (array_values($orderedIds) as $i => $id) {
+                Plan::where('id', $id)->update(['sort_order' => $i + 1]);
+            }
+
+            $this->audit->log(
+                AuditEventType::PLAN_UPDATED->value,
+                'reordered',
+                null,
+                'Plan display order updated ('.count($orderedIds).' plans).'
+            );
+        });
+    }
+
+    /**
+     * All plans flattened for CSV export.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function exportRows(): array
+    {
+        return array_map(fn ($r) => [
+            'name'        => $r['name'],
+            'slug'        => $r['slug'],
+            'tier'        => $r['tier'],
+            'status'      => $r['status'],
+            'visibility'  => $r['is_public'] ? 'public' : 'private',
+            'featured'    => $r['is_featured'] ? 'yes' : 'no',
+            'monthly'     => $r['price_monthly'],
+            'annual'      => $r['price_annual'],
+            'currency'    => $r['currency'],
+            'subscribers' => $r['active_subs'],
+            'trials'      => $r['trial_subs'],
+            'mrr'         => $r['mrr'],
+        ], $this->overview()['plans']);
+    }
 
     /**
      * Return a paginated list of plans for the admin grid.
