@@ -1,0 +1,80 @@
+/* Platform Users command centre — extends products.css + subscriptions.css
+   (KPI band, analytics band, queues, drawer) and the @aero/ui workbench kit.
+   All colour via theme tokens / color-mix so every surface reacts to the
+   Theme-Studio drawer. */
+
+/* ---- avatar (round for people) ---- */
+.us-av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--aeos-primary-tint); border: var(--aeos-border-width) solid var(--aeos-primary-border); color: var(--aeos-primary); font-size: var(--aeos-text-xs); font-weight: 640; overflow: hidden; }
+.us-av img { width: 100%; height: 100%; object-fit: cover; }
+.us-av--sm { width: 26px; height: 26px; font-size: 10px; }
+.us-uname { font-weight: 580; line-height: 1.2; }
+.us-email { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-top: 1px; }
+
+/* ---- role chips ---- */
+.us-roles { display: flex; gap: 4px; flex-wrap: wrap; }
+.us-rchip { font-size: 11px; font-weight: 560; padding: 2px 8px; border-radius: calc(var(--aeos-card-radius) * .5); background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); border: var(--aeos-border-width) solid var(--aeos-border-subtle); white-space: nowrap; }
+.us-rchip--super { background: color-mix(in srgb, var(--aeos-info, #6366F1) 14%, transparent); color: var(--aeos-info, #6366F1); border-color: color-mix(in srgb, var(--aeos-info, #6366F1) 30%, transparent); }
+.us-rchip--admin { background: var(--aeos-primary-tint); color: var(--aeos-primary); border-color: var(--aeos-primary-border); }
+
+/* ---- 2FA badge ---- */
+.us-tfa { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 6px; white-space: nowrap; }
+.us-tfa--on { background: color-mix(in srgb, var(--aeos-success) 13%, transparent); color: var(--aeos-success); }
+.us-tfa--off { background: color-mix(in srgb, var(--aeos-warning) 13%, transparent); color: var(--aeos-warning); }
+
+/* ---- status chips (extend products.css .pc-chip) ---- */
+.pc-chip--active { background: color-mix(in srgb, var(--aeos-success) 14%, transparent); color: var(--aeos-success); border-color: color-mix(in srgb, var(--aeos-success) 34%, transparent); }
+.pc-chip--active .pc-chip__dot { background: var(--aeos-success); }
+.pc-chip--inactive { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); border-color: var(--aeos-border); }
+.pc-chip--inactive .pc-chip__dot { background: var(--aeos-text-muted); }
+.pc-chip--locked { background: color-mix(in srgb, var(--aeos-danger) 14%, transparent); color: var(--aeos-danger); border-color: color-mix(in srgb, var(--aeos-danger) 34%, transparent); }
+.pc-chip--locked .pc-chip__dot { background: var(--aeos-danger); }
+
+.us-logins { font-variant-numeric: tabular-nums; font-weight: 560; }
+
+/* ---- role distribution bars ---- */
+.us-mix { display: flex; flex-direction: column; gap: var(--aeos-space-2); }
+.us-mixrow { display: grid; grid-template-columns: 128px 1fr auto; align-items: center; gap: var(--aeos-space-3); background: none; border: 0; padding: 4px 0; cursor: pointer; text-align: left; width: 100%; }
+.us-mixrow__cap { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.us-mixrow:hover .us-mixrow__cap { color: var(--aeos-text-primary); }
+.us-mixrow.is-on .us-mixrow__cap { color: var(--aeos-primary); font-weight: 600; }
+.us-mixrow__track { height: 8px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.us-mixrow__fill { display: block; height: 100%; border-radius: 5px; }
+.us-mix-0 { background: var(--aeos-info, #6366F1); }
+.us-mix-1 { background: var(--aeos-primary); }
+.us-mix-2 { background: var(--aeos-success); }
+.us-mix-3 { background: var(--aeos-warning); }
+.us-mix-4 { background: var(--aeos-text-muted); }
+.us-mixrow__n { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.us-mixrow__n b { color: var(--aeos-text-primary); font-weight: 600; }
+
+/* ---- drawer sessions + permissions ---- */
+.us-sess { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); font-size: var(--aeos-text-xs); }
+.us-sess:last-child { border-bottom: 0; }
+.us-sess__ico { width: 30px; height: 30px; border-radius: calc(var(--aeos-card-radius) * .6); display: grid; place-items: center; flex: none; background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); }
+.us-sess__m { flex: 1; min-width: 0; }
+.us-sess__m b { display: block; color: var(--aeos-text-primary); font-weight: 560; }
+.us-sess__m span { color: var(--aeos-text-muted); font-size: 11px; }
+.us-perm { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: var(--aeos-text-sm); color: var(--aeos-text-primary); }
+.us-perm svg { width: 14px; height: 14px; color: var(--aeos-success); flex: none; }
+
+/* ---- editor role picker ---- */
+.us-rolepick { display: flex; flex-wrap: wrap; gap: var(--aeos-space-2); }
+.us-rolepick label { display: inline-flex; align-items: center; gap: 6px; font-size: var(--aeos-text-sm); padding: 6px 12px; border: var(--aeos-border-width) solid var(--aeos-border); border-radius: 999px; cursor: pointer; color: var(--aeos-text-secondary); }
+.us-rolepick input { accent-color: var(--aeos-primary); }
+.us-rolepick label:has(input:checked) { background: var(--aeos-primary-tint); color: var(--aeos-primary); border-color: var(--aeos-primary-border); }
+.us-sectitle { font-size: var(--aeos-text-xs); letter-spacing: .06em; text-transform: uppercase; color: var(--aeos-text-muted); border-top: var(--aeos-border-width) solid var(--aeos-border-subtle); padding-top: var(--aeos-space-3); margin-top: var(--aeos-space-1); }
+.us-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-3); }
+
+/* ---- command-shell responsiveness (container queries — see tenants.css note) ---- */
+@container (max-width: 1120px) {
+  .us .pc-kpis.sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .us .sc-band { grid-template-columns: 1fr 1fr; }
+  .us .sc-band > *:last-child { grid-column: 1 / -1; }
+  .us .sc-queues { grid-template-columns: 1fr; }
+  .us .wb-hide-sm { display: none; }
+}
+@container (max-width: 680px) {
+  .us .pc-kpis.sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .us .sc-band { grid-template-columns: 1fr; }
+  .us .us-grid2 { grid-template-columns: 1fr; }
+}

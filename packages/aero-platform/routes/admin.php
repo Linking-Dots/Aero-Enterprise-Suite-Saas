@@ -46,6 +46,7 @@ use Aero\Platform\Http\Controllers\Admin\InvoiceController as AdminInvoiceContro
 use Aero\HRMAC\Http\Controllers\ModuleController as HrmacModuleController;
 use Aero\HRMAC\Http\Controllers\RoleController;
 use Aero\Auth\Http\Controllers\Admin\UserAdminController;
+use Aero\Platform\Http\Controllers\Admin\PlatformUserController;
 use Aero\Platform\Http\Controllers\Admin\LeadController;
 use Aero\Platform\Http\Controllers\Admin\MaintenanceWindowController;
 use Aero\Platform\Http\Controllers\Admin\ModuleAdminController;
@@ -1454,12 +1455,42 @@ Route::middleware('admin.domain')->group(function () {
                 'hrmac_scope' => 'platform',
                 'hrmac_dashboard_route' => 'platform.admin.dashboard',
                 'hrmac_user_impersonation' => true,
-                'hrmac_user_invitations' => false,
+                'hrmac_user_invitations' => true,
             ];
 
-            Route::get('/', [UserAdminController::class, 'index'])->name('index')
-                ->middleware('hrmac:auth.user_management.users.view')
-                ->setDefaults($platformUserCtx + ['hrmac_user_view' => 'Shared/UserManagement/Users/Index']);
+            // Command centre — platform-scoped overview (mirrors Tenants/Plans).
+            Route::get('/', [PlatformUserController::class, 'index'])->name('index')
+                ->middleware('hrmac:auth.user_management.users.view');
+
+            // CSV export — MUST precede /{id} (whereNumber already excludes it, but
+            // keep the static route ahead for clarity).
+            Route::get('/export', [PlatformUserController::class, 'export'])->name('export')
+                ->middleware('hrmac:auth.user_management.users.view');
+
+            // Drawer detail (sessions + activity), JSON.
+            Route::get('/{id}/detail', [PlatformUserController::class, 'detail'])->name('detail')->whereNumber('id')
+                ->middleware('hrmac:auth.user_management.users.view');
+
+            // Security operations not covered by the shared user CRUD.
+            Route::post('/{id}/lock', [PlatformUserController::class, 'toggleLock'])->name('lock')->whereNumber('id')
+                ->middleware('hrmac:auth.user_management.users.edit');
+            Route::post('/{id}/force-reset', [PlatformUserController::class, 'forcePasswordReset'])->name('force-reset')->whereNumber('id')
+                ->middleware('hrmac:auth.user_management.users.edit');
+            Route::post('/{id}/revoke-sessions', [PlatformUserController::class, 'revokeSessions'])->name('revoke-sessions')->whereNumber('id')
+                ->middleware('hrmac:auth.user_management.users.edit');
+            Route::post('/{id}/reset-2fa', [PlatformUserController::class, 'resetTwoFactor'])->name('reset-2fa')->whereNumber('id')
+                ->middleware('hrmac:auth.user_management.users.edit');
+
+            // Bulk role assignment + staff invitations (shared controller).
+            Route::post('/bulk/assign-roles', [UserAdminController::class, 'bulkAssignRoles'])->name('bulk.assign-roles')
+                ->middleware('hrmac:auth.user_management.users.edit')->setDefaults($platformUserCtx);
+            Route::post('/invite', [UserAdminController::class, 'invite'])->name('invite')
+                ->middleware('hrmac:auth.user_management.users.create')->setDefaults($platformUserCtx);
+            Route::post('/invitations/{invitationId}/resend', [UserAdminController::class, 'resendInvitation'])->name('invitations.resend')->whereNumber('invitationId')
+                ->middleware('hrmac:auth.user_management.users.create')->setDefaults($platformUserCtx);
+            Route::delete('/invitations/{invitationId}', [UserAdminController::class, 'cancelInvitation'])->name('invitations.cancel')->whereNumber('invitationId')
+                ->middleware('hrmac:auth.user_management.users.create')->setDefaults($platformUserCtx);
+
             Route::get('/create', [UserAdminController::class, 'create'])->name('create')
                 ->middleware('hrmac:auth.user_management.users.create')
                 ->setDefaults($platformUserCtx + ['hrmac_user_create_view' => 'Shared/UserManagement/Users/Create']);
