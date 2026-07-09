@@ -35,7 +35,15 @@ class RoleController extends Controller
 
     public function index(Request $request): Response
     {
+        // Only the roles that belong to THIS context: platform surfaces the
+        // landlord-guard roles, every other context the web-guard roles — so the
+        // platform Roles page never leaks tenant roles (HR Manager, Finance, …) and
+        // vice-versa.
+        $scope = $request->route()?->defaults['hrmac_scope'] ?? 'tenant';
+        $guard = $scope === 'platform' ? 'landlord' : 'web';
+
         $roles = Role::query()
+            ->where('guard_name', $guard)
             ->withCount('moduleAccess')
             ->orderBy('priority')
             ->orderBy('name')
@@ -79,12 +87,168 @@ class RoleController extends Controller
         // registry counts. Attached for the shared page (both contexts) and the legacy
         // core page. The scope selects the tenant vs platform module tree.
         if (in_array($view, ['Shared/AccessControl/Roles/Index', 'Core/Roles/Index'], true)) {
-            $props['modules'] = $this->moduleTree($scope);
+            $tree = $this->moduleTree($scope);
+            $props['modules'] = $tree;
             $props['accessScopes'] = RoleModuleAccess::ACCESS_SCOPES;
             $props['statistics'] = $this->moduleStatistics($scope);
+            // Command-centre extras: the flattened sub-module axis for the coverage
+            // matrix (grouped by the SAME nav sections so access and navigation stay
+            // consistent), and each role's per-sub-module coverage.
+            [$sectionMap, $sectionCatalog] = $this->navSections($scope);
+            $props['subModules'] = $this->flattenSubModules($tree, $sectionMap);
+            $props['navSections'] = $sectionCatalog;
+            $props['coverage'] = $this->buildCoverage($tree, $roles);
         }
 
         return Inertia::render($view, $props);
+    }
+
+    /**
+     * Flatten the tree to the sub-module axis used by the coverage matrix, carrying
+     * the parent-module grouping so the client can render columns with the SAME
+     * taxonomy as the sidebar nav: core sub-modules flat, a single product flat, and
+     * 2+ products grouped under per-product headers.
+     *
+     * @param  array<int, array<string, mixed>>  $tree
+     * @return array<int, array{id:int, name:string, code:string, module:string, moduleCode:string, moduleIsCore:bool}>
+     */
+    private function flattenSubModules(array $tree, array $sectionMap = []): array
+    {
+        $out = [];
+        foreach ($tree as $module) {
+            foreach ($module['sub_modules'] as $sub) {
+                $seg = $this->firstSegment($sub['route'] ?? null);
+                $section = $sectionMap[$seg] ?? null;
+                $out[] = [
+                    'id' => $sub['id'],
+                    'name' => $sub['name'],
+                    'code' => $sub['code'],
+                    'module' => $module['name'],
+                    'moduleCode' => $module['code'],
+                    'moduleIsCore' => (bool) ($module['is_core'] ?? false),
+                    // Section = the SAME group the sidebar nav puts this area in.
+                    // Areas not (yet) in the nav taxonomy trail under "Other" — they
+                    // auto-move to their section once the nav covers them.
+                    'section' => $section['key'] ?? ($module['is_core'] ? '__core' : '__other'),
+                    'sectionLabel' => $section['label'] ?? ($module['is_core'] ? 'Core' : 'Other'),
+                    'sectionOrder' => $section['order'] ?? 900,
+                ];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Build the sub-module → nav-section map for a scope straight from the same
+     * grouped navigation the sidebar renders, so the Roles coverage matrix sections
+     * match the nav exactly (order + labels + membership). Keyed by the first path
+     * segment of a sub-module's route.
+     *
+     * @return array{0: array<string, array{key:string,label:string,order:int}>, 1: array<int, array{key:string,label:string,order:int}>}
+     */
+    private function navSections(string $scope): array
+    {
+        $map = [];
+        $catalog = [];
+        try {
+            $registry = app(\Aero\Contracts\NavigationRegistryInterface::class);
+            if (! method_exists($registry, 'toFrontendGroups')) {
+                return [$map, $catalog];
+            }
+            $groups = $registry->toFrontendGroups($scope);
+            foreach (array_values($groups) as $order => $group) {
+                $entry = ['key' => $group['key'] ?? (string) $order, 'label' => $group['title'] ?? 'Section', 'order' => $order];
+                $catalog[] = $entry;
+                foreach ($group['items'] ?? [] as $item) {
+                    $seg = $this->firstSegment($item['path'] ?? null);
+                    if ($seg !== null && ! isset($map[$seg])) {
+                        $map[$seg] = $entry;
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // Registry unavailable — the client falls back to core/product grouping.
+        }
+
+        return [$map, $catalog];
+    }
+
+    /** First path segment of a route ('/tenants/x' → 'tenants'), or null. */
+    private function firstSegment(?string $route): ?string
+    {
+        if (! $route) {
+            return null;
+        }
+        $parts = explode('/', trim($route, '/'));
+
+        return $parts[0] !== '' ? $parts[0] : null;
+    }
+
+    /**
+     * Per-role sub-module coverage: for each role id, the sub-modules it reaches at
+     * FULL depth (an explicit module or sub-module grant — which cascades) and at
+     * PARTIAL depth (only some components/actions under the sub-module granted).
+     * Derives everything from role_module_access + the tree's parent lookups.
+     *
+     * @param  array<int, array<string, mixed>>  $tree
+     * @param  \Illuminate\Support\Collection  $roles
+     * @return array<int, array{full: array<int,int>, partial: array<int,int>}>
+     */
+    private function buildCoverage(array $tree, $roles): array
+    {
+        // Lookups from the tree: component→sub, action→sub, and every sub id + its module.
+        $compToSub = [];
+        $actionToSub = [];
+        $allSubIds = [];
+        $moduleIds = [];
+        foreach ($tree as $module) {
+            $moduleIds[] = $module['id'];
+            foreach ($module['sub_modules'] as $sub) {
+                $allSubIds[] = $sub['id'];
+                foreach ($sub['components'] as $comp) {
+                    $compToSub[$comp['id']] = $sub['id'];
+                    foreach ($comp['actions'] as $action) {
+                        $actionToSub[$action['id']] = $sub['id'];
+                    }
+                }
+            }
+        }
+
+        $rows = DB::table('role_module_access')
+            ->whereIn('role_id', $roles->pluck('id'))
+            ->get(['role_id', 'module_id', 'sub_module_id', 'component_id', 'action_id']);
+
+        $coverage = [];
+        foreach ($roles as $role) {
+            $full = [];
+            $partial = [];
+            $hasModuleGrant = false;
+
+            foreach ($rows->where('role_id', $role->id) as $r) {
+                if ($r->module_id !== null && $r->sub_module_id === null && $r->component_id === null && $r->action_id === null) {
+                    if (in_array($r->module_id, $moduleIds, true)) {
+                        $hasModuleGrant = true; // cascades to every sub-module in scope
+                    }
+                } elseif ($r->sub_module_id !== null && $r->component_id === null) {
+                    $full[$r->sub_module_id] = true;
+                } elseif ($r->component_id !== null && isset($compToSub[$r->component_id])) {
+                    $partial[$compToSub[$r->component_id]] = true;
+                } elseif ($r->action_id !== null && isset($actionToSub[$r->action_id])) {
+                    $partial[$actionToSub[$r->action_id]] = true;
+                }
+            }
+
+            $fullSubs = $hasModuleGrant ? $allSubIds : array_keys($full);
+            $partialSubs = array_values(array_diff(array_keys($partial), $fullSubs));
+
+            $coverage[$role->id] = [
+                'full' => array_values(array_map('intval', $fullSubs)),
+                'partial' => array_values(array_map('intval', $partialSubs)),
+            ];
+        }
+
+        return $coverage;
     }
 
     /**
@@ -114,6 +278,7 @@ class RoleController extends Controller
                     'id' => $sub->id,
                     'code' => $sub->code,
                     'name' => $sub->name,
+                    'route' => $sub->route,
                     'components' => $sub->components->map(fn (ModuleComponent $comp) => [
                         'id' => $comp->id,
                         'code' => $comp->code,

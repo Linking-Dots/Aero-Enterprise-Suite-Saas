@@ -1,0 +1,68 @@
+/* Roles & Access command centre — shared (tenant + platform). Extends
+   products.css + subscriptions.css (KPI band, analytics band, queues, chips) and
+   the @aero/ui workbench kit. All colour via theme tokens / color-mix so every
+   surface reacts to the Theme-Studio drawer. */
+
+/* ---- role glyph + chips ---- */
+.rl-ico { width: 32px; height: 32px; border-radius: calc(var(--aeos-card-radius) * .7); display: grid; place-items: center; flex: none; background: var(--aeos-primary-tint); border: var(--aeos-border-width) solid var(--aeos-primary-border); color: var(--aeos-primary); }
+.rl-ico svg { width: 16px; height: 16px; }
+.rl-name { font-weight: 580; display: flex; align-items: center; gap: 6px; }
+.rl-desc { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-top: 1px; }
+.pc-chip--protected { background: color-mix(in srgb, var(--aeos-info, #6366F1) 14%, transparent); color: var(--aeos-info, #6366F1); border-color: color-mix(in srgb, var(--aeos-info, #6366F1) 30%, transparent); }
+.pc-chip--protected .pc-chip__dot { background: var(--aeos-info, #6366F1); }
+.pc-chip--custom { background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); border-color: var(--aeos-border); }
+.pc-chip--custom .pc-chip__dot { background: var(--aeos-text-muted); }
+.rl-grants { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--aeos-success) 13%, transparent); color: var(--aeos-success); white-space: nowrap; }
+.rl-grants--0 { background: var(--aeos-bg-subtle); color: var(--aeos-text-muted); }
+.rl-reach { display: flex; align-items: center; gap: 8px; }
+.rl-reach__bar { width: 60px; height: 5px; border-radius: 3px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.rl-reach__bar > i { display: block; height: 100%; background: var(--aeos-primary); border-radius: 3px; }
+.rl-reach__n { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- coverage matrix ---- */
+.rl-mx-wrap { overflow-x: auto; padding-bottom: var(--aeos-space-2); }
+.rl-mx { display: inline-flex; flex-direction: column; gap: 4px; min-width: 100%; }
+.rl-mx-groups, .rl-mx-row { display: grid; grid-auto-flow: column; align-items: stretch; }
+.rl-mx-lead { width: 168px; flex: none; position: sticky; left: 0; z-index: 2; background: var(--aeos-bg-card); }
+.rl-mx-groups { gap: 3px; }
+.rl-mx-grp { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--aeos-text-muted); font-weight: 600; padding: 0 0 4px 2px; border-bottom: 2px solid var(--aeos-border-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-mx-grp--core { border-bottom-color: color-mix(in srgb, var(--aeos-text-muted) 40%, transparent); }
+.rl-mx-row { align-items: center; }
+.rl-mx-role { width: 168px; flex: none; position: sticky; left: 0; z-index: 2; background: var(--aeos-bg-card); display: flex; align-items: center; gap: 8px; padding: 3px 8px 3px 0; font-size: var(--aeos-text-xs); font-weight: 560; color: var(--aeos-text-primary); white-space: nowrap; overflow: hidden; }
+.rl-mx-role .rl-ico { width: 24px; height: 24px; }
+.rl-mx-role .rl-ico svg { width: 13px; height: 13px; }
+.rl-mx-role b { overflow: hidden; text-overflow: ellipsis; }
+.rl-cell { width: 22px; height: 22px; padding: 2px; }
+.rl-cell button { width: 100%; height: 100%; border-radius: 5px; border: 1px solid var(--aeos-border-subtle); background: var(--aeos-bg-subtle); cursor: pointer; padding: 0; transition: transform .1s; }
+.rl-cell button:hover { transform: scale(1.25); z-index: 3; position: relative; box-shadow: var(--aeos-shadow-sm, 0 2px 6px rgba(0,0,0,.2)); }
+.rl-g-full button { background: var(--aeos-primary); border-color: var(--aeos-primary); }
+.rl-g-partial button { background: color-mix(in srgb, var(--aeos-warning) 55%, transparent); border-color: color-mix(in srgb, var(--aeos-warning) 60%, transparent); }
+.rl-mx-legend { display: flex; gap: 16px; margin-top: var(--aeos-space-3); flex-wrap: wrap; font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); }
+.rl-mx-legend .li { display: flex; align-items: center; gap: 6px; }
+.rl-mx-legend .sw { width: 13px; height: 13px; border-radius: 4px; }
+
+/* ---- members-by-role bars (reuse plans mix pattern) ---- */
+.rl-mix { display: flex; flex-direction: column; gap: 9px; }
+.rl-mixrow { display: grid; grid-template-columns: 150px 1fr auto; align-items: center; gap: var(--aeos-space-3); background: none; border: 0; padding: 4px 0; cursor: pointer; text-align: left; width: 100%; }
+.rl-mixrow__cap { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-mixrow:hover .rl-mixrow__cap { color: var(--aeos-text-primary); }
+.rl-mixrow__track { height: 8px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.rl-mixrow__fill { display: block; height: 100%; border-radius: 5px; }
+.rl-mix-0 { background: var(--aeos-info, #6366F1); } .rl-mix-1 { background: var(--aeos-primary); } .rl-mix-2 { background: var(--aeos-success); } .rl-mix-3 { background: var(--aeos-warning); } .rl-mix-4 { background: var(--aeos-text-muted); }
+.rl-mixrow__n { font-size: var(--aeos-text-xs); color: var(--aeos-text-secondary); min-width: 60px; text-align: right; font-variant-numeric: tabular-nums; }
+.rl-mixrow__n b { color: var(--aeos-text-primary); font-weight: 600; }
+
+/* ---- create/edit + assign modal fields ---- */
+.rl-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-3); }
+
+/* ---- command-shell responsiveness ---- */
+@container (max-width: 1120px) {
+  .rl .pc-kpis.sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .rl .sc-band { grid-template-columns: 1fr; }
+  .rl .sc-queues { grid-template-columns: 1fr; }
+  .rl .wb-hide-sm { display: none; }
+}
+@media (max-width: 720px) {
+  .rl .pc-kpis.sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .rl .rl-grid2 { grid-template-columns: 1fr; }
+}
