@@ -95,6 +95,8 @@ class RoleController extends Controller
             // matrix (grouped by the SAME nav sections so access and navigation stay
             // consistent), and each role's per-sub-module coverage.
             [$sectionMap, $sectionCatalog] = $this->navSections($scope);
+            $tree = $this->tagTreeSections($tree, $sectionMap);
+            $props['modules'] = $tree;
             $props['subModules'] = $this->flattenSubModules($tree, $sectionMap);
             $props['navSections'] = $sectionCatalog;
             $props['coverage'] = $this->buildCoverage($tree, $roles);
@@ -172,6 +174,28 @@ class RoleController extends Controller
         }
 
         return [$map, $catalog];
+    }
+
+    /**
+     * Tag every sub-module in the tree with its nav section (key/label/order) so the
+     * access editor can group + order sub-modules by the SAME sections as the sidebar.
+     *
+     * @param  array<int, array<string, mixed>>  $tree
+     * @param  array<string, array{key:string,label:string,order:int}>  $sectionMap
+     * @return array<int, array<string, mixed>>
+     */
+    private function tagTreeSections(array $tree, array $sectionMap): array
+    {
+        foreach ($tree as $mi => $module) {
+            foreach ($module['sub_modules'] as $si => $sub) {
+                $section = $sectionMap[$this->firstSegment($sub['route'] ?? null)] ?? null;
+                $tree[$mi]['sub_modules'][$si]['section'] = $section['key'] ?? ($module['is_core'] ? '__core' : '__other');
+                $tree[$mi]['sub_modules'][$si]['sectionLabel'] = $section['label'] ?? ($module['is_core'] ? 'Core' : 'Other');
+                $tree[$mi]['sub_modules'][$si]['sectionOrder'] = $section['order'] ?? 900;
+            }
+        }
+
+        return $tree;
     }
 
     /** First path segment of a route ('/tenants/x' → 'tenants'), or null. */
