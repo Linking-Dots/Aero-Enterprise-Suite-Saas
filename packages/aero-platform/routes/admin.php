@@ -1329,8 +1329,9 @@ Route::middleware('admin.domain')->group(function () {
 
         // Platform Analytics (P-3)
         Route::prefix('analytics')->name('platform.admin.analytics.')->group(function () {
+            // Command centre — the nav "Analytics" link lands here (data-backed roll-up).
             Route::middleware('hrmac:platform-analytics.analytics-dashboard.view')
-                ->get('/', [AnalyticsController::class, 'dashboard'])->name('index');
+                ->get('/', [AnalyticsController::class, 'overview'])->name('index');
             Route::middleware('hrmac:platform-analytics.revenue-reports.view')
                 ->get('/revenue', [AnalyticsController::class, 'revenue'])->name('revenue');
             Route::middleware('hrmac:platform-analytics.tenant-analytics.view')

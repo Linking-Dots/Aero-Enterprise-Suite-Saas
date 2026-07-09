@@ -14,6 +14,18 @@ class AnalyticsController extends Controller
 {
     public function __construct(private PlatformAnalyticsService $svc) {}
 
+    /**
+     * Platform Analytics command centre — the /analytics landing.
+     */
+    public function overview(Request $request): Response
+    {
+        $range = $request->input('range', '6m');
+
+        return Inertia::render('Platform/Admin/Analytics/P2/Analytics', [
+            'overview' => fn () => $this->svc->overview($range),
+        ]);
+    }
+
     public function dashboard(Request $request): Response
     {
         [$from, $to] = $this->range($request);

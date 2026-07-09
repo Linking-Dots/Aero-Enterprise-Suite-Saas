@@ -1,0 +1,50 @@
+/* Platform Analytics command centre — chart-first roll-up. Extends the shared
+   products.css (pc-*) + subscriptions.css (sc-*) language; adds horizontal
+   bars, the tenant leaderboard, month bars and range segmented control. All
+   colour via theme tokens; scoped to .anx so sibling pages are untouched. */
+
+.anx { container-type: inline-size; }
+
+/* range segmented control (masthead) */
+.an-seg { display: flex; gap: 3px; background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: var(--aeos-card-radius); padding: 3px; }
+.an-seg__b { font-size: var(--aeos-text-xs); padding: var(--aeos-space-1) var(--aeos-space-3); border-radius: calc(var(--aeos-card-radius) * .7); color: var(--aeos-text-secondary); cursor: pointer; border: 0; background: transparent; font-weight: 500; font-family: inherit; }
+.an-seg__b[aria-pressed="true"] { background: var(--aeos-bg-elevated); color: var(--aeos-text-primary); box-shadow: var(--aeos-shadow-xs); font-weight: 600; }
+
+/* horizontal bars (MRR by plan) */
+.an-hbars { display: flex; flex-direction: column; gap: var(--aeos-space-3); margin-top: 4px; }
+.an-hbar { display: grid; grid-template-columns: 104px 1fr auto; align-items: center; gap: var(--aeos-space-2); font-size: var(--aeos-text-xs); }
+.an-hbar__nm { color: var(--aeos-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.an-hbar__nm small { color: var(--aeos-text-muted); }
+.an-hbar__track { height: 9px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; }
+.an-hbar__fill { height: 100%; border-radius: 5px; }
+.an-hbar__amt { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--aeos-text-primary); white-space: nowrap; }
+.an-hbar__amt small { color: var(--aeos-text-muted); font-weight: 400; }
+
+/* month bars (signups) */
+.an-vbars { display: flex; align-items: flex-end; gap: var(--aeos-space-2); height: 150px; padding-top: var(--aeos-space-3); }
+.an-vbar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.an-vbar__col { width: 60%; max-width: 26px; border-radius: 4px 4px 0 0; background: var(--aeos-success); min-height: 2px; }
+.an-vbar__n { font-size: 10px; color: var(--aeos-text-muted); font-variant-numeric: tabular-nums; }
+.an-vbar__lab { font-size: 10px; color: var(--aeos-text-muted); }
+
+/* tenant leaderboard */
+.an-lb { display: flex; flex-direction: column; }
+.an-lbrow { display: flex; align-items: center; gap: var(--aeos-space-3); padding: var(--aeos-space-2) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); font-size: var(--aeos-text-xs); }
+.an-lbrow:last-child { border-bottom: 0; }
+.an-lb__rank { width: 18px; text-align: center; font-variant-numeric: tabular-nums; color: var(--aeos-text-muted); font-weight: 600; }
+.an-lb__n { flex: 1; min-width: 0; }
+.an-lb__n b { display: block; font-weight: 570; color: var(--aeos-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.an-lb__n span { color: var(--aeos-text-muted); font-size: 11px; }
+.an-lb__v { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--aeos-text-primary); white-space: nowrap; }
+.an-lb__v small { color: var(--aeos-text-muted); font-weight: 400; }
+
+/* container-responsive reflow (command shell narrows the content column) */
+@container (max-width: 1080px) {
+  .anx .sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .anx .sc-band { grid-template-columns: 1fr 1fr; }
+  .anx .sc-band > *:last-child { grid-column: 1 / -1; }
+}
+@container (max-width: 620px) {
+  .anx .sc-kpis6 { grid-template-columns: 1fr 1fr; }
+  .anx .sc-band { grid-template-columns: 1fr; }
+}
