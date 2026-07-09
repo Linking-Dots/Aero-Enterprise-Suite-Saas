@@ -25,8 +25,11 @@ class OrganizationProfileControllerTest extends PackageTestCase
             ->get('/organization/profile')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Core/Organization/Profile', false)
+                ->component('Core/Organization/Index', false)
                 ->has('org')
+                ->has('addresses')
+                ->has('contacts')
+                ->where('section', 'profile')
             );
     }
 

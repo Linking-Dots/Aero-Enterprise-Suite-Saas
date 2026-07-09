@@ -21,9 +21,32 @@ class OrganizationProfileController extends Controller
         return OrganizationProfile::firstOrCreate([]);
     }
 
+    /**
+     * Unified Organization command-center payload. All five nav-component GET
+     * routes render the same `Core/Organization/Index` page; `section` selects
+     * the initially-active in-page tab so deep links keep working. The five POST
+     * update endpoints below are unchanged — each section saves independently.
+     */
+    private function commandCenter(string $section): Response
+    {
+        $org = $this->getOrCreate();
+
+        return Inertia::render('Core/Organization/Index', [
+            'org' => $org->only([
+                'company_name', 'legal_name', 'registration_number', 'industry',
+                'company_size', 'website', 'phone', 'email', 'logo_path',
+                'tax_id', 'vat_number', 'country', 'currency',
+                'fiscal_year_start', 'fiscal_year_end', 'timezone', 'date_format',
+            ]),
+            'addresses' => $org->addresses ?? [],
+            'contacts' => $org->contacts ?? [],
+            'section' => $section,
+        ]);
+    }
+
     public function profile(): Response
     {
-        return Inertia::render('Core/Organization/Profile', ['org' => $this->getOrCreate()]);
+        return $this->commandCenter('profile');
     }
 
     public function updateProfile(Request $request): RedirectResponse
@@ -58,7 +81,7 @@ class OrganizationProfileController extends Controller
 
     public function identity(): Response
     {
-        return Inertia::render('Core/Organization/Identity', ['org' => $this->getOrCreate()]);
+        return $this->commandCenter('identity');
     }
 
     public function updateIdentity(Request $request): RedirectResponse
@@ -89,9 +112,7 @@ class OrganizationProfileController extends Controller
 
     public function addresses(): Response
     {
-        $org = $this->getOrCreate();
-
-        return Inertia::render('Core/Organization/Addresses', ['addresses' => $org->addresses ?? []]);
+        return $this->commandCenter('addresses');
     }
 
     public function updateAddresses(Request $request): RedirectResponse
@@ -123,7 +144,7 @@ class OrganizationProfileController extends Controller
 
     public function fiscalYear(): Response
     {
-        return Inertia::render('Core/Organization/FiscalYear', ['org' => $this->getOrCreate()]);
+        return $this->commandCenter('fiscal');
     }
 
     public function updateFiscalYear(Request $request): RedirectResponse
@@ -153,9 +174,7 @@ class OrganizationProfileController extends Controller
 
     public function contacts(): Response
     {
-        $org = $this->getOrCreate();
-
-        return Inertia::render('Core/Organization/Contacts', ['contacts' => $org->contacts ?? []]);
+        return $this->commandCenter('contacts');
     }
 
     public function updateContacts(Request $request): RedirectResponse
