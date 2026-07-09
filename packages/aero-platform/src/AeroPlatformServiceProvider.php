@@ -582,7 +582,14 @@ class AeroPlatformServiceProvider extends ServiceProvider
 
             // Get submodule icon for fallback
             $submoduleIcon = $submodule['icon'] ?? 'FolderIcon';
-            $components = $submodule['components'] ?? [];
+            // Component-level nav suppression: a component may exist for HRMAC
+            // (permission node) yet be hidden from the sidebar — used when a
+            // command centre subsumes former sub-pages but their actions still
+            // gate routes.
+            $components = array_values(array_filter(
+                $submodule['components'] ?? [],
+                fn ($c) => ($c['show_in_nav'] ?? true) !== false
+            ));
 
             // Resolve the IA section for this submodule from the package's own
             // config (explicit nav_section, else the nav_section_map keyed by the

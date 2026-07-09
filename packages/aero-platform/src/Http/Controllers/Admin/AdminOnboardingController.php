@@ -351,14 +351,8 @@ class AdminOnboardingController extends Controller
      */
     public function settings(): Response
     {
-        $settings = $this->getOnboardingSettings();
-        $emailTemplates = $this->getEmailTemplates();
-        $defaultPlans = Plan::where('is_active', true)->get(['id', 'name', 'slug', 'trial_days']);
-
-        return Inertia::render('Platform/Admin/Onboarding/Settings', [
-            'settings' => $settings,
-            'emailTemplates' => $emailTemplates,
-            'plans' => $defaultPlans,
+        return Inertia::render('Platform/Admin/Onboarding/P2/Settings', [
+            'data' => fn () => $this->svc->settingsPayload(),
         ]);
     }
 

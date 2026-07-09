@@ -171,6 +171,7 @@ return [
                     'code' => 'pending-approvals',
                     'name' => 'Pending Approvals',
                     'route' => '/onboarding/pending',
+                    'show_in_nav' => false, // subsumed by the Onboarding console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Pending'],
                         ['code' => 'approve', 'name' => 'Approve Tenant'],
@@ -181,6 +182,7 @@ return [
                     'code' => 'provisioning',
                     'name' => 'Provisioning',
                     'route' => '/onboarding/provisioning',
+                    'show_in_nav' => false, // subsumed by the Onboarding console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Provisioning'],
                         ['code' => 'retry', 'name' => 'Retry Failed'],
@@ -190,6 +192,7 @@ return [
                     'code' => 'trials',
                     'name' => 'Trials',
                     'route' => '/onboarding/trials',
+                    'show_in_nav' => false, // subsumed by the Onboarding console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Trials'],
                         ['code' => 'extend', 'name' => 'Extend Trial'],
@@ -200,6 +203,7 @@ return [
                     'code' => 'onboarding-analytics',
                     'name' => 'Analytics',
                     'route' => '/onboarding/analytics',
+                    'show_in_nav' => false, // subsumed by the Onboarding console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Analytics'],
                         ['code' => 'export', 'name' => 'Export Reports'],
@@ -209,6 +213,7 @@ return [
                     'code' => 'onboarding-automation',
                     'name' => 'Automation',
                     'route' => '/onboarding/automation',
+                    'show_in_nav' => false, // subsumed by the Onboarding console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Automation'],
                         ['code' => 'manage', 'name' => 'Manage Rules'],

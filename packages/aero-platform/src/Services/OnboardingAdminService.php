@@ -75,6 +75,25 @@ class OnboardingAdminService
     }
 
     /**
+     * Payload for the dedicated Onboarding Settings editor: registration policy,
+     * automation rules and lifecycle email templates.
+     *
+     * @return array<string, mixed>
+     */
+    public function settingsPayload(): array
+    {
+        $conn = central_connection();
+
+        return [
+            'settings'   => $this->settings(),
+            'automation' => $this->automationRules(),
+            'templates'  => $this->emailTemplates(),
+            'plans'      => DB::connection($conn)->table('plans')->where('is_active', true)->orderBy('sort_order')
+                ->get(['id', 'name', 'trial_days'])->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'trial_days' => (int) ($p->trial_days ?? 0)])->all(),
+        ];
+    }
+
+    /**
      * Per-tenant drawer detail — activity from the central audit trail plus the
      * lifecycle reason data stored on tenants.data. Guarded.
      *
