@@ -777,6 +777,7 @@ return [
                     'code' => 'revenue-reports',
                     'name' => 'Revenue',
                     'route' => '/analytics/revenue',
+                    'show_in_nav' => false, // subsumed by the Analytics console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Revenue'],
                         ['code' => 'export', 'name' => 'Export Reports'],
@@ -786,6 +787,7 @@ return [
                     'code' => 'tenant-analytics',
                     'name' => 'Tenant Analytics',
                     'route' => '/analytics/tenants',
+                    'show_in_nav' => false, // subsumed by the Analytics console; kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Tenant Analytics'],
                     ],
