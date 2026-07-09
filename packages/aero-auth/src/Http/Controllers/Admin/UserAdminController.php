@@ -78,8 +78,96 @@ class UserAdminController extends Controller
                 'inactive' => $modelClass::onlyTrashed()->count(),
                 'pending' => $invitations->count(),
             ],
+            // Command-centre payload: every member normalised (roles + status +
+            // 2FA + login state) plus role distribution + sparklines. Guard-free,
+            // context-agnostic (resolved user model) — mirrors the platform Users
+            // and Roles command centres.
+            ...$this->commandCenterData($invitations->count()),
             ...$this->contextProps($request),
         ]);
+    }
+
+    /**
+     * Normalised roster + KPI stats + role distribution + sparklines for the
+     * Users command centre. Best-effort: if the resolved user model can't be
+     * queried in this context everything degrades to empty so the page still
+     * renders on its paginated `users` prop.
+     *
+     * @return array{members: array, memberStats: array, roleDist: array, sparks: array}
+     */
+    private function commandCenterData(int $pending): array
+    {
+        try {
+            $rows = $this->newUserQuery()->with('roles:id,name')->orderByDesc('id')->get();
+        } catch (\Throwable) {
+            return ['members' => [], 'memberStats' => [], 'roleDist' => [], 'sparks' => []];
+        }
+
+        $members = $rows->map(function ($u) {
+            $locked = ($u->account_locked_at ?? null) !== null;
+            $inactive = method_exists($u, 'trashed') && $u->trashed();
+
+            return [
+                'id'            => $u->id,
+                'name'          => $u->name ?: ($u->user_name ?? '—'),
+                'email'         => $u->email,
+                'avatar_url'    => $u->avatar_url ?? null,
+                'roles'         => $u->relationLoaded('roles') ? $u->roles->pluck('name')->values()->all() : [],
+                'status'        => $locked ? 'locked' : ($inactive ? 'inactive' : 'active'),
+                'tfa'           => ($u->two_factor_confirmed_at ?? null) !== null,
+                'last_login_at' => ($u->last_login_at ?? null) ? \Carbon\Carbon::parse($u->last_login_at)->toIso8601String() : null,
+                'login_count'   => (int) ($u->login_count ?? 0),
+                'created_at'    => ($u->created_at ?? null) ? \Carbon\Carbon::parse($u->created_at)->toIso8601String() : null,
+            ];
+        })->all();
+
+        $count = fn (callable $p) => count(array_filter($members, $p));
+        $total = max(1, count($members));
+        $tfaOn = $count(fn ($m) => $m['tfa']);
+        $roleDist = [];
+        foreach ($members as $m) {
+            foreach ($m['roles'] as $r) {
+                $roleDist[$r] = ($roleDist[$r] ?? 0) + 1;
+            }
+        }
+        arsort($roleDist);
+
+        $stats = [
+            'total'        => count($members),
+            'active'       => $count(fn ($m) => $m['status'] === 'active'),
+            'inactive'     => $count(fn ($m) => $m['status'] === 'inactive'),
+            'locked'       => $count(fn ($m) => $m['status'] === 'locked'),
+            'tfa_on'       => $tfaOn,
+            'tfa_pct'      => (int) round($tfaOn / $total * 100),
+            'admins'       => $count(fn ($m) => (bool) array_filter($m['roles'], fn ($r) => str_contains($r, 'Admin'))),
+            'no_role'      => $count(fn ($m) => empty($m['roles'])),
+            'never_logged' => $count(fn ($m) => $m['last_login_at'] === null),
+            'pending'      => $pending,
+        ];
+
+        return [
+            'members'     => $members,
+            'memberStats' => $stats,
+            'roleDist'    => array_map(fn ($name, $c) => ['role' => $name, 'count' => $c], array_keys($roleDist), array_values($roleDist)),
+            'sparks'      => $this->memberSparks($rows),
+        ];
+    }
+
+    /**
+     * 6-month cumulative member-count sparkline from created_at.
+     *
+     * @return array{members: array<int,int>}
+     */
+    private function memberSparks($rows): array
+    {
+        $end = now()->startOfMonth();
+        $series = [];
+        foreach (range(5, 0) as $i) {
+            $cut = $end->copy()->subMonths($i)->endOfMonth();
+            $series[] = $rows->filter(fn ($u) => ($u->created_at ?? null) && \Carbon\Carbon::parse($u->created_at)->lte($cut))->count();
+        }
+
+        return ['members' => $series];
     }
 
     public function create(Request $request): Response
