@@ -618,13 +618,13 @@ Route::middleware('admin.domain')->group(function () {
             Route::get('/', [IntegrationsController::class, 'overview'])
                 ->middleware(['hrmac:platform-integrations.global-connectors'])->name('index');
 
-            Route::get('/connectors', function () {
-                return Inertia::render('Platform/Admin/Integrations/Connectors');
-            })->middleware(['hrmac:platform-integrations.global-connectors'])->name('connectors');
+            // Connectors + API keys are subsumed by the Integrations command
+            // centre. Legacy sub-routes redirect so old links keep working.
+            Route::get('/connectors', fn () => redirect('/integrations'))
+                ->middleware(['hrmac:platform-integrations.global-connectors'])->name('connectors');
 
-            Route::get('/api', function () {
-                return Inertia::render('Platform/Admin/Integrations/ApiKeys');
-            })->middleware(['hrmac:platform-integrations.api-management'])->name('api');
+            Route::get('/api', fn () => redirect('/integrations'))
+                ->middleware(['hrmac:platform-integrations.api-management'])->name('api');
 
             Route::get('/webhooks', function () {
                 return Inertia::render('Platform/Admin/Integrations/Webhooks');

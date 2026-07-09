@@ -114,11 +114,11 @@ class PlatformApiKeyTest extends TestCase
         $this->assertFalse($key->is_active);
     }
 
-    public function test_index_renders_inertia(): void
+    public function test_index_redirects_to_integrations_console(): void
     {
+        // API-key management is now part of the Integrations command centre.
         $this->actingAs($this->admin, 'landlord')
             ->get(route('platform.admin.integrations.api-keys.index'))
-            ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Platform/Admin/Integrations/ApiKeys'));
+            ->assertRedirect('/integrations');
     }
 }

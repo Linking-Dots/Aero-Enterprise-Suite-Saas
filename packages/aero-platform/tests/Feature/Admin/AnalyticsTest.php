@@ -63,10 +63,11 @@ class AnalyticsTest extends TestCase
 
         $admin = LandlordUserFactory::new()->create();
 
+        // Revenue analytics is now subsumed by the Analytics command centre;
+        // the legacy sub-route redirects to the console.
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.analytics.revenue', ['bucket' => 'week']))
-            ->assertOk()
-            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/Revenue'));
+            ->assertRedirect(route('platform.admin.analytics.index'));
     }
 
     public function test_cohort_analysis_returns_retention_rates(): void
@@ -89,7 +90,7 @@ class AnalyticsTest extends TestCase
         $this->actingAs($admin, 'landlord')
             ->get(route('platform.admin.analytics.index'))
             ->assertOk()
-            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/Revenue'));
+            ->assertInertia(fn ($p) => $p->component('Platform/Admin/Analytics/P2/Analytics'));
     }
 
     public function test_feature_usage_renders_correct_component(): void

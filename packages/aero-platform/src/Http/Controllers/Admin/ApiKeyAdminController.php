@@ -7,9 +7,8 @@ namespace Aero\Platform\Http\Controllers\Admin;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Services\Integrations\PlatformApiKeyService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 /**
  * Platform API Key Controller (Admin).
@@ -21,12 +20,10 @@ class ApiKeyAdminController extends Controller
 {
     public function __construct(private readonly PlatformApiKeyService $svc) {}
 
-    public function index(Request $request): Response
+    // API-key management is now part of the Integrations command centre.
+    public function index(): RedirectResponse
     {
-        return Inertia::render('Platform/Admin/Integrations/ApiKeys', [
-            'apiKeys' => $this->svc->list($request->only(['q', 'revoked', 'active'])),
-            'filters' => $request->only(['q', 'revoked', 'active']),
-        ]);
+        return redirect('/integrations');
     }
 
     public function store(Request $request): JsonResponse

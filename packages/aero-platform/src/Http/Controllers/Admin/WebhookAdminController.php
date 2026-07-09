@@ -7,9 +7,8 @@ namespace Aero\Platform\Http\Controllers\Admin;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Services\Integrations\WebhookService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 /**
  * Platform Webhook Endpoint Controller (Admin).
@@ -21,12 +20,10 @@ class WebhookAdminController extends Controller
 {
     public function __construct(private readonly WebhookService $svc) {}
 
-    public function index(Request $request): Response
+    // Webhook management is now part of the Integrations command centre.
+    public function index(): RedirectResponse
     {
-        return Inertia::render('Platform/Admin/Integrations/Webhooks', [
-            'endpoints' => $this->svc->list($request->only(['q', 'active'])),
-            'filters' => $request->only(['q', 'active']),
-        ]);
+        return redirect('/integrations');
     }
 
     public function store(Request $request): JsonResponse

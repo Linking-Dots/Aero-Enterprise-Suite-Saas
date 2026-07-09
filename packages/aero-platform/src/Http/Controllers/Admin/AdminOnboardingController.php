@@ -11,6 +11,7 @@ use Aero\Platform\Models\Tenant;
 use Aero\Platform\Services\OnboardingAdminService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -98,252 +99,49 @@ class AdminOnboardingController extends Controller
     /**
      * Display the onboarding dashboard with key metrics.
      */
-    public function dashboard(): Response
+    public function dashboard(): RedirectResponse
     {
-        $stats = $this->getOnboardingStats();
-        $registrations = $this->getRecentRegistrations();
-        $trials = $this->getExpiringTrials();
-        $provisioningQueue = $this->getProvisioningQueue();
-
-        return Inertia::render('Platform/Admin/Onboarding/Dashboard', [
-            'stats' => $stats,
-            'registrations' => $registrations,
-            'trials' => $trials,
-            'provisioningQueue' => $provisioningQueue,
-        ]);
+        return redirect('/onboarding');
     }
 
     /**
      * Display pending registrations awaiting approval.
      */
-    public function pending(Request $request): Response
+    public function pending(): RedirectResponse
     {
-        $perPage = $request->input('perPage', 15);
-        $search = $request->input('search', '');
-        $status = $request->input('status', 'all');
-        $sortBy = $request->input('sortBy', 'created_at');
-        $sortOrder = $request->input('sortOrder', 'desc');
-
-        $query = Tenant::query()
-            ->where('status', Tenant::STATUS_PENDING)
-            ->with(['currentSubscription.plan']);
-
-        // Apply search filter
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('subdomain', 'like', "%{$search}%");
-            });
-        }
-
-        // Apply registration step filter
-        if ($status !== 'all') {
-            $query->where('registration_step', $status);
-        }
-
-        $pendingRegistrations = $query
-            ->orderBy($sortBy, $sortOrder)
-            ->paginate($perPage);
-
-        $stats = [
-            'total' => Tenant::where('status', Tenant::STATUS_PENDING)->count(),
-            'awaitingVerification' => Tenant::where('status', Tenant::STATUS_PENDING)
-                ->whereNull('company_email_verified_at')
-                ->count(),
-            'verified' => Tenant::where('status', Tenant::STATUS_PENDING)
-                ->whereNotNull('company_email_verified_at')
-                ->count(),
-            'incomplete' => Tenant::where('status', Tenant::STATUS_PENDING)
-                ->where('registration_step', '!=', Tenant::REG_STEP_PAYMENT)
-                ->count(),
-        ];
-
-        return Inertia::render('Platform/Admin/Onboarding/Pending', [
-            'registrations' => $pendingRegistrations,
-            'stats' => $stats,
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-                'sortBy' => $sortBy,
-                'sortOrder' => $sortOrder,
-            ],
-        ]);
+        return redirect('/onboarding');
     }
 
     /**
      * Display provisioning queue and status.
      */
-    public function provisioning(Request $request): Response
+    public function provisioning(): RedirectResponse
     {
-        $perPage = $request->input('perPage', 15);
-        $status = $request->input('status', 'all');
-
-        $query = Tenant::query()
-            ->whereIn('status', [Tenant::STATUS_PROVISIONING, Tenant::STATUS_FAILED])
-            ->with(['plan']);
-
-        if ($status !== 'all') {
-            $query->where('status', $status);
-        }
-
-        $queue = $query
-            ->orderBy('updated_at', 'desc')
-            ->paginate($perPage);
-
-        $stats = [
-            'total' => Tenant::whereIn('status', [Tenant::STATUS_PROVISIONING, Tenant::STATUS_FAILED])->count(),
-            'processing' => Tenant::where('status', Tenant::STATUS_PROVISIONING)->count(),
-            'failed' => Tenant::where('status', Tenant::STATUS_FAILED)->count(),
-            'completedToday' => Tenant::where('status', Tenant::STATUS_ACTIVE)
-                ->whereDate('updated_at', Carbon::today())
-                ->count(),
-        ];
-
-        $stepProgress = [
-            'creating_db' => Tenant::where('provisioning_step', Tenant::STEP_CREATING_DB)->count(),
-            'migrating' => Tenant::where('provisioning_step', Tenant::STEP_MIGRATING)->count(),
-            'seeding' => Tenant::where('provisioning_step', Tenant::STEP_SEEDING)->count(),
-            'creating_admin' => Tenant::where('provisioning_step', Tenant::STEP_CREATING_ADMIN)->count(),
-        ];
-
-        return Inertia::render('Platform/Admin/Onboarding/Provisioning', [
-            'queue' => $queue,
-            'stats' => $stats,
-            'stepProgress' => $stepProgress,
-            'filters' => [
-                'status' => $status,
-            ],
-        ]);
+        return redirect('/onboarding');
     }
 
     /**
      * Display trial management interface.
      */
-    public function trials(Request $request): Response
+    public function trials(): RedirectResponse
     {
-        $perPage = $request->input('perPage', 15);
-        $search = $request->input('search', '');
-        $filter = $request->input('filter', 'all'); // all, expiring_soon, expired, active
-
-        $query = Tenant::query()
-            ->whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))
-            ->where('status', Tenant::STATUS_ACTIVE)
-            ->with(['plan', 'subscriptions']);
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        // Apply filter via subscription relation
-        $now = Carbon::now();
-        switch ($filter) {
-            case 'expiring_soon':
-                $query->whereHas('subscription', fn ($q) => $q->whereBetween('trial_ends_at', [$now, $now->copy()->addDays(7)]));
-                break;
-            case 'expired':
-                $query->whereHas('subscription', fn ($q) => $q->where('trial_ends_at', '<', $now));
-                break;
-            case 'active':
-                $query->whereHas('subscription', fn ($q) => $q->where('trial_ends_at', '>', $now));
-                break;
-        }
-
-        $trials = $query
-            ->with(['subscription' => fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)])
-            ->paginate($perPage);
-
-        $stats = [
-            'total' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereNotNull('trial_ends_at'))
-                ->where('status', Tenant::STATUS_ACTIVE)
-                ->count(),
-            'active' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '>', $now))
-                ->where('status', Tenant::STATUS_ACTIVE)
-                ->count(),
-            'expiringSoon' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->whereBetween('trial_ends_at', [$now, $now->copy()->addDays(7)]))
-                ->where('status', Tenant::STATUS_ACTIVE)
-                ->count(),
-            'expired' => Tenant::whereHas('subscription', fn ($q) => $q->where('status', Subscription::STATUS_TRIALING)->where('trial_ends_at', '<', $now))
-                ->where('status', Tenant::STATUS_ACTIVE)
-                ->count(),
-            'conversionRate' => $this->calculateConversionRate(),
-        ];
-
-        $plans = Plan::where('is_active', true)->get(['id', 'name', 'slug']);
-
-        return Inertia::render('Platform/Admin/Onboarding/Trials', [
-            'trials' => $trials,
-            'stats' => $stats,
-            'plans' => $plans,
-            'filters' => [
-                'search' => $search,
-                'filter' => $filter,
-            ],
-        ]);
+        return redirect('/onboarding');
     }
 
     /**
      * Display onboarding analytics.
      */
-    public function analytics(Request $request): Response
+    public function analytics(): RedirectResponse
     {
-        $period = $request->input('period', 'month'); // week, month, quarter, year
-        $startDate = $this->getStartDateForPeriod($period);
-        $endDate = Carbon::now();
-
-        $registrationTrend = $this->getRegistrationTrend($startDate, $endDate);
-        $conversionFunnel = $this->getConversionFunnel($startDate, $endDate);
-        $planDistribution = $this->getPlanDistribution();
-        $geographicDistribution = $this->getGeographicDistribution();
-        $averageOnboardingTime = $this->calculateAverageOnboardingTime($startDate, $endDate);
-
-        $stats = [
-            'totalRegistrations' => Tenant::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'successfulOnboardings' => Tenant::where('status', Tenant::STATUS_ACTIVE)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->count(),
-            'conversionRate' => $this->calculateConversionRate($startDate, $endDate),
-            'averageTrialDays' => $this->calculateAverageTrialDays($startDate, $endDate),
-        ];
-
-        return Inertia::render('Platform/Admin/Onboarding/Analytics', [
-            'stats' => $stats,
-            'registrationTrend' => $registrationTrend,
-            'conversionFunnel' => $conversionFunnel,
-            'planDistribution' => $planDistribution,
-            'geographicDistribution' => $geographicDistribution,
-            'averageOnboardingTime' => $averageOnboardingTime,
-            'period' => $period,
-        ]);
+        return redirect('/onboarding');
     }
 
     /**
      * Display automation rules management.
      */
-    public function automation(): Response
+    public function automation(): RedirectResponse
     {
-        $automationRules = $this->getAutomationRules();
-        $executionLog = $this->getAutomationExecutionLog();
-        $emailTemplates = $this->getEmailTemplates();
-
-        $stats = [
-            'totalRules' => count($automationRules),
-            'activeRules' => collect($automationRules)->where('is_active', true)->count(),
-            'executionsToday' => $this->getExecutionsCount(Carbon::today()),
-            'successRate' => $this->getAutomationSuccessRate(),
-        ];
-
-        return Inertia::render('Platform/Admin/Onboarding/Automation', [
-            'automationRules' => $automationRules,
-            'rules' => $automationRules,
-            'executionLogs' => $executionLog,
-            'executionLog' => $executionLog,
-            'emailTemplates' => $emailTemplates,
-            'stats' => $stats,
-        ]);
+        return redirect('/onboarding');
     }
 
     /**

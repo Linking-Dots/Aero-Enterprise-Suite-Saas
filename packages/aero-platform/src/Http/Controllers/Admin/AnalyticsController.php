@@ -6,6 +6,7 @@ namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Services\PlatformAnalyticsService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,44 +27,26 @@ class AnalyticsController extends Controller
         ]);
     }
 
-    public function dashboard(Request $request): Response
+    // Revenue / Tenant / Usage analytics are now subsumed by the command centre
+    // (overview). These legacy sub-routes redirect to it so old links keep working.
+    public function dashboard(): RedirectResponse
     {
-        [$from, $to] = $this->range($request);
-
-        return Inertia::render('Platform/Admin/Analytics/Revenue', [
-            'revenue' => $this->svc->revenue($from, $to),
-            'tenants' => $this->svc->tenantAnalytics($from, $to),
-            'range' => compact('from', 'to'),
-        ]);
+        return redirect()->route('platform.admin.analytics.index');
     }
 
-    public function revenue(Request $request): Response
+    public function revenue(): RedirectResponse
     {
-        [$from, $to] = $this->range($request);
-        $bucket = $request->input('bucket', 'day');
-
-        return Inertia::render('Platform/Admin/Analytics/Revenue', [
-            'data' => $this->svc->revenue($from, $to, $bucket),
-            'range' => compact('from', 'to'),
-            'bucket' => $bucket,
-        ]);
+        return redirect()->route('platform.admin.analytics.index');
     }
 
-    public function tenants(Request $request): Response
+    public function tenants(): RedirectResponse
     {
-        [$from, $to] = $this->range($request);
-
-        return Inertia::render('Platform/Admin/Analytics/Tenants', [
-            'data' => $this->svc->tenantAnalytics($from, $to),
-            'range' => compact('from', 'to'),
-        ]);
+        return redirect()->route('platform.admin.analytics.index');
     }
 
-    public function usage(): Response
+    public function usage(): RedirectResponse
     {
-        return Inertia::render('Platform/Admin/Analytics/Usage', [
-            'data' => $this->svc->usageAnalytics(),
-        ]);
+        return redirect()->route('platform.admin.analytics.index');
     }
 
     private function range(Request $request): array
