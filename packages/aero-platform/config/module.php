@@ -918,6 +918,7 @@ return [
                     'code' => 'subscriber-list',
                     'name' => 'Subscribers',
                     'route' => '/newsletter/subscribers',
+                    'show_in_nav' => false, // subsumed by the Newsletter console at /newsletter (no standalone page); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Subscribers'],
                         ['code' => 'create', 'name' => 'Add Subscriber'],
