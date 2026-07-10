@@ -1,0 +1,88 @@
+/* Reseller / Channel Partners command centre — channel-program console.
+   Extends products.css (pc-* cards, chips, modal, drawer rows) +
+   subscriptions.css (KPI/analytics band, donut row, drawer head, mini-tables)
+   + the @aero/ui workbench kit. All colour via theme tokens / color-mix.
+   Scoped to `.pr`. */
+
+/* ---- status chips ---- */
+.pc-chip.pr-s-ok { background: color-mix(in srgb, var(--aeos-success) 15%, transparent); color: var(--aeos-success); border-color: color-mix(in srgb, var(--aeos-success) 34%, transparent); }
+.pc-chip.pr-s-pend { background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); border-color: color-mix(in srgb, var(--aeos-warning) 34%, transparent); }
+.pc-chip.pr-s-appr { background: var(--aeos-primary-tint); color: var(--aeos-primary); border-color: var(--aeos-primary-border); }
+.pc-chip.pr-s-bad { background: color-mix(in srgb, var(--aeos-danger) 13%, transparent); color: var(--aeos-danger); border-color: color-mix(in srgb, var(--aeos-danger) 32%, transparent); }
+
+/* ---- money + code ---- */
+.pr-money { color: var(--aeos-success); font-weight: 640; font-variant-numeric: tabular-nums; }
+.pr-owed { color: var(--aeos-warning); font-weight: 660; font-variant-numeric: tabular-nums; }
+.pr-code { font-family: var(--aeos-font-mono); font-size: 11px; color: var(--aeos-primary); background: var(--aeos-primary-tint); padding: 1px 7px; border-radius: calc(var(--aeos-card-radius) * .5); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- commission-rate meter (table cell) ---- */
+.pr-rate { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.pr-rate__track { width: 44px; height: 5px; background: var(--aeos-bg-subtle); border-radius: 6px; overflow: hidden; }
+.pr-rate__fill { display: block; height: 100%; border-radius: 6px; background: color-mix(in srgb, var(--aeos-primary) 72%, var(--aeos-success)); }
+
+/* ---- leaderboard ---- */
+.pr-lb { display: flex; flex-direction: column; gap: var(--aeos-space-3); }
+.pr-lbrow { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: var(--aeos-space-3); background: none; border: 0; padding: 3px 0; cursor: pointer; text-align: left; width: 100%; }
+.pr-lbrow__rk { font-size: 11px; color: var(--aeos-text-muted); font-variant-numeric: tabular-nums; text-align: center; }
+.pr-lbrow__who { min-width: 0; }
+.pr-lbrow__nm { display: block; font-size: 12.5px; font-weight: 600; color: var(--aeos-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-lbrow:hover .pr-lbrow__nm { color: var(--aeos-primary); }
+.pr-lbrow__track { display: block; height: 7px; background: var(--aeos-bg-subtle); border-radius: 6px; overflow: hidden; margin-top: 4px; }
+.pr-lbrow__fill { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--aeos-primary), var(--aeos-success)); }
+.pr-lbrow__amt { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--aeos-text-primary); text-align: right; }
+.pr-lbrow__amt small { display: block; font-size: 10px; color: var(--aeos-text-muted); font-weight: 500; }
+
+/* ---- payout queue ---- */
+.pr-queue { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--aeos-space-2) var(--aeos-space-3); margin-top: var(--aeos-space-2); }
+.pr-qi { display: flex; align-items: center; gap: var(--aeos-space-2); padding: 8px 10px; background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: var(--aeos-card-radius); }
+.pr-qi__who { flex: 1; min-width: 0; }
+.pr-qi__who b { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-qi__who span { font-size: 10.5px; color: var(--aeos-text-muted); }
+.pr-qi__amt { font-size: 13px; }
+
+/* ---- workbench tabs ---- */
+.pr-tabs { display: flex; gap: var(--aeos-space-2); margin-bottom: var(--aeos-space-3); border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); }
+.pr-tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--aeos-text-secondary); font: inherit; font-size: var(--aeos-text-sm); font-weight: 560; padding: 6px 4px 9px; margin-bottom: -1px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+.pr-tab span { font-size: 10.5px; font-variant-numeric: tabular-nums; color: var(--aeos-text-muted); background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); padding: 0 7px; border-radius: 20px; }
+.pr-tab.is-on { color: var(--aeos-primary); border-bottom-color: var(--aeos-primary); }
+.pr-tab.is-on span { color: var(--aeos-primary); background: var(--aeos-primary-tint); border-color: var(--aeos-primary-border); }
+
+/* ---- commission row actions ---- */
+.pr-commacts { display: inline-flex; gap: 6px; justify-content: flex-end; }
+
+/* ---- drawer bits ---- */
+.pr-drfoot { margin-top: var(--aeos-space-2); font-size: 11px; color: var(--aeos-text-muted); }
+.pr-linkrow { display: flex; align-items: center; justify-content: space-between; gap: var(--aeos-space-3); padding: var(--aeos-space-2) 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); margin-bottom: var(--aeos-space-3); }
+.pr-linkrow .pr-code { max-width: 64%; }
+.pr-portal { display: flex; flex-direction: column; gap: var(--aeos-space-3); }
+.pr-portal input[type="color"] { width: 38px; height: 30px; padding: 0; border: var(--aeos-border-width) solid var(--aeos-border); border-radius: calc(var(--aeos-card-radius) * .5); background: none; cursor: pointer; }
+.pr-note { background: color-mix(in srgb, var(--aeos-warning) 8%, transparent); border: var(--aeos-border-width) solid color-mix(in srgb, var(--aeos-warning) 34%, transparent); color: var(--aeos-text-secondary); border-radius: var(--aeos-card-radius); padding: 9px 12px; font-size: 12px; line-height: 1.5; }
+.pr-note code { font-family: var(--aeos-font-mono); font-size: 11px; color: var(--aeos-warning); }
+
+/* ---- rail queue ---- */
+.pr-railq { display: flex; flex-direction: column; gap: 6px; }
+.pr-railq__it { display: flex; align-items: center; gap: 8px; }
+.pr-railq__nm { flex: 1; font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-railq__sub { font-size: 10.5px; color: var(--aeos-text-muted); }
+
+/* ---- form ---- */
+.pr-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-3); margin-bottom: var(--aeos-space-3); }
+.pr-raterow { display: flex; align-items: center; gap: var(--aeos-space-3); }
+.pr-raterow input[type="range"] { flex: 1; accent-color: var(--aeos-primary); }
+.pr-ratenum { width: 78px; flex: 0 0 auto; }
+.pr-hint { color: var(--aeos-text-muted); font-family: var(--aeos-font-mono); font-size: 11px; }
+
+/* ---- command-shell responsiveness (react to CONTENT width) ---- */
+@container (max-width: 1180px) {
+  .pr .pc-kpis.sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+  .pr .sc-band { grid-template-columns: 1fr; }
+}
+@container (max-width: 720px) {
+  .pr .pc-kpis.sc-kpis6 { grid-template-columns: repeat(2, 1fr); }
+  .pr .pr-queue { grid-template-columns: 1fr; }
+  .pr .pr-form-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .pr .pr-queue { grid-template-columns: 1fr; }
+  .pr .pr-form-grid { grid-template-columns: 1fr; }
+}

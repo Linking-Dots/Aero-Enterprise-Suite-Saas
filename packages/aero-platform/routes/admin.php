@@ -2298,6 +2298,12 @@ Route::middleware('admin.domain')->group(function () {
             Route::post('/tenants/{tenantId}/reassign', [Finance\PartnerController::class, 'reassign'])
                 ->name('tenants.reassign')
                 ->middleware('hrmac:reseller-partners.partner-tenants.reassign');
+            Route::post('/commissions/{commissionId}/approve', [Finance\PartnerController::class, 'approveCommission'])
+                ->name('commissions.approve')
+                ->middleware('hrmac:reseller-partners.partner-commissions.manage');
+            Route::post('/commissions/{commissionId}/pay', [Finance\PartnerController::class, 'payCommission'])
+                ->name('commissions.pay')
+                ->middleware('hrmac:reseller-partners.partner-commissions.payout');
             Route::get('/', [Finance\PartnerController::class, 'index'])
                 ->name('index')
                 ->middleware('hrmac:reseller-partners.partners.view');

@@ -224,6 +224,8 @@ enum AuditEventType: string
     case PARTNER_APPROVED = 'platform.partner.approved';
     case PARTNER_SUSPENDED = 'platform.partner.suspended';
     case PARTNER_COMMISSION_PAYOUT_PROCESSED = 'platform.partner.commission_payout_processed';
+    case PARTNER_COMMISSION_APPROVED = 'platform.partner.commission_approved';
+    case PARTNER_COMMISSION_PAID = 'platform.partner.commission_paid';
     case PARTNER_TENANT_REASSIGNED = 'platform.partner.tenant_reassigned';
     case PARTNER_PORTAL_CONFIGURED = 'platform.partner.portal_configured';
 

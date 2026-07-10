@@ -7,9 +7,11 @@ namespace Aero\Platform\Http\Controllers\Admin\Finance;
 use Aero\Platform\Http\Controllers\Controller;
 use Aero\Platform\Http\Requests\Finance\CreatePartnerRequest;
 use Aero\Platform\Http\Requests\Finance\UpdatePartnerRequest;
+use Aero\Platform\Models\PartnerCommission;
 use Aero\Platform\Models\ResellerPartner;
 use Aero\Platform\Services\Finance\PartnerService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,12 +20,14 @@ class PartnerController extends Controller
 {
     public function __construct(private readonly PartnerService $service) {}
 
-    public function index(Request $request): Response
+    /**
+     * The Partners command centre — roster, commission ledger, payouts,
+     * managed tenants and portal config in one console.
+     */
+    public function index(): Response
     {
-        $partners = $this->service->list($request->only(['status', 'search']));
-
-        return Inertia::render('Platform/Admin/Partners/Index', [
-            'partners' => $partners,
+        return Inertia::render('Platform/Admin/Partners/P2/Partners', [
+            'overview' => $this->service->overview(),
         ]);
     }
 
@@ -61,15 +65,12 @@ class PartnerController extends Controller
         return response()->json(['partner' => $partner]);
     }
 
-    public function show(int $id): Response
+    /**
+     * The console's partner drawer subsumed the old Show page.
+     */
+    public function show(int $id): RedirectResponse
     {
-        $partner = ResellerPartner::with('commissions')->findOrFail($id);
-        $commissions = $this->service->listCommissions($partner);
-
-        return Inertia::render('Platform/Admin/Partners/Show', [
-            'partner' => $partner,
-            'commissions' => $commissions,
-        ]);
+        return redirect('/partners');
     }
 
     public function commissions(Request $request, int $id): JsonResponse
@@ -88,21 +89,46 @@ class PartnerController extends Controller
         return response()->json(['paid_count' => $count]);
     }
 
+    public function approveCommission(Request $request, int $commissionId): JsonResponse
+    {
+        $commission = PartnerCommission::findOrFail($commissionId);
+
+        if ($commission->status !== PartnerCommission::STATUS_PENDING) {
+            return response()->json(['message' => 'Only pending commissions can be approved.'], 422);
+        }
+
+        $commission = $this->service->approveCommission($commission, (int) $request->user()->id);
+
+        return response()->json(['commission' => $commission]);
+    }
+
+    public function payCommission(Request $request, int $commissionId): JsonResponse
+    {
+        $commission = PartnerCommission::findOrFail($commissionId);
+
+        if ($commission->status === PartnerCommission::STATUS_PAID) {
+            return response()->json(['message' => 'This commission is already paid.'], 422);
+        }
+
+        $commission = $this->service->payCommission($commission, (int) $request->user()->id);
+
+        return response()->json(['commission' => $commission]);
+    }
+
     public function tenants(int $id): JsonResponse
     {
         $partner = ResellerPartner::findOrFail($id);
-        $tenants = $this->service->listPartnerTenants($partner);
 
-        return response()->json(['tenants' => $tenants]);
+        return response()->json(['tenants' => $this->service->listPartnerTenants($partner)]);
     }
 
     public function reassign(Request $request, string $tenantId): JsonResponse
     {
-        $request->validate(['partner_id' => ['required', 'integer', 'exists:reseller_partners,id']]);
+        $request->validate(['partner_id' => ['nullable', 'integer', 'exists:reseller_partners,id']]);
 
         $tenant = $this->service->reassignTenant(
             $tenantId,
-            (int) $request->input('partner_id'),
+            $request->filled('partner_id') ? (int) $request->input('partner_id') : null,
             (int) $request->user()->id
         );
 

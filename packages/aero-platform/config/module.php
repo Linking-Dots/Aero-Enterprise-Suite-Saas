@@ -1483,6 +1483,7 @@ return [
                 ],
                 [
                     'code' => 'partner-commissions', 'name' => 'Commission Rules', 'route' => '/partners/commissions',
+                    'show_in_nav' => false, // subsumed by the Partners console (ledger tab); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Commissions'],
                         ['code' => 'manage', 'name' => 'Manage Commission Rules'],
@@ -1491,6 +1492,7 @@ return [
                 ],
                 [
                     'code' => 'partner-tenants', 'name' => 'Partner-Managed Tenants', 'route' => '/partners/tenants',
+                    'show_in_nav' => false, // subsumed by the Partners console (drawer Tenants tab); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Partner Tenants'],
                         ['code' => 'reassign', 'name' => 'Reassign Tenant'],
@@ -1498,6 +1500,7 @@ return [
                 ],
                 [
                     'code' => 'partner-portal', 'name' => 'Partner Portal', 'route' => '/partners/portal',
+                    'show_in_nav' => false, // subsumed by the Partners console (drawer Portal tab); kept for HRMAC
                     'actions' => [
                         ['code' => 'configure', 'name' => 'Configure Portal'],
                     ],

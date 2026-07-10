@@ -20,7 +20,7 @@ class UpdatePartnerRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:200'],
-            'email' => ['sometimes', 'email:rfc,dns', 'max:200',
+            'email' => ['sometimes', 'email:rfc', 'max:200',
                 Rule::unique('reseller_partners', 'email')->ignore($partnerId)],
             'commission_rate' => ['sometimes', 'numeric', 'min:0', 'max:1'],
             'portal_slug' => ['sometimes', 'nullable', 'string', 'max:100', 'regex:/^[a-z0-9\-]+$/',

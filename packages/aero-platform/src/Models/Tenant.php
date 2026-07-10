@@ -161,6 +161,8 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'suspension_reason',
             'archived_at',
             'frozen_at',
+            // Channel program — which reseller partner manages this tenant
+            'reseller_partner_id',
         ];
     }
 
