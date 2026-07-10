@@ -1,0 +1,86 @@
+/* Billing command center — tenant self-service subscription hub. Extends
+   products.css (pc-* masthead / cards / chips / buttons). All colour via theme
+   tokens so every surface reacts to the Theme-Studio drawer. Scoped to .bl for
+   container queries (command-mode shell narrows the column). */
+
+/* ---- tabs ---- */
+.bl .bl-tabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 5px; background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: calc(var(--aeos-card-radius) * .8); margin-bottom: var(--aeos-space-4); }
+.bl-tab { padding: 8px 16px; border-radius: calc(var(--aeos-card-radius) * .6); border: 0; background: none; color: var(--aeos-text-secondary); font-size: var(--aeos-text-sm); font-weight: 560; cursor: pointer; white-space: nowrap; }
+.bl-tab:hover { color: var(--aeos-text-primary); }
+.bl-tab.is-active { background: var(--aeos-surface); color: var(--aeos-primary); box-shadow: var(--aeos-shadow-sm); }
+
+/* ---- KPI band meters ---- */
+.bl .bl-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--aeos-space-3); margin-bottom: var(--aeos-space-4); }
+.bl-meter { height: 7px; border-radius: 5px; background: var(--aeos-bg-subtle); overflow: hidden; margin-top: 8px; }
+.bl-meter i { display: block; height: 100%; border-radius: 5px; background: var(--aeos-primary); }
+.bl-meter i.is-warn { background: var(--aeos-warning); }
+.bl-meter i.is-danger { background: var(--aeos-danger); }
+
+/* ---- overview ---- */
+.bl .bl-ov { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--aeos-space-4); }
+.bl-planhero { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--aeos-space-3); }
+.bl-planname { font-size: var(--aeos-text-2xl); font-weight: 680; line-height: 1.1; }
+.bl-planprice { font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); margin-top: 4px; }
+.bl-planprice b { color: var(--aeos-text-primary); font-size: var(--aeos-text-xl); }
+.bl-feat { list-style: none; padding: 0; margin: var(--aeos-space-4) 0 0; display: flex; flex-direction: column; gap: 8px; font-size: var(--aeos-text-sm); color: var(--aeos-text-secondary); }
+.bl-feat li { display: flex; gap: 9px; align-items: center; }
+.bl-feat li::before { content: '✓'; color: var(--aeos-success); font-weight: 700; }
+.bl-addon { display: flex; align-items: center; justify-content: space-between; gap: var(--aeos-space-2); padding: 11px 0; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); font-size: var(--aeos-text-sm); }
+.bl-addon:last-child { border-bottom: 0; }
+.bl-addon__r { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ---- plans grid (surfaces are <Card> so they react to Theme-Studio card-style) ---- */
+.bl .bl-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--aeos-space-3); align-items: stretch; }
+.bl-plan { position: relative; }
+.bl-plan__body { display: flex; flex-direction: column; height: 100%; }
+.bl .bl-plan.is-current { border-color: var(--aeos-primary-border); box-shadow: 0 0 0 1px var(--aeos-primary-border), 0 0 30px -14px var(--aeos-primary); }
+.bl-plan__badge { align-self: flex-start; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--aeos-primary); color: var(--aeos-primary-contrast, #04121a); letter-spacing: .04em; margin-bottom: var(--aeos-space-2); }
+.bl-plan__name { font-size: var(--aeos-text-lg); font-weight: 660; margin-bottom: 6px; }
+.bl-plan__price { font-size: var(--aeos-text-2xl); font-weight: 700; }
+.bl-plan__price span { font-size: var(--aeos-text-sm); color: var(--aeos-text-muted); font-weight: 400; }
+.bl-plan__body .bl-feat { flex: 1; }
+.bl-plan__btn { margin-top: var(--aeos-space-4); width: 100%; justify-content: center; }
+
+/* ---- add-on marketplace (surfaces are <Card> → card-style reactive) ---- */
+.bl .bl-cat { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--aeos-space-3); align-items: stretch; }
+.bl-catcard__body { display: flex; flex-direction: column; height: 100%; }
+.bl-catcard__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--aeos-space-2); }
+.bl-catcard__name { font-weight: 620; }
+.bl-catcard__desc { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-top: 4px; flex: 1; }
+.bl-catcard__price { font-weight: 700; font-size: var(--aeos-text-lg); white-space: nowrap; }
+.bl-catcard__price span { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); font-weight: 400; }
+
+/* ---- usage ---- */
+.bl-usebar { margin-bottom: var(--aeos-space-4); }
+.bl-usebar__top { display: flex; justify-content: space-between; font-size: var(--aeos-text-sm); margin-bottom: 6px; }
+.bl-usebar__top b { font-weight: 620; }
+.bl-usebar__n { color: var(--aeos-text-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---- table ---- */
+.bl-table { width: 100%; border-collapse: collapse; font-size: var(--aeos-text-sm); }
+.bl-table th { text-align: left; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--aeos-text-muted); font-weight: 600; padding: 8px 10px; border-bottom: var(--aeos-border-width) solid var(--aeos-border); }
+.bl-table td { padding: 11px 10px; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); vertical-align: middle; }
+.bl-table tr:last-child td { border-bottom: 0; }
+.bl-num { font-variant-numeric: tabular-nums; }
+.bl-st { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); text-transform: capitalize; }
+.bl-st--paid { background: color-mix(in srgb, var(--aeos-success) 14%, transparent); color: var(--aeos-success); }
+.bl-st--open, .bl-st--issued { background: color-mix(in srgb, var(--aeos-warning) 14%, transparent); color: var(--aeos-warning); }
+.bl-st--void, .bl-st--uncollectible { background: color-mix(in srgb, var(--aeos-danger) 14%, transparent); color: var(--aeos-danger); }
+.bl-pager { display: flex; align-items: center; justify-content: space-between; margin-top: var(--aeos-space-3); font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); }
+
+.bl-empty { text-align: center; padding: var(--aeos-space-5); color: var(--aeos-text-muted); font-size: var(--aeos-text-sm); border: 1px dashed var(--aeos-border); border-radius: var(--aeos-card-radius); }
+.bl-mut { color: var(--aeos-text-muted); }
+
+/* ---- container-query responsiveness (shell rail narrows the column, so the
+   pricing wall keeps 3-across down to a genuinely tight width) ---- */
+@container (max-width: 1120px) {
+  .bl .bl-kpis { grid-template-columns: 1fr 1fr; }
+  .bl .bl-ov { grid-template-columns: 1fr; }
+}
+@container (max-width: 900px) {
+  .bl .bl-plans { grid-template-columns: 1fr 1fr; }
+  .bl .bl-cat { grid-template-columns: 1fr; }
+}
+@container (max-width: 620px) {
+  .bl .bl-kpis, .bl .bl-plans { grid-template-columns: 1fr; }
+}
