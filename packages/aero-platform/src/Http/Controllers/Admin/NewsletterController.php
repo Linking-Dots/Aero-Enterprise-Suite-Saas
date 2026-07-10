@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Aero\Platform\Http\Controllers\Admin;
 
+use Aero\Platform\Models\NewsletterCampaign;
 use Aero\Platform\Models\NewsletterSubscriber;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Services\Marketing\NewsletterService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -25,26 +27,21 @@ class NewsletterController extends Controller
     ) {}
 
     /**
-     * Display subscribers list.
+     * Newsletter command centre — the /newsletter landing (audience + campaigns).
      */
-    public function index(Request $request): Response
+    public function overview(): Response
     {
-        $filters = $request->only(['search', 'status', 'source', 'preference', 'sort_by', 'sort_dir']);
-        $perPage = $request->input('perPage', 20);
-
-        $subscribers = $this->newsletterService->getPaginatedSubscribers($filters, $perPage);
-        $stats = $this->newsletterService->getSubscriberStats();
-        $settings = PlatformSetting::current()->getNewsletterSettings();
-
-        return Inertia::render('Platform/Admin/Newsletter/Index', [
-            'title' => 'Newsletter Subscribers',
-            'subscribers' => $subscribers,
-            'stats' => $stats,
-            'filters' => $filters,
-            'settings' => $settings,
-            'statusOptions' => NewsletterSubscriber::getStatusOptions(),
-            'sourceOptions' => NewsletterSubscriber::getSourceOptions(),
+        return Inertia::render('Platform/Admin/Newsletter/P2/Newsletter', [
+            'overview' => fn () => $this->newsletterService->overview(),
         ]);
+    }
+
+    /**
+     * Legacy subscribers list — subsumed by the command centre; redirect.
+     */
+    public function index(): RedirectResponse
+    {
+        return redirect('/newsletter');
     }
 
     /**
@@ -53,7 +50,7 @@ class NewsletterController extends Controller
     public function paginate(Request $request): JsonResponse
     {
         $filters = $request->only(['search', 'status', 'source', 'preference', 'sort_by', 'sort_dir']);
-        $perPage = $request->input('perPage', 20);
+        $perPage = (int) $request->input('perPage', 20);
 
         $subscribers = $this->newsletterService->getPaginatedSubscribers($filters, $perPage);
 
@@ -61,14 +58,96 @@ class NewsletterController extends Controller
     }
 
     /**
-     * Show subscriber details.
+     * Subscriber detail — subsumed by the console drawer; redirect.
      */
-    public function show(NewsletterSubscriber $subscriber): Response
+    public function show(NewsletterSubscriber $subscriber): RedirectResponse
     {
-        return Inertia::render('Platform/Admin/Newsletter/Show', [
-            'title' => 'Subscriber Details',
-            'subscriber' => $subscriber,
+        return redirect('/newsletter');
+    }
+
+    /**
+     * Bulk subscriber action (confirm / unsubscribe / delete).
+     */
+    public function bulk(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:confirm,unsubscribe,delete',
+            'subscriber_ids' => 'required|array|min:1',
+            'subscriber_ids.*' => 'integer|exists:newsletter_subscribers,id',
         ]);
+
+        $count = $this->newsletterService->bulkSubscriberAction($validated['subscriber_ids'], $validated['action']);
+
+        return response()->json(['success' => true, 'count' => $count, 'message' => "{$count} subscriber(s) updated."]);
+    }
+
+    // =========================================================================
+    // CAMPAIGNS
+    // =========================================================================
+
+    public function storeCampaign(Request $request): JsonResponse
+    {
+        $data = $this->validateCampaign($request);
+        $campaign = $this->newsletterService->createCampaign($data);
+
+        return response()->json(['success' => true, 'message' => 'Campaign saved.', 'data' => $campaign], 201);
+    }
+
+    public function updateCampaign(Request $request, NewsletterCampaign $campaign): JsonResponse
+    {
+        if ($campaign->status === NewsletterCampaign::STATUS_SENT) {
+            return response()->json(['success' => false, 'message' => 'A sent campaign cannot be edited.'], 422);
+        }
+        $data = $this->validateCampaign($request);
+        $campaign = $this->newsletterService->updateCampaign($campaign, $data);
+
+        return response()->json(['success' => true, 'message' => 'Campaign updated.', 'data' => $campaign]);
+    }
+
+    public function destroyCampaign(NewsletterCampaign $campaign): JsonResponse
+    {
+        $campaign->delete();
+
+        return response()->json(['success' => true, 'message' => 'Campaign deleted.']);
+    }
+
+    public function sendCampaign(Request $request, NewsletterCampaign $campaign): JsonResponse
+    {
+        if ($campaign->status === NewsletterCampaign::STATUS_SENT) {
+            return response()->json(['success' => false, 'message' => 'Campaign already sent.'], 422);
+        }
+
+        if ($request->filled('scheduled_at')) {
+            $campaign = $this->newsletterService->scheduleCampaign($campaign, $request->input('scheduled_at'));
+
+            return response()->json(['success' => true, 'message' => 'Campaign scheduled.', 'data' => $campaign]);
+        }
+
+        $campaign = $this->newsletterService->sendCampaign($campaign);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Campaign sent to {$campaign->sent_count} subscribers.",
+            'data' => $campaign,
+        ]);
+    }
+
+    private function validateCampaign(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'subject' => 'required|string|max:255',
+            'preheader' => 'nullable|string|max:255',
+            'from_name' => 'nullable|string|max:255',
+            'from_email' => 'nullable|email|max:255',
+            'body' => 'nullable|string|max:100000',
+            'audience_type' => 'required|string|in:all_confirmed,source',
+            'audience_source' => 'nullable|string|max:100',
+            'status' => 'nullable|string|in:draft,scheduled',
+        ]);
+        $data['name'] = $data['name'] ?? $data['subject'];
+
+        return $data;
     }
 
     /**

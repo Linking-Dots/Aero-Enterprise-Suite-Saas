@@ -1027,9 +1027,24 @@ Route::middleware('admin.domain')->group(function () {
         // 17. NEWSLETTER MANAGEMENT MODULE (newsletter-management)
         // =========================================================================
         Route::middleware(['hrmac:newsletter-management'])->prefix('newsletter')->name('admin.newsletter.')->group(function () {
-            Route::get('/', [NewsletterController::class, 'index'])
+            // Command centre — the nav "Newsletter" link lands here (audience + campaigns).
+            Route::get('/', [NewsletterController::class, 'overview'])
                 ->middleware(['hrmac:newsletter-management.subscribers.view'])
                 ->name('index');
+
+            Route::post('/bulk', [NewsletterController::class, 'bulk'])
+                ->middleware(['hrmac:newsletter-management.subscribers.update'])
+                ->name('bulk');
+
+            // Campaigns (broadcast composer + send).
+            Route::post('/campaigns', [NewsletterController::class, 'storeCampaign'])
+                ->middleware(['hrmac:newsletter-management.campaigns.create'])->name('campaigns.store');
+            Route::put('/campaigns/{campaign}', [NewsletterController::class, 'updateCampaign'])
+                ->middleware(['hrmac:newsletter-management.campaigns.create'])->name('campaigns.update');
+            Route::delete('/campaigns/{campaign}', [NewsletterController::class, 'destroyCampaign'])
+                ->middleware(['hrmac:newsletter-management.campaigns.delete'])->name('campaigns.destroy');
+            Route::post('/campaigns/{campaign}/send', [NewsletterController::class, 'sendCampaign'])
+                ->middleware(['hrmac:newsletter-management.campaigns.send'])->name('campaigns.send');
 
             Route::get('/paginate', [NewsletterController::class, 'paginate'])
                 ->middleware(['hrmac:newsletter-management.subscribers.view'])

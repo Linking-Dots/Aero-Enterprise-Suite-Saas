@@ -921,18 +921,33 @@ return [
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Subscribers'],
                         ['code' => 'create', 'name' => 'Add Subscriber'],
+                        ['code' => 'update', 'name' => 'Update Subscriber'],
                         ['code' => 'delete', 'name' => 'Remove Subscriber'],
                         ['code' => 'import', 'name' => 'Import Subscribers'],
                         ['code' => 'export', 'name' => 'Export Subscribers'],
                     ],
                 ],
                 [
+                    'code' => 'campaigns',
+                    'name' => 'Campaigns',
+                    'route' => '/newsletter/campaigns',
+                    'show_in_nav' => false, // part of the Newsletter console (campaigns tab + composer); kept for HRMAC
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View Campaigns'],
+                        ['code' => 'create', 'name' => 'Compose Campaign'],
+                        ['code' => 'send', 'name' => 'Send Campaign'],
+                        ['code' => 'delete', 'name' => 'Delete Campaign'],
+                    ],
+                ],
+                [
                     'code' => 'newsletter-settings',
                     'name' => 'Settings',
                     'route' => '/newsletter/settings',
+                    'show_in_nav' => false, // subsumed by the Newsletter console (settings modal); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Settings'],
                         ['code' => 'edit', 'name' => 'Edit Settings'],
+                        ['code' => 'update', 'name' => 'Update Settings'],
                     ],
                 ],
             ],
