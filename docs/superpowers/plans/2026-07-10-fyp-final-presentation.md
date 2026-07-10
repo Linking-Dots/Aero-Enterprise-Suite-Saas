@@ -14,6 +14,7 @@
 - **Single-document deck.** All slides are `<section class="slide">` inside one `index.html`. No iframes.
 - **Fully responsive.** Fluid type via `clamp()`; `grid`/`flex`; container queries. Must pass at 320px, 768px, 1080p, 1440p, 4K, in BOTH portrait and landscape, with no horizontal body scroll and no clipped content.
 - **Dual theme.** `:root` = dark (primary); `[data-theme="light"]` overrides. Both must be independently bug-free and projector-legible. Toggle persists to `localStorage`.
+- **Cinematic "living data-OS" motion.** The deck must feel alive. Motion is purposeful and GPU-cheap — animate `transform`/`opacity`/`filter` only, via CSS/SVG/Canvas; **NO WebGL / Three.js**. Required: animated slide transitions; per-slide staggered content reveals on entry; an ambient animated backdrop (slow aurora/gradient drift + a "breathing" accent glow); animated diagrams where they appear (data flowing along the architecture graph, stat counters ticking up, the module grid igniting in sequence); hover micro-interactions on interactive tiles. Must hold ~60fps on modest projector hardware, work fully offline, and **honor `prefers-reduced-motion: reduce`** (all motion collapses to instant/none; deck stays fully legible and complete). Motion must never cause layout shift, overflow, horizontal scroll, or any responsiveness regression.
 - **Accent:** electric cyan/teal on dark slate. **Type:** Space Grotesk (display) + Inter (body), vendored.
 - **Zero-error content bar.** Every claim traces to `FYP Report Final V1.pdf` (extracted to `report.txt`) or observed product behavior. No invented metrics. Module tiers reflect ACTUAL built state. Aeon claims limited to what is demoable live.
 - **Cover metadata corrected:** "Final Year Project" (NOT "Proposal"), "June 2026".
@@ -124,7 +125,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font
 
 **Interfaces:**
 - Consumes: `<section class="slide">` elements inside `#deck`; `#deck-ui` container.
-- Produces: runtime behavior — `goTo(n)`, keyboard nav, `#slide-n` hash sync, theme persistence key `aeos-deck-theme`, body class `is-fullscreen`, speaker-notes toggle reading `<aside class="notes">` inside each slide.
+- Produces: runtime behavior — `goTo(n)`, keyboard nav, `#slide-n` hash sync, theme persistence key `aeos-deck-theme`, body class `is-fullscreen`, speaker-notes toggle reading `<aside class="notes">` inside each slide, and a **reveal trigger**: on slide activation, add class `is-in` to the active slide so its `.reveal` descendants animate in (staggered); removed when the slide deactivates so re-entry replays. All motion must be gated by `prefers-reduced-motion` (query it once; if `reduce`, skip transitions and apply final state instantly).
 
 - [ ] **Step 1:** Implement the player. Full code:
 
@@ -147,13 +148,22 @@ html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font
     </div>`;
 
   const clamp = n => Math.max(0, Math.min(slides().length - 1, n));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function render(){
     const all = slides();
-    all.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    all.forEach((s,idx)=>{
+      const on = idx===i;
+      s.classList.toggle('active', on);
+      if(!on) s.classList.remove('is-in');
+    });
+    // trigger staggered reveal on the active slide (skip entirely if reduced motion)
+    const cur = all[i];
+    if (reduce) cur.classList.add('is-in');
+    else requestAnimationFrame(()=>requestAnimationFrame(()=>cur.classList.add('is-in')));
     ui.querySelector('.dk-count').textContent = `${i+1} / ${all.length}`;
     ui.querySelector('.dk-progress span').style.width = `${((i+1)/all.length)*100}%`;
     if (location.hash !== `#slide-${i+1}`) history.replaceState(null,'',`#slide-${i+1}`);
-    all[i].scrollIntoView({behavior:'instant',block:'start'});
+    cur.scrollIntoView({behavior:'instant',block:'start'});
   }
   function goTo(n){ i = clamp(n); render(); }
 
@@ -256,6 +266,115 @@ body{overflow-x:hidden}
 
 ---
 
+### Task 4B: Motion system — reveals, ambient backdrop, animated-diagram helpers
+
+**Files:**
+- Modify: `assets/aeos-deck.css` (motion tokens, keyframes, reveal utilities, ambient backdrop, reduced-motion guard)
+- Create: `assets/motion.js` (Canvas ambient particle field + IntersectionObserver-based counter/diagram animation), linked from `index.html` after `deck.js`
+
+**Interfaces:**
+- Consumes: `.slide.is-in` (set by the player, Task 3); component classes (Task 4).
+- Produces classes/behaviors every slide task uses:
+  - `.reveal` — hidden→shown when its slide gets `.is-in`; `.reveal[data-d="1..6"]` sets stagger delay.
+  - `.slide` cross-fade/slide transition on activation.
+  - `.bg-aurora` (ambient drifting gradient) + `.bg-breathe` (breathing accent glow) — pure CSS, one instance per slide or a single fixed backdrop layer.
+  - `.count[data-to="N"]` — counts up to N when revealed (via `motion.js`).
+  - `.flow` on an SVG `<path>` — animates a dash "data flow" along the architecture graph.
+  - `.ignite > *` — module-grid tiles fade/scale in in sequence when revealed.
+  - Global `#ambient` `<canvas>` (fixed, behind slides, `pointer-events:none`) — slow particle/constellation field drawn by `motion.js`.
+
+- [ ] **Step 1:** Add motion CSS to `assets/aeos-deck.css`:
+
+```css
+@media (prefers-reduced-motion: no-preference){
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+  .slide.is-in .reveal{opacity:1;transform:none}
+  .reveal[data-d="1"]{transition-delay:.06s}.reveal[data-d="2"]{transition-delay:.14s}
+  .reveal[data-d="3"]{transition-delay:.22s}.reveal[data-d="4"]{transition-delay:.30s}
+  .reveal[data-d="5"]{transition-delay:.38s}.reveal[data-d="6"]{transition-delay:.46s}
+  .slide{transition:opacity .5s ease}
+  .bg-aurora::before{content:'';position:absolute;inset:-20%;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(40% 40% at 20% 20%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 60%),
+      radial-gradient(45% 45% at 85% 75%,color-mix(in srgb,var(--accent-dim) 20%,transparent),transparent 60%);
+    filter:blur(60px);animation:aurora 24s ease-in-out infinite alternate}
+  @keyframes aurora{0%{transform:translate3d(-3%,-2%,0) scale(1)}100%{transform:translate3d(4%,3%,0) scale(1.12)}}
+  .bg-breathe{animation:breathe 6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}
+    50%{box-shadow:0 0 60px 6px color-mix(in srgb,var(--accent) 22%,transparent)}}
+  .flow{stroke-dasharray:8 10;animation:flow 2.2s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-36}}
+  .ignite > *{opacity:0;transform:scale(.92)}
+  .slide.is-in .ignite > *{opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
+  /* stagger up to 40 tiles via nth-child */
+  .slide.is-in .ignite > *:nth-child(n){transition-delay:calc(var(--i,0) * 40ms)}
+}
+@media (prefers-reduced-motion: reduce){
+  .reveal,.ignite > *{opacity:1 !important;transform:none !important}
+  #ambient{display:none}
+}
+.slide{position:relative} .slide-inner{position:relative;z-index:1}
+#ambient{position:fixed;inset:0;z-index:0;pointer-events:none}
+```
+
+- [ ] **Step 2:** Create `assets/motion.js` — a self-contained IIFE that: (a) draws a slow constellation/particle field on a fixed `#ambient` canvas (resizes with the window, DPR-aware, `transform/opacity`-light, pauses when `document.hidden`), and (b) an IntersectionObserver that, when a `.slide` becomes active/visible, animates every `.count[data-to]` inside it from 0→N over ~1.1s (respect `prefers-reduced-motion` → set final value instantly). Guard the whole file behind a reduced-motion check for the ambient canvas. Full code:
+
+```js
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // (a) ambient constellation canvas
+  if (!reduce) {
+    const cv = document.createElement('canvas'); cv.id='ambient';
+    document.body.prepend(cv);
+    const ctx = cv.getContext('2d'); let w,h,dpr,pts;
+    const N = 60;
+    function size(){ dpr=Math.min(devicePixelRatio||1,2); w=cv.width=innerWidth*dpr; h=cv.height=innerHeight*dpr;
+      cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px'; }
+    function init(){ pts=[...Array(N)].map(()=>({x:Math.random()*w,y:Math.random()*h,
+      vx:(Math.random()-.5)*.12*dpr,vy:(Math.random()-.5)*.12*dpr})); }
+    function accent(){ return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#22d3ee'; }
+    function tick(){
+      if(document.hidden){ return requestAnimationFrame(tick); }
+      ctx.clearRect(0,0,w,h); const c=accent();
+      for(const p of pts){ p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1; }
+      for(let a=0;a<N;a++){ for(let b=a+1;b<N;b++){
+        const dx=pts[a].x-pts[b].x, dy=pts[a].y-pts[b].y, d=Math.hypot(dx,dy);
+        if(d<140*dpr){ ctx.globalAlpha=(1-d/(140*dpr))*.18; ctx.strokeStyle=c; ctx.lineWidth=dpr;
+          ctx.beginPath(); ctx.moveTo(pts[a].x,pts[a].y); ctx.lineTo(pts[b].x,pts[b].y); ctx.stroke(); } } }
+      ctx.globalAlpha=.5;
+      for(const p of pts){ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(p.x,p.y,1.4*dpr,0,7); ctx.fill(); }
+      ctx.globalAlpha=1; requestAnimationFrame(tick);
+    }
+    size(); init(); addEventListener('resize',()=>{size();init();}); requestAnimationFrame(tick);
+  }
+
+  // (b) count-up on reveal
+  const io = new IntersectionObserver((es)=>{
+    for(const e of es){ if(!e.isIntersecting) continue;
+      e.target.querySelectorAll('.count[data-to]').forEach(el=>{
+        if(el.dataset.done) return; el.dataset.done='1';
+        const to=parseFloat(el.dataset.to)||0;
+        if(reduce){ el.textContent=el.dataset.suffix?to+el.dataset.suffix:to; return; }
+        const t0=performance.now(), dur=1100;
+        (function step(t){ const k=Math.min(1,(t-t0)/dur); const v=Math.round(to*(k*(2-k)));
+          el.textContent=(el.dataset.prefix||'')+v+(el.dataset.suffix||'');
+          if(k<1) requestAnimationFrame(step); })(t0);
+      });
+    }
+  },{threshold:.4});
+  addEventListener('load',()=>document.querySelectorAll('.slide').forEach(s=>io.observe(s)));
+})();
+```
+
+- [ ] **Step 3:** Link `assets/motion.js` in `index.html` after `deck.js` (path-scoped). Add a `.bg-aurora` layer to the deck shell (a fixed backdrop element or per-slide) so the ambient drift shows.
+- [ ] **Step 4:** Verify with a temporary slide containing `.reveal[data-d]` items, a `.count[data-to="36"]`, and an `.ignite` grid: navigating to it plays the staggered reveal, the counter ticks to 36, the ambient canvas draws behind content, and the aurora drifts. Then set the OS/browser to reduced-motion (or emulate in DevTools) and confirm everything appears instantly with no canvas and no animation. Remove the temp slide.
+- [ ] **Step 5:** Verify the ambient canvas does not create horizontal scroll or cover content (it's `z-index:0`, `pointer-events:none`, content is `z-index:1`) at 320px and 4K.
+- [ ] **Step 6:** Commit: `git add assets/aeos-deck.css assets/motion.js index.html && git commit -m "feat(deck): cinematic motion system — reveals, ambient canvas, animated counters, reduced-motion safe"`
+
+---
+
 ### Task 5: Offline + harness gate
 
 **Files:** none (verification task)
@@ -286,7 +405,9 @@ body{overflow-x:hidden}
 
 ## Phase C — Slide build
 
-> Each slide task: append `<section class="slide">…</section>` blocks to `index.html` using ONLY the component classes from Task 4, wire content from the cited report sections, then verify render + responsiveness at 320/1080/4K in both themes via Playwright before commit. Content below is the actual copy/data to use.
+> Each slide task: append `<section class="slide">…</section>` blocks to `index.html` using ONLY the component classes from Task 4 + the motion utilities from Task 4B, wire content from the cited report sections, then verify render + responsiveness at 320/1080/4K in both themes via Playwright before commit. Content below is the actual copy/data to use.
+>
+> **Motion is mandatory on every slide (Global Constraints):** wrap major content blocks in `.reveal` with staggered `data-d="1..6"`; render headline numbers as `.count[data-to="N"]` (with `data-suffix`/`data-prefix` where needed) so they tick up; give each slide the ambient backdrop (`.bg-aurora` layer) and put a `.bg-breathe` glow on the hero/accent element; animate diagrams with `.flow` (SVG data-flow paths) and `.ignite` (sequenced grid/tile entrance, set `--i` per child). Verify each new slide once with reduced-motion emulated — content must be fully present and legible with motion off.
 
 ### Task 7: Slides 1–3 (Cover, Problem, Research Questions & Objectives)
 
@@ -383,7 +504,8 @@ body{overflow-x:hidden}
 **Files:** fixes across `index.html`, `assets/aeos-deck.css` as needed
 
 - [ ] **Step 1:** With Playwright, walk all 24 slides at each breakpoint (320×568, 360×800, 768×1024 portrait, 1024×768 landscape, 1366×768, 1920×1080, 2560×1440, 3840×2160), in BOTH themes. Screenshot every slide×breakpoint into `scratchpad/qa/`.
-- [ ] **Step 2:** Review each screenshot for: horizontal scroll, clipped/overflowing text, overlapping elements, unreadable contrast, distorted images, controls covering content. Log each defect.
+- [ ] **Step 2:** Review each screenshot for: horizontal scroll, clipped/overflowing text, overlapping elements, unreadable contrast, distorted images, controls covering content, and motion artifacts (the ambient canvas or aurora causing scroll/overflow or obscuring text). Log each defect.
+- [ ] **Step 2b:** Run one pass with `prefers-reduced-motion: reduce` emulated: every slide must show all content instantly (no stuck `.reveal` hidden state, no missing counters), and `#ambient` must be absent. Log any content that stays hidden with motion off.
 - [ ] **Step 3:** Fix every logged defect (fluid sizing, container-query breakpoints, `min-width:0` on grid children, image `max-width`). Re-screenshot the fixed slides to confirm.
 - [ ] **Step 4:** Verify keyboard nav still lands cleanly on every slide and the counter reads `24/24` (or 25 with references) at End.
 - [ ] **Step 5:** Commit: `git add -A && git commit -m "fix(deck): responsive + theme QA sweep across all breakpoints"`

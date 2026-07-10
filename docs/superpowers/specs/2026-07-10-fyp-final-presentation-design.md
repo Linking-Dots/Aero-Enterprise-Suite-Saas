@@ -26,6 +26,7 @@ Replace the outdated **proposal-era** slide deck (22 slides, cover says "Final Y
 | Live-demo scope | **Aeon + one signature module flow** (rehearsable, low-risk, screenshot fallback baked in) |
 | Accent | Electric **cyan/teal** on dark slate |
 | Typography | **Space Grotesk** (display) + **Inter** (body), vendored locally |
+| Motion | **Cinematic "living data-OS"** — rich CSS/SVG/Canvas motion (reveals, ambient constellation canvas, aurora drift, breathing glow, animated diagrams/counters). **NO WebGL/Three.js.** 60fps, offline, `prefers-reduced-motion`-safe. (Decision added 2026-07-10.) |
 
 ## 3. Deck engine (the responsiveness + no-bugs + offline foundation)
 
@@ -95,3 +96,4 @@ References available as an optional appendix section (not counted in the 24).
 5. Aeon reads as a genuine differentiator (hero + live) without eclipsing the other four innovations.
 6. Live-demo segment has a baked-in screenshot fallback that stands alone if the live app fails.
 7. Old proposal deck archived, not lost.
+8. Deck feels alive: every slide has entry reveals, an ambient animated backdrop, and animated diagrams/counters where relevant — holding ~60fps and fully collapsing under `prefers-reduced-motion: reduce` with all content still present and legible.
