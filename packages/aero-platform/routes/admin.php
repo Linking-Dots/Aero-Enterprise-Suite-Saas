@@ -1088,9 +1088,14 @@ Route::middleware('admin.domain')->group(function () {
         // 18. AFFILIATE PROGRAM MODULE (affiliate-program)
         // =========================================================================
         Route::middleware(['hrmac:affiliate-program'])->prefix('affiliates')->name('admin.affiliates.')->group(function () {
-            Route::get('/', [AffiliateController::class, 'index'])
+            // Command centre — the nav "Affiliates" link lands here (data-backed console).
+            Route::get('/', [AffiliateController::class, 'overview'])
                 ->middleware(['hrmac:affiliate-program.affiliates.view'])
                 ->name('index');
+
+            Route::post('/bulk', [AffiliateController::class, 'bulk'])
+                ->middleware(['hrmac:affiliate-program.affiliates.approve'])
+                ->name('bulk');
 
             Route::get('/paginate', [AffiliateController::class, 'paginate'])
                 ->middleware(['hrmac:affiliate-program.affiliates.view'])

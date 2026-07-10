@@ -10,6 +10,7 @@ use Aero\Platform\Models\AffiliateReferral;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Services\Marketing\AffiliateService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -27,25 +28,41 @@ class AffiliateController extends Controller
     ) {}
 
     /**
-     * Display affiliates list.
+     * Affiliates command centre — the /affiliates landing (full program console).
      */
-    public function index(Request $request): Response
+    public function overview(Request $request): Response
     {
-        $filters = $request->only(['search', 'status', 'sort_by', 'sort_dir']);
-        $perPage = $request->input('perPage', 20);
-
-        $affiliates = $this->affiliateService->getPaginatedAffiliates($filters, $perPage);
-        $stats = $this->affiliateService->getAffiliateStats($request->input('period', 'month'));
-        $settings = PlatformSetting::current()->getAffiliateSettings();
-
-        return Inertia::render('Platform/Admin/Affiliates/Index', [
-            'title' => 'Affiliate Program',
-            'affiliates' => $affiliates,
-            'stats' => $stats,
-            'filters' => $filters,
-            'settings' => $settings,
-            'statusOptions' => Affiliate::getStatusOptions(),
+        return Inertia::render('Platform/Admin/Affiliates/P2/Affiliates', [
+            'overview' => fn () => $this->affiliateService->overview($request->input('period', 'quarter')),
         ]);
+    }
+
+    /**
+     * Bulk lifecycle action (approve / suspend / reject / create payouts).
+     */
+    public function bulk(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:approve,suspend,reject,create_payout',
+            'affiliate_ids' => 'required|array|min:1',
+            'affiliate_ids.*' => 'integer|exists:affiliates,id',
+        ]);
+
+        $count = $this->affiliateService->bulkAction($validated['affiliate_ids'], $validated['action']);
+
+        return response()->json([
+            'success' => true,
+            'count' => $count,
+            'message' => "{$count} affiliate(s) updated.",
+        ]);
+    }
+
+    /**
+     * Legacy affiliates list — subsumed by the command centre; redirect.
+     */
+    public function index(): RedirectResponse
+    {
+        return redirect('/affiliates');
     }
 
     /**
@@ -54,7 +71,7 @@ class AffiliateController extends Controller
     public function paginate(Request $request): JsonResponse
     {
         $filters = $request->only(['search', 'status', 'sort_by', 'sort_dir']);
-        $perPage = $request->input('perPage', 20);
+        $perPage = (int) $request->input('perPage', 20);
 
         $affiliates = $this->affiliateService->getPaginatedAffiliates($filters, $perPage);
 
@@ -64,26 +81,10 @@ class AffiliateController extends Controller
     /**
      * Show affiliate details.
      */
-    public function show(Affiliate $affiliate): Response
+    public function show(Affiliate $affiliate): RedirectResponse
     {
-        $affiliate->load(['referrals' => function ($query) {
-            $query->latest()->limit(20);
-        }, 'payouts' => function ($query) {
-            $query->latest()->limit(10);
-        }]);
-
-        return Inertia::render('Platform/Admin/Affiliates/Show', [
-            'title' => 'Affiliate Details',
-            'affiliate' => $affiliate,
-            'referralStats' => [
-                'total' => $affiliate->referrals()->count(),
-                'converted' => $affiliate->referrals()->where('status', AffiliateReferral::STATUS_CONVERTED)->count(),
-                'pending' => $affiliate->referrals()->whereIn('status', [
-                    AffiliateReferral::STATUS_CLICKED,
-                    AffiliateReferral::STATUS_REGISTERED,
-                ])->count(),
-            ],
-        ]);
+        // Affiliate detail is subsumed by the console drawer.
+        return redirect('/affiliates');
     }
 
     /**
@@ -210,7 +211,7 @@ class AffiliateController extends Controller
     public function referrals(Request $request, Affiliate $affiliate): JsonResponse
     {
         $filters = $request->only(['status', 'commission_status']);
-        $perPage = $request->input('perPage', 20);
+        $perPage = (int) $request->input('perPage', 20);
 
         $referrals = $this->affiliateService->getAffiliateReferrals($affiliate, $filters, $perPage);
 
@@ -222,7 +223,7 @@ class AffiliateController extends Controller
      */
     public function payouts(Request $request, Affiliate $affiliate): JsonResponse
     {
-        $perPage = $request->input('perPage', 20);
+        $perPage = (int) $request->input('perPage', 20);
         $payouts = $this->affiliateService->getAffiliatePayouts($affiliate, $perPage);
 
         return response()->json($payouts);
@@ -231,14 +232,10 @@ class AffiliateController extends Controller
     /**
      * Display pending payouts.
      */
-    public function pendingPayouts(): Response
+    public function pendingPayouts(): RedirectResponse
     {
-        $pendingPayouts = $this->affiliateService->getPendingPayouts();
-
-        return Inertia::render('Platform/Admin/Affiliates/Payouts', [
-            'title' => 'Pending Payouts',
-            'affiliates' => $pendingPayouts,
-        ]);
+        // Pending payouts are surfaced in the console (queue + payouts ledger).
+        return redirect('/affiliates');
     }
 
     /**

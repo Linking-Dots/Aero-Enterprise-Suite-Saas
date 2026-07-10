@@ -962,6 +962,7 @@ return [
                         ['code' => 'edit', 'name' => 'Edit Affiliate'],
                         ['code' => 'delete', 'name' => 'Delete Affiliate'],
                         ['code' => 'approve', 'name' => 'Approve Affiliate'],
+                        ['code' => 'reject', 'name' => 'Reject Affiliate'],
                         ['code' => 'suspend', 'name' => 'Suspend Affiliate'],
                     ],
                 ],
@@ -969,6 +970,7 @@ return [
                     'code' => 'affiliate-referrals',
                     'name' => 'Referrals',
                     'route' => '/affiliates/referrals',
+                    'show_in_nav' => false, // subsumed by the Affiliates console (drawer); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Referrals'],
                         ['code' => 'approve-commission', 'name' => 'Approve Commission'],
@@ -978,25 +980,30 @@ return [
                     'code' => 'affiliate-payouts',
                     'name' => 'Payouts',
                     'route' => '/affiliates/payouts',
+                    'show_in_nav' => false, // subsumed by the Affiliates console (payouts ledger); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Payouts'],
                         ['code' => 'create', 'name' => 'Create Payout'],
                         ['code' => 'process', 'name' => 'Process Payout'],
+                        ['code' => 'complete', 'name' => 'Complete Payout'],
                     ],
                 ],
                 [
                     'code' => 'affiliate-settings',
                     'name' => 'Settings',
                     'route' => '/affiliates/settings',
+                    'show_in_nav' => false, // subsumed by the Affiliates console (settings modal); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Settings'],
                         ['code' => 'edit', 'name' => 'Edit Settings'],
+                        ['code' => 'update', 'name' => 'Update Settings'],
                     ],
                 ],
                 [
                     'code' => 'affiliate-analytics',
                     'name' => 'Analytics',
                     'route' => '/affiliates/analytics',
+                    'show_in_nav' => false, // subsumed by the Affiliates console (analytics band); kept for HRMAC
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Analytics'],
                         ['code' => 'export', 'name' => 'Export Reports'],
