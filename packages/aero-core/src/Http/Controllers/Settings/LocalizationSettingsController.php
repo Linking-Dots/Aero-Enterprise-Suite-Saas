@@ -16,8 +16,9 @@ class LocalizationSettingsController extends Controller
     {
         $setting = SystemSetting::current();
 
-        return Inertia::render('Core/Settings/Localization', [
-            'title' => 'Localization',
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'localization',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
             'localization' => $setting->getLocalizationPayload(),
             'timezones' => $this->getTimezones(),
         ]);

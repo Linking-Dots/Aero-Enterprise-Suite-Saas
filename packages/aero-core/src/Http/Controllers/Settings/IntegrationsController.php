@@ -20,7 +20,9 @@ class IntegrationsController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Core/Settings/Integrations', [
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'integrations',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
             'integrations' => [
                 'slack' => [
                     'enabled' => (bool) $this->settings->get('integration_slack_enabled', false),

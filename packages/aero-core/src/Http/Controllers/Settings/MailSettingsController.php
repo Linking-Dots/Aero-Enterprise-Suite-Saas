@@ -30,8 +30,9 @@ class MailSettingsController extends Controller
 
         $this->audit->logAccess('mail_settings', null, null, ['smtp_credentials']);
 
-        return Inertia::render('Core/Settings/Mail', [
-            'title' => 'Email (SMTP) Settings',
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'mail',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
             'emailSettings' => $setting->getSanitizedEmailSettings(),
             'mail' => [
                 'driver' => $this->settings->get('mail_driver', 'smtp'),

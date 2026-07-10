@@ -40,8 +40,10 @@ class SystemSettingControllerTest extends PackageTestCase
             ->get('/settings/system')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Core/Settings/SystemSettings', false)
-                ->has('settings')
+                ->component('Core/Settings/Index', false)
+                ->where('section', 'general')
+                ->has('general')
+                ->has('summary')
             );
     }
 

@@ -18,7 +18,9 @@ class EmailTemplateController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Core/Settings/EmailTemplates', [
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'templates',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
             'templates' => EmailTemplate::orderBy('name')->get(),
         ]);
     }
@@ -47,8 +49,21 @@ class EmailTemplateController extends Controller
         return back()->with('success', 'Template created.');
     }
 
-    public function update(Request $request, EmailTemplate $template): RedirectResponse
+    /**
+     * Resolve the template manually. On tenant subdomains the FIRST route
+     * parameter is {tenant}; a scalar-typed method arg gets that positionally
+     * (e.g. 'democorp'), and model binding is unreliable here — so we read the
+     * {template} route key explicitly and bind on the tenant connection.
+     */
+    private function resolveTemplate(): EmailTemplate
     {
+        return EmailTemplate::findOrFail(request()->route('template'));
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        $template = $this->resolveTemplate();
+
         abort_if(
             $template->is_locked && $request->has('slug'),
             403,
@@ -76,8 +91,10 @@ class EmailTemplateController extends Controller
         return back()->with('success', 'Template updated.');
     }
 
-    public function destroy(EmailTemplate $template): RedirectResponse
+    public function destroy(): RedirectResponse
     {
+        $template = $this->resolveTemplate();
+
         abort_if($template->is_locked, 403, 'Cannot delete a locked system template.');
 
         $this->audit->log(
@@ -92,8 +109,10 @@ class EmailTemplateController extends Controller
         return back()->with('success', 'Template deleted.');
     }
 
-    public function preview(EmailTemplate $template): HttpResponse
+    public function preview(): HttpResponse
     {
+        $template = $this->resolveTemplate();
+
         return response($template->body_html)->header('Content-Type', 'text/html');
     }
 }

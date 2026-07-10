@@ -34,10 +34,17 @@ class SystemSettingController extends Controller
             return new SystemSettingResource($setting);
         }
 
-        return Inertia::render('Core/Settings/SystemSettings', [
-            'title' => 'System Settings',
-            'settings' => $this->service->allAsArray(),
-            'systemSettings' => SystemSettingResource::make($setting)->resolve(),
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'general',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
+            'general' => [
+                'app_name' => $this->service->get('app_name', config('app.name')),
+                'app_url' => $this->service->get('app_url', config('app.url')),
+                'support_email' => $this->service->get('support_email', ''),
+                'timezone' => $this->service->get('timezone', 'UTC'),
+                'date_format' => $this->service->get('date_format', 'Y-m-d'),
+                'time_format' => $this->service->get('time_format', 'H:i'),
+            ],
         ]);
     }
 

@@ -30,8 +30,9 @@ class BrandingSettingsController extends Controller
             return new SystemSettingResource($setting);
         }
 
-        return Inertia::render('Core/Settings/Branding', [
-            'title' => 'Branding & Appearance',
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'branding',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
             'branding' => $setting->getBrandingPayload(),
         ]);
     }

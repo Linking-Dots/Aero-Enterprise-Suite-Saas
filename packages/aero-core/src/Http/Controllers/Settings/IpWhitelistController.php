@@ -28,8 +28,9 @@ class IpWhitelistController extends Controller
             return response()->json(['config' => $config]);
         }
 
-        return Inertia::render('Core/Settings/IpWhitelist', [
-            'title' => 'IP Access Control',
+        return Inertia::render('Core/Settings/Index', [
+            'section' => 'ip',
+            'summary' => \Aero\Core\Services\SettingsSummary::build(),
             'config' => $config,
         ]);
     }
