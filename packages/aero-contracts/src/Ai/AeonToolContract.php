@@ -31,8 +31,12 @@ interface AeonToolContract
     /**
      * Execute the tool for the given user.
      *
+     * May additionally return a 'data' key: a compact machine-readable payload
+     * (raw rows / aggregates / ids) that is fed BACK to the model as the tool
+     * result so it can reason over real data and chain further tool calls.
+     *
      * @param  array<string,mixed>  $args
-     * @return array{text:string,blocks:array<int,array<string,mixed>>}
+     * @return array{text:string,blocks:array<int,array<string,mixed>>,data?:array<string,mixed>}
      */
     public function run(array $args, ?int $userId): array;
 }

@@ -37,8 +37,10 @@ export default function AeonPage() {
           <AeonConversation
             messages={aeon.messages}
             sending={aeon.sending}
+            stage={aeon.stage}
             onSend={aeon.send}
             onAction={onAction}
+            onFeedback={aeon.feedback}
             user={user}
             hasAnimated={aeon.hasAnimated}
             markAnimated={aeon.markAnimated}

@@ -29,17 +29,29 @@ export function UserAvatar({ user }) {
   return <span>{initials(user)}</span>;
 }
 
+const IcoThumbUp = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7 10v11H4a1 1 0 01-1-1v-9a1 1 0 011-1h3zm0 0l4.5-7a2 2 0 011.8 2.6L12.5 9H19a2 2 0 012 2.4l-1.3 7A2 2 0 0117.7 20H7" />
+  </svg>
+);
+const IcoThumbDown = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 14V3h3a1 1 0 011 1v9a1 1 0 01-1 1h-3zm0 0l-4.5 7a2 2 0 01-1.8-2.6l.8-3.4H5a2 2 0 01-2-2.4l1.3-7A2 2 0 016.3 4H17" />
+  </svg>
+);
+
 // Shared conversation body: the message stream (generative-UI blocks, typed
 // once) + the smart composer. Used by both the slide-over drawer and the
-// full-page /aeon console so they stay identical.
-export default function AeonConversation({ messages, sending, onSend, onAction, user, hasAnimated, markAnimated, inputRef }) {
+// full-page /aeon console so they stay identical. `stage` narrates the agent
+// loop while sending; `onFeedback(id, 1|-1)` records thumbs on a reply.
+export default function AeonConversation({ messages, sending, stage, onSend, onAction, onFeedback, user, hasAnimated, markAnimated, inputRef }) {
   const [draft, setDraft] = useState('');
   const streamRef = useRef(null);
 
   useEffect(() => {
     const el = streamRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, sending]);
+  }, [messages, sending, stage]);
 
   const submit = (e) => { e.preventDefault(); onSend(draft); setDraft(''); };
 
@@ -73,6 +85,30 @@ export default function AeonConversation({ messages, sending, onSend, onAction, 
                 </div>
                 <div className="aeon-bubble">
                   <BlockRenderer blocks={m.blocks} onAction={onAction} animate={animate} onAnimated={() => markAnimated?.(key)} />
+                  {m.role !== 'user' && m.dbId && onFeedback ? (
+                    <div className="aeon-fb" aria-label="Was this helpful?">
+                      <button
+                        type="button"
+                        className={`aeon-fb-btn ${m.feedback === 1 ? 'is-on' : ''}`}
+                        title="Helpful"
+                        aria-label="Helpful"
+                        aria-pressed={m.feedback === 1}
+                        onClick={() => onFeedback(m.id, 1)}
+                      >
+                        {IcoThumbUp}
+                      </button>
+                      <button
+                        type="button"
+                        className={`aeon-fb-btn ${m.feedback === -1 ? 'is-on is-down' : ''}`}
+                        title="Not helpful"
+                        aria-label="Not helpful"
+                        aria-pressed={m.feedback === -1}
+                        onClick={() => onFeedback(m.id, -1)}
+                      >
+                        {IcoThumbDown}
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
@@ -84,7 +120,7 @@ export default function AeonConversation({ messages, sending, onSend, onAction, 
             <div className="aeon-av is-ai">✦</div>
             <div className="aeon-bubble aeon-think">
               <span className="aeon-eq"><i /><i /><i /><i /></span>
-              <span>Aeon is thinking…</span>
+              <span>{stage || 'Aeon is thinking…'}</span>
             </div>
           </div>
         )}

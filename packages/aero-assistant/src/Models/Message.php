@@ -11,9 +11,9 @@ class Message extends TenantModel
 {
     protected $table = 'aeon_messages';
 
-    protected $fillable = ['conversation_id', 'role', 'content', 'blocks', 'tool_calls', 'tokens', 'provider', 'model'];
+    protected $fillable = ['conversation_id', 'role', 'content', 'blocks', 'tool_calls', 'tokens', 'provider', 'model', 'feedback'];
 
-    protected $casts = ['blocks' => 'array', 'tool_calls' => 'array', 'tokens' => 'integer'];
+    protected $casts = ['blocks' => 'array', 'tool_calls' => 'array', 'tokens' => 'integer', 'feedback' => 'integer'];
 
     public function conversation(): BelongsTo
     {

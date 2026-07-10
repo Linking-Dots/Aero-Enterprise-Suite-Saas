@@ -6,6 +6,7 @@ namespace Aero\Assistant\Providers;
 
 use Aero\Assistant\Console\Commands\IndexKnowledge;
 use Aero\Assistant\Providers\Models\GeminiProvider;
+use Aero\Assistant\Providers\Models\OpenAiCompatProvider;
 use Aero\Assistant\Services\AeonService;
 use Aero\Assistant\Services\IndexingService;
 use Aero\Assistant\Services\RagService;
@@ -36,7 +37,7 @@ class AeonServiceProvider extends AbstractModuleProvider
 
         $this->app->singleton(AiProvider::class, function () {
             return match (config('aeon.provider', 'gemini')) {
-                'gemini' => new GeminiProvider(),
+                'openai' => new OpenAiCompatProvider(),
                 default  => new GeminiProvider(),
             };
         });

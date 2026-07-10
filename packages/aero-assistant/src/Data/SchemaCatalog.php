@@ -26,11 +26,12 @@ class SchemaCatalog
         // government / identity PII
         'national_id', 'tax_id', 'ssn', 'passport', 'nid', 'date_of_birth', 'dob', 'birth_date',
         // financial / banking
-        'account_number', 'routing_number', 'iban', 'swift', 'card_number', 'cvv',
+        'account_number', 'routing_number', 'iban', 'swift', 'card_number', 'cvv', 'bank_',
         // compensation (aggregating/listing pay across the org without authorisation)
         'salary', 'basic_salary', 'gross', 'net_pay', 'net_salary', 'compensation', 'ctc', 'wage',
+        'hourly_rate', 'pay_rate', 'allowance', 'deduction',
         // health / private
-        'medical_notes', 'medical', 'diagnosis',
+        'medical_notes', 'medical', 'diagnosis', 'emergency_contact',
     ];
 
     private const SYSTEM_TABLES = [
@@ -103,6 +104,26 @@ class SchemaCatalog
         }
 
         return false;
+    }
+
+    /**
+     * The module (code) that owns a table, resolved by module-code prefix
+     * against the live module registry (config/module.php files). Unprefixed
+     * tables (users, departments, audit_logs, …) belong to 'core'.
+     */
+    public function moduleFor(string $table): string
+    {
+        $best = 'core';
+        $bestLen = 0;
+        foreach ((array) config('modules', []) as $m) {
+            $code = is_array($m) ? (string) ($m['code'] ?? '') : '';
+            if ($code !== '' && Str::startsWith($table, $code.'_') && strlen($code) > $bestLen) {
+                $best = $code;
+                $bestLen = strlen($code);
+            }
+        }
+
+        return $best;
     }
 
     /**

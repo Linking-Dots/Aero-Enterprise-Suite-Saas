@@ -14,7 +14,7 @@ const IcoClose = svg(<path d="M6 6l12 12M18 6L6 18" />);
 
 // The Aeon "living console" as a slide-over: ambient aura, animated core header,
 // and the shared conversation body (stream + composer).
-export default function AeonDrawer({ isOpen, onClose, messages, sending, onSend, onAction, user, hasAnimated, markAnimated }) {
+export default function AeonDrawer({ isOpen, onClose, messages, sending, stage, onSend, onAction, onFeedback, user, hasAnimated, markAnimated }) {
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef(null);
   const state = sending ? 'thinking' : 'listening';
@@ -51,8 +51,10 @@ export default function AeonDrawer({ isOpen, onClose, messages, sending, onSend,
         <AeonConversation
           messages={messages}
           sending={sending}
+          stage={stage}
           onSend={onSend}
           onAction={onAction}
+          onFeedback={onFeedback}
           user={user}
           hasAnimated={hasAnimated}
           markAnimated={markAnimated}

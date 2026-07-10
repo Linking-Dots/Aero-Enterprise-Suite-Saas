@@ -269,6 +269,14 @@ textarea.aeon-fld-c { resize: vertical; line-height: 1.5; }
 .aeon-form.is-done .aeon-form-row { margin-top: 12px; }
 @media (max-width: 560px) { .aeon-form-grid { grid-template-columns: 1fr; } }
 
+.aeon-fb { display: flex; gap: 4px; margin-top: 8px; opacity: .55; transition: opacity .15s; }
+.aeon-bubble:hover .aeon-fb { opacity: 1; }
+.aeon-fb-btn { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--aeos-text-secondary, #8593a6); cursor: pointer; transition: .15s; }
+.aeon-fb-btn svg { width: 14px; height: 14px; }
+.aeon-fb-btn:hover { background: var(--aeos-glass, rgba(255,255,255,.06)); color: var(--aeos-text-primary, #e9f1fa); }
+.aeon-fb-btn.is-on { color: var(--aeos-success, #37e2a0); border-color: color-mix(in srgb, var(--aeos-success, #37e2a0) 35%, transparent); background: color-mix(in srgb, var(--aeos-success, #37e2a0) 10%, transparent); }
+.aeon-fb-btn.is-on.is-down { color: var(--aeos-danger, #ff6684); border-color: color-mix(in srgb, var(--aeos-danger, #ff6684) 35%, transparent); background: color-mix(in srgb, var(--aeos-danger, #ff6684) 10%, transparent); }
+
 .aeon-think { display: flex; gap: 11px; align-items: center; }
 .aeon-eq { display: flex; gap: 4px; }
 .aeon-eq i { width: 4px; height: 14px; border-radius: 2px; background: var(--aeos-primary, #22e3ff); display: block; animation: aeon-eq 1s infinite ease-in-out; }

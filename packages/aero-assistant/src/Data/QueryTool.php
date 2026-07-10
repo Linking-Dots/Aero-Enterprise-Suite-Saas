@@ -17,11 +17,12 @@ use Illuminate\Support\Str;
  * emit a sensitive/PII value (SchemaCatalog::SENSITIVE). Tenant isolation comes
  * from the current (tenant) DB connection.
  *
- * NOTE (hardening, pre multi-user prod): this tool is not yet HRMAC-gated per
- * table — any user who can use Aeon can read aggregate/non-sensitive data from
- * any table. Sensitive columns are excluded, but a per-module/per-table access
- * gate should be added before exposing to low-privilege multi-tenant users.
- * Results render as stat / table / chart / entityCard blocks.
+ * Access control: every query is HRMAC-gated by the module that owns the table
+ * (SchemaCatalog::moduleFor + RoleModuleAccessInterface) — the table list shown
+ * to the model AND every execution are both filtered. Every run is written to
+ * the audit trail; list/find (row-level exposure) additionally writes an access
+ * log. Results render as stat / table / chart / entityCard blocks, and a compact
+ * `data` payload is returned so the model can reason and chain.
  */
 class QueryTool implements AeonToolContract
 {
@@ -34,11 +35,13 @@ class QueryTool implements AeonToolContract
 
     public function description(): string
     {
-        $entities = array_map(
-            static fn ($e) => $e['table'].' ('.$e['label'].')',
-            $this->catalog->all(),
-        );
-        $list = implode(', ', array_slice(array_values($entities), 0, 120));
+        $entities = [];
+        foreach ($this->catalog->all() as $e) {
+            if ($this->userCanQuery($e['table'])) {
+                $entities[] = $e['table'].' ('.$e['label'].')';
+            }
+        }
+        $list = implode(', ', array_slice($entities, 0, 120));
 
         return 'Answer ANY data question about this system by querying a table. Provide `entity` (one '
             .'of the tables below), `operation` (count | aggregate | list), and optionally `group_by` '
@@ -83,6 +86,13 @@ class QueryTool implements AeonToolContract
             return $this->fail("I don't have a data table called \"{$entityKey}\".");
         }
 
+        // HRMAC: the module that owns this table must be accessible to the user.
+        if (! $this->userCanQuery($entityKey)) {
+            $this->audit('aeon.query_denied', $entityKey, $args, 'denied');
+
+            return $this->fail("You don't have access to ".Str::headline($this->catalog->moduleFor($entityKey)).' data.');
+        }
+
         $label = $entity['label'];
         $operation = (string) ($args['operation'] ?? 'count');
         $groupBy = $this->validColumn($entityKey, $args['group_by'] ?? null);
@@ -97,6 +107,8 @@ class QueryTool implements AeonToolContract
             }
             $this->applyPeriod($query, $dateField, $period);
             $this->applyFilters($query, $entityKey, $args['filters'] ?? []);
+
+            $this->audit('aeon.query', $entityKey, $args, 'executed');
 
             if ($operation === 'aggregate') {
                 return $this->aggregate($query, $entityKey, $label, $args);
@@ -142,6 +154,7 @@ class QueryTool implements AeonToolContract
                     ['type' => 'stats', 'items' => [['k' => $label.$this->periodSuffix($period), 'v' => (string) $total]]],
                     ['type' => $chart, 'title' => Str::headline($label).' by '.Str::headline($this->dimensionLabel($groupBy)), 'items' => $items],
                 ],
+                'data' => ['total' => $total, 'group_by' => $groupBy, 'groups' => $items, 'period' => $period],
             ];
         }
 
@@ -155,7 +168,11 @@ class QueryTool implements AeonToolContract
             }
         }
 
-        return ['text' => "There are **{$total}** {$label}".$this->periodPhrase($period).'.', 'blocks' => $blocks];
+        return [
+            'text' => "There are **{$total}** {$label}".$this->periodPhrase($period).'.',
+            'blocks' => $blocks,
+            'data' => ['total' => $total, 'period' => $period],
+        ];
     }
 
     /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
@@ -175,10 +192,11 @@ class QueryTool implements AeonToolContract
         return [
             'text' => "The {$fn} of {$column} across {$label} is **{$pretty}**.",
             'blocks' => [['type' => 'stats', 'items' => [['k' => Str::upper($fn).' · '.Str::headline($column), 'v' => (string) $pretty]]]],
+            'data' => ['aggregate' => $fn, 'column' => $column, 'value' => is_numeric($value) ? (float) $value : $value],
         ];
     }
 
-    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>,data:array<string,mixed>} */
     private function listRows($query, array $entity, string $label): array
     {
         $cols = array_values(array_filter(
@@ -186,16 +204,23 @@ class QueryTool implements AeonToolContract
             fn ($c) => ! $this->catalog->isSensitive($c),
         ));
         $cols = array_slice($cols, 0, 6);
-        $rows = (clone $query)->limit(10)->get($cols);
+        $idCols = in_array('id', $entity['columns'], true)
+            ? array_values(array_unique(array_merge(['id'], $cols)))
+            : $cols;
+        $rows = (clone $query)->limit(10)->get($idCols);
         $tableRows = $rows->map(fn ($r) => array_map(fn ($c) => Str::limit($this->formatValue($c, $r->{$c}), 40), $cols))->all();
+
+        $this->logAccess($entity['table'], null, $label, $cols);
 
         return [
             'text' => "Here are up to 10 {$label}:",
             'blocks' => [['type' => 'table', 'columns' => array_map([Str::class, 'headline'], $cols), 'rows' => $tableRows]],
+            // ids included so the model can chain (e.g. find → update).
+            'data' => ['rows' => $rows->map(fn ($r) => (array) $r)->all()],
         ];
     }
 
-    /** @return array{text:string,blocks:array<int,array<string,mixed>>} */
+    /** @return array{text:string,blocks:array<int,array<string,mixed>>,data:array<string,mixed>} */
     private function find($query, array $entity, string $label): array
     {
         $row = (clone $query)->first();
@@ -226,9 +251,15 @@ class QueryTool implements AeonToolContract
             $fields[] = ['k' => Str::headline($col), 'v' => Str::limit((string) $val, 60)];
         }
 
+        $this->logAccess($entity['table'], $arr['id'] ?? null, $title, array_keys($arr));
+
+        // Sensitive values stripped; id kept so the model can chain into an update.
+        $safe = array_filter($arr, fn ($v, $k) => ! $this->catalog->isSensitive($k), ARRAY_FILTER_USE_BOTH);
+
         return [
             'text' => "Here's {$title}:",
             'blocks' => [['type' => 'entityCard', 'title' => $title, 'subtitle' => $label, 'fields' => $fields]],
+            'data' => ['record' => $safe],
         ];
     }
 
@@ -489,5 +520,62 @@ class QueryTool implements AeonToolContract
     private function fail(string $msg): array
     {
         return ['text' => $msg, 'blocks' => []];
+    }
+
+    /**
+     * HRMAC gate: the signed-in user must have access to the module that owns
+     * the table. Consumer-guard pattern: when no HRMAC binding exists (isolated
+     * package tests, console) the gate is a no-op.
+     */
+    private function userCanQuery(string $table): bool
+    {
+        try {
+            if (! function_exists('auth') || ! app()->bound(\Aero\Contracts\RoleModuleAccessInterface::class)) {
+                return true;
+            }
+            $user = auth()->user();
+            if (! $user) {
+                return true; // console / jobs — route middleware already requires auth for HTTP
+            }
+
+            return app(\Aero\Contracts\RoleModuleAccessInterface::class)
+                ->userCanAccessModule($user, $this->catalog->moduleFor($table));
+        } catch (\Throwable) {
+            return false; // a broken gate must deny, never expose
+        }
+    }
+
+    /** Audit every query Aeon executes (never throws, never blocks the answer). */
+    private function audit(string $event, string $table, array $args, string $outcome): void
+    {
+        try {
+            if (! app()->bound(\Aero\Contracts\AuditServiceInterface::class)) {
+                return;
+            }
+            app(\Aero\Contracts\AuditServiceInterface::class)->log(
+                $event,
+                'query',
+                null,
+                "Aeon queried {$table} (".($args['operation'] ?? 'count').") — {$outcome}",
+                null,
+                null,
+                ['table' => $table, 'args' => $args],
+            );
+        } catch (\Throwable) {
+            // audit must never break the chat turn
+        }
+    }
+
+    /** Row-level exposure (list/find) also writes an access log. */
+    private function logAccess(string $table, int|string|null $id, ?string $label, array $fields): void
+    {
+        try {
+            if (! app()->bound(\Aero\Contracts\AuditServiceInterface::class)) {
+                return;
+            }
+            app(\Aero\Contracts\AuditServiceInterface::class)->logAccess('aeon:'.$table, $id, $label, $fields);
+        } catch (\Throwable) {
+            // access-log failure must never break the chat turn
+        }
     }
 }

@@ -23,7 +23,81 @@ export async function sendAeonMessage({ message, conversationId }) {
     }),
   });
   if (!res.ok) throw new Error(`Aeon request failed (${res.status})`);
-  return res.json(); // { conversation_id, reply: { role, content, blocks } }
+  return res.json(); // { conversation_id, reply: { id, role, content, blocks } }
+}
+
+// Streaming variant: POSTs to /aeon/message/stream and parses the SSE feed.
+// `onStage(label)` fires as the agent loop progresses (thinking / querying /
+// opening) so the UI can narrate instead of showing a dead spinner. Resolves
+// with the same payload as sendAeonMessage.
+export async function sendAeonMessageStream({ message, conversationId, onStage }) {
+  const res = await fetch('/aeon/message/stream', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-XSRF-TOKEN': xsrf(),
+    },
+    body: JSON.stringify({
+      message,
+      conversation_id: conversationId ?? null,
+      context: { page: window.location.pathname },
+    }),
+  });
+  if (!res.ok || !res.body) throw new Error(`Aeon stream failed (${res.status})`);
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let done = null;
+
+  const handle = (raw) => {
+    const lines = raw.split('\n');
+    let event = 'message';
+    let data = '';
+    lines.forEach((l) => {
+      if (l.startsWith('event:')) event = l.slice(6).trim();
+      else if (l.startsWith('data:')) data += l.slice(5).trim();
+    });
+    if (!data) return;
+    let payload;
+    try { payload = JSON.parse(data); } catch (e) { return; }
+    if (event === 'stage' && onStage) onStage(payload.label || '');
+    if (event === 'done') done = payload;
+    if (event === 'error') throw new Error(payload.message || 'Aeon stream error');
+  };
+
+  for (;;) {
+    const { value, done: eof } = await reader.read();
+    if (eof) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buffer.indexOf('\n\n')) !== -1) {
+      const raw = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 2);
+      if (raw.trim()) handle(raw);
+    }
+  }
+  if (!done) throw new Error('Aeon stream ended without a reply');
+  return done;
+}
+
+// Thumbs up/down on an assistant reply. value: 1 | -1 | 0 (clear).
+export async function sendAeonFeedback({ messageId, value }) {
+  const res = await fetch(`/aeon/messages/${messageId}/feedback`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-XSRF-TOKEN': xsrf(),
+    },
+    body: JSON.stringify({ value }),
+  });
+  return res.ok;
 }
 
 // Submit a generative-UI operation form to the app's REAL endpoint. The server

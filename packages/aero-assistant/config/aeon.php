@@ -26,11 +26,13 @@ return [
     # How you help
     1. **Guide** — answer "how do I…" and "where is…" with concrete, correct steps that name the real
        page/menu ("People & Access → Users → New user"). Be specific, not generic. When the user asks to
-       GO somewhere, OPEN a page, or START creating something, call the `navigate` tool with the exact
-       route from the knowledge base so you can take them straight there.
-    2. **Explain & analyse** — interpret what the user sees, summarise data, define terms in-context.
-    3. **Act (soon)** — for write tasks you draft the exact action; the user confirms and it runs through
-       the real, permission-checked screen. Never claim you already performed a write you cannot verify.
+       GO somewhere or OPEN a page, call the `navigate` tool with the exact route from the knowledge base.
+    2. **Explain & analyse** — you can CHAIN tools: query live data with `query_data`, read the results,
+       query again if needed, then answer with real numbers. Never guess a figure you can query.
+    3. **Act** — for create/update/delete, call `prepare_operation`; the user reviews a pre-filled form
+       and submits it through the real, permission-checked endpoint. For update/delete of a specific
+       record, FIRST `query_data` (operation "find") to get its id, THEN `prepare_operation` with that id.
+       Never claim you already performed a write — the user's confirmation does it.
 
     # Navigation accuracy (critical)
     - When you tell the user where to go, use the EXACT labels exactly as they appear in the app's
@@ -54,6 +56,18 @@ return [
     Your name is Aeon. Speak in the first person.
     PROMPT),
 
+    // Agentic tool loop: how many model↔tool round-trips one user turn may take,
+    // and how many prior messages are replayed as context.
+    'agent' => [
+        'max_loops'      => (int) env('AEON_MAX_LOOPS', 5),
+        'history_window' => (int) env('AEON_HISTORY_WINDOW', 30),
+    ],
+
+    // Cost control. 0 = unlimited. Counted from persisted per-message token usage.
+    'budget' => [
+        'daily_tokens_per_user' => (int) env('AEON_DAILY_TOKENS_PER_USER', 250000),
+    ],
+
     'providers' => [
         'gemini' => [
             'api_key'     => env('GEMINI_API_KEY'),
@@ -68,6 +82,18 @@ return [
             'fallback_models' => env('GEMINI_FALLBACK_MODELS', 'gemini-2.5-flash,gemini-2.5-flash-lite'),
             'embed_model' => env('GEMINI_EMBED_MODEL', 'gemini-embedding-001'),
             'embed_dims'  => (int) env('GEMINI_EMBED_DIMS', 768),
+        ],
+
+        // Any /chat/completions-compatible server: OpenAI, OpenRouter, Ollama,
+        // LM Studio, vLLM. Select with AEON_PROVIDER=openai.
+        'openai' => [
+            'api_key'     => env('AEON_OPENAI_API_KEY', env('OPENAI_API_KEY')),
+            'model'       => env('AEON_OPENAI_MODEL', 'gpt-4o-mini'),
+            'base_url'    => env('AEON_OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+            'timeout'     => (int) env('AEON_OPENAI_TIMEOUT', 30),
+            'temperature' => (float) env('AEON_OPENAI_TEMPERATURE', 0.6),
+            'max_tokens'  => (int) env('AEON_OPENAI_MAX_TOKENS', 1200),
+            'embed_model' => env('AEON_OPENAI_EMBED_MODEL', 'text-embedding-3-small'),
         ],
     ],
 

@@ -52,7 +52,7 @@ class GeminiProviderTest extends PackageTestCase
 
         $result = (new GeminiProvider())->chat(
             [['role' => 'user', 'content' => 'open leave types']],
-            [['functionDeclarations' => [['name' => 'navigate']]]],
+            [['name' => 'navigate', 'description' => 'go', 'parameters' => ['route' => ['type' => 'string']]]],
         );
 
         $this->assertSame('Sure', $result->content);
@@ -60,7 +60,35 @@ class GeminiProviderTest extends PackageTestCase
         $this->assertSame('navigate', $result->toolCalls[0]['name']);
         $this->assertSame('/hrm/leave/types', $result->toolCalls[0]['args']['route']);
 
-        Http::assertSent(fn ($request) => isset($request['tools']));
+        Http::assertSent(fn ($request) => isset($request['tools'])
+            && $request['tools'][0]['functionDeclarations'][0]['name'] === 'navigate');
+    }
+
+    public function test_chat_serialises_tool_turns_as_function_call_and_response(): void
+    {
+        Http::fake([
+            '*generativelanguage*' => Http::response([
+                'candidates' => [['content' => ['parts' => [['text' => 'There are 3.']]]]],
+            ], 200),
+        ]);
+
+        (new GeminiProvider())->chat([
+            ['role' => 'user', 'content' => 'how many employees?'],
+            ['role' => 'assistant', 'content' => '', 'tool_calls' => [['name' => 'query_data', 'args' => ['entity' => 'employees']]]],
+            ['role' => 'tool', 'results' => [['name' => 'query_data', 'response' => ['status' => 'ok', 'data' => ['total' => 3]]]]],
+        ]);
+
+        Http::assertSent(function ($request) {
+            $contents = $request['contents'];
+            // args/response are cast to objects in the payload (JSON object shape).
+            $response = (array) $contents[2]['parts'][0]['functionResponse']['response'];
+
+            return $contents[1]['role'] === 'model'
+                && $contents[1]['parts'][0]['functionCall']['name'] === 'query_data'
+                && $contents[2]['role'] === 'user'
+                && $contents[2]['parts'][0]['functionResponse']['name'] === 'query_data'
+                && $response['data']['total'] === 3;
+        });
     }
 
     public function test_chat_returns_failed_result_on_http_error(): void

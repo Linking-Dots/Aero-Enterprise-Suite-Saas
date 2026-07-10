@@ -22,26 +22,22 @@ class ToolRegistry
     public function __construct(private iterable $dataTools = []) {}
 
     /**
-     * Gemini functionDeclarations for the enabled tools (navigate + data tools).
+     * Neutral tool declarations (navigate + data tools). Each provider adapts
+     * this list to its own wire format (Gemini functionDeclarations, OpenAI tools).
      *
-     * @return array<int,array<string,mixed>>
+     * @return array<int,array{name:string,description:string,parameters:array<string,mixed>}>
      */
     public function declarations(): array
     {
         $fns = [[
             'name' => 'navigate',
-            'description' => 'Take the user to a page in AEOS365. Call this when the user asks to go to, '
-                .'open, view, or CREATE/ADD something. Use the exact route path from the knowledge base '
-                .'(e.g. /hrm/leave/types). To open a NEW/create form, append "/create" to that entity\'s '
-                .'list route (e.g. /hrm/employees → /hrm/employees/create); these are valid. Do not invent '
-                .'other routes.',
+            'description' => 'Take the user to a page in AEOS365. Call this ONLY when the user asks to go to '
+                .'or open a page. Use the exact route path from the knowledge base (e.g. /hrm/leave/types). '
+                .'To open a NEW/create form, append "/create" to that entity\'s list route '
+                .'(e.g. /hrm/employees → /hrm/employees/create); these are valid. Do not invent other routes.',
             'parameters' => [
-                'type' => 'object',
-                'properties' => [
-                    'route' => ['type' => 'string', 'description' => 'Exact route path, e.g. /hrm/leave/types'],
-                    'label' => ['type' => 'string', 'description' => 'Human-readable destination, e.g. "Leave Types"'],
-                ],
-                'required' => ['route'],
+                'route' => ['type' => 'string', 'description' => 'Exact route path, e.g. /hrm/leave/types'],
+                'label' => ['type' => 'string', 'description' => 'Human-readable destination, e.g. "Leave Types"'],
             ],
         ]];
 
@@ -49,11 +45,11 @@ class ToolRegistry
             $fns[] = [
                 'name' => $tool->name(),
                 'description' => $tool->description(),
-                'parameters' => ['type' => 'object', 'properties' => (object) $tool->parameters(), 'required' => []],
+                'parameters' => $tool->parameters(),
             ];
         }
 
-        return [['functionDeclarations' => $fns]];
+        return $fns;
     }
 
     public function dataTool(string $name): ?AeonToolContract

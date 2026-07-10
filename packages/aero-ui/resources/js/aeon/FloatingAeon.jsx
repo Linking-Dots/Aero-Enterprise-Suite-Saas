@@ -50,9 +50,11 @@ export default function FloatingAeon() {
         onClose={aeon.close}
         messages={aeon.messages}
         sending={aeon.sending}
+        stage={aeon.stage}
         onSend={aeon.send}
         user={user}
         onAction={onAction}
+        onFeedback={aeon.feedback}
         hasAnimated={aeon.hasAnimated}
         markAnimated={aeon.markAnimated}
       />

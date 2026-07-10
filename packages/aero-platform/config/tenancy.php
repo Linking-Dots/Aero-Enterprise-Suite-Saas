@@ -319,6 +319,8 @@ return [
             'vendor/aero/core/database/migrations',
             // aero-hrm provides HRM-specific tables
             'vendor/aero/hrm/database/migrations',
+            // aero-assistant provides the Aeon (AI assistant) tables
+            'vendor/aero/assistant/database/migrations',
             // App-level tenant migrations (if any)
             database_path('migrations/tenant'),
         ],

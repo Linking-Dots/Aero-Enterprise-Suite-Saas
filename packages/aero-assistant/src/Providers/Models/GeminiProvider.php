@@ -30,13 +30,48 @@ class GeminiProvider implements AiProvider
         $system = null;
         $contents = [];
         foreach ($messages as $m) {
-            if (($m['role'] ?? '') === 'system') {
+            $role = $m['role'] ?? 'user';
+            if ($role === 'system') {
                 $system = $m['content'] ?? '';
                 continue;
             }
+
+            // Tool results answer the preceding model turn's functionCalls.
+            // Gemini only knows roles user|model: functionResponse parts ride
+            // in a 'user' content, one part per call, in order.
+            if ($role === 'tool') {
+                $parts = [];
+                foreach ((array) ($m['results'] ?? []) as $r) {
+                    $parts[] = ['functionResponse' => [
+                        'name' => (string) ($r['name'] ?? ''),
+                        'response' => (object) ($r['response'] ?? []),
+                    ]];
+                }
+                if (! empty($parts)) {
+                    $contents[] = ['role' => 'user', 'parts' => $parts];
+                }
+                continue;
+            }
+
+            $parts = [];
+            $text = (string) ($m['content'] ?? '');
+            if ($text !== '') {
+                $parts[] = ['text' => $text];
+            }
+            if ($role === 'assistant') {
+                foreach ((array) ($m['tool_calls'] ?? []) as $call) {
+                    $parts[] = ['functionCall' => [
+                        'name' => (string) ($call['name'] ?? ''),
+                        'args' => (object) ($call['args'] ?? []),
+                    ]];
+                }
+            }
+            if (empty($parts)) {
+                $parts[] = ['text' => ''];
+            }
             $contents[] = [
-                'role'  => ($m['role'] ?? 'user') === 'assistant' ? 'model' : 'user',
-                'parts' => [['text' => (string) ($m['content'] ?? '')]],
+                'role'  => $role === 'assistant' ? 'model' : 'user',
+                'parts' => $parts,
             ];
         }
 
@@ -51,7 +86,16 @@ class GeminiProvider implements AiProvider
             $payload['systemInstruction'] = ['parts' => [['text' => $system]]];
         }
         if (! empty($tools)) {
-            $payload['tools'] = $tools;
+            // Neutral declarations → Gemini functionDeclarations.
+            $payload['tools'] = [['functionDeclarations' => array_map(static fn ($t) => [
+                'name' => $t['name'],
+                'description' => $t['description'] ?? '',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => (object) ($t['parameters'] ?? []),
+                    'required' => [],
+                ],
+            ], $tools)]];
         }
 
         // Try the primary model, then fall back to alternates when a model is

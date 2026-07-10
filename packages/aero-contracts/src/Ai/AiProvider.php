@@ -6,9 +6,16 @@ namespace Aero\Contracts\Ai;
 
 /**
  * Provider-agnostic AI model interface. Feature code depends only on this.
- * Drivers (Gemini, OpenAI, Anthropic, OpenAI-compatible) live in aero-assistant.
+ * Drivers (Gemini, OpenAI-compatible, …) live in aero-assistant.
  *
- * @param array<int,array{role:string,content:string}> $messages
+ * Message shape (canonical, provider adapts to its own wire format):
+ *   ['role' => 'system'|'user'|'assistant'|'tool', 'content' => string]
+ *   assistant turns MAY carry 'tool_calls' => [['name' => string, 'args' => array], …]
+ *   tool turns carry 'results' => [['name' => string, 'response' => array], …]
+ *     answering the immediately preceding assistant turn's tool_calls, in order.
+ *
+ * Tool shape (neutral): [['name' => string, 'description' => string,
+ *   'parameters' => array JSON-schema properties], …]
  */
 interface AiProvider
 {
