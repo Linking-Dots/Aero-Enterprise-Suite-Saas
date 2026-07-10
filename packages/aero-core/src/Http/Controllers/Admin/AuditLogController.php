@@ -132,7 +132,7 @@ class AuditLogController extends Controller
 
             if ($this->tableExists('audit_logs')) {
                 DB::table('audit_logs')
-                    ->when($request->event_type, fn ($q, $t) => $q->where('event_type', $t))
+                    ->when($request->event_type, fn ($q, $t) => $this->whereEventType($q, $t))
                     ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
                     ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
                     ->orderByDesc('created_at')
@@ -235,15 +235,31 @@ class AuditLogController extends Controller
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
                     ->orWhere('actor_name', 'like', "%{$search}%")
-                    ->orWhere('subject_label', 'like', "%{$search}%");
+                    ->orWhere('subject_label', 'like', "%{$search}%")
+                    ->orWhere('event_type', 'like', "%{$search}%")
+                    ->orWhere('action', 'like', "%{$search}%");
             }))
             ->when($actorId, fn ($q) => $q->where('actor_id', $actorId))
-            ->when($eventType, fn ($q) => $q->where('event_type', $eventType))
+            ->when($eventType, fn ($q, $t) => $this->whereEventType($q, $t))
             ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
             ->orderByDesc('created_at')
             ->paginate($perPage)
             ->withQueryString();
+    }
+
+    /**
+     * Stored event_type is namespaced (auth.login_failed, data.updated) while the
+     * filter UI sends plain verbs (login_failed) — match exact, dot-suffix, or the
+     * plain action column.
+     */
+    private function whereEventType($q, string $type)
+    {
+        return $q->where(function ($q) use ($type) {
+            $q->where('event_type', $type)
+                ->orWhere('event_type', 'like', '%.'.$type)
+                ->orWhere('action', $type);
+        });
     }
 
     private function getModelActivityLogs(int $perPage, string $search, ?string $actorId, ?string $dateFrom, ?string $dateTo): \Illuminate\Pagination\LengthAwarePaginator
@@ -310,9 +326,11 @@ class AuditLogController extends Controller
             })
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('actor_name', 'like', "%{$search}%")
-                    ->orWhere('actor_email', 'like', "%{$search}%");
+                    ->orWhere('actor_email', 'like', "%{$search}%")
+                    ->orWhere('event_type', 'like', "%{$search}%")
+                    ->orWhere('action', 'like', "%{$search}%");
             }))
-            ->when($eventType, fn ($q) => $q->where('event_type', $eventType))
+            ->when($eventType, fn ($q, $t) => $this->whereEventType($q, $t))
             ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
             ->orderByDesc('created_at')
@@ -381,7 +399,7 @@ class AuditLogController extends Controller
                     ->orWhere('subject_label', 'like', "%{$search}%");
             }))
             ->when($actorId, fn ($q) => $q->where('actor_id', $actorId))
-            ->when($eventType, fn ($q) => $q->where('event_type', $eventType))
+            ->when($eventType, fn ($q, $t) => $this->whereEventType($q, $t))
             ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
             ->orderByDesc('created_at')

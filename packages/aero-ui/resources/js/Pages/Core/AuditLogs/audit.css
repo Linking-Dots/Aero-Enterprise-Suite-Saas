@@ -1,0 +1,73 @@
+/* Audit Logs command center — activity / model / access / security / queue log
+   viewer. Extends products.css (pc-* masthead / KPIs / cards / chips). All colour
+   via theme tokens so every surface reacts to Theme Studio. Card surfaces are
+   <Card> so they honour card-style. Scoped to .au for container queries. */
+
+/* ---- KPI band ---- */
+.au .au-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--aeos-space-3); margin-bottom: var(--aeos-space-4); }
+
+/* ---- tabs ---- */
+.au .au-tabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 5px; background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: calc(var(--aeos-card-radius) * .8); margin-bottom: var(--aeos-space-4); }
+.au-tab { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; border-radius: calc(var(--aeos-card-radius) * .6); border: 0; background: none; color: var(--aeos-text-secondary); font-size: var(--aeos-text-sm); font-weight: 560; cursor: pointer; white-space: nowrap; }
+.au-tab:hover { color: var(--aeos-text-primary); }
+.au-tab.is-active { background: var(--aeos-surface); color: var(--aeos-primary); box-shadow: var(--aeos-shadow-sm); }
+
+/* ---- filter bar ---- */
+.au-filter { display: flex; gap: var(--aeos-space-2); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--aeos-space-3); }
+.au-filter .pc-field { margin: 0; }
+.au-filter__search { flex: 1; min-width: 200px; max-width: 320px; }
+.au-filter .pc-input { min-width: 130px; }
+
+/* ---- table ---- */
+.au-tablewrap { overflow-x: auto; }
+.au-table { width: 100%; border-collapse: collapse; font-size: var(--aeos-text-sm); }
+.au-table th { text-align: left; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--aeos-text-muted); font-weight: 600; padding: 8px 10px; border-bottom: var(--aeos-border-width) solid var(--aeos-border); white-space: nowrap; }
+.au-table td { padding: 10px; border-bottom: var(--aeos-border-width) solid var(--aeos-border-subtle); vertical-align: middle; }
+.au-table tbody tr { cursor: pointer; }
+.au-table tbody tr:hover { background: var(--aeos-bg-subtle); }
+.au-table tr:last-child td { border-bottom: 0; }
+.au-table .au-r { text-align: right; }
+.au-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--aeos-text-secondary); white-space: nowrap; }
+.au-actor { display: flex; align-items: center; gap: 9px; }
+.au-av { width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--aeos-primary-tint); border: var(--aeos-border-width) solid var(--aeos-primary-border); color: var(--aeos-primary); font-size: 10px; font-weight: 640; }
+.au-actor__n { font-weight: 560; line-height: 1.15; }
+.au-actor__e { font-size: 11px; color: var(--aeos-text-muted); }
+.au-sub { color: var(--aeos-text-secondary); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.au-time { color: var(--aeos-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---- event severity chips ---- */
+.au-ev { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 560; padding: 2px 9px; border-radius: 999px; background: var(--aeos-bg-subtle); color: var(--aeos-text-secondary); white-space: nowrap; }
+.au-ev::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.au-ev--success { background: color-mix(in srgb, var(--aeos-success) 13%, transparent); color: var(--aeos-success); }
+.au-ev--danger { background: color-mix(in srgb, var(--aeos-danger) 13%, transparent); color: var(--aeos-danger); }
+.au-ev--warning { background: color-mix(in srgb, var(--aeos-warning) 15%, transparent); color: var(--aeos-warning); }
+.au-ev--info { background: color-mix(in srgb, var(--aeos-info, #6366F1) 14%, transparent); color: var(--aeos-info, #6366F1); }
+
+/* ---- pager ---- */
+.au-pager { display: flex; align-items: center; justify-content: space-between; margin-top: var(--aeos-space-3); font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); }
+.au-pager__btns { display: flex; gap: 8px; }
+
+/* ---- KPI warn (subscriptions.css not imported) ---- */
+.au .pc-kpi__delta--warn { color: var(--aeos-warning); }
+
+/* ---- detail drawer head ---- */
+.au-dr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--aeos-space-2); }
+.au-dr-title { font-size: var(--aeos-text-lg); font-weight: 640; color: var(--aeos-text-primary); line-height: 1.2; word-break: break-word; }
+.au-dr-code { font-size: var(--aeos-text-xs); color: var(--aeos-text-muted); margin-top: 2px; }
+.au-dr-acts { margin-top: var(--aeos-space-3); display: flex; gap: 8px; }
+.au-dr-ev { margin-bottom: var(--aeos-space-3); margin-top: var(--aeos-space-2); }
+.au-json { background: var(--aeos-bg-subtle); border: var(--aeos-border-width) solid var(--aeos-border-subtle); border-radius: var(--aeos-card-radius); padding: var(--aeos-space-3); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--aeos-text-secondary); white-space: pre-wrap; word-break: break-word; overflow-x: auto; max-height: 340px; overflow-y: auto; }
+.au-dr-sec { font-size: var(--aeos-text-xs); letter-spacing: .05em; text-transform: uppercase; color: var(--aeos-text-muted); margin: var(--aeos-space-4) 0 var(--aeos-space-2); }
+.au-dr-desc { margin-bottom: var(--aeos-space-3); font-size: var(--aeos-text-sm); }
+.au-break { word-break: break-word; }
+
+.au-empty { text-align: center; padding: var(--aeos-space-6) var(--aeos-space-4); color: var(--aeos-text-muted); font-size: var(--aeos-text-sm); }
+.au-empty__ico { width: 40px; height: 40px; margin: 0 auto var(--aeos-space-2); color: var(--aeos-text-muted); opacity: .6; }
+
+/* ---- container-query responsiveness ---- */
+@container (max-width: 1120px) {
+  .au .au-kpis { grid-template-columns: repeat(3, 1fr); }
+}
+@container (max-width: 680px) {
+  .au .au-kpis { grid-template-columns: 1fr 1fr; }
+}
