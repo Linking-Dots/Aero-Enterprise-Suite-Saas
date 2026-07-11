@@ -44,7 +44,9 @@ const IcoThumbDown = (
 // once) + the smart composer. Used by both the slide-over drawer and the
 // full-page /aeon console so they stay identical. `stage` narrates the agent
 // loop while sending; `onFeedback(id, 1|-1)` records thumbs on a reply.
-export default function AeonConversation({ messages, sending, stage, onSend, onAction, onFeedback, user, hasAnimated, markAnimated, inputRef }) {
+const MODEL_LABEL = { flash: 'Aeon · Flash', pro: 'Aeon · Pro', all: 'Aeon · Pro' };
+
+export default function AeonConversation({ messages, sending, stage, usage, onSend, onAction, onFeedback, user, hasAnimated, markAnimated, inputRef }) {
   const [draft, setDraft] = useState('');
   const streamRef = useRef(null);
 
@@ -141,9 +143,15 @@ export default function AeonConversation({ messages, sending, stage, onSend, onA
           </button>
         </div>
         <div className="aeon-cfoot">
-          <span className="aeon-model"><span className="aeon-model-g" /> gemini-flash-latest</span>
+          <span className="aeon-model"><span className="aeon-model-g" /> {MODEL_LABEL[usage?.model] || 'Aeon AI'}</span>
           <span className="aeon-cfoot-sp" />
-          <span>Guarded by your access</span>
+          {usage && !usage.unlimited && usage.limit > 0 ? (
+            <span className={`aeon-quota ${usage.remaining <= 0 ? 'is-out' : usage.remaining <= usage.limit * 0.1 ? 'is-low' : ''}`}>
+              {Math.max(0, usage.remaining)} of {usage.limit} left this month
+            </span>
+          ) : (
+            <span>Guarded by your access</span>
+          )}
         </div>
       </form>
     </>

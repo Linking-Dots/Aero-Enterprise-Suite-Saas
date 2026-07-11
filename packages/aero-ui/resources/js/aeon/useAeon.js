@@ -6,12 +6,24 @@ import { sendAeonMessage, sendAeonMessageStream, sendAeonFeedback } from './aeon
 // id; `animatedRef` remembers which replies have already played their typewriter
 // so re-opening the drawer never re-types an old answer. Sending uses the SSE
 // stream (live stage narration) and falls back to the plain JSON endpoint.
+// Initial AI allowance shared on the page (aeon.usage), so the drawer reflects
+// the tenant's monthly quota before the first message is even sent.
+function readInitialUsage() {
+  try {
+    const el = document.querySelector('[data-page]');
+    return el ? (JSON.parse(el.dataset.page)?.props?.aeon?.usage ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function useAeon() {
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [stage, setStage] = useState('');
+  const [usage, setUsage] = useState(readInitialUsage);
   const idRef = useRef(1);
   const animatedRef = useRef(new Set());
 
@@ -35,6 +47,7 @@ export function useAeon() {
         data = await sendAeonMessage({ message: trimmed, conversationId });
       }
       setConversationId(data.conversation_id);
+      if (data.usage !== undefined) setUsage(data.usage);
       setMessages((m) => [...m, {
         id: idRef.current++,
         dbId: data.reply.id ?? null,
@@ -61,5 +74,5 @@ export function useAeon() {
     await sendAeonFeedback({ messageId: msg.dbId, value: next });
   }, [messages]);
 
-  return { messages, isOpen, open, close, send, sending, stage, feedback, hasAnimated, markAnimated };
+  return { messages, isOpen, open, close, send, sending, stage, usage, feedback, hasAnimated, markAnimated };
 }

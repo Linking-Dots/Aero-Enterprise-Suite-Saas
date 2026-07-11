@@ -67,6 +67,7 @@ export default function FloatingAeon() {
         messages={aeon.messages}
         sending={aeon.sending}
         stage={aeon.stage}
+        usage={aeon.usage}
         onSend={aeon.send}
         user={user}
         onAction={onAction}

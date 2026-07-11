@@ -135,6 +135,33 @@ class AeonController extends Controller
                 'content' => $reply->content,
                 'blocks' => $reply->blocks ?? [['type' => 'text', 'text' => $reply->content]],
             ],
+            // Fresh allowance after this turn, so the drawer reflects usage live.
+            'usage' => $this->usage(),
         ];
+    }
+
+    /**
+     * Current tenant AI allowance snapshot for the UI (null when unmetered).
+     *
+     * @return array<string,mixed>|null
+     */
+    private function usage(): ?array
+    {
+        try {
+            if (! app()->bound(\Aero\Contracts\Ai\AeonQuotaContract::class)) {
+                return null;
+            }
+            $s = app(\Aero\Contracts\Ai\AeonQuotaContract::class)->status();
+
+            return [
+                'used' => (int) ($s['used'] ?? 0),
+                'limit' => (int) ($s['limit'] ?? -1),
+                'remaining' => (int) ($s['remaining'] ?? -1),
+                'unlimited' => ($s['limit'] ?? -1) === -1,
+                'model' => (string) ($s['model'] ?? 'flash'),
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

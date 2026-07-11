@@ -14,6 +14,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import App from '@/Pages/App.jsx';
+import AiUsageCard from '@/aeon/AiUsageCard.jsx';
 import DashboardRail from './Dashboard/DashboardRail.jsx';
 import { useWidgetRefresh } from '@/hooks/useWidgetRefresh.js';
 import {
@@ -140,6 +141,7 @@ export default function Dashboard({
           <SecurityPanel security={securityOverview} />
           <SessionsPanel sessionsData={sessionsData} />
           <StoragePlanPanel storageAnalytics={storageAnalytics} subscriptionInfo={subscriptionInfo} mode={mode} />
+          <AiUsageCard />
           <HealthPanel systemHealth={systemHealth} />
           <OnboardingPanel onboardingProgress={onboardingProgress} mode={mode} />
         </div>

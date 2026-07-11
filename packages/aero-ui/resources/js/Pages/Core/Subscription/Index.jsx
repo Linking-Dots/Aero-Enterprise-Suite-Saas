@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Card, CardBody, useToast, useHRMAC } from '@aero/ui';
 import App from '@/Pages/App.jsx';
+import AiUsageCard from '@/aeon/AiUsageCard.jsx';
 import { money } from './money.js';
 
 import '../../Platform/Admin/Products/products.css';
@@ -171,6 +172,7 @@ function UsagePanel({ usage }) {
       <div className="pc-panel-h"><div><h2 className="pc-panel-h__title">Usage &amp; quotas</h2><div className="pc-panel-h__sub">Consumption against your plan limits</div></div></div>
       <UsageBar label="Team members" used={u.users?.used ?? 0} limit={u.users?.limit ?? 0} unit="" />
       <UsageBar label="Storage" used={u.storage?.used_gb ?? 0} limit={u.storage?.limit_gb ?? 0} unit=" GB" />
+      <AiUsageCard variant="row" />
       {keys.length > 0 && <>
         <div className="pc-panel-h" style={{ marginTop: 'var(--aeos-space-4)' }}><div><h2 className="pc-panel-h__title" style={{ fontSize: 'var(--aeos-text-base)' }}>Metered usage this period</h2></div></div>
         {keys.map((k) => (

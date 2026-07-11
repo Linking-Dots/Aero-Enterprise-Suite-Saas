@@ -38,6 +38,7 @@ export default function AeonPage() {
             messages={aeon.messages}
             sending={aeon.sending}
             stage={aeon.stage}
+            usage={aeon.usage}
             onSend={aeon.send}
             onAction={onAction}
             onFeedback={aeon.feedback}

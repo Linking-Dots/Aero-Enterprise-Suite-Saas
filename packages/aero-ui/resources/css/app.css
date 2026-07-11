@@ -277,6 +277,26 @@ textarea.aeon-fld-c { resize: vertical; line-height: 1.5; }
 .aeon-fb-btn.is-on { color: var(--aeos-success, #37e2a0); border-color: color-mix(in srgb, var(--aeos-success, #37e2a0) 35%, transparent); background: color-mix(in srgb, var(--aeos-success, #37e2a0) 10%, transparent); }
 .aeon-fb-btn.is-on.is-down { color: var(--aeos-danger, #ff6684); border-color: color-mix(in srgb, var(--aeos-danger, #ff6684) 35%, transparent); background: color-mix(in srgb, var(--aeos-danger, #ff6684) 10%, transparent); }
 
+/* Shared AI usage reflection (dashboard, subscription, …) */
+.aiu-card { border: 1px solid var(--aeos-border-base, rgba(255,255,255,.1)); border-radius: 14px; padding: 15px 16px; background: var(--aeos-surface, rgba(255,255,255,.03)); display: flex; flex-direction: column; gap: 9px; }
+.aiu-row { display: flex; flex-direction: column; gap: 8px; }
+.aiu-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.aiu-badge { font-weight: 640; font-size: 13px; color: var(--aeos-text-primary, #e9f1fa); }
+.aiu-model { font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: color-mix(in srgb, var(--aeos-primary, #22e3ff) 14%, transparent); color: var(--aeos-primary, #22e3ff); }
+.aiu-line { font-size: 12.5px; color: var(--aeos-text-secondary, #8593a6); }
+.aiu-rem { font-size: 15px; font-variant-numeric: tabular-nums; }
+.aiu-rem.aiu-ok { color: var(--aeos-text-primary, #e9f1fa); }
+.aiu-rem.aiu-low { color: var(--aeos-warning, #e6ab3c); }
+.aiu-rem.aiu-out { color: var(--aeos-danger, #ff6684); }
+.aiu-track { height: 6px; border-radius: 999px; background: var(--aeos-glass, rgba(255,255,255,.08)); overflow: hidden; }
+.aiu-fill { height: 100%; border-radius: 999px; background: var(--aeos-primary, #22e3ff); transition: width .3s; }
+.aiu-fill.aiu-low { background: var(--aeos-warning, #e6ab3c); }
+.aiu-fill.aiu-out { background: var(--aeos-danger, #ff6684); }
+
+.aeon-quota { font-family: var(--aeos-font-mono, ui-monospace, monospace); font-size: 11px; color: var(--aeos-text-secondary, #8593a6); }
+.aeon-quota.is-low { color: var(--aeos-warning, #e6ab3c); }
+.aeon-quota.is-out { color: var(--aeos-danger, #ff6684); font-weight: 600; }
+
 .aeon-think { display: flex; gap: 11px; align-items: center; }
 .aeon-eq { display: flex; gap: 4px; }
 .aeon-eq i { width: 4px; height: 14px; border-radius: 2px; background: var(--aeos-primary, #22e3ff); display: block; animation: aeon-eq 1s infinite ease-in-out; }
