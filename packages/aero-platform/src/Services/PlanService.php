@@ -64,6 +64,9 @@ class PlanService
                 'grace_days'     => (int) ($p->grace_days ?? 0),
                 'max_users'      => (int) ($p->max_users ?? 0),
                 'max_storage_gb' => (int) ($p->max_storage_gb ?? 0),
+                // limits JSON carries the AI allowance (max_ai_messages / ai_model)
+                // so the editor can prefill it.
+                'limits'         => is_array($p->limits) ? $p->limits : [],
                 'downgrade_policy'    => $p->downgrade_policy,
                 'cancellation_policy' => $p->cancellation_policy,
                 'description'    => $p->description,

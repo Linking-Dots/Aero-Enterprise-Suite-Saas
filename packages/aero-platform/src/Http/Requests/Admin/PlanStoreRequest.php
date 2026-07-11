@@ -55,6 +55,10 @@ class PlanStoreRequest extends FormRequest
             'grace_days' => ['nullable', 'integer', 'min:0', 'max:365'],
             'max_users' => ['nullable', 'integer', 'min:0'],
             'max_storage_gb' => ['nullable', 'integer', 'min:0'],
+            // AI Assistant allowance (folded into limits by the controller).
+            'ai_enabled' => ['boolean'],
+            'ai_model' => ['nullable', 'string', Rule::in(['flash', 'pro', 'all'])],
+            'ai_messages' => ['nullable', 'integer', 'min:0'],
             'downgrade_policy' => ['nullable', 'string', 'max:50'],
             'cancellation_policy' => ['nullable', 'string', 'max:50'],
         ];

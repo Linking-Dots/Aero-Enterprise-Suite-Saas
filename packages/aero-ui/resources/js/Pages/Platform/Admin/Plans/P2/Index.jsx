@@ -80,6 +80,9 @@ function EditorModal({ plan, onClose }) {
     grace_days: plan?.grace_days ?? 7,
     max_users: plan?.max_users ?? 10,
     max_storage_gb: plan?.max_storage_gb ?? 25,
+    ai_enabled: plan?.limits?.max_ai_messages != null,
+    ai_model: plan?.limits?.ai_model ?? 'flash',
+    ai_messages: plan?.limits?.max_ai_messages ?? 500,
     downgrade_policy: plan?.downgrade_policy ?? 'end_of_cycle',
     status: plan?.status ?? 'active',
     is_public: plan ? !!plan.is_public : true,
@@ -144,6 +147,23 @@ function EditorModal({ plan, onClose }) {
                 {POLICIES.map((p) => <option key={p} value={p}>{p.replace(/_/g, ' ')}</option>)}
               </select></div>
           </div>
+
+          <div className="pn-sectitle">AI Assistant (Aeon)</div>
+          <label className="pn-switch" style={{ marginBottom: form.data.ai_enabled ? 10 : 0 }}>
+            <input type="checkbox" checked={form.data.ai_enabled} onChange={(e) => form.setData('ai_enabled', e.target.checked)} /> Include the AI assistant in this plan
+          </label>
+          {form.data.ai_enabled && (
+            <div className="pn-grid2">
+              <div className="pc-field"><label className="pc-field__label" htmlFor="p-aimodel">Model tier</label>
+                <select id="p-aimodel" className="pc-input" value={form.data.ai_model} onChange={(e) => form.setData('ai_model', e.target.value)}>
+                  <option value="flash">Flash — fast, all tiers</option>
+                  <option value="pro">Pro — premium model</option>
+                  <option value="all">All — every model + BYO key</option>
+                </select></div>
+              <div className="pc-field"><label className="pc-field__label" htmlFor="p-aimsg">Messages / month (0 = ∞)</label>
+                <input id="p-aimsg" type="number" min="0" className="pc-input" value={form.data.ai_messages} onChange={(e) => form.setData('ai_messages', e.target.value)} />{err('ai_messages')}</div>
+            </div>
+          )}
 
           <div className="pn-sectitle">Features</div>
           <div className="pn-featedit">

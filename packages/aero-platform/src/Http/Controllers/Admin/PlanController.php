@@ -49,11 +49,43 @@ class PlanController extends Controller
 
     public function store(PlanStoreRequest $request): RedirectResponse
     {
-        $plan = $this->svc->create($request->validated());
+        $plan = $this->svc->create($this->foldAiIntoLimits($request->validated()));
 
         return redirect()
             ->route('platform.admin.plans.show', $plan)
             ->with('success', 'Plan created successfully.');
+    }
+
+    /**
+     * Fold the AI allowance form fields into the plan's `limits` JSON so they
+     * ride the existing quota system (max_ai_messages / ai_model) instead of
+     * needing plan columns. AI off = remove the key (0 means "unlimited" in the
+     * quota resolver, so absence is the correct "disabled" signal). Existing
+     * limits are preserved.
+     *
+     * @param  array<string,mixed>  $data
+     * @return array<string,mixed>
+     */
+    private function foldAiIntoLimits(array $data, ?Plan $plan = null): array
+    {
+        $enabled = (bool) ($data['ai_enabled'] ?? false);
+        $model = (string) ($data['ai_model'] ?? 'flash');
+        $messages = (int) ($data['ai_messages'] ?? 0);
+        unset($data['ai_enabled'], $data['ai_model'], $data['ai_messages']);
+
+        $limits = $data['limits'] ?? (is_array($plan?->limits) ? $plan->limits : []);
+        $limits = is_array($limits) ? $limits : [];
+
+        if ($enabled) {
+            $limits['max_ai_messages'] = max(0, $messages);
+            $limits['ai_model'] = in_array($model, ['flash', 'pro', 'all'], true) ? $model : 'flash';
+        } else {
+            unset($limits['max_ai_messages'], $limits['ai_model']);
+        }
+
+        $data['limits'] = $limits;
+
+        return $data;
     }
 
     public function edit(Plan $plan): Response
@@ -65,7 +97,7 @@ class PlanController extends Controller
 
     public function update(PlanUpdateRequest $request, Plan $plan): RedirectResponse
     {
-        $this->svc->update($plan, $request->validated());
+        $this->svc->update($plan, $this->foldAiIntoLimits($request->validated(), $plan));
 
         return back()->with('success', 'Plan updated successfully.');
     }
