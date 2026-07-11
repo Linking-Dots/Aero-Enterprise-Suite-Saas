@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Aero\Assistant\Models;
 
-use Aero\Contracts\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Conversation extends TenantModel
+class Conversation extends AeonModel
 {
     protected $table = 'aeon_conversations';
 

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Assistant\Models;
 
-use Aero\Contracts\Models\TenantModel;
-
-class Embedding extends TenantModel
+class Embedding extends AeonModel
 {
     protected $table = 'aeon_embeddings';
 

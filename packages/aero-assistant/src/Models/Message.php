@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Aero\Assistant\Models;
 
-use Aero\Contracts\Models\TenantModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Message extends TenantModel
+class Message extends AeonModel
 {
     protected $table = 'aeon_messages';
 
