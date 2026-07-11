@@ -29,9 +29,11 @@ class OpenAiCompatProvider implements AiProvider
     public function __construct()
     {
         $cfg = (array) config('aeon.providers.openai', []);
-        $this->key = (string) ($cfg['api_key'] ?? '');
-        $this->model = (string) ($cfg['model'] ?? 'gpt-4o-mini');
-        $this->base = rtrim((string) ($cfg['base_url'] ?? 'https://api.openai.com/v1'), '/');
+        // Key / model / base URL from the central control plane when available.
+        $central = \Aero\Assistant\Support\AeonConfig::resolve();
+        $this->key = (string) ($central['api_key'] ?? $cfg['api_key'] ?? '');
+        $this->model = (string) ($central['fast_model'] ?? $cfg['model'] ?? 'gpt-4o-mini');
+        $this->base = rtrim((string) ($central['base_url'] ?? $cfg['base_url'] ?? 'https://api.openai.com/v1'), '/');
         $this->timeout = (int) ($cfg['timeout'] ?? 30);
     }
 

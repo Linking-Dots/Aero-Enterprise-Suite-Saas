@@ -36,7 +36,10 @@ class AeonServiceProvider extends AbstractModuleProvider
         $this->mergeConfigFrom($this->getModulePath('config/aeon.php'), 'aeon');
 
         $this->app->singleton(AiProvider::class, function () {
-            return match (config('aeon.provider', 'gemini')) {
+            // Provider chosen by the central control plane when available.
+            $provider = \Aero\Assistant\Support\AeonConfig::resolve()['provider'] ?? config('aeon.provider', 'gemini');
+
+            return match ($provider) {
                 'openai' => new OpenAiCompatProvider(),
                 default  => new GeminiProvider(),
             };

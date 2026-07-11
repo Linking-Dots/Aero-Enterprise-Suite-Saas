@@ -96,6 +96,8 @@ class PlatformSetting extends CentralModel implements HasMedia
         'newsletter_settings',
         // Infrastructure / Hosting
         'hosting_settings',
+        // AI Assistant (Aeon) control plane
+        'ai_settings',
     ];
 
     protected $casts = [
@@ -114,6 +116,7 @@ class PlatformSetting extends CentralModel implements HasMedia
         'maintenance_ends_at' => 'datetime',
         // Infrastructure
         'hosting_settings' => 'array',
+        'ai_settings' => 'array',
         'maintenance_skip_verification' => 'boolean',
         // SEO & Marketing casts
         'seo_settings' => 'array',
@@ -143,6 +146,8 @@ class PlatformSetting extends CentralModel implements HasMedia
         'newsletter_settings' => '[]',
         // Infrastructure — default to dedicated (VPS/MySQL)
         'hosting_settings' => '{"mode":"dedicated","cpanel_host":null,"cpanel_port":2083,"cpanel_username":null,"cpanel_api_token":null,"cpanel_db_user":null}',
+        // AI Assistant (Aeon) — sensible defaults; api_key null → falls back to .env
+        'ai_settings' => '{"enabled":true,"provider":"gemini","fast_model":"gemini-flash-latest","premium_model":"gemini-2.5-pro","api_key":null,"base_url":null,"token_fuse_per_conversation":8000,"token_fuse_per_user_daily":250000,"max_tool_steps":5}',
     ];
 
     /**
@@ -390,6 +395,90 @@ class PlatformSetting extends CentralModel implements HasMedia
         $settings['env_override'] = env('TENANCY_DATABASE_MANAGER') !== null;
 
         return $settings;
+    }
+
+    /**
+     * Default AI (Aeon) control-plane settings. Any missing key resolves here.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aiSettingsDefaults(): array
+    {
+        return [
+            'enabled' => true,
+            'provider' => 'gemini',
+            'fast_model' => 'gemini-flash-latest',
+            'premium_model' => 'gemini-2.5-pro',
+            'api_key' => null,
+            'base_url' => null,
+            'token_fuse_per_conversation' => 8000,
+            'token_fuse_per_user_daily' => 250000,
+            'max_tool_steps' => 5,
+        ];
+    }
+
+    /**
+     * Resolved AI settings for RUNTIME use (the assistant reads this): defaults
+     * merged, API key decrypted, and empty key/models falling back to the .env
+     * config so existing installs keep working before anything is set in the UI.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAiSettingsResolved(): array
+    {
+        $settings = array_merge(self::aiSettingsDefaults(), (array) ($this->ai_settings ?? []));
+
+        if (! empty($settings['api_key'])) {
+            try {
+                $settings['api_key'] = Crypt::decryptString($settings['api_key']);
+            } catch (Throwable $e) {
+                // stored plain (legacy / manual) — leave as-is
+            }
+        } else {
+            // Fall back to the provider's env key so nothing breaks pre-config.
+            $settings['api_key'] = $settings['provider'] === 'openai'
+                ? (config('aeon.providers.openai.api_key') ?: null)
+                : (config('aeon.providers.gemini.api_key') ?: null);
+        }
+
+        return $settings;
+    }
+
+    /**
+     * AI settings safe for the admin UI: key masked, only whether it is set.
+     *
+     * @return array<string, mixed>
+     */
+    public function getSanitizedAiSettings(): array
+    {
+        $settings = array_merge(self::aiSettingsDefaults(), (array) ($this->ai_settings ?? []));
+        $settings['api_key_set'] = ! empty($settings['api_key']);
+        $settings['api_key'] = null;
+
+        return $settings;
+    }
+
+    /**
+     * Persist AI settings from an admin form. The API key is encrypted; an empty
+     * key is left untouched (so saving the form doesn't wipe an existing key).
+     *
+     * @param  array<string, mixed>  $input
+     */
+    public function saveAiSettings(array $input): void
+    {
+        $current = array_merge(self::aiSettingsDefaults(), (array) ($this->ai_settings ?? []));
+
+        $next = array_merge($current, array_intersect_key($input, self::aiSettingsDefaults()));
+
+        // Encrypt a newly-provided key; blank input keeps the stored one.
+        if (array_key_exists('api_key', $input) && filled($input['api_key'])) {
+            $next['api_key'] = Crypt::encryptString((string) $input['api_key']);
+        } else {
+            $next['api_key'] = $current['api_key'];
+        }
+
+        $this->ai_settings = $next;
+        $this->save();
     }
 
     public function getSanitizedEmailSettings(): array

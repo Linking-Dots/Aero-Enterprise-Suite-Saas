@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Aero\Assistant\Providers\Models;
 
+use Aero\Assistant\Support\AeonConfig;
 use Aero\Contracts\Ai\AiChatResult;
 use Aero\Contracts\Ai\AiProvider;
 use Illuminate\Support\Facades\Http;
@@ -19,8 +20,12 @@ class GeminiProvider implements AiProvider
     public function __construct()
     {
         $cfg = config('aeon.providers.gemini');
-        $this->key = (string) ($cfg['api_key'] ?? '');
-        $this->model = (string) ($cfg['model'] ?? 'gemini-flash-latest');
+        // Provider + key + default model come from the central control plane
+        // (platform_settings.ai_settings) when available, else this package's
+        // config/.env. Endpoint/timeout stay local (rarely operator-tuned).
+        $central = AeonConfig::resolve();
+        $this->key = (string) ($central['api_key'] ?? $cfg['api_key'] ?? '');
+        $this->model = (string) ($central['fast_model'] ?? $cfg['model'] ?? 'gemini-flash-latest');
         $this->endpoint = rtrim((string) ($cfg['endpoint'] ?? 'https://generativelanguage.googleapis.com/v1beta'), '/');
         $this->timeout = (int) ($cfg['timeout'] ?? 30);
     }

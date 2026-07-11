@@ -78,7 +78,7 @@ class AeonService
 
         $transcript = $this->buildHistory($conversation, $context, $chunks);
         $declarations = $this->tools->declarations();
-        $maxLoops = max(1, (int) config('aeon.agent.max_loops', 5));
+        $maxLoops = max(1, (int) (\Aero\Assistant\Support\AeonConfig::resolve()['max_tool_steps'] ?? config('aeon.agent.max_loops', 5)));
 
         $blocks = [];        // generative-UI blocks accumulated from tools
         $toolLog = [];       // persisted transcript of tool activity
@@ -266,10 +266,13 @@ class AeonService
         return ['conversation' => $conversation, 'reply' => $reply];
     }
 
-    /** Whether the user has spent today's token budget (0 = unlimited). */
+    /** Whether the user has spent today's token fuse (0 = unlimited). */
     private function overBudget(int $userId): bool
     {
-        $limit = (int) config('aeon.budget.daily_tokens_per_user', 0);
+        // Central control-plane daily token fuse (cost protection under the
+        // per-plan message quota), falling back to this package's config.
+        $limit = (int) (\Aero\Assistant\Support\AeonConfig::resolve()['token_fuse_per_user_daily']
+            ?? config('aeon.budget.daily_tokens_per_user', 0));
         if ($limit <= 0) {
             return false;
         }

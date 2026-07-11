@@ -158,6 +158,11 @@ class HandleInertiaRequests extends Middleware
                 'environment' => config('app.env', 'production'),
             ],
             'context' => 'tenant',
+            // Aeon assistant availability. Present (true) only in tenant/standalone
+            // context — this middleware never runs on the central/platform admin,
+            // so the global FAB stays hidden there. (Phase 2 refines this to also
+            // honor the tenant's plan entitlement.)
+            'aeon' => ['available' => (bool) config('aeon.enabled', true)],
             // Axis B B8 — always expose the deployment mode so shared aero-ui
             // components have an explicit 'saas'|'standalone' signal in BOTH modes
             // (previously aero.mode existed only in SaaS+tenant context, leaving

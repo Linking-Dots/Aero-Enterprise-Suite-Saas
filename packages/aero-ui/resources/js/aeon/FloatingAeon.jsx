@@ -18,15 +18,31 @@ function readAuthUser() {
   }
 }
 
+// Aeon is a tenant/standalone feature — the platform admin shares no `aeon`
+// prop, so the launcher stays hidden there. Read it off the same data-page.
+function readAeonAvailable(page) {
+  if (page && page.props) return page.props?.aeon?.available === true;
+  try {
+    const el = document.querySelector('[data-page]');
+    if (!el) return false;
+    return JSON.parse(el.dataset.page)?.props?.aeon?.available === true;
+  } catch {
+    return false;
+  }
+}
+
 // Global Aeon entry: the ✨ launcher + slide-over drawer. Renders only for
 // authenticated users.
 export default function FloatingAeon() {
   const [user, setUser] = useState(readAuthUser);
+  const [available, setAvailable] = useState(readAeonAvailable);
   const aeon = useAeon();
 
   useEffect(() => {
     return router.on('navigate', (event) => {
-      setUser(event?.detail?.page?.props?.auth?.user ?? null);
+      const page = event?.detail?.page;
+      setUser(page?.props?.auth?.user ?? null);
+      setAvailable(readAeonAvailable(page));
     });
   }, []);
 
@@ -40,7 +56,7 @@ export default function FloatingAeon() {
     }
   }, [aeon]);
 
-  if (!user) return null;
+  if (!user || !available) return null;
 
   return (
     <>

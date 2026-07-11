@@ -281,6 +281,13 @@ class AeroPlatformServiceProvider extends ServiceProvider
         $this->app->singleton(ErrorLogService::class);
         $this->app->singleton(SslCommerzService::class);
 
+        // Aeon AI control plane: tenant-facing assistant reads provider/models/
+        // key/limits from platform_settings.ai_settings via this contract.
+        $this->app->singleton(
+            \Aero\Contracts\Ai\AeonSettingsContract::class,
+            \Aero\Platform\Ai\PlatformAeonSettings::class,
+        );
+
         $this->app->singleton(ProductAccessService::class);
         $this->app->singleton(ProductSubscriptionService::class);
         $this->app->singleton(LicenseIssuer::class);

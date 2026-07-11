@@ -320,6 +320,100 @@ class QuotaEnforcementService
         return (int) TenantCache::get($key, 0);
     }
 
+    // ── AI Assistant (Aeon) quota ──────────────────────────────────────────
+    // AI is a plan attribute like any other quota: `max_ai_messages` (monthly
+    // message allowance) + `ai_model` (capability tier). Enforced the same way
+    // as monthly API calls; the tenant-facing assistant checks these via a
+    // contract so it never depends on this package directly.
+
+    /** Is the AI assistant included in this tenant's plan? */
+    public function aiEnabled(Tenant|string $tenant): bool
+    {
+        $limit = $this->getQuotaLimit($tenant, 'ai_messages');
+
+        return $limit === -1 || $limit > 0;
+    }
+
+    /** Monthly AI message allowance (-1 unlimited, 0 = AI not in plan). */
+    public function getAiMessageLimit(Tenant|string $tenant): int
+    {
+        return $this->getQuotaLimit($tenant, 'ai_messages');
+    }
+
+    /** AI messages the tenant has used this billing month. */
+    public function getAiMessagesUsed(Tenant|string $tenant): int
+    {
+        $tenantId = $tenant instanceof Tenant ? $tenant->id : $tenant;
+        $month = now()->format('Y-m');
+
+        return (int) TenantCache::get("quota:ai_messages:{$tenantId}:{$month}", 0);
+    }
+
+    /** May the tenant send another AI message this period? */
+    public function canSendAiMessage(Tenant|string $tenant): bool
+    {
+        if (! $this->aiEnabled($tenant)) {
+            return false;
+        }
+        $limit = $this->getAiMessageLimit($tenant);
+        if ($limit === -1) {
+            return true;
+        }
+
+        return $this->getAiMessagesUsed($tenant) < $limit;
+    }
+
+    /** Count one AI message against the monthly allowance. */
+    public function incrementAiMessages(Tenant|string $tenant): void
+    {
+        $tenantId = $tenant instanceof Tenant ? $tenant->id : $tenant;
+        $month = now()->format('Y-m');
+        $key = "quota:ai_messages:{$tenantId}:{$month}";
+
+        TenantCache::increment($key);
+        if (TenantCache::get($key) === 1) {
+            TenantCache::put($key, 1, now()->addMonths(2)->startOfMonth());
+        }
+    }
+
+    /**
+     * Model tier this plan may use: 'flash' (fast, all tiers), 'pro'
+     * (premium unlocked) or 'all'. Read from the plan's `ai_model` quota,
+     * default 'flash'.
+     */
+    public function getAiModelTier(Tenant|string $tenant): string
+    {
+        if (is_string($tenant)) {
+            $tenant = Tenant::find($tenant);
+        }
+        $plan = $tenant?->plan ?? $tenant?->subscription?->plan;
+        $limits = is_array($plan?->limits) ? $plan->limits : [];
+        $tier = (string) ($limits['ai_model'] ?? 'flash');
+
+        return in_array($tier, ['flash', 'pro', 'all'], true) ? $tier : 'flash';
+    }
+
+    /**
+     * Compact AI usage snapshot for dashboards / the tenant-side gate.
+     *
+     * @return array{enabled:bool,limit:int,used:int,remaining:int,model:string,unlimited:bool,resets_at:string}
+     */
+    public function getAiSummary(Tenant|string $tenant): array
+    {
+        $limit = $this->getAiMessageLimit($tenant);
+        $used = $this->getAiMessagesUsed($tenant);
+
+        return [
+            'enabled' => $limit === -1 || $limit > 0,
+            'limit' => $limit,
+            'used' => $used,
+            'remaining' => $limit === -1 ? -1 : max(0, $limit - $used),
+            'model' => $this->getAiModelTier($tenant),
+            'unlimited' => $limit === -1,
+            'resets_at' => now()->addMonth()->startOfMonth()->toIso8601String(),
+        ];
+    }
+
     /**
      * Get all quotas and usage for a tenant.
      */
