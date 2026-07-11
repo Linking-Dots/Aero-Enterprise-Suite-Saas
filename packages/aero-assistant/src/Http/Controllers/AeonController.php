@@ -76,12 +76,13 @@ class AeonController extends Controller
         return response()->json(['conversations' => $items]);
     }
 
-    // Route params are fetched explicitly (not via implicit model binding):
-    // tenant-context route-model binding is unreliable app-wide, and Aeon runs
-    // in every context (tenant, central, standalone).
-    public function show(int|string $conversation): JsonResponse
+    // Route params are read from the route by NAME, never via a scalar/model
+    // method arg: under {tenant}-subdomain tenancy a scalar arg receives the
+    // subdomain, not the intended param (tenant route-param trap). Aeon runs in
+    // every context (tenant, central, standalone), so this must be explicit.
+    public function show(Request $request): JsonResponse
     {
-        $conversation = Conversation::findOrFail($conversation);
+        $conversation = Conversation::findOrFail($request->route('conversation'));
         abort_unless((int) $conversation->user_id === (int) auth()->id(), 403);
 
         return response()->json([
@@ -92,9 +93,9 @@ class AeonController extends Controller
     }
 
     /** Thumbs up/down on an assistant reply (1, -1, or 0 to clear). */
-    public function feedback(Request $request, int|string $message): JsonResponse
+    public function feedback(Request $request): JsonResponse
     {
-        $message = Message::findOrFail($message);
+        $message = Message::findOrFail($request->route('message'));
         abort_unless((int) $message->conversation?->user_id === (int) auth()->id(), 403);
         $value = (int) $request->validate(['value' => 'required|integer|in:-1,0,1'])['value'];
 

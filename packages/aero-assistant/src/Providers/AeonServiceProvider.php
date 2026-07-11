@@ -70,5 +70,20 @@ class AeonServiceProvider extends AbstractModuleProvider
         if ($this->app->runningInConsole()) {
             $this->commands([IndexKnowledge::class]);
         }
+
+        // Zero-operator-work KB currency: a daily checksum-guarded reindex picks
+        // up structure changes (new modules/tables/docs after a deploy). Unchanged
+        // chunks are skipped, so a no-change night costs zero embedding calls.
+        // Live DATA needs no reindex — query_data always reads the live tables.
+        $this->callAfterResolving(\Illuminate\Console\Scheduling\Schedule::class, function ($schedule) {
+            if (! config('aeon.enabled', true)) {
+                return;
+            }
+            if (class_exists(\Stancl\Tenancy\Tenancy::class)) {
+                $schedule->command('tenants:run aeon:index')->dailyAt('04:10'); // SaaS: per tenant DB
+            } else {
+                $schedule->command('aeon:index')->dailyAt('04:10'); // standalone: single DB
+            }
+        });
     }
 }

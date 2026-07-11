@@ -45,7 +45,7 @@ class GeminiProviderTest extends PackageTestCase
             '*generativelanguage*' => Http::response([
                 'candidates' => [['content' => ['parts' => [
                     ['text' => 'Sure'],
-                    ['functionCall' => ['name' => 'navigate', 'args' => ['route' => '/hrm/leave/types', 'label' => 'Leave Types']]],
+                    ['functionCall' => ['name' => 'navigate', 'args' => ['route' => '/hrm/leave/types', 'label' => 'Leave Types']], 'thoughtSignature' => 'sig-abc'],
                 ]]]],
             ], 200),
         ]);
@@ -59,6 +59,7 @@ class GeminiProviderTest extends PackageTestCase
         $this->assertCount(1, $result->toolCalls);
         $this->assertSame('navigate', $result->toolCalls[0]['name']);
         $this->assertSame('/hrm/leave/types', $result->toolCalls[0]['args']['route']);
+        $this->assertSame('sig-abc', $result->toolCalls[0]['sig']);
 
         Http::assertSent(fn ($request) => isset($request['tools'])
             && $request['tools'][0]['functionDeclarations'][0]['name'] === 'navigate');
@@ -74,7 +75,7 @@ class GeminiProviderTest extends PackageTestCase
 
         (new GeminiProvider())->chat([
             ['role' => 'user', 'content' => 'how many employees?'],
-            ['role' => 'assistant', 'content' => '', 'tool_calls' => [['name' => 'query_data', 'args' => ['entity' => 'employees']]]],
+            ['role' => 'assistant', 'content' => '', 'tool_calls' => [['name' => 'query_data', 'args' => ['entity' => 'employees'], 'sig' => 'sig-abc']]],
             ['role' => 'tool', 'results' => [['name' => 'query_data', 'response' => ['status' => 'ok', 'data' => ['total' => 3]]]]],
         ]);
 
@@ -85,6 +86,7 @@ class GeminiProviderTest extends PackageTestCase
 
             return $contents[1]['role'] === 'model'
                 && $contents[1]['parts'][0]['functionCall']['name'] === 'query_data'
+                && $contents[1]['parts'][0]['thoughtSignature'] === 'sig-abc'
                 && $contents[2]['role'] === 'user'
                 && $contents[2]['parts'][0]['functionResponse']['name'] === 'query_data'
                 && $response['data']['total'] === 3;

@@ -165,6 +165,10 @@ class ProvisionTenant implements ShouldQueue
             $this->verifyProvisioning();
             $this->logStep('✅ Step 6 Complete: Provisioning verified', $context);
 
+            // Step 6.5: Build the Aeon knowledge base (fail-soft — never blocks provisioning)
+            $this->logStep('🧠 Step 6.5: Building Aeon knowledge base', $context);
+            $this->buildAeonKnowledgeBase();
+
             // Step 7: Activate the tenant (ready for admin setup on tenant domain)
             $this->logStep('🎉 Step 7: Activating tenant', $context);
             $this->activateTenant();
@@ -1332,6 +1336,40 @@ class ProvisionTenant implements ShouldQueue
             ]);
         } catch (Throwable $e) {
             $this->logStep('   → Failed to send password-set link: '.$e->getMessage(), [], 'warning');
+        }
+    }
+
+    /**
+     * Build the tenant's Aeon knowledge base (embeds the module registry, schema
+     * and docs) so the assistant is grounded from the first login.
+     *
+     * Loosely coupled: aero-platform never imports aero-assistant classes — it
+     * calls the `aeon:index` artisan command only if that command is registered.
+     * Fail-soft: the embedding API being slow/down must never fail provisioning;
+     * the checksum-guarded indexer completes the KB on the next `aeon:index` run.
+     */
+    protected function buildAeonKnowledgeBase(): void
+    {
+        try {
+            if (! array_key_exists('aeon:index', Artisan::all())) {
+                $this->logStep('   → aeon:index command not registered; skipping knowledge base', [], 'warning');
+
+                return;
+            }
+
+            tenancy()->initialize($this->tenant);
+
+            $exit = Artisan::call('aeon:index');
+            $summary = trim(Artisan::output());
+
+            $this->logStep('✅ Step 6.5 Complete: Aeon knowledge base built (exit '.$exit.')', [
+                'output' => \Illuminate\Support\Str::limit($summary, 300),
+            ]);
+        } catch (Throwable $e) {
+            // Never fail provisioning over the assistant's knowledge base.
+            $this->logStep('   ⚠️  Aeon knowledge base build failed (will retry on next aeon:index): '.$e->getMessage(), [], 'warning');
+        } finally {
+            tenancy()->end();
         }
     }
 

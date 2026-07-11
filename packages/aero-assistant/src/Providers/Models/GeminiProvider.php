@@ -60,10 +60,17 @@ class GeminiProvider implements AiProvider
             }
             if ($role === 'assistant') {
                 foreach ((array) ($m['tool_calls'] ?? []) as $call) {
-                    $parts[] = ['functionCall' => [
+                    $part = ['functionCall' => [
                         'name' => (string) ($call['name'] ?? ''),
                         'args' => (object) ($call['args'] ?? []),
                     ]];
+                    // Gemini thinking models REQUIRE the thought signature captured
+                    // with the functionCall to be echoed back verbatim — omitting it
+                    // is a 400 (INVALID_ARGUMENT: missing thought_signature).
+                    if (! empty($call['sig'])) {
+                        $part['thoughtSignature'] = (string) $call['sig'];
+                    }
+                    $parts[] = $part;
                 }
             }
             if (empty($parts)) {
@@ -140,10 +147,15 @@ class GeminiProvider implements AiProvider
                         $text .= $p['text'];
                     }
                     if (isset($p['functionCall'])) {
-                        $toolCalls[] = [
+                        $call = [
                             'name' => (string) ($p['functionCall']['name'] ?? ''),
                             'args' => (array) ($p['functionCall']['args'] ?? []),
                         ];
+                        // Keep the thought signature so the next turn can echo it.
+                        if (! empty($p['thoughtSignature'])) {
+                            $call['sig'] = (string) $p['thoughtSignature'];
+                        }
+                        $toolCalls[] = $call;
                     }
                 }
                 $tokens = (int) data_get($json, 'usageMetadata.totalTokenCount', 0);

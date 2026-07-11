@@ -33,7 +33,7 @@
             "package": "assistant",
             "version": "1.0.0",
             "category": "product",
-            "tier": "product"
+            "tier": "sharable"
         }
     },
     "minimum-stability": "dev",
