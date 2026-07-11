@@ -1,0 +1,22 @@
+/* AI Assistant fleet-control console — surfaces are @aero/ui <Card> (theme-reactive);
+   only layout + the usage meter live here. */
+.ai-page { display: flex; flex-direction: column; gap: var(--aeos-space-5, 20px); }
+
+.ai-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--aeos-space-5, 20px); align-items: start; }
+@media (max-width: 960px) { .ai-grid { grid-template-columns: 1fr; } }
+
+.ai-form2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--aeos-space-4, 16px); }
+.ai-form3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--aeos-space-4, 16px); }
+@media (max-width: 560px) { .ai-form2, .ai-form3 { grid-template-columns: 1fr; } }
+
+.ai-switch { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; }
+.ai-switch input { width: 16px; height: 16px; accent-color: var(--aeos-primary, #22e3ff); }
+
+.ai-meter { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+.ai-meter .ai-track { flex: 1; height: 6px; border-radius: 999px; background: var(--aeos-glass, rgba(255,255,255,.08)); overflow: hidden; min-width: 80px; }
+.ai-meter .ai-fill { height: 100%; border-radius: 999px; background: var(--aeos-primary, #22e3ff); }
+.ai-meter .ai-fill.ai-low { background: var(--aeos-warning, #e6ab3c); }
+.ai-meter .ai-fill.ai-out { background: var(--aeos-danger, #ff6684); }
+
+.aeon-rail-link { font-size: 12.5px; font-weight: 550; color: var(--aeos-primary, #22e3ff); text-decoration: none; }
+.aeon-rail-link:hover { text-decoration: underline; }

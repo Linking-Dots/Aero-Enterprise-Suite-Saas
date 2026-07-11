@@ -326,17 +326,34 @@ class QuotaEnforcementService
     // as monthly API calls; the tenant-facing assistant checks these via a
     // contract so it never depends on this package directly.
 
-    /** Is the AI assistant included in this tenant's plan? */
+    /** Is the AI assistant available to this tenant (plan allowance or override)? */
     public function aiEnabled(Tenant|string $tenant): bool
     {
-        $limit = $this->getQuotaLimit($tenant, 'ai_messages');
+        $limit = $this->getAiMessageLimit($tenant);
 
         return $limit === -1 || $limit > 0;
     }
 
-    /** Monthly AI message allowance (-1 unlimited, 0 = AI not in plan). */
+    /**
+     * Monthly AI message allowance (-1 unlimited, 0 = AI not in plan).
+     * A per-tenant override on the Quotas page (TenantQuotaOverride, resource
+     * 'ai_messages') wins over the plan allowance so ops can grant exceptions.
+     */
     public function getAiMessageLimit(Tenant|string $tenant): int
     {
+        $tenantId = $tenant instanceof Tenant ? $tenant->id : $tenant;
+
+        $override = \Aero\Platform\Models\TenantQuotaOverride::query()
+            ->where('tenant_id', $tenantId)
+            ->where('resource', 'ai_messages')
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->orderByDesc('id')
+            ->first();
+
+        if ($override) {
+            return (int) $override->limit_value === 0 ? -1 : (int) $override->limit_value;
+        }
+
         return $this->getQuotaLimit($tenant, 'ai_messages');
     }
 

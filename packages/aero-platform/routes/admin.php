@@ -67,6 +67,7 @@ use Aero\Platform\Http\Controllers\Admin\ReportController;
 use Aero\Platform\Http\Controllers\Admin\SeoController;
 use Aero\Platform\Http\Controllers\Admin\SocialAuthController;
 use Aero\Platform\Http\Controllers\Admin\QuotaController as P3QuotaController;
+use Aero\Platform\Http\Controllers\Admin\AiAssistantController;
 use Aero\Platform\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use Aero\Platform\Http\Controllers\Admin\TenantController as AdminTenantController;
 use Aero\Platform\Http\Controllers\Admin\TenantDatabaseController;
@@ -1380,6 +1381,14 @@ Route::middleware('admin.domain')->group(function () {
                 ->get('/settings', [P3QuotaController::class, 'settings'])->name('settings');
             Route::middleware('hrmac:quota-management.quota-settings.edit')
                 ->put('/settings', [P3QuotaController::class, 'updateSettings'])->name('settings.update');
+        });
+
+        // AI Assistant (Aeon) fleet control — governs the tenant-facing assistant.
+        Route::prefix('ai-assistant')->name('platform.admin.ai-assistant.')->group(function () {
+            Route::middleware('hrmac:quota-management.ai-assistant.view')
+                ->get('/', [AiAssistantController::class, 'index'])->name('index');
+            Route::middleware('hrmac:quota-management.ai-assistant.configure')
+                ->put('/settings', [AiAssistantController::class, 'updateSettings'])->name('settings.update');
         });
 
         // Platform Analytics (P-3)

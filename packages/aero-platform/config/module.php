@@ -315,6 +315,15 @@ return [
                         ['code' => 'export', 'name' => 'Export Reports'],
                     ],
                 ],
+                [
+                    'code' => 'ai-assistant',
+                    'name' => 'AI Assistant',
+                    'route' => '/ai-assistant',
+                    'actions' => [
+                        ['code' => 'view', 'name' => 'View AI Assistant'],
+                        ['code' => 'configure', 'name' => 'Configure AI Assistant'],
+                    ],
+                ],
             ],
         ],
 

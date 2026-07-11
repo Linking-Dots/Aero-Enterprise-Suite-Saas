@@ -25,10 +25,11 @@ import {
 import App from '@/Pages/App.jsx';
 
 const RESOURCE_OPTIONS = [
-  { value: 'storage_gb', label: 'storage_gb' },
-  { value: 'api_calls',  label: 'api_calls' },
-  { value: 'users',      label: 'users' },
-  { value: 'modules',    label: 'modules' },
+  { value: 'storage_gb',  label: 'storage_gb' },
+  { value: 'api_calls',   label: 'api_calls' },
+  { value: 'users',       label: 'users' },
+  { value: 'modules',     label: 'modules' },
+  { value: 'ai_messages', label: 'ai_messages (AI Assistant / month)' },
 ];
 
 export default function QuotasIndex({ overrides, analytics, filters }) {
