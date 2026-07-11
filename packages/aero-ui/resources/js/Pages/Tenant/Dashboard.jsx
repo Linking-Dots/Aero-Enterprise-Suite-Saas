@@ -1,98 +1,159 @@
 /**
- * Tenant/Dashboard — root page component.
+ * Tenant/Dashboard — workspace command centre.
  *
- * Receives all props from DashboardController::index() via Inertia.
- * Each widget is independently refreshable via useWidgetRefresh.
+ * A single operating view: personalized masthead, a 6-KPI band, a hero activity
+ * analytics column with an audit feed + announcements, and a right stack of live
+ * operational panels (security, sessions, storage & plan, health, onboarding).
  *
- * Layout: 4-column bento grid using aeos-col-span-* classes.
+ * Rides the pc-* command-centre language (products.css) + dashboard.css. Reuses
+ * the existing backend end-to-end: Inertia::lazy props from AdminDashboardService
+ * plus per-widget refresh through /dashboard/widget/{key} (useWidgetRefresh).
  *
- * Row 1  (span 4):  W1  Welcome
- * Row 2  (4 × 1):   W2  KPI tiles
- * Row 3  (3 + 1):   W3  Activity chart  +  W4 Sessions
- * Row 4  (2 + 2):   W5  Security        +  W6 Storage & Plan
- * Row 5  (3 + 1):   W7  Audit log       +  W10 Quick actions
- * Row 6  (2 + 2):   W8  Onboarding      +  W9  Announcements
- * Row 7  (2 + 2):   W11 Peak hours      +  W12 System health (span 2)
- * NOTE: W12 is full-width (span 4) and sits in its own row at the bottom.
+ * Dual-mode: `aero.mode` gates subscription/onboarding framing (SaaS vs standalone).
  */
+import { useState, useEffect, useRef } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import App from '@/Pages/App.jsx';
+import DashboardRail from './Dashboard/DashboardRail.jsx';
+import { useWidgetRefresh } from '@/hooks/useWidgetRefresh.js';
+import {
+  KpiBand, ActivityPanel, ActivityFeed, AnnouncementsPanel,
+  SecurityPanel, SessionsPanel, StoragePlanPanel, HealthPanel, OnboardingPanel,
+  safeRoute,
+} from './Dashboard/panels.jsx';
 
-import App            from '@/Pages/App.jsx';
-import DashboardRail   from './Dashboard/DashboardRail.jsx';
-import { PageHeader }  from '@aero/ui';
+import '../Platform/Admin/Products/products.css';
+import './Dashboard/dashboard.css';
 
-import { WelcomeWidget }       from './Dashboard/widgets/WelcomeWidget.jsx';
-import { KpiRow }              from './Dashboard/widgets/KpiRow.jsx';
-import { ActivityChartWidget } from './Dashboard/widgets/ActivityChartWidget.jsx';
-import { SessionsWidget }      from './Dashboard/widgets/SessionsWidget.jsx';
-import { SecurityWidget }      from './Dashboard/widgets/SecurityWidget.jsx';
-import { StoragePlanWidget }   from './Dashboard/widgets/StoragePlanWidget.jsx';
-import { AuditLogWidget }      from './Dashboard/widgets/AuditLogWidget.jsx';
-import { QuickActionsWidget }  from './Dashboard/widgets/QuickActionsWidget.jsx';
-import { OnboardingWidget }    from './Dashboard/widgets/OnboardingWidget.jsx';
-import { AnnouncementsWidget } from './Dashboard/widgets/AnnouncementsWidget.jsx';
-import { PeakHoursWidget }     from './Dashboard/widgets/PeakHoursWidget.jsx';
-import { SystemHealthWidget }  from './Dashboard/widgets/SystemHealthWidget.jsx';
+/* ------------------------------------------------------------------ masthead */
+function Masthead({ welcomeData, subscriptionInfo, systemHealth, quickActions, mode }) {
+  const { data: sub } = useWidgetRefresh('subscriptionInfo', subscriptionInfo);
+  const { data: health } = useWidgetRefresh('systemHealth', systemHealth);
+  const [menu, setMenu] = useState(false);
 
-export default function Dashboard({
-    welcomeData        = {},
-    coreStats          = null,
-    onboardingProgress = null,
-    announcements      = null,
-    userActivity       = null,
-    sessionsData       = null,
-    securityOverview   = null,
-    storageAnalytics   = null,
-    subscriptionInfo   = null,
-    recentAuditLog     = null,
-    quickActions       = [],
-    systemHealth       = null,
-}) {
-    return (
-        <div className="dash-grid">
+  const isStandalone = mode === 'standalone' || sub?.plan?.slug === 'self-hosted';
+  const overall = health?.overall ?? 'unknown';
+  const healthMod = overall === 'healthy' ? 'ok' : overall === 'degraded' ? 'amber' : overall === 'unknown' ? 'neutral' : 'danger';
 
-            {/* ── Standardized page header (breadcrumb/title standard) ── */}
-            <PageHeader
-                className="aeos-col-span-4 dash-page-header"
-                title="Dashboard"
-                description="Activity, security and usage at a glance."
-            />
+  const isOnTrial = sub?.isOnTrial ?? false;
+  const daysLeft = sub?.daysRemaining ?? null;
+  const planName = sub?.plan?.name ?? 'Free';
 
-            {/* ── Row 1 · Welcome ─────────────────────────────────── */}
-            <WelcomeWidget
-                welcomeData={welcomeData}
-                subscriptionInfo={subscriptionInfo}
-                systemHealth={systemHealth}
-            />
+  const actionGroups = Array.isArray(quickActions) ? quickActions.filter((g) => g.items?.length) : [];
+  const hasActions = actionGroups.length > 0;
 
-            {/* ── Row 2 · KPI tiles (4 cards, each span-1) ─────────── */}
-            <KpiRow coreStats={coreStats} userActivity={userActivity} />
+  return (
+    <div className="pc-head">
+      <div>
+        <div className="pc-eyebrow"><span className="pc-eyebrow__dot" /> Workspace · Overview</div>
+        <h1 className="pc-title">{welcomeData?.greeting ?? 'Welcome back'}{welcomeData?.userName ? `, ${welcomeData.userName.split(' ')[0]}` : ''}</h1>
+        <div className="pc-sub">{welcomeData?.date ?? ''} · Here's everything happening across your workspace today.</div>
+      </div>
 
-            {/* ── Row 3 · Activity chart (span 3) + Sessions (span 1) */}
-            <ActivityChartWidget userActivity={userActivity} />
-            <SessionsWidget      sessionsData={sessionsData} />
+      <div className="pc-actions" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+        {isStandalone
+          ? <span className="dash-pill dash-pill--neutral"><span className="dash-pill__dot" /> Self-hosted · Licensed</span>
+          : <span className={`dash-pill dash-pill--${isOnTrial ? 'amber' : 'ok'}`}><span className="dash-pill__dot" />{planName}{isOnTrial && daysLeft !== null ? ` · Trial ${daysLeft}d` : ''}</span>}
 
-            {/* ── Row 4 · Security (span 2) + Storage/Plan (span 2) ── */}
-            <SecurityWidget    securityOverview={securityOverview} />
-            <StoragePlanWidget storageAnalytics={storageAnalytics} subscriptionInfo={subscriptionInfo} />
+        <span className={`dash-pill dash-pill--${healthMod}`}><span className="dash-pill__dot" />{overall === 'healthy' ? 'All systems healthy' : `System ${overall}`}</span>
 
-            {/* ── Row 5 · Audit log (span 3) + Quick actions (span 1) */}
-            <AuditLogWidget    recentAuditLog={recentAuditLog} />
-            <QuickActionsWidget quickActions={quickActions} />
+        {welcomeData?.time && <span className="dash-pill dash-pill--neutral" style={{ fontFamily: 'var(--aeos-font-mono)' }}>{welcomeData.time}</span>}
 
-            {/* ── Row 6 · Onboarding (span 2) + Announcements (span 2) */}
-            <OnboardingWidget    onboardingProgress={onboardingProgress} />
-            <AnnouncementsWidget announcements={announcements} />
-
-            {/* ── Row 7 · Peak hours (span 2) + System health (span 2) */}
-            <PeakHoursWidget   userActivity={userActivity} />
-            <SystemHealthWidget systemHealth={systemHealth} />
-
-        </div>
-    );
+        {hasActions && (
+          <div className="dash-menu-wrap">
+            <button type="button" className="pc-btn pc-btn--primary" onClick={() => setMenu((m) => !m)} aria-expanded={menu} aria-haspopup="menu">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+              <span>New</span>
+            </button>
+            {menu && (
+              <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 39 }} onClick={() => setMenu(false)} aria-hidden="true" />
+                <div className="dash-menu" role="menu">
+                  {actionGroups.map((g) => (
+                    <div key={g.group}>
+                      <div className="dash-menu__grp">{g.group}</div>
+                      {g.items.map((it) => (
+                        <Link key={it.label} href={safeRoute(it.route, '#')} className="dash-menu__item" role="menuitem" onClick={() => setMenu(false)}>
+                          <span className="dash-live" style={{ background: 'var(--aeos-primary)', boxShadow: 'none' }} />{it.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-Dashboard.layout = page => (
-    <App title="Dashboard" railTitle="At a glance" rail={<DashboardRail />}>
-        {page}
-    </App>
+/* ================================================================= page */
+export default function Dashboard({
+  welcomeData = {},
+  coreStats = null,
+  onboardingProgress = null,
+  announcements = null,
+  userActivity = null,
+  sessionsData = null,
+  securityOverview = null,
+  storageAnalytics = null,
+  subscriptionInfo = null,
+  recentAuditLog = null,
+  quickActions = [],
+  systemHealth = null,
+}) {
+  const mode = usePage().props?.aero?.mode ?? 'saas';
+
+  const [period, setPeriod] = useState('week');
+  const activity = useWidgetRefresh('userActivity', userActivity, { extraParams: `period=${period}` });
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) { firstRun.current = false; return; }
+    activity.refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
+
+  return (
+    <div className="dash">
+      <Masthead
+        welcomeData={welcomeData}
+        subscriptionInfo={subscriptionInfo}
+        systemHealth={systemHealth}
+        quickActions={quickActions}
+        mode={mode}
+      />
+
+      <KpiBand coreStats={coreStats} activity={activity.data} security={securityOverview} storage={storageAnalytics} />
+
+      <div className="dash-split">
+        {/* LEFT · analytics + narrative */}
+        <div className="dash-col">
+          <ActivityPanel activity={activity.data} loading={activity.loading} period={period} onPeriod={setPeriod} />
+          <ActivityFeed recentAuditLog={recentAuditLog} />
+          <AnnouncementsPanel announcements={announcements} />
+        </div>
+
+        {/* RIGHT · live operational panels */}
+        <div className="dash-col">
+          <SecurityPanel security={securityOverview} />
+          <SessionsPanel sessionsData={sessionsData} />
+          <StoragePlanPanel storageAnalytics={storageAnalytics} subscriptionInfo={subscriptionInfo} mode={mode} />
+          <HealthPanel systemHealth={systemHealth} />
+          <OnboardingPanel onboardingProgress={onboardingProgress} mode={mode} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Dashboard.layout = (page) => (
+  <App
+    title="Dashboard"
+    railTitle="At a glance"
+    rail={<DashboardRail quickActions={page.props.quickActions} />}
+  >
+    {page}
+  </App>
 );
