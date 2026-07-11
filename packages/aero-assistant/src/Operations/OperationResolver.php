@@ -48,6 +48,12 @@ class OperationResolver
             if ($op['kind'] === $kind) {
                 $score += 8;
             }
+            // Prefer the CANONICAL REST resource route over legacy duplicates.
+            // Apps with v1/v2 dupes expose two writers for one entity (e.g.
+            // hrm.leave.types.store vs the legacy hrm.add-leave-type); the
+            // resource-named/RESTful one is the maintained path that actually
+            // persists, so it must win.
+            $score += $this->canonicalScore($op);
             $scored[] = ['score' => $score, 'op' => $op];
         }
         if (empty($scored)) {
@@ -62,6 +68,41 @@ class OperationResolver
         }
 
         return ['best' => $best, 'alternates' => $alternates];
+    }
+
+    /**
+     * Score how "canonical" a write route is. Resource-convention routes
+     * (name ends .store/.update/.destroy, RESTful URI) are the maintained path;
+     * legacy verb-in-URL routes (/hrm/add-leave-type, /delete-x) are the
+     * duplicate that a v1/v2 codebase leaves behind — often a dead/parallel
+     * writer. Reward the former, penalise the latter so the persisting route wins.
+     *
+     * @param  array<string,mixed>  $op
+     */
+    private function canonicalScore(array $op): float
+    {
+        $score = 0.0;
+        $name = (string) ($op['name'] ?? '');
+        $uri = (string) ($op['uri'] ?? '');
+
+        // Resource-convention route name — the strongest "this is the real one" signal.
+        if (Str::endsWith($name, ['.store', '.update', '.destroy'])) {
+            $score += 12;
+        }
+
+        // Legacy verb baked into the URL path (add-, create-, update-, edit-,
+        // delete-, remove-, save-, store- on a path segment) — the parallel writer.
+        $lastSeg = Str::of($uri)->afterLast('/')->before('{')->__toString();
+        if (Str::startsWith($lastSeg, ['add-', 'create-', 'update-', 'edit-', 'delete-', 'remove-', 'save-', 'store-', 'new-'])) {
+            $score -= 10;
+        }
+
+        // Resolves to a real backing table → it actually persists something.
+        if (! empty($op['table'])) {
+            $score += 3;
+        }
+
+        return $score;
     }
 
     /** Look an operation up by its exact route name (model may pass it directly). */

@@ -105,7 +105,15 @@ export async function sendAeonFeedback({ messageId, value }) {
 // Returns { ok, status, errors } where errors is a { field: message } map on 422.
 export async function submitAeonForm({ action, method = 'post', values }) {
   const verb = (method || 'post').toUpperCase();
-  const body = { ...values };
+  // Omit untouched optional fields (empty string / null / undefined): sending
+  // '' makes Laravel's convertEmptyStringsToNull turn it into null, which then
+  // violates NOT NULL columns or numeric rules on fields the user left blank.
+  // Let the app's own defaults apply; keep false and 0 (real values).
+  const body = {};
+  Object.entries(values || {}).forEach(([k, v]) => {
+    if (v === '' || v === null || v === undefined) return;
+    body[k] = v;
+  });
   // Laravel method spoofing for PUT/PATCH/DELETE over a POST.
   const httpMethod = verb === 'GET' ? 'GET' : 'POST';
   if (['PUT', 'PATCH', 'DELETE'].includes(verb)) body._method = verb;
@@ -115,6 +123,11 @@ export async function submitAeonForm({ action, method = 'post', values }) {
     res = await fetch(action, {
       method: httpMethod,
       credentials: 'same-origin',
+      // A successful web-form controller answers with a 302 back()/redirect.
+      // Don't FOLLOW it (default 'follow' would then GET that page and could
+      // surface an unrelated render error as a false write failure) — treat the
+      // redirect itself as the success signal.
+      redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -127,6 +140,11 @@ export async function submitAeonForm({ action, method = 'post', values }) {
     return { ok: false, status: 0, errors: { _: 'Network error — please try again.' } };
   }
 
+  // A 3xx redirect (opaqueredirect when redirect:'manual', or status 0/type
+  // opaqueredirect) is Laravel's post-redirect-get success signal.
+  if (res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400)) {
+    return { ok: true, status: res.status || 302, errors: {} };
+  }
   if (res.ok) return { ok: true, status: res.status, errors: {} };
 
   if (res.status === 422) {

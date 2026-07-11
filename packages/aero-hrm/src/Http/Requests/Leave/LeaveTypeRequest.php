@@ -14,7 +14,10 @@ class LeaveTypeRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('type')?->id;
+        // Route param may arrive as a bound model OR a raw id string (tenant
+        // subdomain routing shifts route-model binding), so handle both.
+        $type = $this->route('type');
+        $id = is_object($type) ? $type->id : $type;
 
         return [
             'name'              => ['required', 'string', 'max:80', Rule::unique('leave_types', 'name')->ignore($id)],

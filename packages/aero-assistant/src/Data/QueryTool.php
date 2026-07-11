@@ -538,8 +538,33 @@ class QueryTool implements AeonToolContract
                 return true; // console / jobs — route middleware already requires auth for HTTP
             }
 
-            return app(\Aero\Contracts\RoleModuleAccessInterface::class)
-                ->userCanAccessModule($user, $this->catalog->moduleFor($table));
+            $svc = app(\Aero\Contracts\RoleModuleAccessInterface::class);
+            $moduleCode = $this->catalog->moduleFor($table);
+
+            // Fast path: super-admin bypass + any explicit module-level grant.
+            if ($svc->userCanAccessModule($user, $moduleCode)) {
+                return true;
+            }
+
+            // This system grants access at the SUB-MODULE level (even admins have
+            // no module-level rows), so module-level alone would wrongly deny
+            // legitimately-authorised users. Allow the read when the user can reach
+            // ANY sub-module of the owning module — i.e. they can see part of it
+            // in the UI. (Row-level own-vs-all scoping is a separate concern; PII
+            // columns are always stripped and every read is audited.)
+            $accessibleSubModuleIds = $svc->getUserAccessibleSubModuleIds($user);
+            if (empty($accessibleSubModuleIds)) {
+                return false;
+            }
+            $moduleId = DB::table('modules')->where('code', $moduleCode)->value('id');
+            if (! $moduleId) {
+                return false;
+            }
+
+            return DB::table('sub_modules')
+                ->whereIn('id', $accessibleSubModuleIds)
+                ->where('module_id', $moduleId)
+                ->exists();
         } catch (\Throwable) {
             return false; // a broken gate must deny, never expose
         }
