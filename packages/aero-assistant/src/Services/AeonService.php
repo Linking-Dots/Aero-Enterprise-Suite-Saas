@@ -62,7 +62,28 @@ class AeonService
             }
         };
 
-        // Daily token budget — refuse before spending anything.
+        // Plan AI quota (SaaS): entitlement + monthly message allowance. Refuse
+        // before spending anything; the message is a soft upsell, not an error.
+        $quota = $this->quotaStatus();
+        if ($quota !== null && ! ($quota['enabled'] ?? true)) {
+            $msg = 'The AI assistant isn\'t included in your current plan. Ask your administrator to upgrade to unlock Aeon.';
+
+            return $this->persistReply($conversation, [
+                'content' => $msg, 'blocks' => [['type' => 'text', 'text' => $msg]],
+                'tokens' => 0, 'tool_log' => [], 'model' => '',
+            ]);
+        }
+        if ($quota !== null && ! ($quota['allowed'] ?? true)) {
+            $msg = 'You\'ve used this month\'s AI message allowance ('.(int) ($quota['limit'] ?? 0).' messages). '
+                .'It resets at the start of your next billing month — or ask your administrator to upgrade the plan for more.';
+
+            return $this->persistReply($conversation, [
+                'content' => $msg, 'blocks' => [['type' => 'text', 'text' => $msg]],
+                'tokens' => 0, 'tool_log' => [], 'model' => '',
+            ]);
+        }
+
+        // Daily token fuse — cost protection under the message quota.
         if ($this->overBudget($userId)) {
             $limitMsg = 'You\'ve reached today\'s Aeon usage limit — it resets at midnight. If you need more, ask your administrator to raise the Aeon budget.';
 
@@ -165,6 +186,12 @@ class AeonService
             $outBlocks[] = ['type' => 'chips', 'variant' => 'source', 'items' => $titles];
         }
 
+        // Count this delivered message against the tenant's monthly allowance
+        // (only when the model actually produced a reply, not on provider failure).
+        if (! $failed) {
+            $this->recordQuota();
+        }
+
         return $this->persistReply($conversation, [
             'content' => $content,
             'blocks' => $outBlocks,
@@ -264,6 +291,38 @@ class AeonService
         ]);
 
         return ['conversation' => $conversation, 'reply' => $reply];
+    }
+
+    /**
+     * The current tenant's AI quota status (plan entitlement + monthly allowance),
+     * or null when no quota is enforced (standalone edition / unbound / errors —
+     * fail-open so a quota fault never blocks the assistant).
+     *
+     * @return array<string,mixed>|null
+     */
+    private function quotaStatus(): ?array
+    {
+        try {
+            if (! function_exists('app') || ! app()->bound(\Aero\Contracts\Ai\AeonQuotaContract::class)) {
+                return null;
+            }
+
+            return app(\Aero\Contracts\Ai\AeonQuotaContract::class)->status();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /** Count one delivered message against the tenant's monthly allowance. */
+    private function recordQuota(): void
+    {
+        try {
+            if (function_exists('app') && app()->bound(\Aero\Contracts\Ai\AeonQuotaContract::class)) {
+                app(\Aero\Contracts\Ai\AeonQuotaContract::class)->record();
+            }
+        } catch (\Throwable) {
+            // metering must never break the chat turn
+        }
     }
 
     /** Whether the user has spent today's token fuse (0 = unlimited). */

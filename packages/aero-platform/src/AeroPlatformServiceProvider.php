@@ -287,6 +287,11 @@ class AeroPlatformServiceProvider extends ServiceProvider
             \Aero\Contracts\Ai\AeonSettingsContract::class,
             \Aero\Platform\Ai\PlatformAeonSettings::class,
         );
+        // AI quota for the current tenant (plan allowance, metered per month).
+        $this->app->singleton(
+            \Aero\Contracts\Ai\AeonQuotaContract::class,
+            \Aero\Platform\Ai\PlatformAeonQuota::class,
+        );
 
         $this->app->singleton(ProductAccessService::class);
         $this->app->singleton(ProductSubscriptionService::class);

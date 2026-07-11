@@ -160,9 +160,9 @@ class HandleInertiaRequests extends Middleware
             'context' => 'tenant',
             // Aeon assistant availability. Present (true) only in tenant/standalone
             // context — this middleware never runs on the central/platform admin,
-            // so the global FAB stays hidden there. (Phase 2 refines this to also
-            // honor the tenant's plan entitlement.)
-            'aeon' => ['available' => (bool) config('aeon.enabled', true)],
+            // so the global FAB stays hidden there. Also honors the tenant's plan
+            // entitlement (AI included in the plan) via the quota contract.
+            'aeon' => ['available' => $this->aeonAvailable()],
             // Axis B B8 — always expose the deployment mode so shared aero-ui
             // components have an explicit 'saas'|'standalone' signal in BOTH modes
             // (previously aero.mode existed only in SaaS+tenant context, leaving
@@ -349,6 +349,28 @@ class HandleInertiaRequests extends Middleware
     /**
      * Get system setting (cached).
      */
+    /**
+     * Whether the Aeon assistant should be offered in this context: globally
+     * enabled AND (no quota contract bound → standalone/unmetered, or the
+     * tenant's plan actually includes AI). Fails open so a resolution error
+     * never hides a working assistant.
+     */
+    protected function aeonAvailable(): bool
+    {
+        if (! config('aeon.enabled', true)) {
+            return false;
+        }
+        try {
+            if (app()->bound(\Aero\Contracts\Ai\AeonQuotaContract::class)) {
+                return (bool) (app(\Aero\Contracts\Ai\AeonQuotaContract::class)->status()['enabled'] ?? true);
+            }
+        } catch (Throwable) {
+            // fall through — treat as available
+        }
+
+        return true;
+    }
+
     protected function systemSetting(): ?SystemSetting
     {
         if ($this->resolvedSystemSetting) {

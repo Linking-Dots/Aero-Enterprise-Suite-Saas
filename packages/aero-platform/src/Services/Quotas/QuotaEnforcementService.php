@@ -363,17 +363,22 @@ class QuotaEnforcementService
         return $this->getAiMessagesUsed($tenant) < $limit;
     }
 
-    /** Count one AI message against the monthly allowance. */
+    /**
+     * Count one AI message against the monthly allowance.
+     *
+     * Read-modify-write via get/put rather than TenantCache::increment (which
+     * doesn't exist) so it persists on any cache store; the ±1 race under truly
+     * simultaneous requests is immaterial for message metering. Expires two
+     * months out so a month boundary can never strand a stale counter.
+     */
     public function incrementAiMessages(Tenant|string $tenant): void
     {
         $tenantId = $tenant instanceof Tenant ? $tenant->id : $tenant;
         $month = now()->format('Y-m');
         $key = "quota:ai_messages:{$tenantId}:{$month}";
 
-        TenantCache::increment($key);
-        if (TenantCache::get($key) === 1) {
-            TenantCache::put($key, 1, now()->addMonths(2)->startOfMonth());
-        }
+        $used = (int) TenantCache::get($key, 0);
+        TenantCache::put($key, $used + 1, now()->addMonths(2)->startOfMonth());
     }
 
     /**
