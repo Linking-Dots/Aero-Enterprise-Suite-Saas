@@ -707,6 +707,7 @@ export const PRICING_PLANS = [
     subsidiaries: "1 entity",
     modules: ["Human Resources", "Basic Payroll", "Finance Essentials"],
     perks: [
+      "Aeon AI Assistant — 100 messages/mo",
       "Core HR & employee records",
       "Attendance & leave tracking",
       "Basic payroll processing",
@@ -732,6 +733,7 @@ export const PRICING_PLANS = [
     modules: ["Everything in Starter", "CRM Suite", "Inventory Management", "Project Management"],
     perks: [
       "Everything in Starter",
+      "Aeon AI Assistant — 1,000 messages/mo (Pro model)",
       "CRM & sales pipeline",
       "Inventory & warehouse",
       "Project & task management",
@@ -760,7 +762,7 @@ export const PRICING_PLANS = [
       "Point of sale",
       "Quality & compliance",
       "Document management & RFI",
-      "Built-in AI assistant",
+      "Aeon AI Assistant — 5,000 messages/mo (Pro model)",
       "Dedicated account manager",
       "99.97% uptime SLA",
     ],
@@ -782,6 +784,7 @@ export const PRICING_PLANS = [
     modules: ["All 17+ modules included"],
     perks: [
       "Everything in Business",
+      "Aeon AI Assistant — unlimited (all models + BYO key)",
       "White-label branding",
       "On-premise deployment option",
       "Custom SLA (up to 99.99%)",

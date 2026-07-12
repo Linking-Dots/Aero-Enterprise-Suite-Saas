@@ -112,10 +112,20 @@ class PublicPageController extends Controller
     protected function getPlanPerks($plan): array
     {
         $features = json_decode($plan->features ?? '[]', true);
-        if (!is_array($features)) {
-            return [];
+        $perks = is_array($features) ? array_values(array_filter($features, 'is_string')) : [];
+
+        // Surface the AI Assistant allowance as a headline perk (the selling
+        // point) when this plan includes AI — reads the same plan.limits keys
+        // the quota system enforces.
+        $limits = json_decode($plan->limits ?? '{}', true);
+        if (is_array($limits) && array_key_exists('max_ai_messages', $limits)) {
+            $n = (int) $limits['max_ai_messages'];
+            $modelLabel = ['flash' => 'Flash', 'pro' => 'Pro', 'all' => 'Advanced'][$limits['ai_model'] ?? 'flash'] ?? 'Flash';
+            $msgs = $n === 0 ? 'Unlimited' : number_format($n);
+            array_unshift($perks, "Aeon AI Assistant — {$msgs} messages/mo ({$modelLabel} model)");
         }
-        return array_values(array_filter($features, 'is_string'));
+
+        return $perks;
     }
 
     public function features(Request $request): Response
