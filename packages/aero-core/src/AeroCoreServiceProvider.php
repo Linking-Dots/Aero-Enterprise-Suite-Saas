@@ -197,6 +197,12 @@ class AeroCoreServiceProvider extends ServiceProvider
                 $this->app->singleton('Aero\\Notifications\\Contracts\\MailContextResolver', CoreMailContextResolver::class);
                 $this->app->singleton('Aero\\Notifications\\Contracts\\SmsContextResolver', CoreSmsContextResolver::class);
             }
+            if (class_exists('Aero\\Notifications\\Contracts\\BrandingResolver')) {
+                $this->app->singleton(
+                    'Aero\\Notifications\\Contracts\\BrandingResolver',
+                    \Aero\Core\Services\Notifications\CoreBrandingResolver::class,
+                );
+            }
 
             // Register Module Access Services (with error handling for missing tables)
             // These services are lazy-loaded, so they won't cause issues pre-install

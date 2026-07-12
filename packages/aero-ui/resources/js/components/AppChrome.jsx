@@ -16,8 +16,10 @@ import { BellIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react
 
 // ─── AeosLogo ─────────────────────────────────────────────────────────────────
 /**
- * The aeos365 SVG logo mark — gradient tile with triangle glyph.
- * Used across app shell, auth layout, install layout, and registration layout.
+ * The Meridian mark — core disc in open orbit with the signal node
+ * (branding/svg/mark.svg geometry). The universal brand fallback: rendered
+ * whenever no white-label logo is configured. Ink follows currentColor so it
+ * adapts to light/dark chrome; the node stays Signal orange.
  *
  * @prop {number} size  Width/height in px (default 28)
  */
@@ -26,35 +28,42 @@ export function AeosLogo({ size = 28, className }) {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 28 28"
+      viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
       className={cx('aeos-logo-svg', className)}
     >
-      <rect width="28" height="28" rx="7" fill="url(#aeos-logo-grad)" />
-      <path d="M8 20L14 9l6 11H8z" fill="white" fillOpacity=".92" />
-      <defs>
-        <linearGradient id="aeos-logo-grad" x1="0" y1="0" x2="28" y2="28">
-          <stop stopColor="var(--aeos-primary)" />
-          <stop offset="1" stopColor="var(--aeos-tertiary)" />
-        </linearGradient>
-      </defs>
+      <circle cx="12" cy="12" r="4.6" fill="currentColor" />
+      <path
+        d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
+        stroke="currentColor"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+      />
+      <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
     </svg>
   );
 }
 
 // ─── AppBrand ─────────────────────────────────────────────────────────────────
 /**
- * App brand link — logo mark centred in the sidebar rail.
- * Renders as an Inertia Link that navigates to the dashboard.
+ * App brand link — white-label aware. Renders the workspace's configured
+ * logo (resolved through the tenant → platform → Meridian chain shared as
+ * the `branding` page prop) and falls back to the Meridian mark.
  *
  * @prop {string} href  Destination href (default '/dashboard')
  * @prop {number} size  Logo size in px (default 28)
  */
 export function AppBrand({ href = '/dashboard', size = 28, className }) {
+  const { branding } = usePage().props;
+  const logo = branding?.logo_light || branding?.logo_dark || null;
+  const name = branding?.name || 'aeos365';
+
   return (
-    <Link href={href} className={cx('aeos-app-brand', className)} aria-label="aeos365 home">
-      <AeosLogo size={size} />
+    <Link href={href} className={cx('aeos-app-brand', className)} aria-label={`${name} home`}>
+      {logo
+        ? <img src={logo} alt={name} height={size} className="aeos-brand-img" />
+        : <AeosLogo size={size} />}
     </Link>
   );
 }

@@ -53,15 +53,16 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
         <header className="il-header">
           <Link href="/" className="il-brand-link" aria-label="aeos365 home">
             <span className="il-logo-mark" aria-hidden="true">
-              <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-                <rect width="30" height="30" rx="8" fill="url(#il-grad)" />
-                <path d="M9 21L15 9l6 12H9z" fill="white" fillOpacity=".92" />
-                <defs>
-                  <linearGradient id="il-grad" x1="0" y1="0" x2="30" y2="30">
-                    <stop stopColor="var(--aeos-primary, #00E5FF)" />
-                    <stop offset="1" stopColor="var(--aeos-tertiary, #6366F1)" />
-                  </linearGradient>
-                </defs>
+              {/* Meridian mark — branding/svg/mark.svg geometry */}
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="4.6" fill="currentColor" />
+                <path
+                  d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
+                  stroke="currentColor"
+                  strokeWidth="2.1"
+                  strokeLinecap="round"
+                />
+                <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
               </svg>
             </span>
             <span className="aeos-logo-text">aeos365</span>

@@ -381,15 +381,16 @@ export function PublicHeader({ navLinks = [], ctaLinks = [], loginHref, announce
         {logo ? logo : (
           <Link href="/" className="aeos-pub-logo-link" aria-label="aeos365 home">
             <div className="aeos-pub-logo-mark">
-              <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-                <rect width="30" height="30" rx="8" fill="url(#pub-logo-grad)" />
-                <path d="M9 21L15 9l6 12H9z" fill="white" fillOpacity=".92" />
-                <defs>
-                  <linearGradient id="pub-logo-grad" x1="0" y1="0" x2="30" y2="30">
-                    <stop stopColor="var(--aeos-primary)" />
-                    <stop offset="1" stopColor="var(--aeos-tertiary)" />
-                  </linearGradient>
-                </defs>
+              {/* Meridian mark — branding/svg/mark.svg geometry */}
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.6" fill="currentColor" />
+                <path
+                  d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
+                  stroke="currentColor"
+                  strokeWidth="2.1"
+                  strokeLinecap="round"
+                />
+                <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
               </svg>
             </div>
             <div className="aeos-pub-logo-text">
@@ -616,15 +617,16 @@ export function PublicFooter({ brand = {}, linkColumns = [], socialLinks = [], n
           <div className="aeos-pub-footer-brand">
             <Link href="/" className="aeos-pub-logo-link" aria-label="Home">
               <div className="aeos-pub-logo-mark">
-                <svg width="28" height="28" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-                  <rect width="30" height="30" rx="8" fill="url(#pub-footer-grad)" />
-                  <path d="M9 21L15 9l6 12H9z" fill="white" fillOpacity=".92" />
-                  <defs>
-                    <linearGradient id="pub-footer-grad" x1="0" y1="0" x2="30" y2="30">
-                      <stop stopColor="var(--aeos-primary)" />
-                      <stop offset="1" stopColor="var(--aeos-tertiary)" />
-                    </linearGradient>
-                  </defs>
+                {/* Meridian mark — branding/svg/mark.svg geometry */}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4.6" fill="currentColor" />
+                  <path
+                    d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
+                    stroke="currentColor"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
                 </svg>
               </div>
               <span className="aeos-pub-logo-name">{brand.name ?? 'aeos365'}</span>

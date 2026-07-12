@@ -12,7 +12,9 @@ use Aero\Core\Support\TenantCache;
 use Aero\HRMAC\Models\Module;
 use Aero\HRMAC\Models\SubModule;
 use Aero\I18n\Services\TranslationService;
+use Aero\Kernel\Branding\BrandingPayload;
 use Aero\Platform\Http\Resources\PlatformSettingResource;
+use Aero\Platform\Models\Infra\TenantBranding;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Models\Subscription;
 use Aero\Platform\Models\SystemSetting;
@@ -93,7 +95,8 @@ class HandleInertiaRequests extends Middleware
 
         // 3. Load Platform Settings
         $settings = $this->resolvePlatformSettings($request);
-        $this->shareBrandingWithBlade($settings['branding'] ?? [], null);
+        $branding = BrandingPayload::merge($this->platformBrandingLayer($settings));
+        $this->shareBrandingWithBlade($branding, $branding['name']);
 
         // 4. Construct Auth Data
         $authData = [
@@ -115,6 +118,7 @@ class HandleInertiaRequests extends Middleware
                 'environment' => config('app.env', 'production'),
             ],
             'platformSettings' => $settings,
+            'branding' => $branding,
             'maintenance' => fn () => $this->getAdminMaintenanceStatus(),
             // Navigation is heavy, keep it lazy
             'navigation' => fn () => $this->getNavigationProps($user),
@@ -143,7 +147,8 @@ class HandleInertiaRequests extends Middleware
         }
 
         $settings = $this->resolvePlatformSettings($request);
-        $this->shareBrandingWithBlade($settings['branding'] ?? [], null);
+        $branding = BrandingPayload::merge($this->platformBrandingLayer($settings));
+        $this->shareBrandingWithBlade($branding, $branding['name']);
 
         $maintenance = PlatformSetting::getMaintenanceStatus();
         $isDebug = config('app.debug', false);
@@ -158,6 +163,7 @@ class HandleInertiaRequests extends Middleware
                 'debug' => $isDebug,
             ],
             'platformSettings' => $settings,
+            'branding' => $branding,
             'platform' => [
                 'modules' => fn () => $this->getAvailableModules(),
                 'plans' => fn () => $this->getSubscriptionPlans(),
@@ -201,10 +207,19 @@ class HandleInertiaRequests extends Middleware
 
         // 2. Load System Settings (Tenant Scope)
         $settings = $this->resolveSystemSettings($request);
-        $branding = $settings['branding'] ?? [];
         $companyName = $settings['organization']['company_name'] ?? config('app.name', 'aeos365');
 
-        $this->shareBrandingWithBlade($branding, $companyName);
+        // White-label chain, per field: tenant's own branding → central per-tenant
+        // branding (platform-managed) → platform brand → Meridian defaults.
+        $tenantLayer = $settings['branding'] ?? [];
+        $tenantLayer['name'] ??= $tenantLayer['app_name'] ?? $companyName;
+        $branding = BrandingPayload::merge(
+            $tenantLayer,
+            $this->centralTenantBrandingLayer(),
+            $this->platformBrandingLayer($this->resolvePlatformSettings($request)),
+        );
+
+        $this->shareBrandingWithBlade($branding, $branding['name'] ?? $companyName);
 
         // 3. Determine User Roles & Access
         $isTenantSuperAdmin = $user?->isSuperAdmin() ?? false;
@@ -316,6 +331,49 @@ class HandleInertiaRequests extends Middleware
             'faviconUrl' => $branding['favicon'] ?? null,
             'siteName' => $siteName ?? config('app.name', 'aeos365'),
         ]);
+    }
+
+    /**
+     * Platform's own brand as a fallback layer for the white-label chain.
+     */
+    private function platformBrandingLayer(?array $settings): array
+    {
+        if (! $settings) {
+            return [];
+        }
+
+        $layer = $settings['branding'] ?? [];
+        $layer['name'] ??= $settings['site']['name'] ?? null;
+
+        return $layer;
+    }
+
+    /**
+     * Central per-tenant branding (managed from the platform white-label
+     * console) mapped onto the canonical payload keys. Sits between the
+     * tenant's own branding and the platform brand in the chain.
+     */
+    private function centralTenantBrandingLayer(): array
+    {
+        try {
+            $row = TenantBranding::query()->where('tenant_id', tenant('id'))->first();
+            if (! $row) {
+                return [];
+            }
+
+            $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+            return array_filter([
+                'logo_light' => $row->logo_path ? $disk->url($row->logo_path) : null,
+                'favicon' => $row->favicon_path ? $disk->url($row->favicon_path) : null,
+                'primary_color' => $row->primary_color,
+                'accent_color' => $row->secondary_color,
+                'email_from_name' => $row->email_from_name,
+                'email_from_address' => $row->email_from_address,
+            ]);
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 
     // =========================================================================

@@ -128,14 +128,15 @@ export default function StepProvisioning({ tenant = {}, baseDomain = '' }) {
             </svg>
           )}
           {displayStatus === 'running' && (
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <rect width="28" height="28" rx="7" fill="url(#prov-grad-r)" />
-              <path d="M8 20L14 9l6 11H8z" fill="white" fillOpacity=".9" />
-              <defs>
-                <linearGradient id="prov-grad-r" x1="0" y1="0" x2="28" y2="28">
-                  <stop stopColor="var(--aeos-primary)" /><stop offset="1" stopColor="var(--aeos-tertiary)" />
-                </linearGradient>
-              </defs>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.6" fill="currentColor" />
+              <path
+                d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+              />
+              <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
             </svg>
           )}
         </div>

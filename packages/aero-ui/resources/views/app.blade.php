@@ -25,7 +25,7 @@
     <meta name="keywords" content="ERP, Enterprise Resource Planning, Business Management, HR Management">
     <meta name="author" content="Emam Hosen">
     <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#134e9d">
+    <meta name="theme-color" content="#0C2742">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -47,13 +47,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="{{ $siteName ?? config('app.name') }}">
 
-    <!-- Favicon - Only render if favicon/logo URLs are set -->
+    <!-- Favicon — white-label if configured, Meridian static icons otherwise -->
     @if(!empty($faviconUrl))
     <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ $faviconUrl }}">
+    @else
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icon-192.png') }}">
     @endif
     @if(!empty($logoUrl))
     <link rel="apple-touch-icon" sizes="180x180" href="{{ $logoUrl }}">
+    @else
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
     @endif
 
     <!-- DNS Prefetch for Performance -->

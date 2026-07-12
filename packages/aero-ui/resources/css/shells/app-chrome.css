@@ -5,6 +5,13 @@
 
 .aeos-logo-svg { display: block; flex-shrink: 0; }
 
+/* White-label logo image — constrained to the rail slot, never distorts */
+.aeos-brand-img {
+  display: block; flex-shrink: 0;
+  max-height: 32px; max-width: 140px;
+  object-fit: contain;
+}
+
 .aeos-app-brand {
   display: flex; align-items: center; justify-content: center;
   width: 100%; padding: var(--aeos-space-2) 0;

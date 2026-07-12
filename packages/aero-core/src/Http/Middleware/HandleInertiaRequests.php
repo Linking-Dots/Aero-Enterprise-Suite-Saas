@@ -136,8 +136,13 @@ class HandleInertiaRequests extends Middleware
             : null;
 
         $organization = $systemSettingsPayload['organization'] ?? [];
-        $branding = $systemSettingsPayload['branding'] ?? [];
         $companyName = $organization['company_name'] ?? config('app.name', 'Aero ERP');
+
+        // White-label chain (standalone has no platform tier): workspace
+        // branding → Meridian defaults, resolved per field.
+        $tenantLayer = $systemSettingsPayload['branding'] ?? [];
+        $tenantLayer['name'] ??= $tenantLayer['app_name'] ?? $companyName;
+        $branding = \Aero\Kernel\Branding\BrandingPayload::merge($tenantLayer);
 
         // Share branding with blade template - use null fallback to show letter fallback
         View::share([
@@ -145,7 +150,7 @@ class HandleInertiaRequests extends Middleware
             'logoLightUrl' => $branding['logo_light'] ?? $branding['logo'] ?? null,
             'logoDarkUrl' => $branding['logo_dark'] ?? $branding['logo'] ?? null,
             'faviconUrl' => $branding['favicon'] ?? null,
-            'siteName' => $companyName,
+            'siteName' => $branding['name'] ?? $companyName,
         ]);
 
         // Build base props
