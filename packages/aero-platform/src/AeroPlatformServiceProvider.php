@@ -488,8 +488,14 @@ class AeroPlatformServiceProvider extends ServiceProvider
                 ExpireGracePeriods::class,
                 PurgeSuspendedRoleAccess::class, // D17: daily hard-delete after 30-day grace
                 \Aero\Platform\Console\Commands\DemoResetCommand::class,
+                \Aero\Platform\Console\Commands\RollupAeonUsage::class, // AI fleet usage summary
             ]);
         }
+
+        // Nightly AI usage roll-up → central aeon_tenant_usage (fleet console reads it).
+        $this->callAfterResolving(\Illuminate\Console\Scheduling\Schedule::class, function ($schedule) {
+            $schedule->command('aeon:rollup')->hourly();
+        });
 
         // Register platform navigation with NavigationRegistry
         // This allows HandleInertiaRequests to share navigation via Inertia props

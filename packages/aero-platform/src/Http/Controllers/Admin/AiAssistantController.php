@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Aero\Platform\Http\Controllers\Admin;
 
 use Aero\Platform\Http\Controllers\Controller;
+use Aero\Platform\Models\AeonTenantUsage;
 use Aero\Platform\Models\Plan;
 use Aero\Platform\Models\PlatformSetting;
 use Aero\Platform\Models\Tenant;
@@ -65,76 +66,73 @@ class AiAssistantController extends Controller
     }
 
     /**
-     * Fleet KPIs. Cached (2 min) so the aggregate scan never runs per request;
-     * the nightly roll-up (Phase 4) will replace this with a stored summary.
+     * Fleet KPIs — a cheap aggregate over the roll-up summary (aeon:rollup),
+     * not a per-request fan-out. Falls back to zeros before the first roll-up.
      *
      * @return array<string,mixed>
      */
     private function stats(): array
     {
-        return Cache::remember('aeon:fleet_stats', 120, function () {
-            $withAi = 0;
-            $used = 0;
-            Tenant::query()->whereNull('deleted_at')->select(['id', 'status'])
-                ->chunk(200, function ($chunk) use (&$withAi, &$used) {
-                    foreach ($chunk as $t) {
-                        try {
-                            $s = $this->quotas->getAiSummary($t);
-                        } catch (\Throwable) {
-                            continue;
-                        }
-                        if ($s['enabled']) {
-                            $withAi++;
-                        }
-                        $used += $s['used'];
-                    }
-                });
+        $period = now()->format('Y-m');
+        $agg = AeonTenantUsage::where('period', $period)
+            ->selectRaw('SUM(enabled) as with_ai, SUM(messages_used) as used, SUM(feedback_up) as up, SUM(feedback_down) as down, MAX(synced_at) as synced')
+            ->first();
 
-            return [
-                'tenants_total' => Tenant::whereNull('deleted_at')->count(),
-                'tenants_with_ai' => $withAi,
-                'messages_this_month' => $used,
-                'est_cost' => round($used * 0.0015, 2),
-            ];
-        });
+        $used = (int) ($agg->used ?? 0);
+        $up = (int) ($agg->up ?? 0);
+        $down = (int) ($agg->down ?? 0);
+        $rated = $up + $down;
+
+        return [
+            'tenants_total' => Tenant::whereNull('deleted_at')->count(),
+            'tenants_with_ai' => (int) ($agg->with_ai ?? 0),
+            'messages_this_month' => $used,
+            'est_cost' => round($used * 0.0015, 2),
+            'feedback_up' => $up,
+            'feedback_down' => $down,
+            'satisfaction' => $rated > 0 ? (int) round($up / $rated * 100) : null,
+            'synced_at' => $agg->synced ?? null,
+        ];
     }
 
     /**
-     * One server-paginated page of tenants with their AI usage (computed only
-     * for the ≤12 rows shown), optional name search.
+     * One server-paginated page of tenants from the roll-up summary (cheap,
+     * correct — the tenant-scoped counter is only readable inside the tenant,
+     * which the job did), joined to tenants for the current name + search.
      *
      * @return array<string,mixed>
      */
     private function tenantPage(Request $request): array
     {
         $q = $request->string('q')->toString();
+        $period = now()->format('Y-m');
 
-        $paginator = Tenant::query()
-            ->whereNull('deleted_at')
-            ->when($q !== '', fn ($qb) => $qb->where('name', 'like', "%{$q}%"))
-            ->orderBy('name')
+        $paginator = AeonTenantUsage::query()
+            ->where('aeon_tenant_usage.period', $period)
+            ->join('tenants', 'tenants.id', '=', 'aeon_tenant_usage.tenant_id')
+            ->when($q !== '', fn ($qb) => $qb->where('tenants.name', 'like', "%{$q}%"))
+            ->orderByDesc('aeon_tenant_usage.enabled')
+            ->orderBy('tenants.name')
+            ->select('aeon_tenant_usage.*', 'tenants.name as tenant_name')
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
-        $rows = collect($paginator->items())->map(function (Tenant $t) {
-            try {
-                $s = $this->quotas->getAiSummary($t);
-                $plan = $this->safePlanName($t);
-            } catch (\Throwable) {
-                $s = ['enabled' => false, 'used' => 0, 'limit' => 0, 'remaining' => 0, 'model' => 'flash', 'unlimited' => false];
-                $plan = null;
-            }
+        $rows = collect($paginator->items())->map(function (AeonTenantUsage $u) {
+            $limit = (int) $u->message_limit;
+            $unlimited = $limit === -1;
 
             return [
-                'id' => (string) $t->id,
-                'name' => $t->name,
-                'plan' => $plan,
-                'enabled' => $s['enabled'],
-                'model' => $s['model'],
-                'used' => $s['used'],
-                'limit' => $s['limit'],
-                'remaining' => $s['remaining'],
-                'unlimited' => $s['unlimited'],
+                'id' => (string) $u->tenant_id,
+                'name' => $u->tenant_name,
+                'plan' => $u->plan_name,
+                'enabled' => (bool) $u->enabled,
+                'model' => $u->model,
+                'used' => (int) $u->messages_used,
+                'limit' => $limit,
+                'remaining' => $unlimited ? -1 : max(0, $limit - (int) $u->messages_used),
+                'unlimited' => $unlimited,
+                'feedback_up' => (int) $u->feedback_up,
+                'feedback_down' => (int) $u->feedback_down,
             ];
         })->all();
 
@@ -143,17 +141,8 @@ class AiAssistantController extends Controller
             'current_page' => $paginator->currentPage(),
             'last_page' => $paginator->lastPage(),
             'total' => $paginator->total(),
+            'synced_at' => optional($paginator->items()[0] ?? null)->synced_at,
         ];
-    }
-
-    /** Plan name for a tenant, tolerating plan-less tenants / accessor errors. */
-    private function safePlanName(Tenant $t): ?string
-    {
-        try {
-            return optional($t->plan)->name;
-        } catch (\Throwable) {
-            return null;
-        }
     }
 
     /**

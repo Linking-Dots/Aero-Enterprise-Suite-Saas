@@ -80,6 +80,11 @@ export default function AiAssistant() {
     { key: 'ai', label: 'AI', render: (r) => (r.enabled ? <Badge intent="success" size="sm">On</Badge> : <Badge size="sm">Off</Badge>) },
     { key: 'model', label: 'Model', render: (r) => (r.enabled ? <Badge intent="info" size="sm">{MODEL_LABEL[r.model] || r.model}</Badge> : <Text tone="tertiary">—</Text>) },
     { key: 'usage', label: 'Messages used', render: (r) => <UsageMeter row={r} /> },
+    { key: 'feedback', label: 'Feedback', render: (r) => (
+      (r.feedback_up || r.feedback_down)
+        ? <Mono tone="secondary">👍 {r.feedback_up} · 👎 {r.feedback_down}</Mono>
+        : <Text tone="tertiary">—</Text>
+    ) },
     { key: 'status', label: 'Status', render: (r) => statusBadge(r) },
   ];
 
@@ -97,8 +102,15 @@ export default function AiAssistant() {
         <KPI label="Tenants with AI" value={`${stats.tenants_with_ai} / ${stats.tenants_total}`} />
         <KPI label="Messages this month" value={Number(stats.messages_this_month).toLocaleString()} />
         <KPI label="Est. provider cost" value={`$${Number(stats.est_cost).toFixed(2)}`} intent={stats.est_cost > 0 ? 'warning' : 'neutral'} />
-        <KPI label="Provider" value={settings.provider === 'openai' ? 'OpenAI' : 'Gemini'} intent={settings.api_key_set ? 'success' : 'neutral'} />
+        <KPI
+          label="Satisfaction"
+          value={stats.satisfaction == null ? '—' : `${stats.satisfaction}%`}
+          intent={stats.satisfaction == null ? 'neutral' : stats.satisfaction >= 70 ? 'success' : 'warning'}
+        />
       </HStack>
+      {stats.synced_at && (
+        <Text size="xs" tone="tertiary">Usage synced {new Date(stats.synced_at).toLocaleString()} · refreshes hourly</Text>
+      )}
 
       <div className="ai-grid">
         {/* Provider & defaults */}
