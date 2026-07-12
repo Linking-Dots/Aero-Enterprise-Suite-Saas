@@ -113,8 +113,10 @@ class SystemSetting extends TenantModel implements HasMedia
             'logo_dark' => $this->getFirstMediaUrl(self::MEDIA_LOGO_DARK) ?: data_get($branding, 'logo_dark'),
             'favicon' => $this->getFirstMediaUrl(self::MEDIA_FAVICON) ?: data_get($branding, 'favicon'),
             'login_background' => $this->getFirstMediaUrl(self::MEDIA_LOGIN_BACKGROUND) ?: data_get($branding, 'login_background'),
-            'primary_color' => data_get($branding, 'primary_color', '#0f172a'),
-            'accent_color' => data_get($branding, 'accent_color', '#6366f1'),
+            // Pure override layer: null means "inherit down the white-label
+            // chain" (platform brand → Meridian) — never bake defaults here.
+            'primary_color' => data_get($branding, 'primary_color'),
+            'accent_color' => data_get($branding, 'accent_color'),
         ], $branding);
     }
 

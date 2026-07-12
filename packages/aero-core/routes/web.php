@@ -585,6 +585,7 @@ Route::middleware('auth:web')->group(function () {
         Route::prefix('branding')->name('branding.')->middleware('hrmac:core.settings.branding.view')->group(function () {
             Route::get('/', [BrandingSettingsController::class, 'index'])->name('index');
             Route::post('/', [BrandingSettingsController::class, 'update'])->name('update')->middleware('hrmac:core.settings.branding.update');
+            Route::post('/reset', [BrandingSettingsController::class, 'reset'])->name('reset')->middleware('hrmac:core.settings.branding.update');
         });
         // Localization Settings
         Route::prefix('localization')->name('localization.')->middleware('hrmac:core.settings.localization.view')->group(function () {

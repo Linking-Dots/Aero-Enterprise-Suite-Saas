@@ -11,7 +11,7 @@
 import { useMemo, useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { Card, CardBody, useToast, useHRMAC } from '@aero/ui';
+import { Card, CardBody, useToast, useHRMAC, BrandStudio } from '@aero/ui';
 import App from '@/Pages/App.jsx';
 
 import '../../Platform/Admin/Products/products.css';
@@ -187,35 +187,17 @@ function LocalizationSection({ localization, timezones = [] }) {
 }
 
 function BrandingSection({ branding }) {
-  const toast = useToast();
   const canEdit = useHRMAC('core.settings.branding.update');
-  const f = useForm({ app_name: branding?.app_name ?? '', primary_color: branding?.primary_color ?? '#0f172a', sidebar_theme: branding?.sidebar_theme ?? 'dark', logo: null, favicon: null });
-  const save = (e) => { e.preventDefault(); f.post(route('core.settings.branding.update'), { preserveScroll: true, forceFormData: true, onSuccess: () => toast.success('Branding saved.'), onError: () => toast.error('Fix the errors below.') }); };
+  // The shared white-label editor — same component the platform mounts.
   return (
-    <form onSubmit={save}>
-      <Shell title="Branding & Appearance" desc="Logo, colours and sidebar theme members see." canEdit={canEdit} dirty={f.isDirty} processing={f.processing} onSave={save} onReset={() => f.reset()}>
-        <div className="set-grid">
-          <Field label="Brand / app name" error={f.errors.app_name} span><Txt v={f.data.app_name} on={(v) => f.setData('app_name', v)} placeholder="Shown in the sidebar & emails" /></Field>
-          <Field label="Primary colour" error={f.errors.primary_color}>
-            <div className="set-color"><input type="color" value={f.data.primary_color} onChange={(e) => f.setData('primary_color', e.target.value)} /><Txt v={f.data.primary_color} on={(v) => f.setData('primary_color', v)} /></div>
-          </Field>
-          <Field label="Sidebar theme" error={f.errors.sidebar_theme}><Sel v={f.data.sidebar_theme} on={(v) => f.setData('sidebar_theme', v)} opts={[['dark', 'Dark'], ['light', 'Light']]} /></Field>
-          <div className="set-subhead">Assets</div>
-          <Field label="Logo" error={f.errors.logo} hint="PNG/SVG, transparent background">
-            <div className="set-color">
-              {branding?.logo_light && <img className="set-logo-prev" src={branding.logo_light} alt="logo" />}
-              <input type="file" accept="image/*" onChange={(e) => f.setData('logo', e.target.files?.[0] ?? null)} />
-            </div>
-          </Field>
-          <Field label="Favicon" error={f.errors.favicon} hint="ICO/PNG, square">
-            <div className="set-color">
-              {branding?.favicon && <img className="set-logo-prev" src={branding.favicon} alt="favicon" />}
-              <input type="file" accept="image/*" onChange={(e) => f.setData('favicon', e.target.files?.[0] ?? null)} />
-            </div>
-          </Field>
-        </div>
-      </Shell>
-    </form>
+    <BrandStudio
+      branding={branding ?? {}}
+      updateUrl={route('core.settings.branding.update')}
+      resetUrl={route('core.settings.branding.reset')}
+      canEdit={canEdit}
+      scopeLabel="workspace"
+      upsellHref="/subscription"
+    />
   );
 }
 

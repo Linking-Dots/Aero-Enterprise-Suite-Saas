@@ -116,6 +116,10 @@ export {
   GlobalActions, GlobalSearchTrigger, GlobalNotifications,
 }                                           from './components/AppChrome.jsx';
 
+// ── Branding ─────────────────────────────────────────────────
+// BrandStudio: the shared white-label editor (tenant, platform, per-tenant)
+export { BrandStudio }                      from './components/branding/BrandStudio.jsx';
+
 // ── Global Search ───────────────────────────────────────────
 export { default as SearchOverlay }         from './components/SearchOverlay.jsx';
 
