@@ -8,9 +8,26 @@
 /* White-label logo image — constrained to the rail slot, never distorts */
 .aeos-brand-img {
   display: block; flex-shrink: 0;
-  max-height: 32px; max-width: 140px;
+  max-height: 32px; max-width: 40px;
   object-fit: contain;
 }
+.sidebar-expanded .aeos-brand-img,
+.mobile-open .aeos-brand-img { max-width: 150px; max-height: 36px; }
+
+/* Brand wordmark — full lockup when the rail is open, mark-only when collapsed */
+.aeos-brand-word {
+  display: none;
+  font-family: var(--aeos-font-display);
+  font-size: 1.05rem; font-weight: 700;
+  letter-spacing: -0.01em; line-height: 1;
+  color: var(--aeos-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 150px;
+}
+.aeos-brand-word em { font-style: normal; font-weight: 300; color: #FF7A1F; }
+.sidebar-expanded .aeos-brand-word,
+.mobile-open .aeos-brand-word { display: inline-block; }
+.aeos-app-brand { gap: 10px; }
 
 .aeos-app-brand {
   display: flex; align-items: center; justify-content: center;

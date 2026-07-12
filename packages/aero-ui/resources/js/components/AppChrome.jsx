@@ -58,12 +58,22 @@ export function AppBrand({ href = '/dashboard', size = 28, className }) {
   const { branding } = usePage().props;
   const logo = branding?.logo_light || branding?.logo_dark || null;
   const name = branding?.name || 'aeos365';
+  const isDefaultBrand = !logo && name === 'aeos365';
 
   return (
     <Link href={href} className={cx('aeos-app-brand', className)} aria-label={`${name} home`}>
-      {logo
-        ? <img src={logo} alt={name} height={size} className="aeos-brand-img" />
-        : <AeosLogo size={size} />}
+      {logo ? (
+        // A custom logo is the full brand — it simply grows when the rail expands.
+        <img src={logo} alt={name} height={size} className="aeos-brand-img" />
+      ) : (
+        <>
+          <AeosLogo size={size} />
+          {/* Wordmark — revealed by the shell when the sidebar is expanded */}
+          <span className="aeos-brand-word" aria-hidden="true">
+            {isDefaultBrand ? <>aeos<em>365</em></> : name}
+          </span>
+        </>
+      )}
     </Link>
   );
 }
