@@ -36,6 +36,8 @@ class PlatformSetting extends CentralModel implements HasMedia
 
     public const MEDIA_SOCIAL = 'platform_social_image';
 
+    public const MEDIA_LOGIN_BACKGROUND = 'platform_login_background';
+
     /**
      * Cache key for maintenance mode status.
      */
@@ -302,9 +304,12 @@ class PlatformSetting extends CentralModel implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection(self::MEDIA_LOGO)->singleFile();
+        $this->addMediaCollection(self::MEDIA_LOGO_LIGHT)->singleFile();
+        $this->addMediaCollection(self::MEDIA_LOGO_DARK)->singleFile();
         $this->addMediaCollection(self::MEDIA_SQUARE_LOGO)->singleFile();
         $this->addMediaCollection(self::MEDIA_FAVICON)->singleFile();
         $this->addMediaCollection(self::MEDIA_SOCIAL)->singleFile();
+        $this->addMediaCollection(self::MEDIA_LOGIN_BACKGROUND)->singleFile();
     }
 
     public function getBrandingPayload(): array
@@ -318,8 +323,11 @@ class PlatformSetting extends CentralModel implements HasMedia
             'square_logo' => $this->getFirstMediaUrl(self::MEDIA_SQUARE_LOGO) ?: data_get($branding, 'square_logo'),
             'favicon' => $this->getFirstMediaUrl(self::MEDIA_FAVICON) ?: data_get($branding, 'favicon'),
             'social' => $this->getFirstMediaUrl(self::MEDIA_SOCIAL) ?: data_get($branding, 'social'),
-            'primary_color' => data_get($branding, 'primary_color', '#0f172a'),
-            'accent_color' => data_get($branding, 'accent_color', '#818cf8'),
+            'login_background' => $this->getFirstMediaUrl(self::MEDIA_LOGIN_BACKGROUND) ?: data_get($branding, 'login_background'),
+            // Pure override layer: null means "inherit Meridian defaults" —
+            // baking colors here used to leak them into every tenant's chain.
+            'primary_color' => data_get($branding, 'primary_color'),
+            'accent_color' => data_get($branding, 'accent_color'),
         ], $branding);
     }
 

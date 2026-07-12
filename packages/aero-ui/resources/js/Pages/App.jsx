@@ -306,7 +306,7 @@ export default function App({ title, rail, railTitle = 'Context', children }) {
 
   return (
     <>
-      {title && <Head title={`${title} · aeos365`} />}
+      {title && <Head title={`${title} · ${page.props?.branding?.name || 'aeos365'}`} />}
       <AppShell
         brand={<AppBrand href="/dashboard" size={28} />}
         nav={nav}

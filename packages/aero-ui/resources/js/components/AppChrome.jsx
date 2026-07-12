@@ -8,6 +8,9 @@
  * No inline style props.
  */
 import { Link, router, usePage } from '@inertiajs/react';
+import { useTheme } from '../theme/ThemeProvider.jsx';
+import lockupLight from '../assets/brand/lockup-horizontal.svg';
+import lockupDark from '../assets/brand/lockup-horizontal-dark.svg';
 import { cx } from './Primitives.jsx';
 import { Avatar } from './Display.jsx';
 import { Text, Mono, HStack, VStack } from './Primitives.jsx';
@@ -56,9 +59,10 @@ export function AeosLogo({ size = 28, className }) {
  */
 export function AppBrand({ href = '/dashboard', size = 28, className }) {
   const { branding } = usePage().props;
-  // Pick the logo variant that matches the rail ground it sits on
-  const darkRail = (branding?.sidebar_theme || 'dark') === 'dark';
-  const logo = darkRail
+  const theme = useTheme();
+  const darkGround = theme?.isDark ?? true;
+
+  const logo = darkGround
     ? (branding?.logo_dark || branding?.logo_light || null)
     : (branding?.logo_light || branding?.logo_dark || null);
   const name = branding?.name || 'aeos365';
@@ -67,15 +71,24 @@ export function AppBrand({ href = '/dashboard', size = 28, className }) {
   return (
     <Link href={href} className={cx('aeos-app-brand', className)} aria-label={`${name} home`}>
       {logo ? (
-        // A custom logo is the full brand — it simply grows when the rail expands.
-        <img src={logo} alt={name} height={size} className="aeos-brand-img" />
+        // White-labeled: square icon (favicon, else the logo) in the collapsed
+        // rail; the uploaded lockup image everywhere else. CSS drives the switch.
+        <>
+          <img src={branding?.favicon || logo} alt="" className="aeos-brand-icon" />
+          <img src={logo} alt={name} className="aeos-brand-img" />
+        </>
+      ) : isDefaultBrand ? (
+        // Default brand: the OFFICIAL Meridian lockup asset (branding/svg),
+        // never re-set as text — mark-only in the collapsed rail.
+        <>
+          <AeosLogo size={size} className="aeos-brand-icon" />
+          <img src={darkGround ? lockupDark : lockupLight} alt="aeos365" className="aeos-brand-img" />
+        </>
       ) : (
+        // Custom name without an uploaded logo: mark + name text fallback.
         <>
           <AeosLogo size={size} />
-          {/* Wordmark — revealed by the shell when the sidebar is expanded */}
-          <span className="aeos-brand-word" aria-hidden="true">
-            {isDefaultBrand ? <>aeos<em>365</em></> : name}
-          </span>
+          <span className="aeos-brand-word" aria-hidden="true">{name}</span>
         </>
       )}
     </Link>

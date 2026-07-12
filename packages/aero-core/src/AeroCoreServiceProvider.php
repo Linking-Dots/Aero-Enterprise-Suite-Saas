@@ -401,6 +401,11 @@ class AeroCoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Tenant uploads (branding logos, avatars, …) must generate URLs through
+        // tenant_asset() — the default Spatie generator points at the central
+        // /storage symlink and 404s on every tenant-suffixed file.
+        config(['media-library.url_generator' => \Aero\Core\Support\Media\TenantAwareUrlGenerator::class]);
+
         // Dependency decoupling (Phase 2): decouple the User morph identity from its
         // namespace. model_has_roles / model_has_permissions persist a polymorphic
         // model_type; binding it to a stable morph key ('user') instead of the class

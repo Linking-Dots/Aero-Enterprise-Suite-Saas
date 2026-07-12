@@ -63,33 +63,123 @@ class PlatformSettingController extends Controller
         return back()->with('success', 'General settings saved.');
     }
 
+    /** input key → media collection (BrandStudio contract) */
+    private const BRAND_MEDIA_MAP = [
+        'logo_light' => PlatformSetting::MEDIA_LOGO_LIGHT,
+        'logo_dark' => PlatformSetting::MEDIA_LOGO_DARK,
+        'favicon' => PlatformSetting::MEDIA_FAVICON,
+        'login_background' => PlatformSetting::MEDIA_LOGIN_BACKGROUND,
+    ];
+
+    private const BRAND_SCALAR_KEYS = [
+        'name', 'tagline', 'primary_color', 'accent_color',
+        'sidebar_theme', 'email_from_name', 'email_from_address',
+    ];
+
     public function branding(): Response
     {
         return Inertia::render('Platform/Admin/Settings/Branding', [
-            'branding' => $this->svc->current()->getBrandingPayload(),
+            'branding' => $this->brandingStudioPayload($this->svc->current()),
         ]);
     }
 
     public function updateBranding(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'primary_color' => ['nullable', 'string', 'max:9'],
-            'accent_color' => ['nullable', 'string', 'max:9'],
-            'logo' => ['nullable', 'image', 'max:2048'],
+        $request->validate([
+            'name' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'tagline' => ['sometimes', 'nullable', 'string', 'max:160'],
+            'primary_color' => ['sometimes', 'nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'accent_color' => ['sometimes', 'nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'sidebar_theme' => ['sometimes', 'nullable', 'in:dark,light'],
+            'email_from_name' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'email_from_address' => ['sometimes', 'nullable', 'email', 'max:190'],
+            'logo_light' => ['nullable', 'image', 'max:2048'],
+            'logo_dark' => ['nullable', 'image', 'max:2048'],
+            'logo' => ['nullable', 'image', 'max:2048'], // legacy alias for logo_light
             'favicon' => ['nullable', 'image', 'max:512'],
+            'login_background' => ['nullable', 'image', 'max:4096'],
+            'remove_logo_light' => ['sometimes', 'boolean'],
+            'remove_logo_dark' => ['sometimes', 'boolean'],
+            'remove_favicon' => ['sometimes', 'boolean'],
+            'remove_login_background' => ['sometimes', 'boolean'],
         ]);
 
-        $setting = $this->svc->updateBranding($data);
+        $setting = $this->svc->current();
 
-        if ($request->hasFile('logo')) {
-            $setting->addMediaFromRequest('logo')->toMediaCollection(PlatformSetting::MEDIA_LOGO);
-        }
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $setting): void {
+            // Removals first so an upload in the same save wins over a remove
+            foreach (self::BRAND_MEDIA_MAP as $key => $collection) {
+                if ($request->boolean("remove_{$key}")) {
+                    $setting->clearMediaCollection($collection);
+                }
+            }
+            foreach (self::BRAND_MEDIA_MAP as $key => $collection) {
+                if ($request->hasFile($key) && $request->file($key)->isValid()) {
+                    $setting->clearMediaCollection($collection);
+                    $setting->addMediaFromRequest($key)->toMediaCollection($collection);
+                }
+            }
+            if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+                $setting->clearMediaCollection(PlatformSetting::MEDIA_LOGO_LIGHT);
+                $setting->addMediaFromRequest('logo')->toMediaCollection(PlatformSetting::MEDIA_LOGO_LIGHT);
+            }
 
-        if ($request->hasFile('favicon')) {
-            $setting->addMediaFromRequest('favicon')->toMediaCollection(PlatformSetting::MEDIA_FAVICON);
-        }
+            $branding = $setting->branding ?? [];
+            foreach (self::BRAND_SCALAR_KEYS as $key) {
+                if (! $request->has($key)) {
+                    continue;
+                }
+                $value = $request->input($key);
+                if ($value === null || $value === '') {
+                    unset($branding[$key]);
+                } else {
+                    $branding[$key] = $value;
+                }
+            }
+
+            $updates = ['branding' => $branding];
+            // The platform brand name IS the site name — one fact, no drift.
+            if ($request->filled('name')) {
+                $updates['site_name'] = $request->input('name');
+            }
+
+            $setting->update($updates);
+        });
 
         return back()->with('success', 'Branding saved.');
+    }
+
+    /** Drop every platform brand override — back to Meridian. */
+    public function resetBranding(Request $request): RedirectResponse
+    {
+        $setting = $this->svc->current();
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($setting): void {
+            foreach (self::BRAND_MEDIA_MAP as $collection) {
+                $setting->clearMediaCollection($collection);
+            }
+            $setting->clearMediaCollection(PlatformSetting::MEDIA_LOGO);
+            $setting->update(['branding' => []]);
+        });
+
+        return back()->with('success', 'Platform branding reset to Meridian defaults.');
+    }
+
+    /** BrandStudio payload: overrides + resolved chain + Meridian floor. */
+    private function brandingStudioPayload(PlatformSetting $setting): array
+    {
+        $layer = $setting->getBrandingPayload();
+        $layer['name'] ??= $setting->site_name;
+        $layer['tagline'] ??= $setting->tagline;
+
+        return [
+            ...$layer,
+            'overrides' => $layer,
+            'resolved' => \Aero\Kernel\Branding\BrandingPayload::merge($layer),
+            'defaults' => \Aero\Kernel\Branding\BrandingPayload::defaults(),
+            'entitled' => true,
+            'customized' => \Aero\Kernel\Branding\BrandingPayload::isCustomized($layer),
+        ];
     }
 
     public function email(): Response

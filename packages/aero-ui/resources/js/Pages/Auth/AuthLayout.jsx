@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useTheme } from '../../theme/ThemeProvider.jsx';
 
 /**
@@ -17,9 +17,16 @@ export default function AuthLayout({ title, eyebrow, children }) {
   const theme = useTheme();
   const isDark = theme.isDark;
 
+  // White-label: the workspace's configured brand, falling back to Meridian
+  const { branding } = usePage().props;
+  const brandName = branding?.name || 'aeos365';
+  const brandLogo = isDark
+    ? (branding?.logo_dark || branding?.logo_light || null)
+    : (branding?.logo_light || branding?.logo_dark || null);
+
   return (
     <>
-      <Head title={`${title} · aeos365`} />
+      <Head title={`${title} · ${brandName}`} />
 
       <div className="al-root">
         {/* Ambient gradient mesh */}
@@ -27,21 +34,27 @@ export default function AuthLayout({ title, eyebrow, children }) {
 
         {/* Brand header with theme toggle */}
         <header className="al-brand">
-          <Link href="/" className="al-brand-link" aria-label="aeos365 home">
-            <span className="al-logo-mark">
-              {/* Meridian mark — branding/svg/mark.svg geometry */}
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="4.6" fill="currentColor" />
-                <path
-                  d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
-                  stroke="currentColor"
-                  strokeWidth="2.1"
-                  strokeLinecap="round"
-                />
-                <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
-              </svg>
-            </span>
-            <span className="aeos-logo-text">aeos365</span>
+          <Link href="/" className="al-brand-link" aria-label={`${brandName} home`}>
+            {brandLogo ? (
+              <img src={brandLogo} alt={brandName} className="al-brand-logo" />
+            ) : (
+              <>
+                <span className="al-logo-mark">
+                  {/* Meridian mark — branding/svg/mark.svg geometry */}
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4.6" fill="currentColor" />
+                    <path
+                      d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
+                      stroke="currentColor"
+                      strokeWidth="2.1"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
+                  </svg>
+                </span>
+                <span className="aeos-logo-text">{brandName}</span>
+              </>
+            )}
           </Link>
 
           <button
@@ -124,6 +137,9 @@ export default function AuthLayout({ title, eyebrow, children }) {
         .al-logo-mark {
           display: flex; align-items: center;
           filter: drop-shadow(0 0 14px rgba(0,229,255,.35));
+        }
+        .al-brand-logo {
+          display: block; max-height: 34px; max-width: 180px; object-fit: contain;
         }
         .al-theme-toggle {
           display: inline-flex; align-items: center; justify-content: center;

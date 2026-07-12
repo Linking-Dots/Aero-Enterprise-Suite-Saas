@@ -1455,6 +1455,11 @@ Route::middleware('admin.domain')->group(function () {
                 ->get('/branding', [PlatformSettingController::class, 'branding'])->name('branding');
             Route::middleware('hrmac:system-settings.branding-settings.edit')
                 ->put('/branding', [PlatformSettingController::class, 'updateBranding'])->name('branding.update');
+            // BrandStudio posts multipart — POST alias + reset
+            Route::middleware('hrmac:system-settings.branding-settings.edit')
+                ->post('/branding', [PlatformSettingController::class, 'updateBranding'])->name('branding.save');
+            Route::middleware('hrmac:system-settings.branding-settings.edit')
+                ->post('/branding/reset', [PlatformSettingController::class, 'resetBranding'])->name('branding.reset');
 
             Route::middleware('hrmac:system-settings.email-settings.view')
                 ->get('/email', [PlatformSettingController::class, 'email'])->name('email');
