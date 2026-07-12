@@ -20,6 +20,8 @@ class SystemSetting extends TenantModel implements HasMedia
 
     public const MEDIA_LOGO_DARK = 'brand_logo_dark';
 
+    public const MEDIA_LOGO_ICON = 'brand_logo_icon';
+
     public const MEDIA_FAVICON = 'brand_favicon';
 
     public const MEDIA_LOGIN_BACKGROUND = 'brand_login_background';
@@ -100,6 +102,7 @@ class SystemSetting extends TenantModel implements HasMedia
     {
         $this->addMediaCollection(self::MEDIA_LOGO_LIGHT)->singleFile();
         $this->addMediaCollection(self::MEDIA_LOGO_DARK)->singleFile();
+        $this->addMediaCollection(self::MEDIA_LOGO_ICON)->singleFile();
         $this->addMediaCollection(self::MEDIA_FAVICON)->singleFile();
         $this->addMediaCollection(self::MEDIA_LOGIN_BACKGROUND)->singleFile();
     }
@@ -111,6 +114,7 @@ class SystemSetting extends TenantModel implements HasMedia
         return array_merge([
             'logo_light' => $this->getFirstMediaUrl(self::MEDIA_LOGO_LIGHT) ?: data_get($branding, 'logo_light'),
             'logo_dark' => $this->getFirstMediaUrl(self::MEDIA_LOGO_DARK) ?: data_get($branding, 'logo_dark'),
+            'logo_icon' => $this->getFirstMediaUrl(self::MEDIA_LOGO_ICON) ?: data_get($branding, 'logo_icon'),
             'favicon' => $this->getFirstMediaUrl(self::MEDIA_FAVICON) ?: data_get($branding, 'favicon'),
             'login_background' => $this->getFirstMediaUrl(self::MEDIA_LOGIN_BACKGROUND) ?: data_get($branding, 'login_background'),
             // Pure override layer: null means "inherit down the white-label

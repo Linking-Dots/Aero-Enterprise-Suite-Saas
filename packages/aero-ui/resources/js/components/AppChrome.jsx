@@ -71,10 +71,11 @@ export function AppBrand({ href = '/dashboard', size = 28, className }) {
   return (
     <Link href={href} className={cx('aeos-app-brand', className)} aria-label={`${name} home`}>
       {logo ? (
-        // White-labeled: square icon (favicon, else the logo) in the collapsed
-        // rail; the uploaded lockup image everywhere else. CSS drives the switch.
+        // White-labeled: dedicated icon logo (falling back favicon → lockup) in
+        // the collapsed rail; the FULL lockup image everywhere else — never a
+        // composed icon + text. CSS drives the switch.
         <>
-          <img src={branding?.favicon || logo} alt="" className="aeos-brand-icon" />
+          <img src={branding?.logo_icon || branding?.favicon || logo} alt="" className="aeos-brand-icon" />
           <img src={logo} alt={name} className="aeos-brand-img" />
         </>
       ) : isDefaultBrand ? (

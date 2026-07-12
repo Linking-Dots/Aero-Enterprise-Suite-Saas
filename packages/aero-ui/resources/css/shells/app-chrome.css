@@ -17,8 +17,10 @@
   max-height: 34px; max-width: 150px;
   object-fit: contain;
 }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon { display: block; }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img { display: none; }
+[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon,
+[data-aeos-shell="floating"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon { display: block; }
+[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img,
+[data-aeos-shell="floating"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img { display: none; }
 
 /* Brand wordmark — shown everywhere except the collapsed sidebar rail */
 .aeos-brand-word {
@@ -31,7 +33,8 @@
   max-width: 150px;
 }
 .aeos-brand-word em { font-style: normal; font-weight: 300; color: #FF7A1F; }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word { display: none; }
+[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word,
+[data-aeos-shell="floating"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word { display: none; }
 .aeos-app-brand { gap: 10px; }
 
 .aeos-app-brand {

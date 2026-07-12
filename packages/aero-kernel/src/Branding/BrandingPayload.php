@@ -18,8 +18,9 @@ final class BrandingPayload
     public const KEYS = [
         'name',              // brand / app name shown in shell, tab title, emails
         'tagline',
-        'logo_light',        // URL — logo for light surfaces
-        'logo_dark',         // URL — logo for dark surfaces
+        'logo_light',        // URL — FULL lockup image (icon + text) for light surfaces
+        'logo_dark',         // URL — FULL lockup image (icon + text) for dark surfaces
+        'logo_icon',         // URL — square icon-only mark (collapsed rails, tight slots)
         'favicon',           // URL
         'login_background',  // URL or pattern token
         'primary_color',     // #rrggbb
@@ -41,6 +42,7 @@ final class BrandingPayload
             'tagline' => null,
             'logo_light' => null,
             'logo_dark' => null,
+            'logo_icon' => null,
             'favicon' => null,
             'login_background' => null,
             'primary_color' => '#0C2742',
@@ -86,7 +88,7 @@ final class BrandingPayload
     /** True when any override layer set at least one visual field itself. */
     public static function isCustomized(array $layer): bool
     {
-        foreach (['name', 'logo_light', 'logo_dark', 'favicon', 'login_background', 'primary_color', 'accent_color'] as $key) {
+        foreach (['name', 'logo_light', 'logo_dark', 'logo_icon', 'favicon', 'login_background', 'primary_color', 'accent_color'] as $key) {
             if (($layer[$key] ?? null) !== null && ($layer[$key] ?? '') !== '') {
                 return true;
             }

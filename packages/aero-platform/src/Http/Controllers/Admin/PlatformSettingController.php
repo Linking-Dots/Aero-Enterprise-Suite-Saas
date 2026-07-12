@@ -67,6 +67,7 @@ class PlatformSettingController extends Controller
     private const BRAND_MEDIA_MAP = [
         'logo_light' => PlatformSetting::MEDIA_LOGO_LIGHT,
         'logo_dark' => PlatformSetting::MEDIA_LOGO_DARK,
+        'logo_icon' => PlatformSetting::MEDIA_SQUARE_LOGO,
         'favicon' => PlatformSetting::MEDIA_FAVICON,
         'login_background' => PlatformSetting::MEDIA_LOGIN_BACKGROUND,
     ];
@@ -95,11 +96,13 @@ class PlatformSettingController extends Controller
             'email_from_address' => ['sometimes', 'nullable', 'email', 'max:190'],
             'logo_light' => ['nullable', 'image', 'max:2048'],
             'logo_dark' => ['nullable', 'image', 'max:2048'],
+            'logo_icon' => ['nullable', 'image', 'max:1024'],
             'logo' => ['nullable', 'image', 'max:2048'], // legacy alias for logo_light
             'favicon' => ['nullable', 'image', 'max:512'],
             'login_background' => ['nullable', 'image', 'max:4096'],
             'remove_logo_light' => ['sometimes', 'boolean'],
             'remove_logo_dark' => ['sometimes', 'boolean'],
+            'remove_logo_icon' => ['sometimes', 'boolean'],
             'remove_favicon' => ['sometimes', 'boolean'],
             'remove_login_background' => ['sometimes', 'boolean'],
         ]);

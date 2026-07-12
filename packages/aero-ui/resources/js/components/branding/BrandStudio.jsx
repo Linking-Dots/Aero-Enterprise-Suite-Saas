@@ -26,9 +26,10 @@ import { useToast } from '../Feedback.jsx';
 import { AeosLogo } from '../AppChrome.jsx';
 
 const ASSETS = [
-  { key: 'logo_light', label: 'Logo · light surfaces', hint: 'SVG/PNG, transparent, ≤2 MB' },
-  { key: 'logo_dark', label: 'Logo · dark surfaces', hint: 'SVG/PNG, transparent, ≤2 MB' },
-  { key: 'favicon', label: 'Favicon', hint: 'Square PNG/ICO, ≤512 KB' },
+  { key: 'logo_light', label: 'Full logo · light surfaces', hint: 'Icon + text lockup image, ≤2 MB' },
+  { key: 'logo_dark', label: 'Full logo · dark surfaces', hint: 'Icon + text lockup image, ≤2 MB' },
+  { key: 'logo_icon', label: 'Icon logo (square)', hint: 'Collapsed rails & tight slots, ≤1 MB' },
+  { key: 'favicon', label: 'Favicon', hint: 'Browser tab, square PNG/ICO, ≤512 KB' },
   { key: 'login_background', label: 'Login background', hint: 'JPG/PNG, ≤4 MB' },
 ];
 
@@ -114,10 +115,12 @@ export function BrandStudio({
     email_from_address: overrides.email_from_address ?? '',
     logo_light: null,
     logo_dark: null,
+    logo_icon: null,
     favicon: null,
     login_background: null,
     remove_logo_light: false,
     remove_logo_dark: false,
+    remove_logo_icon: false,
     remove_favicon: false,
     remove_login_background: false,
   });
