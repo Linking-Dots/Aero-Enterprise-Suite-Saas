@@ -707,7 +707,7 @@ export const PRICING_PLANS = [
     subsidiaries: "1 entity",
     modules: ["Human Resources", "Basic Payroll", "Finance Essentials"],
     perks: [
-      "Aeon AI Assistant — 100 messages/mo",
+      "Aeon AI Assistant — 200 messages/mo (Flash model)",
       "Core HR & employee records",
       "Attendance & leave tracking",
       "Basic payroll processing",
@@ -762,7 +762,7 @@ export const PRICING_PLANS = [
       "Point of sale",
       "Quality & compliance",
       "Document management & RFI",
-      "Aeon AI Assistant — 5,000 messages/mo (Pro model)",
+      "Aeon AI Assistant — 3,000 messages/mo (Pro model)",
       "Dedicated account manager",
       "99.97% uptime SLA",
     ],

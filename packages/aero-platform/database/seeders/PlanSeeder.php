@@ -67,6 +67,8 @@ class PlanSeeder extends Seeder
                 'limits' => [
                     'max_users' => 10,
                     'max_storage_gb' => 10,
+                    'max_ai_messages' => 200,
+                    'ai_model' => 'flash',
                 ],
                 'trial_days' => 14,
                 'grace_days' => 7,
@@ -98,6 +100,8 @@ class PlanSeeder extends Seeder
                 'limits' => [
                     'max_users' => 50,
                     'max_storage_gb' => 100,
+                    'max_ai_messages' => 1000,
+                    'ai_model' => 'pro',
                 ],
                 'trial_days' => 14,
                 'grace_days' => 14,
@@ -130,6 +134,8 @@ class PlanSeeder extends Seeder
                 'limits' => [
                     'max_users' => 100,
                     'max_storage_gb' => 250,
+                    'max_ai_messages' => 3000,
+                    'ai_model' => 'pro',
                 ],
                 'trial_days' => 14,
                 'grace_days' => 14,
@@ -164,6 +170,8 @@ class PlanSeeder extends Seeder
                 'limits' => [
                     'max_users' => 0, // Unlimited
                     'max_storage_gb' => 0, // Unlimited
+                    'max_ai_messages' => 0, // Unlimited AI
+                    'ai_model' => 'all',
                 ],
                 'trial_days' => 30,
                 'grace_days' => 30,
