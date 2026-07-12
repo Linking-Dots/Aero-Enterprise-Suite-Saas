@@ -39,7 +39,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Cache for settings to prevent multiple DB queries per request.
      */
-    protected ?SystemSetting $cachedSystemSetting = null;
+    protected ?\Aero\Core\Models\SystemSetting $cachedSystemSetting = null;
 
     protected ?PlatformSetting $cachedPlatformSetting = null;
 
@@ -491,7 +491,12 @@ class HandleInertiaRequests extends Middleware
     {
         try {
             if (! $this->cachedSystemSetting) {
-                $this->cachedSystemSetting = SystemSetting::current();
+                // Tenant scope MUST read the tenant's own settings (tenant DB).
+                // Aero\Platform\Models\SystemSetting extends CentralModel — using
+                // it here silently resolved the CENTRAL row (usually absent) and
+                // clobbered the correct tenant branding/settings that aero-core's
+                // middleware had already shared earlier in the stack.
+                $this->cachedSystemSetting = \Aero\Core\Models\SystemSetting::current();
             }
 
             return $this->cachedSystemSetting

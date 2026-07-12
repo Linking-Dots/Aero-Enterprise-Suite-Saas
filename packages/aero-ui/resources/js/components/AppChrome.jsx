@@ -56,7 +56,11 @@ export function AeosLogo({ size = 28, className }) {
  */
 export function AppBrand({ href = '/dashboard', size = 28, className }) {
   const { branding } = usePage().props;
-  const logo = branding?.logo_light || branding?.logo_dark || null;
+  // Pick the logo variant that matches the rail ground it sits on
+  const darkRail = (branding?.sidebar_theme || 'dark') === 'dark';
+  const logo = darkRail
+    ? (branding?.logo_dark || branding?.logo_light || null)
+    : (branding?.logo_light || branding?.logo_dark || null);
   const name = branding?.name || 'aeos365';
   const isDefaultBrand = !logo && name === 'aeos365';
 
