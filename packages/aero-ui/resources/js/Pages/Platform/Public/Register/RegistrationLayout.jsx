@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Steps, ThemeToggle, Text } from '@aero/ui';
+import { Steps, ThemeToggle, Text, BrandLockup } from '@aero/ui';
 
 export default function RegistrationLayout({ title, currentStep, steps = [], wide = false, children }) {
   return (
@@ -12,20 +12,8 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
         {/* ── Brand header ── */}
         <header className="rl-brand">
           <Link href="/" className="rl-brand-link" aria-label="aeos365 home">
-            <span className="rl-logo-mark">
-              {/* Meridian mark — branding/svg/mark.svg geometry */}
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="4.6" fill="currentColor" />
-                <path
-                  d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
-                  stroke="currentColor"
-                  strokeWidth="2.1"
-                  strokeLinecap="round"
-                />
-                <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
-              </svg>
-            </span>
-            <span className="aeos-logo-text rl-brand-name">aeos365</span>
+            {/* Full lockup image — wide surface, never composed mark + text */}
+            <BrandLockup className="rl-brand-logo" />
           </Link>
           <div className="rl-brand-actions">
             <ThemeToggle />
@@ -171,6 +159,9 @@ export default function RegistrationLayout({ title, currentStep, steps = [], wid
           font-family: var(--aeos-font-display);
           font-weight: 700; font-size: 1.1rem;
           color: var(--aeos-text-primary);
+        }
+        .rl-brand-logo {
+          display: block; max-height: 34px; max-width: 180px; object-fit: contain;
         }
         .rl-brand-actions { display: flex; align-items: center; gap: 12px; }
 

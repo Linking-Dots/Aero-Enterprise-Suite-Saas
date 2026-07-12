@@ -138,7 +138,8 @@
 [data-aeos-shell="floating"] .aeos-shell-sidebar-item.active-parent {
   color: var(--aeos-primary);
 }
-[data-aeos-shell="floating"]:not(.sidebar-expanded) .aeos-shell-sidebar-item.active-parent {
+/* Anchored to the shell div — body also carries data-aeos-shell (ThemeProvider). */
+[data-aeos-shell="floating"].aeos-app-chrome-active:not(.sidebar-expanded) .aeos-shell-sidebar-item.active-parent {
   background: var(--aeos-primary-bg);
   box-shadow: 0 0 0 1px var(--aeos-primary-tint) inset;
 }

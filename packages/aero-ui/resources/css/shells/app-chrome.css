@@ -17,10 +17,13 @@
   max-height: 34px; max-width: 150px;
   object-fit: contain;
 }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon,
-[data-aeos-shell="floating"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon { display: block; }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img,
-[data-aeos-shell="floating"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img { display: none; }
+/* Anchor to .aeos-app-chrome-active (the shell div) — ThemeProvider also stamps
+   data-aeos-shell on <body>, which never gets .sidebar-expanded, so an unanchored
+   :not(.sidebar-expanded) matches through body and hides the lockup permanently. */
+[data-aeos-shell="sidebar"].aeos-app-chrome-active:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon,
+[data-aeos-shell="floating"].aeos-app-chrome-active:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-icon { display: block; }
+[data-aeos-shell="sidebar"].aeos-app-chrome-active:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img,
+[data-aeos-shell="floating"].aeos-app-chrome-active:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-img { display: none; }
 
 /* Brand wordmark — shown everywhere except the collapsed sidebar rail */
 .aeos-brand-word {
@@ -33,8 +36,8 @@
   max-width: 150px;
 }
 .aeos-brand-word em { font-style: normal; font-weight: 300; color: #FF7A1F; }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word,
-[data-aeos-shell="floating"]:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word { display: none; }
+[data-aeos-shell="sidebar"].aeos-app-chrome-active:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word,
+[data-aeos-shell="floating"].aeos-app-chrome-active:not(.sidebar-expanded):not(.mobile-open) .aeos-brand-word { display: none; }
 .aeos-app-brand { gap: 10px; }
 
 .aeos-app-brand {

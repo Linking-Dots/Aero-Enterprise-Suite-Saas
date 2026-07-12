@@ -131,7 +131,9 @@
 [data-aeos-shell="sidebar"] .aeos-shell-sidebar-item.active-parent {
   color: var(--aeos-primary);
 }
-[data-aeos-shell="sidebar"]:not(.sidebar-expanded) .aeos-shell-sidebar-item.active-parent {
+/* .aeos-app-chrome-active anchors to the shell div — body also carries
+   data-aeos-shell (ThemeProvider) but never .sidebar-expanded. */
+[data-aeos-shell="sidebar"].aeos-app-chrome-active:not(.sidebar-expanded) .aeos-shell-sidebar-item.active-parent {
   background: var(--aeos-primary-bg);
   box-shadow: 0 0 0 1px var(--aeos-primary-tint) inset;
 }
@@ -333,7 +335,7 @@
    TABLET (769px – 1024px)
    ══════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 769px) and (max-width: 1024px) {
-  [data-aeos-shell="sidebar"]:not(.sidebar-expanded) {
+  [data-aeos-shell="sidebar"].aeos-app-chrome-active:not(.sidebar-expanded) {
     grid-template-columns: var(--aeos-shell-sidebar-w) 1fr;
   }
 }

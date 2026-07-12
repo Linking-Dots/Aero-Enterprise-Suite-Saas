@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Box, Text } from '@aero/ui';
 import { useTheme } from '../../theme/ThemeProvider.jsx';
+import { BrandLockup } from '../../components/AppChrome.jsx';
 
 /**
  * InstallLayout — fully-responsive wizard shell for all installation pages.
@@ -52,20 +53,8 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
         {/* ── Brand header ─────────────────────────────────────────── */}
         <header className="il-header">
           <Link href="/" className="il-brand-link" aria-label="aeos365 home">
-            <span className="il-logo-mark" aria-hidden="true">
-              {/* Meridian mark — branding/svg/mark.svg geometry */}
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="4.6" fill="currentColor" />
-                <path
-                  d="M20.65 8.33A9.4 9.4 0 1 1 15.67 3.35"
-                  stroke="currentColor"
-                  strokeWidth="2.1"
-                  strokeLinecap="round"
-                />
-                <circle cx="18.65" cy="5.35" r="2.35" fill="#FF7A1F" />
-              </svg>
-            </span>
-            <span className="aeos-logo-text">aeos365</span>
+            {/* Full lockup image — wide surface, never composed mark + text */}
+            <BrandLockup className="il-brand-logo" />
           </Link>
 
           <div className="il-header-right">
@@ -186,6 +175,9 @@ export default function InstallLayout({ title, step, steps = [], mode, children 
           display: flex;
           align-items: center;
           filter: drop-shadow(0 0 8px rgba(0,163,184,.25));
+        }
+        .il-brand-logo {
+          display: block; max-height: 34px; max-width: 180px; object-fit: contain;
         }
         .il-header-right {
           display: flex;

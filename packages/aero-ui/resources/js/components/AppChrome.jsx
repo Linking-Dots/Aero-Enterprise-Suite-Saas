@@ -66,7 +66,6 @@ export function AppBrand({ href = '/dashboard', size = 28, className }) {
     ? (branding?.logo_dark || branding?.logo_light || null)
     : (branding?.logo_light || branding?.logo_dark || null);
   const name = branding?.name || 'aeos365';
-  const isDefaultBrand = !logo && name === 'aeos365';
 
   return (
     <Link href={href} className={cx('aeos-app-brand', className)} aria-label={`${name} home`}>
@@ -78,22 +77,39 @@ export function AppBrand({ href = '/dashboard', size = 28, className }) {
           <img src={branding?.logo_icon || branding?.favicon || logo} alt="" className="aeos-brand-icon" />
           <img src={logo} alt={name} className="aeos-brand-img" />
         </>
-      ) : isDefaultBrand ? (
-        // Default brand: the OFFICIAL Meridian lockup asset (branding/svg),
-        // never re-set as text — mark-only in the collapsed rail.
+      ) : (
+        // Default: the OFFICIAL Meridian assets — mark in the collapsed rail,
+        // lockup image everywhere else. ALWAYS an image, never mark + text.
         <>
           <AeosLogo size={size} className="aeos-brand-icon" />
-          <img src={darkGround ? lockupDark : lockupLight} alt="aeos365" className="aeos-brand-img" />
-        </>
-      ) : (
-        // Custom name without an uploaded logo: mark + name text fallback.
-        <>
-          <AeosLogo size={size} />
-          <span className="aeos-brand-word" aria-hidden="true">{name}</span>
+          <img src={darkGround ? lockupDark : lockupLight} alt={name} className="aeos-brand-img" />
         </>
       )}
     </Link>
   );
+}
+
+// ─── BrandLockup ──────────────────────────────────────────────────────────────
+/**
+ * The FULL horizontal brand lockup for wide surfaces (login, installer,
+ * registration, public site header/footer). White-label aware through the
+ * shared `branding` page prop: uploaded lockup → official Meridian lockup
+ * image. ALWAYS an image — never a composed mark + text wordmark.
+ *
+ * @prop {string} className  Class applied to the lockup <img>
+ */
+export function BrandLockup({ className }) {
+  const { branding } = usePage().props;
+  const theme = useTheme();
+  const darkGround = theme?.isDark ?? true;
+
+  const logo = darkGround
+    ? (branding?.logo_dark || branding?.logo_light || null)
+    : (branding?.logo_light || branding?.logo_dark || null);
+  const name = branding?.name || 'aeos365';
+
+  if (logo) return <img src={logo} alt={name} className={className} />;
+  return <img src={darkGround ? lockupDark : lockupLight} alt={name} className={className} />;
 }
 
 // ─── AppTopbarTitle ───────────────────────────────────────────────────────────
