@@ -48,13 +48,8 @@ class LeaveTypeController extends Controller
         return back()->with('success', 'Leave type created.');
     }
 
-    public function update(LeaveTypeRequest $request, string $type): RedirectResponse
+    public function update(LeaveTypeRequest $request, LeaveType $type): RedirectResponse
     {
-        // Resolve the model by the NAMED route param: under tenant-subdomain
-        // routing a scalar/model method arg binds to the FIRST route segment
-        // ({tenant}) instead of {type}, so read it by name explicitly. This is
-        // the app-wide tenant route-binding trap.
-        $type = LeaveType::findOrFail($request->route('type'));
         $before = $type->only(['name', 'code', 'days_per_year', 'is_active']);
         $type->update($request->validated());
 
@@ -70,10 +65,8 @@ class LeaveTypeController extends Controller
         return back()->with('success', 'Leave type updated.');
     }
 
-    public function destroy(\Illuminate\Http\Request $request, string $type): RedirectResponse
+    public function destroy(LeaveType $type): RedirectResponse
     {
-        // Resolve by named route param — see update() re: the tenant route-binding trap.
-        $type = LeaveType::findOrFail($request->route('type'));
         $this->authorize('hrm.leaves.leave-types.edit');
         $type->delete();
 
