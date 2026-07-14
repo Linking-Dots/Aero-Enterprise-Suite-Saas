@@ -45,6 +45,10 @@ class CoreBrandingResolver implements BrandingResolver
                 ?? $mail['from_address']
                 ?? ($organization['contact_email'] ?? config('mail.from.address', '')),
             'support_phone' => $organization['contact_phone'] ?? '',
+            // Sender identity from Brand Studio — null means "not overridden";
+            // the mail context resolver falls back to email settings / env.
+            'email_from_name' => $branding['email_from_name'] ?? null,
+            'email_from_address' => $branding['email_from_address'] ?? null,
         ];
     }
 }

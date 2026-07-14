@@ -12,6 +12,10 @@ class CoreMailContextResolver implements MailContextResolverInterface
 {
     public function resolve(): array
     {
+        // Brand Studio sender identity wins when set (white-label chain);
+        // email settings and env remain the fallbacks.
+        [$brandFromName, $brandFromAddress] = $this->brandSender();
+
         try {
             $settings = SystemSetting::current()->email_settings ?? [];
             if ($settings && ! empty($settings['driver'])) {
@@ -19,8 +23,8 @@ class CoreMailContextResolver implements MailContextResolverInterface
                 $base = [
                     'configured' => true,
                     'driver' => $driver,
-                    'from_address' => $settings['from_address'] ?? config('mail.from.address'),
-                    'from_name' => $settings['from_name'] ?? config('mail.from.name', config('app.name')),
+                    'from_address' => $brandFromAddress ?? $settings['from_address'] ?? config('mail.from.address'),
+                    'from_name' => $brandFromName ?? $settings['from_name'] ?? config('mail.from.name', config('app.name')),
                 ];
 
                 return match ($driver) {
@@ -66,8 +70,28 @@ class CoreMailContextResolver implements MailContextResolverInterface
             'password' => config('mail.mailers.smtp.password', ''),
             'encryption' => config('mail.mailers.smtp.encryption', 'tls'),
             'verify_peer' => false,
-            'from_address' => config('mail.from.address'),
-            'from_name' => config('mail.from.name', config('app.name')),
+            'from_address' => $brandFromAddress ?? config('mail.from.address'),
+            'from_name' => $brandFromName ?? config('mail.from.name', config('app.name')),
         ];
+    }
+
+    /** @return array{0: ?string, 1: ?string} [from_name, from_address] from the branding chain */
+    private function brandSender(): array
+    {
+        try {
+            if (interface_exists(\Aero\Notifications\Contracts\BrandingResolver::class)
+                && app()->bound(\Aero\Notifications\Contracts\BrandingResolver::class)) {
+                $brand = app(\Aero\Notifications\Contracts\BrandingResolver::class)->resolve();
+
+                return [
+                    $brand['email_from_name'] ?? null,
+                    $brand['email_from_address'] ?? null,
+                ];
+            }
+        } catch (\Throwable $e) {
+            // Branding must never block mail delivery.
+        }
+
+        return [null, null];
     }
 }

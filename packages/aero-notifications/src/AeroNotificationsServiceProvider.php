@@ -88,6 +88,14 @@ class AeroNotificationsServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 
+        // White-label mail chrome: our markdown-mail overrides (header logo,
+        // branded footer) resolve the BrandingResolver chain at render time —
+        // the framework's views fill everything we don't override.
+        config(['mail.markdown.paths' => array_merge(
+            [__DIR__.'/../resources/views/mail'],
+            config('mail.markdown.paths', []),
+        )]);
+
         if ($this->app->runningInConsole()) {
             $this->registerCommands();
             $this->registerSchedule();

@@ -228,6 +228,16 @@ class AeroPlatformServiceProvider extends ServiceProvider
             \Aero\Platform\Services\TenantSubscriptionModuleFilter::class
         );
 
+        // Notification branding: rebind over core's tenant-only resolver with the
+        // FULL SaaS chain (tenant → central TenantBranding → platform → Meridian).
+        // Standalone never boots this provider, so it keeps CoreBrandingResolver.
+        if (interface_exists(\Aero\Notifications\Contracts\BrandingResolver::class)) {
+            $this->app->singleton(
+                \Aero\Notifications\Contracts\BrandingResolver::class,
+                \Aero\Platform\Services\Notifications\SaasBrandingResolver::class
+            );
+        }
+
         // Register Module Access Services with fallback stubs for pre-install
         // These services are lazy-loaded to avoid DB queries before installation
         // The RoleModuleAccessInterface (Aero\Contracts) is the single binding key

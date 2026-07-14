@@ -72,6 +72,20 @@ class InvoiceBrandingService
             return Storage::disk('public')->url($systemLogo);
         }
 
+        // Fall back to the white-label chain's central per-tenant layer
+        // (managed from the /white-label console).
+        try {
+            $central = \Aero\Platform\Models\Infra\TenantBranding::query()
+                ->where('tenant_id', $tenant->id)
+                ->first();
+            $path = $central?->logo_path;
+            if ($path && Storage::disk('public')->exists($path)) {
+                return Storage::disk('public')->url($path);
+            }
+        } catch (\Throwable) {
+            // Central branding is optional — never block invoice rendering.
+        }
+
         return null;
     }
 
