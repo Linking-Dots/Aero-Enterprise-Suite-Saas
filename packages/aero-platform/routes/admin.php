@@ -2354,6 +2354,11 @@ Route::middleware('admin.domain')->group(function () {
         // P-10: White-Label
         // =========================================================================
         Route::prefix('white-label')->name('platform.admin.white-label.')->group(function () {
+            // Command center — every white-label surface in one console
+            Route::get('/', [WhiteLabelController::class, 'overview'])
+                ->name('overview')
+                ->middleware('hrmac:white-label.custom-domains.view');
+
             // Custom Domains
             Route::get('/domains', [WhiteLabelController::class, 'domainsIndex'])
                 ->name('domains')
@@ -2376,20 +2381,35 @@ Route::middleware('admin.domain')->group(function () {
                 ->name('ssl.renew')
                 ->middleware('hrmac:white-label.ssl-provisioning.renew');
 
-            // Branding
+            // Branding — shared BrandStudio contract, per tenant
+            Route::get('/branding/{tenantId}/studio', [WhiteLabelController::class, 'studio'])
+                ->name('branding.studio')
+                ->middleware('hrmac:white-label.tenant-branding.view');
             Route::get('/branding/{tenantId}', [WhiteLabelController::class, 'showBranding'])
                 ->name('branding.show')
                 ->middleware('hrmac:white-label.tenant-branding.view');
-            Route::post('/branding', [WhiteLabelController::class, 'updateBranding'])
+            Route::post('/branding/{tenantId}/reset', [WhiteLabelController::class, 'resetBranding'])
+                ->name('branding.reset')
+                ->middleware('hrmac:white-label.tenant-branding.manage');
+            Route::post('/branding/{tenantId}', [WhiteLabelController::class, 'updateBranding'])
                 ->name('branding.update')
                 ->middleware('hrmac:white-label.tenant-branding.manage');
 
             // Custom CSS
+            Route::get('/css/{tenantId}/content', [WhiteLabelController::class, 'cssContent'])
+                ->name('css.content')
+                ->middleware('hrmac:white-label.custom-css.view');
             Route::get('/css/{tenantId}', [WhiteLabelController::class, 'showCss'])
                 ->name('css.show')
                 ->middleware('hrmac:white-label.custom-css.view');
             Route::post('/css', [WhiteLabelController::class, 'updateCss'])
                 ->name('css.update')
+                ->middleware('hrmac:white-label.custom-css.edit');
+            Route::post('/css/{tenantId}/toggle', [WhiteLabelController::class, 'toggleCss'])
+                ->name('css.toggle')
+                ->middleware('hrmac:white-label.custom-css.edit');
+            Route::delete('/css/{tenantId}', [WhiteLabelController::class, 'destroyCss'])
+                ->name('css.destroy')
                 ->middleware('hrmac:white-label.custom-css.edit');
 
             // Email Branding / DKIM
@@ -2402,6 +2422,9 @@ Route::middleware('admin.domain')->group(function () {
             Route::post('/email-branding/dkim/{branding}/verify', [WhiteLabelController::class, 'verifyDkim'])
                 ->name('email-branding.dkim.verify')
                 ->middleware('hrmac:white-label.tenant-email-branding.verify');
+            Route::delete('/email-branding/dkim/{branding}', [WhiteLabelController::class, 'destroyDkim'])
+                ->name('email-branding.dkim.destroy')
+                ->middleware('hrmac:white-label.tenant-email-branding.configure');
         });
 
         // =========================================================================

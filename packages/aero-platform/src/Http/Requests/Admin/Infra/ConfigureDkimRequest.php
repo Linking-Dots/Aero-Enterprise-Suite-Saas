@@ -17,8 +17,11 @@ class ConfigureDkimRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'tenant_id' => ['required', 'string', 'max:255'],
             'dkim_selector' => ['required', 'string', 'max:63', 'regex:/^[a-zA-Z0-9_-]+$/'],
             'dkim_private_key' => ['required', 'string', 'min:100'],
+            'email_from_name' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'email_from_address' => ['sometimes', 'nullable', 'email', 'max:190'],
         ];
     }
 }

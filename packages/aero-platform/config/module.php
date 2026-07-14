@@ -1530,9 +1530,12 @@ return [
             'route' => '/white-label',
             'priority' => 29,
 
+            // Components stay as HRMAC permission nodes; the /white-label command
+            // center subsumes their pages, so none of them appear in the nav.
             'components' => [
                 [
                     'code' => 'custom-domains', 'name' => 'Custom Domains', 'route' => '/white-label/domains',
+                    'show_in_nav' => false,
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Custom Domains'],
                         ['code' => 'add', 'name' => 'Add Custom Domain'],
@@ -1542,6 +1545,7 @@ return [
                 ],
                 [
                     'code' => 'ssl-provisioning', 'name' => 'SSL Provisioning (Lets Encrypt)', 'route' => '/white-label/ssl',
+                    'show_in_nav' => false,
                     'actions' => [
                         ['code' => 'view', 'name' => 'View SSL'],
                         ['code' => 'provision', 'name' => 'Provision SSL'],
@@ -1551,6 +1555,7 @@ return [
                 ],
                 [
                     'code' => 'tenant-branding', 'name' => 'Tenant Branding', 'route' => '/white-label/branding',
+                    'show_in_nav' => false,
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Branding'],
                         ['code' => 'manage', 'name' => 'Manage Per-Tenant Branding'],
@@ -1558,6 +1563,7 @@ return [
                 ],
                 [
                     'code' => 'custom-css', 'name' => 'Custom CSS / Code Injection', 'route' => '/white-label/custom-css',
+                    'show_in_nav' => false,
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Custom CSS'],
                         ['code' => 'edit', 'name' => 'Edit Custom CSS'],
@@ -1565,6 +1571,7 @@ return [
                 ],
                 [
                     'code' => 'tenant-email-branding', 'name' => 'Tenant Email Sender (DKIM)', 'route' => '/white-label/email',
+                    'show_in_nav' => false,
                     'actions' => [
                         ['code' => 'view', 'name' => 'View Email Senders'],
                         ['code' => 'configure', 'name' => 'Configure DKIM per Tenant'],
@@ -2975,70 +2982,10 @@ return [
         ],
 
         /*
-        |--------------------------------------------------------------------------
-        | P-10: White-Label
-        |--------------------------------------------------------------------------
+        | (P-10 White-Label lived here as an exact duplicate of module 29 —
+        |  same code + identical HRMAC component/action codes. Removed; the
+        |  single source of truth is entry 29 above.)
         */
-        [
-            'code' => 'white-label',
-            'name' => 'White-Label',
-            'description' => 'Custom domains, SSL provisioning, tenant branding, CSS, and email branding',
-            'icon' => 'PaintBrushIcon',
-            'route' => '/white-label',
-            'priority' => 30,
-
-            'components' => [
-                [
-                    'code' => 'custom-domains',
-                    'name' => 'Custom Domains',
-                    'route' => '/white-label/domains',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Custom Domains'],
-                        ['code' => 'add', 'name' => 'Add Domain'],
-                        ['code' => 'verify', 'name' => 'Verify Domain'],
-                        ['code' => 'remove', 'name' => 'Remove Domain'],
-                    ],
-                ],
-                [
-                    'code' => 'ssl-provisioning',
-                    'name' => 'SSL Provisioning',
-                    'route' => '/white-label/ssl',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View SSL Status'],
-                        ['code' => 'provision', 'name' => 'Provision SSL'],
-                        ['code' => 'renew', 'name' => 'Renew SSL'],
-                    ],
-                ],
-                [
-                    'code' => 'tenant-branding',
-                    'name' => 'Tenant Branding',
-                    'route' => '/white-label/branding',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Branding'],
-                        ['code' => 'manage', 'name' => 'Manage Branding'],
-                    ],
-                ],
-                [
-                    'code' => 'custom-css',
-                    'name' => 'Custom CSS',
-                    'route' => '/white-label/css',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Custom CSS'],
-                        ['code' => 'edit', 'name' => 'Edit Custom CSS'],
-                    ],
-                ],
-                [
-                    'code' => 'tenant-email-branding',
-                    'name' => 'Email Branding',
-                    'route' => '/white-label/email-branding',
-                    'actions' => [
-                        ['code' => 'view', 'name' => 'View Email Branding'],
-                        ['code' => 'configure', 'name' => 'Configure Email Branding'],
-                        ['code' => 'verify', 'name' => 'Verify DKIM'],
-                    ],
-                ],
-            ],
-        ],
 
         /*
         |--------------------------------------------------------------------------

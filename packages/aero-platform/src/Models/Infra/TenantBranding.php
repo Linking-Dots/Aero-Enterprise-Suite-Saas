@@ -17,21 +17,29 @@ class TenantBranding extends CentralModel
 
     protected $fillable = [
         'tenant_id',
+        'name',
         'logo_path',
+        'logo_dark_path',
+        'logo_icon_path',
         'favicon_path',
+        'login_background_path',
         'primary_color',
         'secondary_color',
         'custom_css_path',
+        'css_disabled',
         'email_from_name',
         'email_from_address',
         'dkim_selector',
         'dkim_private_key',
+        'dkim_verified_at',
     ];
 
     protected function casts(): array
     {
         return [
             'dkim_private_key' => EncryptedField::class,
+            'css_disabled' => 'boolean',
+            'dkim_verified_at' => 'datetime',
         ];
     }
 

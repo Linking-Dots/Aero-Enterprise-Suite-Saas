@@ -362,10 +362,21 @@ class HandleInertiaRequests extends Middleware
             }
 
             $disk = \Illuminate\Support\Facades\Storage::disk('public');
+            $url = fn (?string $path) => $path ? $disk->url($path) : null;
+
+            // Platform-managed custom CSS: injected by the blade head on every
+            // tenant page unless the console's kill switch disabled it.
+            if ($row->custom_css_path && ! $row->css_disabled) {
+                View::share('customCssUrl', $url($row->custom_css_path));
+            }
 
             return array_filter([
-                'logo_light' => $row->logo_path ? $disk->url($row->logo_path) : null,
-                'favicon' => $row->favicon_path ? $disk->url($row->favicon_path) : null,
+                'name' => $row->name,
+                'logo_light' => $url($row->logo_path),
+                'logo_dark' => $url($row->logo_dark_path),
+                'logo_icon' => $url($row->logo_icon_path),
+                'favicon' => $url($row->favicon_path),
+                'login_background' => $url($row->login_background_path),
                 'primary_color' => $row->primary_color,
                 'accent_color' => $row->secondary_color,
                 'email_from_name' => $row->email_from_name,

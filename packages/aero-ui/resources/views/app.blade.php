@@ -83,6 +83,12 @@
     @inertiaHead
     @viteReactRefresh
     @vite(['vendor/aero/ui/resources/css/app.css', 'vendor/aero/ui/resources/js/app.jsx'])
+
+    <!-- Platform-managed tenant custom CSS — after the app bundle so it can
+         override design-system rules (white-label console; kill switch upstream) -->
+    @if(!empty($customCssUrl))
+    <link rel="stylesheet" href="{{ $customCssUrl }}">
+    @endif
     
     <!-- Main Inertia App Container -->
     @inertia

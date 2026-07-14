@@ -1,0 +1,127 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   White-Label Command Center — page-scoped styles (wl-*)
+   Rides on pc-* / sc-* / wb-* from products.css + subscriptions.css.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.wl { container-type: inline-size; }
+
+/* tabs */
+.wl-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
+.wl-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: 9px; border: 1px solid transparent;
+  background: transparent; color: var(--aeos-text-secondary);
+  font-size: .84rem; font-weight: 600; cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.wl-tab:hover { background: var(--aeos-bg-hover); color: var(--aeos-text-primary); }
+.wl-tab.is-on {
+  background: var(--aeos-primary-bg); color: var(--aeos-primary);
+  border-color: var(--aeos-primary-tint);
+}
+.wl-tab span.ct {
+  font-size: .68rem; font-weight: 700; padding: 1px 7px; border-radius: 999px;
+  background: var(--aeos-bg-subtle); color: var(--aeos-text-tertiary);
+}
+.wl-tab.is-on span.ct { background: color-mix(in srgb, var(--aeos-primary) 18%, transparent); color: var(--aeos-primary); }
+
+/* status chips reuse pc-chip; extra tones */
+.wl-s-ok   { color: var(--aeos-success); }
+.wl-s-warn { color: var(--aeos-warning); }
+.wl-s-bad  { color: var(--aeos-danger); }
+.wl-s-mut  { color: var(--aeos-text-tertiary); }
+
+/* brand swatch pair */
+.wl-swatches { display: inline-flex; align-items: center; gap: 5px; }
+.wl-sw {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1px solid var(--aeos-divider); flex-shrink: 0;
+}
+.wl-sw--empty {
+  background:
+    linear-gradient(45deg, transparent 46%, var(--aeos-divider) 46%, var(--aeos-divider) 54%, transparent 54%);
+}
+
+/* tiny asset presence dots (5-slot taxonomy) */
+.wl-slots { display: inline-flex; gap: 4px; }
+.wl-slot {
+  width: 8px; height: 8px; border-radius: 3px;
+  background: var(--aeos-bg-subtle); border: 1px solid var(--aeos-divider);
+}
+.wl-slot.on { background: var(--aeos-primary); border-color: var(--aeos-primary); }
+
+/* tenant mini logo in tables */
+.wl-tlogo {
+  width: 30px; height: 30px; border-radius: 8px; object-fit: contain;
+  background: var(--aeos-bg-subtle); border: 1px solid var(--aeos-divider);
+  flex-shrink: 0; padding: 3px;
+}
+
+/* DNS TXT record block */
+.wl-txt {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--aeos-bg-subtle); border: 1px solid var(--aeos-divider);
+  border-radius: 9px; padding: 10px 12px; margin-top: 6px;
+}
+.wl-txt code {
+  flex: 1; font-family: var(--aeos-font-mono); font-size: .75rem;
+  word-break: break-all; color: var(--aeos-text-primary);
+}
+
+/* CSS editor */
+.wl-cssed {
+  width: 100%; min-height: 320px; resize: vertical;
+  font-family: var(--aeos-font-mono); font-size: .8rem; line-height: 1.55;
+  background: var(--aeos-bg-subtle); color: var(--aeos-text-primary);
+  border: 1px solid var(--aeos-divider); border-radius: 10px; padding: 12px 14px;
+  tab-size: 2; white-space: pre;
+}
+.wl-cssed:focus { outline: none; border-color: var(--aeos-primary); }
+.wl-cssmeta {
+  display: flex; align-items: center; gap: 10px; margin-top: 8px;
+  font-size: .74rem; color: var(--aeos-text-tertiary);
+}
+.wl-cssmeta .over { color: var(--aeos-danger); font-weight: 700; }
+
+/* DKIM key textarea */
+.wl-key {
+  width: 100%; min-height: 130px; resize: vertical;
+  font-family: var(--aeos-font-mono); font-size: .72rem; line-height: 1.5;
+  background: var(--aeos-bg-subtle); color: var(--aeos-text-primary);
+  border: 1px solid var(--aeos-divider); border-radius: 10px; padding: 10px 12px;
+}
+.wl-key:focus { outline: none; border-color: var(--aeos-primary); }
+
+/* wide modal for the CSS editor + brand studio drawer body */
+.pc-modal.wl-modal--wide { max-width: 760px; width: min(760px, calc(100vw - 48px)); }
+
+/* drawer hosting BrandStudio: give the studio room and let it stack */
+.wl-drawer-studio .bst { display: flex; flex-direction: column; gap: 16px; }
+.wl-drawer-studio { padding-top: 4px; }
+.wl-drawer-note {
+  font-size: .76rem; color: var(--aeos-text-tertiary);
+  border: 1px dashed var(--aeos-divider); border-radius: 9px;
+  padding: 8px 12px; margin-bottom: 12px;
+}
+
+/* rail queues */
+.wl-railq { display: flex; flex-direction: column; gap: 8px; }
+.wl-railq__it {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: .8rem;
+}
+.wl-railq__nm { color: var(--aeos-text-primary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-railq__sub { color: var(--aeos-text-tertiary); font-size: .72rem; flex-shrink: 0; }
+
+/* defaults tab wrapper */
+.wl-defaults { margin-top: 4px; }
+
+/* KPI band  — reuse sc-kpis6; content-width reflow */
+@container (max-width: 900px) {
+  .wl .sc-kpis6 { grid-template-columns: repeat(3, 1fr); }
+}
+@container (max-width: 560px) {
+  .wl .sc-kpis6 { grid-template-columns: repeat(2, 1fr); }
+  .wl-tabs { gap: 2px; }
+  .wl-tab { padding: 6px 10px; font-size: .78rem; }
+}
