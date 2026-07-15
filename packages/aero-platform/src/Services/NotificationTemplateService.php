@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\View;
  */
 class NotificationTemplateService
 {
+    /** Last-resort floor only — the real values resolve through the white-label chain. */
     protected array $platformBranding = [
         'company_name' => 'aeos365',
-        'logo_url' => '/images/platform-logo.png',
-        'primary_color' => '#3B82F6',
-        'support_email' => 'support@aeroenterprise.com',
-        'support_phone' => '+1-800-AERO-365',
+        'logo_url' => null,
+        'primary_color' => '#0C2742',
+        'support_email' => null,
+        'support_phone' => null,
     ];
 
     /**
@@ -54,15 +55,15 @@ class NotificationTemplateService
         $branding = $this->getBranding($tenant);
         $companyName = $branding['company_name'];
 
-        $messages = [
+        // match — only the selected template's data keys are ever touched
+        return match ($template) {
             'quota-warning' => "{$companyName}: You're at {$data['percentage']}% of your {$data['quota_type']} quota. Upgrade to avoid service interruption.",
             'quota-critical' => "{$companyName}: URGENT - You've exceeded your {$data['quota_type']} quota. Service may be interrupted in {$data['grace_days']} days.",
             'trial-expiry' => "{$companyName}: Your trial expires in {$data['days_remaining']} days. Subscribe now to continue using all features.",
             'subscription-renewed' => "{$companyName}: Your subscription has been renewed successfully. Thank you!",
             'payment-failed' => "{$companyName}: Payment failed. Please update your payment method to avoid service interruption.",
-        ];
-
-        return $messages[$template] ?? '';
+            default => '',
+        };
     }
 
     /**
@@ -70,20 +71,67 @@ class NotificationTemplateService
      */
     protected function getBranding(?Tenant $tenant): array
     {
+        $platform = $this->platformLayer();
+
         if (! $tenant) {
-            return $this->platformBranding;
+            return $platform;
         }
 
-        // Get tenant custom branding from metadata
+        // Central per-tenant white-label layer (managed from /white-label),
+        // then legacy tenant metadata, then the platform brand.
+        $central = $this->centralTenantLayer($tenant);
         $customBranding = $tenant->metadata['branding'] ?? [];
 
-        return array_merge($this->platformBranding, [
-            'company_name' => $customBranding['company_name'] ?? $tenant->name,
-            'logo_url' => $customBranding['logo_url'] ?? $this->platformBranding['logo_url'],
-            'primary_color' => $customBranding['primary_color'] ?? $this->platformBranding['primary_color'],
-            'support_email' => $customBranding['support_email'] ?? $tenant->email ?? $this->platformBranding['support_email'],
-            'support_phone' => $customBranding['support_phone'] ?? $this->platformBranding['support_phone'],
-        ]);
+        return [
+            'company_name' => $central['company_name'] ?? $customBranding['company_name'] ?? $tenant->name ?? $platform['company_name'],
+            'logo_url' => $central['logo_url'] ?? $customBranding['logo_url'] ?? $platform['logo_url'],
+            'primary_color' => $central['primary_color'] ?? $customBranding['primary_color'] ?? $platform['primary_color'],
+            'support_email' => $central['support_email'] ?? $customBranding['support_email'] ?? $tenant->email ?? $platform['support_email'],
+            'support_phone' => $customBranding['support_phone'] ?? $tenant->phone ?? $platform['support_phone'],
+        ];
+    }
+
+    /** Platform brand through the chain (PlatformSetting → Meridian floor). */
+    protected function platformLayer(): array
+    {
+        try {
+            $setting = \Aero\Platform\Models\PlatformSetting::current();
+            $layer = $setting->getBrandingPayload();
+
+            return [
+                'company_name' => $layer['name'] ?? $setting->site_name ?? $this->platformBranding['company_name'],
+                'logo_url' => $layer['logo_light'] ?? $layer['logo_dark'] ?? $this->platformBranding['logo_url'],
+                'primary_color' => $layer['primary_color'] ?? $this->platformBranding['primary_color'],
+                'support_email' => $layer['email_from_address'] ?? config('mail.from.address') ?? $this->platformBranding['support_email'],
+                'support_phone' => $this->platformBranding['support_phone'],
+            ];
+        } catch (\Throwable) {
+            return $this->platformBranding;
+        }
+    }
+
+    /** The /white-label console's central per-tenant overrides (null = inherit). */
+    protected function centralTenantLayer(Tenant $tenant): array
+    {
+        try {
+            $row = \Aero\Platform\Models\Infra\TenantBranding::query()
+                ->where('tenant_id', $tenant->id)
+                ->first();
+            if (! $row) {
+                return [];
+            }
+
+            $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+            return array_filter([
+                'company_name' => $row->name,
+                'logo_url' => $row->logo_path ? $disk->url($row->logo_path) : null,
+                'primary_color' => $row->primary_color,
+                'support_email' => $row->email_from_address,
+            ]);
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     /**

@@ -40,7 +40,15 @@ class ResumeRegistrationNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $resumeUrl = URL::route('platform.register.resume', ['token' => $this->token]);
-        $siteName = config('app.name', 'Enterprise Suite');
+
+        // Brand name through the white-label chain (platform brand → Meridian),
+        // never a hardcoded product name.
+        try {
+            $siteName = app(\Aero\Notifications\Contracts\BrandingResolver::class)->resolve()['company_name']
+                ?? config('app.name', 'aeos365');
+        } catch (\Throwable) {
+            $siteName = config('app.name', 'aeos365');
+        }
 
         return (new MailMessage)
             ->subject('Continue Your '.$siteName.' Registration')
